@@ -1,0 +1,42 @@
+# Dependencies
+node_modules
+
+# Build output (Vite)
+dist
+dist-ssr
+*.local
+
+# Environment files (evitar subir secretos)
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / IDE
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing (por si añades Vitest/Jest más adelante)
+coverage
+*.lcov
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
