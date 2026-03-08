@@ -76,6 +76,19 @@ http://localhost:5173
 
 ---
 
+## Docker
+
+Para levantar el entorno de desarrollo con Docker:
+
+```
+docker compose up          # Levanta el entorno con hot reload
+docker compose down        # Detiene el entorno
+docker compose up --build  # Reconstruye la imagen y levanta el entorno
+
+```
+
+---
+
 ## Notas
 
 - Este proyecto utiliza alias configurados en `vite.config.ts` y `tsconfig.app.json` para facilitar las importaciones.
