@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
@@ -11,5 +11,10 @@ export default defineConfig({
       '@components': path.resolve(__dirname, './src/components'),
       '@shared': path.resolve(__dirname, './src/shared'),
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/tests/setup.ts',
   },
 });
