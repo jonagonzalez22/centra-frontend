@@ -5,5 +5,3 @@ reviews:
   auto_review:
     enabled: false
   request_changes_workflow: false
-chat:
-  enabled: true
