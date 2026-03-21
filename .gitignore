@@ -40,3 +40,10 @@ coverage
 .cache
 .parcel-cache
 .eslintcache
+
+# pnpm local store cache
+.pnpm-store/
+
+# Vite / test caches
+.vite/
+vitest.workspace.ts.timestamp-*
