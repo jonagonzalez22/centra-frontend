@@ -84,8 +84,40 @@ Para levantar el entorno de desarrollo con Docker:
 docker compose up          # Levanta el entorno con hot reload
 docker compose down        # Detiene el entorno
 docker compose up --build  # Reconstruye la imagen y levanta el entorno
-
 ```
+
+---
+
+## CI/CD
+
+Este proyecto utiliza **GitHub Actions** para Integración Continua siguiendo el flujo **GitFlow**.
+
+### Pipeline CI
+
+El pipeline se ejecuta automáticamente en:
+
+- Push a `main` o `develop`
+- Pull Requests hacia `main` o `develop`
+
+### Pasos del pipeline
+
+| Paso                  | Comando                                        |
+| --------------------- | ---------------------------------------------- |
+| Checkout              | `actions/checkout@v4`                          |
+| Setup Node.js         | `actions/setup-node@v4` (Node 20 + caché pnpm) |
+| Instalar dependencias | `pnpm install --frozen-lockfile`               |
+| Verificación de tipos | `pnpm tsc --noEmit`                            |
+| Lint                  | `pnpm lint`                                    |
+| Tests                 | `pnpm test`                                    |
+
+### Protección de ramas
+
+Para que el pipeline bloquee merges con errores, configurar en GitHub:
+**Settings → Branches → Branch protection rules** sobre `main` y `develop`:
+
+- ✅ Require status checks to pass before merging
+- ✅ Seleccionar el job `Lint, Types & Tests`
+- ✅ Require branches to be up to date before merging
 
 ---
 
