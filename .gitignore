@@ -40,6 +40,8 @@ coverage
 .cache
 .parcel-cache
 .eslintcache
+*storybook.log
+storybook-static
 
 # pnpm local store cache
 .pnpm-store/
