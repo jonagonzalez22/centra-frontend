@@ -42,3 +42,10 @@ coverage
 .eslintcache
 *storybook.log
 storybook-static
+
+# pnpm local store cache
+.pnpm-store/
+
+# Vite / test caches
+.vite/
+vitest.workspace.ts.timestamp-*
