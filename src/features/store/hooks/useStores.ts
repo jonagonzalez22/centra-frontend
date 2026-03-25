@@ -12,7 +12,7 @@ export const useStores = () => {
       setLoading(true);
       const data = await StoresService.getAll();
       setStores(data);
-    } catch (err) {
+    } catch {
       setError('Error al cargar las tiendas');
     } finally {
       setLoading(false);
