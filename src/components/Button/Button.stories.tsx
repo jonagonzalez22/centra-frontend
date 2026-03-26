@@ -23,7 +23,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-  name: 'Primary',
   args: {
     children: 'Primary',
     variant: 'primary',
@@ -31,7 +30,6 @@ export const Primary: Story = {
 };
 
 export const Secondary: Story = {
-  name: 'Secondary',
   args: {
     children: 'Secondary',
     variant: 'secondary',
@@ -39,7 +37,6 @@ export const Secondary: Story = {
 };
 
 export const Danger: Story = {
-  name: 'Danger',
   args: {
     children: 'Danger',
     variant: 'danger',
