@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStores } from '../hooks/useStores';
+import { useStores } from '../../hooks/useStores';
 
 export const StoreList: React.FC = () => {
   const { stores, loading, error, refetch } = useStores();

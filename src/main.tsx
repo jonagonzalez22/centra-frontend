@@ -1,10 +1,15 @@
+import { ConfigProvider } from 'antd';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
+import 'antd/dist/reset.css';
 import App from './App.tsx';
+import './index.css';
+import { centraAntdTheme } from './theme/centraAntdTheme';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-  </StrictMode>
+    <ConfigProvider theme={centraAntdTheme}>
+      <App />
+    </ConfigProvider>
+  </StrictMode>,
 );
