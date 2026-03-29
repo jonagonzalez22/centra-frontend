@@ -56,4 +56,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            docker exec centra-web nginx -s reload
+            docker exec centra-web nginx -t && docker exec centra-web nginx -s reload
