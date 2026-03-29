@@ -46,7 +46,7 @@ jobs:
           source: 'dist/*'
           target: '${{ env.DEPLOY_PATH }}'
           strip_components: 1
-          rm: true
+          rm: false
 
       - name: Refresh Nginx on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -56,6 +56,5 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            sleep 2
             sudo chmod -R 755 ${{ env.DEPLOY_PATH }}
             docker exec centra-web nginx -t && docker exec centra-web nginx -s reload
