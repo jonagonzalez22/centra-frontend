@@ -2,7 +2,7 @@ import type { Preview } from '@storybook/react-vite';
 import { ConfigProvider } from 'antd';
 import React from 'react';
 import 'antd/dist/reset.css';
-import { centraAntdTheme } from '../src/theme/centraAntdTheme';
+import { CentraThemeProvider } from '../src/design-system/centraThemeProvider.tsx';
 
 const preview: Preview = {
   parameters: {
@@ -20,9 +20,9 @@ const preview: Preview = {
 
   decorators: [
     (Story) => (
-      <ConfigProvider theme={centraAntdTheme}>
+      <CentraThemeProvider>
         <Story />
-      </ConfigProvider>
+      </CentraThemeProvider>
     ),
   ],
 };

@@ -1,38 +1,39 @@
-import { Button as AntButton, type ButtonProps as AntButtonProps } from 'antd';
-import { forwardRef } from 'react';
-import { CENTRA_COLORS } from '@/theme/centraBrand';
+import { Button as AntButton } from 'antd';
 
-export type CentraButtonVariant = 'primary' | 'secondary' | 'danger';
+type ButtonVariant = 'primary' | 'default' | 'danger';
 
-type LockedAntProps = 'type' | 'danger' | 'variant' | 'color';
+interface ButtonProps {
+  variant?: ButtonVariant;
+  action: () => void;
+  label: string;
+  disabled?: boolean;
+  icon?: React.ReactNode
+  loading?: boolean;
+}
 
-export type CentraButtonProps = Omit<AntButtonProps, LockedAntProps> & {
-  /** Variante visual CENTRA; por defecto `primary`. */
-  variant?: CentraButtonVariant;
-};
+const variantMap = {
+  primary: { type: 'primary'},
+  default: { type: 'default' },
+  danger: { type: 'primary', danger: true },
+} as const;
 
-const variantProps: Record<
-  CentraButtonVariant,
-  Pick<AntButtonProps, 'type' | 'danger' | 'variant' | 'color' | 'styles'>
-> = {
-  primary: { type: 'primary', variant: 'solid' },
-  secondary: {
-    type: 'default',
-    variant: 'outlined',
-    styles: {
-      root: {
-        borderColor: CENTRA_COLORS.secondary,
-        color: CENTRA_COLORS.secondary,
-      },
-    },
-  },
-  danger: { type: 'primary', variant: 'solid', danger: true },
-};
-
-export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, CentraButtonProps>(
-  ({ variant = 'primary', ...props }, ref) => (
-    <AntButton ref={ref} {...variantProps[variant]} {...props} />
-  ),
-);
-
-Button.displayName = 'Button';
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  action,
+  label,
+  disabled,
+  icon,
+  loading,
+}) => {
+  return (
+    <AntButton
+      {...variantMap[variant]}
+      onClick={action}
+      disabled={disabled}
+      icon={icon}
+      loading={loading}
+    >
+      {label}
+    </AntButton>
+  )
+}

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
 
-const meta = {
+const meta: Meta<typeof Button> = {
   title: 'Components/Button',
   component: Button,
   tags: ['autodocs'],
@@ -11,10 +11,29 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'danger'],
-      description: 'Variante visual CENTRA (wrapper sobre Ant Design).',
+      options: ['primary', 'default', 'danger'],
+      description: 'Variante de boton CENTRA',
     },
-    children: { control: 'text' },
+    loading: {
+      control: 'boolean',
+      description: 'Indica si el botón está en estado de carga',
+    },
+    icon: {
+      control: false,
+      description: 'Icono del botón',
+    },
+    action: {
+      control: false,
+      description: 'Función que se ejecuta al hacer click',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Indica si el botón está deshabilitado',
+    },
+    label: {
+      control: 'text',
+      description: 'Texto del botón',
+    },
   },
 } satisfies Meta<typeof Button>;
 
@@ -24,21 +43,42 @@ type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {
-    children: 'Primary',
+    label: 'Primary Button',
     variant: 'primary',
+    action: () => {},
   },
 };
 
 export const Secondary: Story = {
   args: {
-    children: 'Secondary',
-    variant: 'secondary',
+    label: 'Secondary Button',
+    variant: 'default',
+    action: () => {},
   },
 };
 
 export const Danger: Story = {
   args: {
-    children: 'Danger',
+    label: 'Danger Button',
     variant: 'danger',
+    action: () => {},
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    label: 'Loading Button',
+    variant: 'primary',
+    loading: true,
+    action: () => {},
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    label: 'Disabled Button',
+    variant: 'primary',
+    disabled: true,
+    action: () => {},
   },
 };
