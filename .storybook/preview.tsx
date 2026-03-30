@@ -1,5 +1,4 @@
 import type { Preview } from '@storybook/react-vite';
-import { ConfigProvider } from 'antd';
 import React from 'react';
 import 'antd/dist/reset.css';
 import { CentraThemeProvider } from '../src/design-system/centraThemeProvider.tsx';
