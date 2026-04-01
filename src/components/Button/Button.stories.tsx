@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './Button';
+import { EditOutlined } from '@ant-design/icons';
 
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',
@@ -11,7 +12,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'default', 'danger'],
+      options: ['primary', 'default', 'danger', 'success', 'warning', 'error', 'text'],
       description: 'Variante de boton CENTRA',
     },
     loading: {
@@ -65,6 +66,38 @@ export const Danger: Story = {
   },
 };
 
+export const Success: Story = {
+  args: {
+    label: 'Success Button',
+    variant: 'success',
+    action: () => {},
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    label: 'Warning Button',
+    variant: 'warning',
+    action: () => {},
+  },
+};
+
+export const Error: Story = {
+  args: {
+    label: 'Error Button',
+    variant: 'error',
+    action: () => {},
+  },
+};
+
+export const Text: Story = {
+  args: {
+    label: 'Text Button',
+    variant: 'text',
+    action: () => {},
+  },
+};
+
 export const Loading: Story = {
   args: {
     label: 'Loading Button',
@@ -79,6 +112,16 @@ export const Disabled: Story = {
     label: 'Disabled Button',
     variant: 'primary',
     disabled: true,
+    action: () => {},
+  },
+};
+
+export const WithIcon: Story = {
+  args: {
+    label: 'Edit',
+    variant: 'text',
+    iconPlacement: 'end',
+    icon: <EditOutlined />,
     action: () => {},
   },
 };

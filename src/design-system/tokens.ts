@@ -4,6 +4,7 @@ export const CENTRA_TOKENS = {
     colorSuccess: '#52c41a',
     colorWarning: '#faad14',
     colorError: '#ff4d4f',
+    colorText: '#000',
   
     borderRadius: 8,
   } as const;
