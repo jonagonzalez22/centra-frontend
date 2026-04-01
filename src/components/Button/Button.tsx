@@ -1,7 +1,7 @@
 import { Button as AntButton, ButtonProps as AntButtonProps } from 'antd';
 import { CENTRA_TOKENS } from '../../design-system/tokens';
 
-type ButtonVariant = 'primary' | 'default' | 'danger' | 'success' | 'warning' | 'error' | 'text';
+type ButtonVariant = 'primary' | 'default' | 'danger' | 'success' | 'warning' | 'error' | 'text' | 'link';
 
 interface ButtonProps {
   variant?: ButtonVariant;
@@ -11,6 +11,7 @@ interface ButtonProps {
   icon?: React.ReactNode;
   iconPlacement?: 'start' | 'end';
   loading?: boolean;
+  shape?: 'circle' | 'round' | 'default';
 }
 
 
@@ -19,13 +20,14 @@ const variantMap: Record<ButtonVariant, Partial<AntButtonProps>> = {
   default: { type: 'default' },
   danger: { type: 'primary', danger: true },
   error: { type: 'primary', danger: true },
+  text: { type: 'text' },
+  link: { type: 'link' },
 
   success: {
     styles: {
       root: {
         backgroundColor: CENTRA_TOKENS.colorSuccess,
         borderColor: CENTRA_TOKENS.colorSuccess,
-        color: '#000',
       },
     },
   },
@@ -35,12 +37,9 @@ const variantMap: Record<ButtonVariant, Partial<AntButtonProps>> = {
       root: {
         backgroundColor: CENTRA_TOKENS.colorWarning,
         borderColor: CENTRA_TOKENS.colorWarning,
-        color: '#000',
       },
     },
   },
-
-  text: { type: 'text' },
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -51,6 +50,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   iconPlacement,
   loading,
+  shape,
 }) => {
   return (
     <AntButton
@@ -62,6 +62,7 @@ export const Button: React.FC<ButtonProps> = ({
       icon={icon}
       iconPlacement={iconPlacement}
       loading={loading}
+      shape={shape}
     >
       {label}
     </AntButton>

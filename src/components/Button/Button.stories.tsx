@@ -12,7 +12,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'default', 'danger', 'success', 'warning', 'error', 'text'],
+      options: ['primary', 'default', 'danger', 'success', 'warning', 'error', 'text', 'link'],
       description: 'Variante de boton CENTRA',
     },
     loading: {
@@ -35,6 +35,11 @@ const meta: Meta<typeof Button> = {
       control: 'text',
       description: 'Texto del botón',
     },
+    shape: {
+      control: 'select',
+      options: ['default', 'circle', 'round'],
+      description: 'Forma del botón',
+    }
   },
 } satisfies Meta<typeof Button>;
 
@@ -98,6 +103,14 @@ export const Text: Story = {
   },
 };
 
+export const Link: Story = {
+  args: {
+    label: 'Link Button',
+    variant: 'link',
+    action: () => {},
+  },
+};
+
 export const Loading: Story = {
   args: {
     label: 'Loading Button',
@@ -122,6 +135,16 @@ export const WithIcon: Story = {
     variant: 'text',
     iconPlacement: 'end',
     icon: <EditOutlined />,
+    action: () => {},
+  },
+};
+
+export const Round: Story = {
+  args: {
+    label: '',
+    icon: <EditOutlined />,
+    variant: 'primary',
+    shape: 'round',
     action: () => {},
   },
 };

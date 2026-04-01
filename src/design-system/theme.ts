@@ -7,6 +7,7 @@ export const centraTheme = {
     colorWarning: CENTRA_TOKENS.colorWarning,
     colorError: CENTRA_TOKENS.colorError,
     colorText: CENTRA_TOKENS.colorText,
+    colorLink: CENTRA_TOKENS.colorLink,
 
     borderRadius: CENTRA_TOKENS.borderRadius,
   },
