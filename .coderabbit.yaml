@@ -1,0 +1,7 @@
+# Configuración de CodeRabbit para CENTRA
+language: "es-ES"
+reviews:
+  profile: "chill" 
+  auto_review:
+    enabled: false
+  request_changes_workflow: false
