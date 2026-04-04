@@ -1,7 +1,7 @@
 import { Button as AntButton, ButtonProps as AntButtonProps } from 'antd';
 import { CENTRA_TOKENS } from '../../design-system/tokens';
 
-type ButtonVariant = 'primary' | 'default' | 'danger' | 'success' | 'warning' | 'error' | 'text' | 'link';
+type ButtonVariant = 'primary' | 'default' | 'danger' | 'success' | 'warning' | 'text' | 'link';
 
 interface ButtonProps {
   variant?: ButtonVariant;
@@ -19,7 +19,6 @@ const variantMap: Record<ButtonVariant, Partial<AntButtonProps>> = {
   primary: { type: 'primary' },
   default: { type: 'default' },
   danger: { type: 'primary', danger: true },
-  error: { type: 'primary', danger: true },
   text: { type: 'text' },
   link: { type: 'link' },
 
@@ -55,8 +54,6 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <AntButton
       {...variantMap[variant]}
-/*       color='success'
-      variant='solid' */
       onClick={action}
       disabled={disabled}
       icon={icon}

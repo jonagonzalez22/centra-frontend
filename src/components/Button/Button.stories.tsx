@@ -12,7 +12,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'default', 'danger', 'success', 'warning', 'error', 'text', 'link'],
+      options: ['primary', 'default', 'danger', 'success', 'warning', 'text', 'link'],
       description: 'Variante de boton CENTRA',
     },
     loading: {
@@ -83,14 +83,6 @@ export const Warning: Story = {
   args: {
     label: 'Warning Button',
     variant: 'warning',
-    action: () => {},
-  },
-};
-
-export const Error: Story = {
-  args: {
-    label: 'Error Button',
-    variant: 'error',
     action: () => {},
   },
 };

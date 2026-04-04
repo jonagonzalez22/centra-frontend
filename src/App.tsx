@@ -1,4 +1,3 @@
-import { Button } from './components/Button';
 import { StoreList } from './features/store/components/StoreList/StoreList';
 
 function App() {
@@ -7,7 +6,6 @@ function App() {
       <div>
         <h1>CENTRA - Panel de Control</h1>
         <StoreList />
-        <Button action={()=>{}} label='Enviar'/>
       </div>
     </div>
   );
