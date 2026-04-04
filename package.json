@@ -14,6 +14,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.1",
     "antd": "^6.3.3",
     "axios": "^1.13.6",
     "react": "^19.2.0",

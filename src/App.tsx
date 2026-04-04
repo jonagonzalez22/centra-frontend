@@ -1,4 +1,4 @@
-import { StoreList } from './features/store/components/StoreList';
+import { StoreList } from './features/store/components/StoreList/StoreList';
 
 function App() {
   return (

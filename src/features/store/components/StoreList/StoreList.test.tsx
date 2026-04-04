@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, test, expect, vi } from 'vitest';
 import { StoreList } from './StoreList';
-import { useStores } from '../hooks/useStores';
+import { useStores } from '../../hooks/useStores';
 
-vi.mock('../hooks/useStores');
+vi.mock('../../hooks/useStores');
 
 const mockedUseStores = vi.mocked(useStores);
 

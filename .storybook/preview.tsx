@@ -1,16 +1,7 @@
 import type { Preview } from '@storybook/react-vite';
-import { ConfigProvider } from 'antd';
 import React from 'react';
-import 'antd/dist/reset.css'
-
-const centraTheme = {
-  token: {
-    colorPrimary: '#093865',
-    colorInfo: '#093865',
-    colorWarning: '#F88D34',
-    borderRadius: 6,
-  },
-};
+import 'antd/dist/reset.css';
+import { CentraThemeProvider } from '../src/design-system/centraThemeProvider.tsx';
 
 const preview: Preview = {
   parameters: {
@@ -28,9 +19,9 @@ const preview: Preview = {
 
   decorators: [
     (Story) => (
-      <ConfigProvider theme={centraTheme}>
+      <CentraThemeProvider>
         <Story />
-      </ConfigProvider>
+      </CentraThemeProvider>
     ),
   ],
 };
