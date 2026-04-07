@@ -1,13 +1,8 @@
-import { StoreList } from './features/store/components/StoreList/StoreList';
+import { AdminLayout } from './layouts/AdminLayout/AdminLayout';
 
 function App() {
   return (
-    <div>
-      <div>
-        <h1>CENTRA - Panel de Control</h1>
-        <StoreList />
-      </div>
-    </div>
+    <AdminLayout><h1>Admin Layout</h1></AdminLayout>
   );
 }
 
