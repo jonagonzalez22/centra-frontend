@@ -1,43 +1,23 @@
 import { Layout } from 'antd';
 import { ReactNode } from 'react';
+import { siderStyle, headerStyle, contentStyle } from './store.style';
 
 const { Header, Sider, Content } = Layout;
 
 interface IStoreLayoutProps {
     children: ReactNode;
+    sider?: ReactNode;
+    header?: ReactNode;
 }
 
-const headerStyle: React.CSSProperties = {
-    textAlign: 'center',
-    color: '#fff',
-    height: 64,
-    paddingInline: 48,
-    lineHeight: '64px',
-};
-
-const contentStyle: React.CSSProperties = {
-    textAlign: 'center',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-};
-
-const siderStyle: React.CSSProperties = {
-    textAlign: 'center',
-    lineHeight: '120px',
-    color: '#fff',
-    width: 250,
-};
-
-
-export const StoreLayout = ({ children }: IStoreLayoutProps) => {
+export const StoreLayout = ({ children , sider, header }: IStoreLayoutProps) => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider style={siderStyle} >
-                Sider
+                {sider}
             </Sider>
-            <Layout style={{ display: 'flex', flexDirection: 'column' }}>
-                <Header style={headerStyle}>Header</Header>
+            <Layout>
+                <Header style={headerStyle}>{header}</Header>
                 <Content style={contentStyle}>{children}</Content>
             </Layout>
         </Layout>
