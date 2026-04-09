@@ -5,18 +5,13 @@ export interface LoginPayload {
     password: string;
 }
 
-export interface ApiResponse<T> {
+interface IData extends User {
+    token: string;
+}
+
+export interface AuthResponse {
     status: 'success' | 'error';
     message: string;
-    data: T;
+    data: { IData };
     errors: Record<string, string[]> | null;
 }
-
-
-export interface AuthData {
-    token: string;
-    user: User;
-}
-
-
-export type AuthResponse = ApiResponse<AuthData>;
