@@ -12,6 +12,6 @@ interface IData extends User {
 export interface AuthResponse {
     status: 'success' | 'error';
     message: string;
-    data: { IData };
+    data: IData ;
     errors: Record<string, string[]> | null;
 }
