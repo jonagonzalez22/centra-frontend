@@ -1,6 +1,5 @@
 import InputField from './components/InputField/InputField';
 import { StoreList } from './features/store/components/StoreList/StoreList';
-import { UserOutlined } from '@ant-design/icons';
 import InputPassword from './components/InputPassword/InputPassword';
 
 function App() {
@@ -9,7 +8,6 @@ function App() {
       <div>
         <h1>CENTRA - Panel de Control</h1>
 
-        {/* <InputField suffix={<UserOutlined />} /> */}
         <InputField
           name="test"
           label="Usario"
