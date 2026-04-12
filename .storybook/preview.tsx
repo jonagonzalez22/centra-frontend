@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/react-vite';
 import React from 'react';
 import 'antd/dist/reset.css';
+import '../src/index.css';
 import { CentraThemeProvider } from '../src/design-system/centraThemeProvider.tsx';
 
 const preview: Preview = {
