@@ -8,6 +8,26 @@ const meta: Meta<typeof AuthLayout> = {
         layout: 'fullscreen',
     },
     tags: ['autodocs'],
+    argTypes: {
+        header: {
+            control: false,
+            table: {
+                type: { summary: 'ReactNode' },
+            },
+        },
+        sider: {
+            control: false,
+            table: {
+                type: { summary: 'ReactNode' },
+            },
+        },
+        children: {
+            control: false,
+            table: {
+                type: { summary: 'ReactNode' },
+            },
+        },
+    },
 };
 
 export default meta;
