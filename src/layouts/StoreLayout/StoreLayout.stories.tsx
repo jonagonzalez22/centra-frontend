@@ -27,3 +27,13 @@ export const OnlyContent: Story = {
         children: <div>Products List</div>,
     },
 };
+
+export const OnlySider: Story = {
+    args: {
+        sider: <div>Only Menu</div>,
+    },
+};
+
+export const Empty: Story = {
+    args: {},
+};

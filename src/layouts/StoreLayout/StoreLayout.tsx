@@ -1,6 +1,6 @@
 import { Layout } from 'antd';
 import { ReactNode } from 'react';
-import { siderStyle, headerStyle, contentStyle } from './store.style';
+import { siderStyle, headerStyle, contentStyle } from './StoreLayout.style';
 
 const { Header, Sider, Content } = Layout;
 
@@ -13,11 +13,18 @@ interface IStoreLayoutProps {
 export const StoreLayout = ({ children , sider, header }: IStoreLayoutProps) => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider style={siderStyle} >
-                {sider}
-            </Sider>
+            { sider && (
+                <Sider style={siderStyle}>
+                    {sider}
+                </Sider>
+            )}
+
             <Layout>
-                <Header style={headerStyle}>{header}</Header>
+            { header && (
+                <Header style={headerStyle}>
+                    {header}
+                </Header>
+            )}
                 <Content style={contentStyle}>{children}</Content>
             </Layout>
         </Layout>

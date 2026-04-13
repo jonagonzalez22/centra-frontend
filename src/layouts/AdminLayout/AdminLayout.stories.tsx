@@ -35,3 +35,13 @@ export const WithoutSider: Story = {
         children: <div>Main Content</div>,
     },
 };
+
+export const OnlySider: Story = {
+    args: {
+        sider: <div>Admin Menu</div>,
+    },
+};
+
+export const Empty: Story = {
+    args: {},
+};

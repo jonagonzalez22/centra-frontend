@@ -5,7 +5,7 @@ const meta: Meta<typeof AuthLayout> = {
     title: 'Layouts/Auth',
     component: AuthLayout,
     parameters: {
-    layout: 'fullscreen',
+        layout: 'fullscreen',
     },
     tags: ['autodocs'],
 };
@@ -30,4 +30,8 @@ export const WithForm: Story = {
             </form>
         ),
     },
+};
+
+export const Empty: Story = {
+    args: {},
 };

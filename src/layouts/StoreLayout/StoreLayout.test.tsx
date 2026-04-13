@@ -53,3 +53,45 @@ describe('StoreLayout', () => {
         expect(container.firstChild).toHaveStyle('min-height: 100vh');
     });
 });
+
+    test('does not render header if not provided', () => {
+        render(
+        <StoreLayout>
+            <div>Content</div>
+        </StoreLayout>
+        );
+
+        expect(screen.queryByText('Header')).toBeNull();
+    });
+  
+    test('does not render sider if not provided', () => {
+        render(
+        <StoreLayout>
+            <div>Content</div>
+        </StoreLayout>
+        );
+
+        expect(screen.queryByText('Sider')).toBeNull();
+    });
+
+    test('renders multiple children correctly', () => {
+        render(
+            <StoreLayout>
+                <div>Item 1</div>
+                <div>Item 2</div>
+            </StoreLayout>
+        );
+
+    expect(screen.getByText('Item 1')).toBeDefined();
+    expect(screen.getByText('Item 2')).toBeDefined();
+    });
+
+    test('renders antd layout structure', () => {
+        const { container } = render(
+            <StoreLayout>
+                <div>Content</div>
+            </StoreLayout>
+        );
+
+    expect(container.querySelector('.ant-layout')).toBeInTheDocument();
+    });
