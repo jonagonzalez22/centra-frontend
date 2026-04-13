@@ -1,9 +1,9 @@
-import InputField from './components/InputField/InputField';
+/* import InputField from './components/InputField/InputField';
 import InputPassword from './components/InputPassword/InputPassword';
 import { TailwindAntdSmokeTest } from './components/TailwindAntdSmokeTest/TailwindAntdSmokeTest';
-import { StoreList } from './features/store/components/StoreList/StoreList';
+import { StoreList } from './features/store/components/StoreList/StoreList'; */
 
-function App() {
+/* function App() {
   return (
     <div>
       <div>
@@ -24,6 +24,20 @@ function App() {
       </div>
     </div>
   );
+}
+
+export default App; */
+
+import { useEffect } from 'react';
+import { login } from './features/auth/api';
+
+function App() {
+  useEffect(() => {
+    login({ email: 'tienda@test.com', password: '123' })
+      .then(res => console.log('LOGIN RESPONSE:', res));
+  }, []);
+
+  return <div>Test Login</div>;
 }
 
 export default App;
