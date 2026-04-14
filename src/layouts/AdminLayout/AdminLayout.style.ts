@@ -4,6 +4,7 @@ export const headerStyle: React.CSSProperties = {
     height: 64,
     paddingInline: 48,
     lineHeight: '64px',
+    background: '#fff',
 };
 
 export const contentStyle: React.CSSProperties = {

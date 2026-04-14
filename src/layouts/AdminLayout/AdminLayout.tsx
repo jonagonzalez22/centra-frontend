@@ -8,24 +8,15 @@ interface IAdminLayoutProps {
     children: ReactNode;
     sider?: ReactNode;
     header?: ReactNode;
-    
 }
 
-export const AdminLayout = ({ children , sider, header }: IAdminLayoutProps) => {
+export const AdminLayout = ({ children, sider, header }: IAdminLayoutProps) => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            { sider && (
-                <Sider style={siderStyle}>
-                    {sider}
-                </Sider>
-            )}
+            {sider && <Sider style={siderStyle}>{sider}</Sider>}
 
             <Layout>
-            { header && (
-                <Header style={headerStyle}>
-                    {header}
-                </Header>
-            )}
+                {header && <Header style={headerStyle}>{header}</Header>}
                 <Content style={contentStyle}>{children}</Content>
             </Layout>
         </Layout>
