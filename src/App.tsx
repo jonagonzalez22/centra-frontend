@@ -1,10 +1,8 @@
+import { AdminLayout } from "./layouts/AdminLayout/AdminLayout";
+
 function App() {
     return (
-        <div>
-            <div>
-                <h1>CENTRA - Panel de Control</h1>
-            </div>
-        </div>
+        <AdminLayout  children/>
     );
 }
 
