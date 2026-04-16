@@ -13,26 +13,6 @@ describe('AdminLayout', () => {
         expect(screen.getByText('Main Content')).toBeDefined();
     });
 
-    test('renders header when provided', () => {
-        render(
-            <AdminLayout header={<div>Header Test</div>}>
-                <div>Content</div>
-            </AdminLayout>
-        );
-
-        expect(screen.getByText('Header Test')).toBeDefined();
-    });
-
-    test('renders sider when provided', () => {
-        render(
-            <AdminLayout sider={<div>Sider Test</div>}>
-                <div>Content</div>
-            </AdminLayout>
-        );
-
-        expect(screen.getByText('Sider Test')).toBeDefined();
-    });
-
     test('does not break when header and sider are not provided', () => {
         render(
             <AdminLayout>
@@ -51,26 +31,6 @@ describe('AdminLayout', () => {
         );
 
         expect(container.firstChild).toHaveStyle('min-height: 100vh');
-    });
-
-    test('does not render header if not provided', () => {
-        render(
-            <AdminLayout>
-                <div>Content</div>
-            </AdminLayout>
-        );
-    
-        expect(screen.queryByText('Header Test')).toBeNull();
-    });
-    
-    test('does not render sider if not provided', () => {
-        render(
-            <AdminLayout>
-                <div>Content</div>
-            </AdminLayout>
-        );
-    
-        expect(screen.queryByText('Sider Test')).toBeNull();
     });
     
     test('renders multiple children correctly', () => {

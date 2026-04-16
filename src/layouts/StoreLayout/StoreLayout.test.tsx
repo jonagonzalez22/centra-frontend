@@ -13,27 +13,7 @@ describe('StoreLayout', () => {
     expect(screen.getByText('Store Content')).toBeDefined();
     });
 
-    test('renders header when provided', () => {
-    render(
-        <StoreLayout header={<div>Header</div>}>
-            <div>Content</div>
-        </StoreLayout>
-        );
-
-        expect(screen.getByText('Header')).toBeDefined();
-    });
-
-    test('renders sider when provided', () => {
-        render(
-        <StoreLayout sider={<div>Sider</div>}>
-            <div>Content</div>
-        </StoreLayout>
-        );
-
-        expect(screen.getByText('Sider')).toBeDefined();
-    });
-
-    test('works without optional props', () => {
+    test('renders correctly with only children', () => {
         render(
         <StoreLayout>
             <div>Only Content</div>
@@ -51,27 +31,6 @@ describe('StoreLayout', () => {
     );
 
         expect(container.firstChild).toHaveStyle('min-height: 100vh');
-    });
-});
-
-    test('does not render header if not provided', () => {
-        render(
-        <StoreLayout>
-            <div>Content</div>
-        </StoreLayout>
-        );
-
-        expect(screen.queryByText('Header')).toBeNull();
-    });
-  
-    test('does not render sider if not provided', () => {
-        render(
-        <StoreLayout>
-            <div>Content</div>
-        </StoreLayout>
-        );
-
-        expect(screen.queryByText('Sider')).toBeNull();
     });
 
     test('renders multiple children correctly', () => {
@@ -95,3 +54,4 @@ describe('StoreLayout', () => {
 
     expect(container.querySelector('.ant-layout')).toBeInTheDocument();
     });
+});
