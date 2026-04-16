@@ -9,18 +9,6 @@ const meta: Meta<typeof StoreLayout> = {
     },
     tags: ['autodocs'],
     argTypes: {
-        header: {
-            control: false,
-            table: {
-                type: { summary: 'ReactNode' },
-            },
-        },
-        sider: {
-            control: false,
-            table: {
-                type: { summary: 'ReactNode' },
-            },
-        },
         children: {
             control: false,
             table: {
@@ -36,24 +24,10 @@ type Story = StoryObj<typeof meta>;
 
 export const FullLayout: Story = {
     args: {
-        header: <div>Store Header</div>,
-        sider: <div>Store Menu</div>,
         children: <div>Store Content</div>,
     },
 };
 
-export const OnlyContent: Story = {
-    args: {
-        children: <div>Products List</div>,
-    },
-};
-
-export const OnlySider: Story = {
-    args: {
-        sider: <div>Only Menu</div>,
-    },
-};
-
-export const Empty: Story = {
+export const WithoutChildren: Story = {
     args: {},
 };
