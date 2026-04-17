@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>()(
             },
         }),
         {
-            name: 'entra-auth-storage',
+            name: 'centra-auth-storage',
             partialize: (state) => ({
                 token: state.token,
                 user: state.user,

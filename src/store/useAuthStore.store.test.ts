@@ -261,7 +261,7 @@ describe('useAuthStore', () => {
             const { logout } = useAuthStore.getState();
             await logout();
 
-            const stored = localStorage.getItem('entra-auth-storage');
+            const stored = localStorage.getItem('centra-auth-storage');
             expect(stored).toBeNull();
         });
 

@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import api, { ApiError } from './api.config';
+import api from './api.config';
+import { ApiError } from '@/interfaces/ApiErrors.interface';
 
 describe('API Config', () => {
     beforeEach(() => {
@@ -32,8 +33,8 @@ describe('API Config', () => {
             const authStorage = {
                 state: { token },
             };
-            localStorage.setItem('entra-auth-storage', JSON.stringify(authStorage));
-            const stored = localStorage.getItem('entra-auth-storage');
+            localStorage.setItem('centra-auth-storage', JSON.stringify(authStorage));
+            const stored = localStorage.getItem('centra-auth-storage');
 
             expect(stored).toBe(JSON.stringify(authStorage));
             const parsed = JSON.parse(stored!);
@@ -41,13 +42,13 @@ describe('API Config', () => {
         });
 
         test('should handle empty localStorage gracefully', () => {
-            const stored = localStorage.getItem('entra-auth-storage');
+            const stored = localStorage.getItem('centra-auth-storage');
             expect(stored).toBeNull();
         });
 
         test('should handle malformed localStorage data', () => {
-            localStorage.setItem('entra-auth-storage', 'invalid-json');
-            const stored = localStorage.getItem('entra-auth-storage');
+            localStorage.setItem('centra-auth-storage', 'invalid-json');
+            const stored = localStorage.getItem('centra-auth-storage');
 
             expect(() => {
                 try {

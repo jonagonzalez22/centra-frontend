@@ -1,10 +1,5 @@
+import { ApiError } from '@/interfaces/ApiErrors.interface';
 import axios from 'axios';
-
-export type ApiError = {
-    status: number;
-    message: string;
-    errors?: Record<string, string[]>;
-};
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -15,7 +10,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const raw = localStorage.getItem('entra-auth-storage');
+    const raw = localStorage.getItem('centra-auth-storage');
     const token = raw ? JSON.parse(raw)?.state?.token : null;
     if (token) {
         config.headers = config.headers ?? {};
@@ -36,7 +31,7 @@ api.interceptors.response.use(
             };
 
             if (error.response.status === 401) {
-                localStorage.removeItem('token');
+                localStorage.removeItem('centra-auth-storage');
                 // TODO: optional redirect.
                 // window.location.href = '/login';
             }
