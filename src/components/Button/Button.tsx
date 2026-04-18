@@ -12,6 +12,8 @@ interface ButtonProps {
   iconPlacement?: 'start' | 'end';
   loading?: boolean;
   shape?: 'circle' | 'round' | 'default';
+  htmlType?: 'button'| 'submit' | 'reset';
+  block?: boolean;
 }
 
 
@@ -41,7 +43,7 @@ const variantMap: Record<ButtonVariant, Partial<AntButtonProps>> = {
   },
 };
 
-export const Button: React.FC<ButtonProps> = ({
+const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   action,
   label,
@@ -50,18 +52,24 @@ export const Button: React.FC<ButtonProps> = ({
   iconPlacement,
   loading,
   shape,
+  htmlType = 'button',
+  block
 }) => {
   return (
     <AntButton
       {...variantMap[variant]}
       onClick={action}
+      htmlType={htmlType}
       disabled={disabled}
       icon={icon}
       iconPlacement={iconPlacement}
       loading={loading}
       shape={shape}
+      block={block}
     >
       {label}
     </AntButton>
   )
 }
+
+export default Button;

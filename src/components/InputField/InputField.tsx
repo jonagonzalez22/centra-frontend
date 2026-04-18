@@ -27,6 +27,7 @@ const InputField: React.FC<InputFieldProps> = ({ name, label, required, error, .
       name={name}
       label={label}
       rules={rules}
+      labelCol={{ style: { paddingBottom: 1 } }}
       validateStatus={error?.status ? 'error' : undefined}
       help={error?.status ? error.message : undefined}
     >

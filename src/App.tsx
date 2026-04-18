@@ -1,10 +1,8 @@
-import { AdminLayout } from "./layouts/AdminLayout/AdminLayout";
+import LoginPage from "./pages/auth/LoginPage";
 
 function App() {
     return (
-        <AdminLayout>
-            <h1>Contenido</h1>
-        </AdminLayout>
+        <LoginPage />
     );
 }
 

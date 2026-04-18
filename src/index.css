@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.ant-form-vertical .ant-form-item-label {
+    padding-bottom: 4px;
+}
+
+.ant-form-item-label > label {
+    font-weight: 600;
+}
