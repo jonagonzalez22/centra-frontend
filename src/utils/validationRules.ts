@@ -5,7 +5,7 @@ export const emailRules = (): Rule[] => [
     { type: 'email', message: 'Formato de email inválido' },
 ];
 
-export const passwordRules = (): Rule[] => [
+export const passwordRules = (min = 8): Rule[] => [
     { required: true, message: 'La contraseña es obligatoria' },
-    { min: 8, message: 'Mínimo 8 caracteres' },
+    { min, message: `Mínimo ${min} caracteres` },
 ];
