@@ -9,6 +9,7 @@ import {
     subtitleStyle,
 } from '../../layouts/AuthLayout/AuthLayout.style';
 import { UserOutlined } from '@ant-design/icons';
+import { emailRules, passwordRules } from '@/utils/validationRules';
 
 interface LoginFormValues {
     email: string;
@@ -33,19 +34,25 @@ const LoginForm = () => {
                 <h2 style={titleStyle}>Acceso a plataforma</h2>
                 <p style={subtitleStyle}>Ingresa tus credenciales para acceder</p>
             </div>
-            <Form form={form} layout="vertical" size='large' onFinish={handleSubmit} >
-                <InputField 
-                    name="email" 
-                    label="Email" 
-                    required 
+            <Form
+                form={form}
+                layout="vertical"
+                size="large"
+                onFinish={handleSubmit}
+                validateTrigger="onBlur"
+            >
+                <InputField
+                    name="email"
+                    label="Email"
                     placeholder="Ingresá tu email"
-                    size='large'
-                    />
+                    size="large"
+                    rules={emailRules()}
+                />
                 <InputPassword
                     name="password"
                     label="Password"
-                    required
                     placeholder="Ingresá tu contraseña"
+                    rules={passwordRules()}
                 />
                 {/*TODO: agregar check de "recordarme" y link de olvide contrasena */}
                 <Button type="primary" htmlType="submit" block>

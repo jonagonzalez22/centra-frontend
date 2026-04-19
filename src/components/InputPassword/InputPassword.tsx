@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form, Input as AntInput } from 'antd';
+import { Rule } from 'antd/es/form';
 
 export interface InputPasswordProps {
   name: string;
@@ -9,6 +10,7 @@ export interface InputPasswordProps {
   required?: boolean;
   width?: number;
   size?: 'large' | 'middle' | 'small';
+  rules?: Rule[];
   error?: {
     status: boolean;
     message: string;
@@ -22,12 +24,13 @@ const InputPassword: React.FC<InputPasswordProps> = ({
   required,
   error,
   width,
+  rules,
   ...inputProps
 }) => {
-  const rules = [];
+  const internalRules: Rule[] = [];
 
   if (required) {
-    rules.push({
+    internalRules.push({
       required: true,
       message: `${label || name} is required`,
     });
@@ -37,7 +40,7 @@ const InputPassword: React.FC<InputPasswordProps> = ({
     <Form.Item
       name={name}
       label={label}
-      rules={rules}
+      rules={[...internalRules, ...(rules ?? [])]}
       validateStatus={error?.status ? 'error' : undefined}
       help={error?.status ? error.message : undefined}
     >
