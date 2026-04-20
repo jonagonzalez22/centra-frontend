@@ -2,14 +2,13 @@ import { Form, Button } from 'antd';
 import InputField from '../../components/InputField/InputField';
 import InputPassword from '../../components/InputPassword/InputPassword';
 import {
-    cardStyle,
     headerContainerStyle,
     avatarStyle,
     titleStyle,
     subtitleStyle,
 } from '../../layouts/AuthLayout/AuthLayout.style';
 import { UserOutlined } from '@ant-design/icons';
-import { emailRules, passwordRules } from '@/utils/validationRules';
+import { emailRules, passwordRules } from '../../utils/validationRules';
 
 interface LoginFormValues {
     email: string;
@@ -24,7 +23,7 @@ const LoginForm = () => {
     };
 
     return (
-        <div style={cardStyle}>
+        <div className='centra-card'>
             <div style={headerContainerStyle}>
                 <div style={avatarStyle}>
                     {/*TODO: el logo de la personita se cambiara por el logo de la app */}

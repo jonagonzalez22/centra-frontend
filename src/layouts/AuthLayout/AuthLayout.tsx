@@ -1,6 +1,7 @@
 import { Layout } from 'antd';
+import '../../layouts/AuthLayout/AuthLayout.css';
 import { ReactNode } from 'react';
-import { siderStyle, headerStyle, centerContentStyle } from './AuthLayout.style';
+import { siderStyle, headerStyle } from './AuthLayout.style';
 
 const { Content, Header, Sider } = Layout;
 
@@ -17,7 +18,7 @@ export const AuthLayout = ({ children, sider, header }: IAuthLayoutProps) => {
 
             <Layout>
                 {header && <Header style={headerStyle}>{header}</Header>}
-                <Content style={centerContentStyle}>{children}</Content>
+                <Content className='center-content'>{children}</Content>
             </Layout>
         </Layout>
     );
