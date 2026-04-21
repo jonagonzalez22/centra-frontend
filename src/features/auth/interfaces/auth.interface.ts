@@ -5,8 +5,9 @@ export interface LoginPayload {
     password: string;
 }
 
-interface IData extends User {
+interface IData {
     token: string;
+    user: User;
 }
 
 export interface AuthResponse {
