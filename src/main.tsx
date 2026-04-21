@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'antd/dist/reset.css';
-import App from './App.tsx';
 import './index.css';
 import { CentraThemeProvider } from './design-system/centraThemeProvider.tsx';
 import { RouterProvider } from 'react-router-dom';

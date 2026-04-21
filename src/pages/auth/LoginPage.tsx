@@ -1,8 +1,7 @@
 import { Button } from '@/components/Button';
 import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout';
 import { useAuthStore } from '@/store/useAuthStore.store';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getHomePath, hasAccessToPath } from '@/router/router.utils';
 
 function LoginPage() {
