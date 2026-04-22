@@ -18,7 +18,7 @@ export const AuthLayout = ({ children, sider, header }: IAuthLayoutProps) => {
 
             <Layout>
                 {header && <Header style={headerStyle}>{header}</Header>}
-                <Content className='center-content'>{children}</Content>
+                <Content className='authMainContent'>{children}</Content>
             </Layout>
         </Layout>
     );

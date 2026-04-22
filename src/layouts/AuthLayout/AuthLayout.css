@@ -1,4 +1,4 @@
-.centra-card {
+.cardAuthContainer {
     width: 100%;
     max-width: 480px;
     padding: 48px 32px;
@@ -9,7 +9,7 @@
 }
 
 @media (max-width: 768px) {
-    .centra-card {
+    .cardAuthContainer {
         max-width: 100%;
         height: 100vh;
         min-height: 100vh;
@@ -19,7 +19,7 @@
     }
 }
 
-.center-content {
+.authMainContent {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -29,7 +29,7 @@
 
 /* mobile */
 @media (max-width: 768px) {
-    .center-content {
+    .authMainContent {
         display: block;
         padding: 0;
         margin: 0;
