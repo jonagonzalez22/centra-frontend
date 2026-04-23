@@ -1,7 +1,6 @@
 import { Layout } from 'antd';
 import '../../layouts/AuthLayout/AuthLayout.css';
 import { ReactNode } from 'react';
-import { siderStyle, headerStyle } from './AuthLayout.style';
 
 const { Content, Header, Sider } = Layout;
 
@@ -13,12 +12,16 @@ interface IAuthLayoutProps {
 
 export const AuthLayout = ({ children, sider, header }: IAuthLayoutProps) => {
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            {sider && <Sider style={siderStyle}>{sider}</Sider>}
+        <Layout className='min-h-screen'>
+            {sider && <Sider className='text-center w-[250px]'>{sider}</Sider>}
 
             <Layout>
-                {header && <Header style={headerStyle}>{header}</Header>}
-                <Content className='authMainContent'>{children}</Content>
+                {header && <Header className="text-center text-white h-16 px-12 leading-[64px]">
+                    {header}
+                    </Header>}
+                <Content className="authMainContent">
+                    {children}
+                </Content>
             </Layout>
         </Layout>
     );

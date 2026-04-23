@@ -1,0 +1,28 @@
+@layer components {
+    .cardAuthContainer {
+        @apply 
+        tw-w-full tw-max-w-[480px]
+        tw-p-12 tw-px-8
+        tw-min-h-[500px]
+        tw-bg-white
+        tw-rounded-xl
+        tw-shadow-lg
+
+        max-md:tw-h-screen
+        max-md:tw-rounded-none
+        max-md:tw-shadow-none
+        max-md:tw-p-8;
+    }
+
+    .authMainContent {
+        @apply 
+        tw-flex tw-items-center tw-justify-center
+        tw-min-h-screen
+        tw-bg-gray-100
+
+        max-md:tw-block
+        max-md:tw-p-0
+        max-md:tw-m-0
+        max-md:tw-bg-white;
+    }
+}
