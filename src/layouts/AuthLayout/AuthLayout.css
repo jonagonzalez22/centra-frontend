@@ -1,38 +1,50 @@
 .cardAuthContainer {
-    width: 100%;
-    max-width: 480px;
-    padding: 48px 32px;
-    min-height: 500px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-@media (max-width: 768px) {
-    .cardAuthContainer {
-        max-width: 100%;
-        height: 100vh;
-        min-height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 32px 20px;
-    }
+    @apply w-full max-w-[480px]
+        py-12 px-8
+        min-h-[500px]
+        bg-white
+        rounded-xl
+        shadow-lg
+  
+        max-md:min-h-screen
+        max-md:rounded-none
+        max-md:shadow-none
+        max-md:p-8;
 }
 
 .authMainContent {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background-color: #f5f5f5;
+    @apply flex items-center justify-center
+        min-h-screen
+        bg-[#f5f5f5]
+  
+        max-md:block
+        max-md:p-0
+        max-md:m-0
+        max-md:bg-white;
 }
 
-/* mobile */
-@media (max-width: 768px) {
-    .authMainContent {
-        display: block;
-        padding: 0;
-        margin: 0;
-        background-color: white;
-    }
+.authHeaderContainer {
+    @apply flex flex-col items-center
+        text-center
+        mb-6;
+}
+
+.authAvatar {
+    @apply w-16 h-16
+        rounded-full
+        flex items-center justify-center
+        mx-auto mb-4
+        bg-[#093764];
+}
+
+.authTitle {
+    @apply m-0
+        text-xl
+        font-semibold;
+}
+
+.authSubtitle {
+    @apply text-[#666]
+        mt-1
+        m-0;
 }

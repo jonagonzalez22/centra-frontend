@@ -1,12 +1,6 @@
 import { Form, Button } from 'antd';
 import InputField from '../../../components/InputField/InputField';
 import InputPassword from '../../../components/InputPassword/InputPassword';
-import {
-    headerContainerStyle,
-    avatarStyle,
-    titleStyle,
-    subtitleStyle,
-} from '../../../layouts/AuthLayout/AuthLayout.style';
 import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 
@@ -25,14 +19,14 @@ const LoginForm = () => {
 
     return (
         <div className='cardAuthContainer'>
-            <div style={headerContainerStyle}>
-                <div style={avatarStyle}>
+            <div className='authHeaderContainer'>
+                <div className='authAvatar'>
                     {/*TODO: el logo de la personita se cambiara por el logo de la app */}
-                    <UserOutlined style={{ color: '#fff', fontSize: 24 }} />
+                    <UserOutlined className="text-white text-xl" />
                 </div>
 
-                <h2 style={titleStyle}>Acceso a plataforma</h2>
-                <p style={subtitleStyle}>Ingresa tus credenciales para acceder</p>
+                <h2 className='authTitle'>Acceso a plataforma</h2>
+                <p className='authSubtitle'>Ingresa tus credenciales para acceder</p>
             </div>
             <Form
                 form={form}
