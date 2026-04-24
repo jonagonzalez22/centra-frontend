@@ -82,29 +82,15 @@ describe('Table Component', () => {
         expect(pagination).toBeInTheDocument();
     });
 
-    it('calls onChange callback when pagination changes', () => {
-        const onChange = vi.fn();
-        render(
-            <Table
-                dataSource={mockData}
-                columns={mockColumns}
-                pagination={{
-                    pageSize: 10,
-                    current: 1,
-                    total: 20,
-                }}
-                onChange={onChange}
-            />
-        );
-    });
-
     it('renders custom column render function', () => {
         const customColumns = [
             {
                 title: 'Name',
                 dataIndex: 'name',
                 key: 'name',
-                render: (_: any, { name }: any) => <strong>{name}</strong>,
+                render: (_: unknown, record?: Record<string, unknown>) => (
+                    <strong>{String(record?.name)}</strong>
+                ),
             },
             {
                 title: 'Email',
@@ -156,5 +142,21 @@ describe('Table Component', () => {
 
         const pagination = container.querySelector('.ant-pagination');
         expect(pagination).not.toBeInTheDocument();
+    });
+
+    it('calls onChange callback when pagination changes', () => {
+        const onChange = vi.fn();
+        render(
+            <Table
+                dataSource={mockData}
+                columns={mockColumns}
+                pagination={{
+                    pageSize: 10,
+                    current: 1,
+                    total: 20,
+                }}
+                onChange={onChange}
+            />
+        );
     });
 });

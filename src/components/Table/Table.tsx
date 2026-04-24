@@ -1,12 +1,13 @@
 import { Table as AntTable, GetProp, TableProps as AntTableProp } from 'antd';
 
 type TablePaginationConfig = Exclude<GetProp<AntTableProp, 'pagination'>, boolean>;
+type TableChangeHandler = GetProp<AntTableProp, 'onChange'>;
 
 type TableColumn = {
     title: string;
     dataIndex?: string;
     key: string;
-    render?: (text?: string, record?: any) => React.ReactNode;
+    render?: (text?: unknown, record?: Record<string, unknown>) => React.ReactNode;
 };
 
 interface TableProps {
@@ -15,11 +16,7 @@ interface TableProps {
     pagination?: TablePaginationConfig;
     loading?: boolean;
     emptyText?: string;
-    onChange?: (
-        pagination: TablePaginationConfig,
-        filters: Record<string, any>,
-        sorter: Record<string, any>
-    ) => void;
+    onChange?: TableChangeHandler;
 }
 
 const Table: React.FC<TableProps> = ({

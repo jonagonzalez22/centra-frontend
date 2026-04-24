@@ -1,4 +1,4 @@
-import { StoryObj, Meta } from '@storybook/react';
+import { StoryObj, Meta } from '@storybook/react-vite';
 import Table from './Table';
 
 type Story = StoryObj<typeof Table>;
@@ -118,8 +118,10 @@ export const WithStoresData: Story = {
                 title: 'Status',
                 dataIndex: 'status',
                 key: 'status',
-                render: (text?: string) => (
-                    <span style={{ color: text === 'Active' ? '#52c41a' : '#ff4d4f' }}>{text}</span>
+                render: (text?: unknown) => (
+                    <span style={{ color: String(text) === 'Active' ? '#52c41a' : '#ff4d4f' }}>
+                        {String(text)}
+                    </span>
                 ),
             },
         ],
@@ -200,7 +202,7 @@ export const CustomRender: Story = {
                 title: 'Name',
                 dataIndex: 'name',
                 key: 'name',
-                render: (text?: string) => <strong>{text?.toUpperCase()}</strong>,
+                render: (text?: unknown) => <strong>{String(text)?.toUpperCase()}</strong>,
             },
             {
                 title: 'Email',
@@ -211,17 +213,17 @@ export const CustomRender: Story = {
                 title: 'Status Badge',
                 dataIndex: 'status',
                 key: 'status',
-                render: (text?: string) => (
+                render: (text?: unknown) => (
                     <div
                         style={{
                             padding: '4px 8px',
                             borderRadius: '4px',
-                            backgroundColor: text === 'Active' ? '#f6ffed' : '#fff1f0',
-                            color: text === 'Active' ? '#52c41a' : '#ff4d4f',
+                            backgroundColor: String(text) === 'Active' ? '#f6ffed' : '#fff1f0',
+                            color: String(text) === 'Active' ? '#52c41a' : '#ff4d4f',
                             textAlign: 'center',
                         }}
                     >
-                        {text}
+                        {String(text)}
                     </div>
                 ),
             },
