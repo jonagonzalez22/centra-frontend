@@ -31,14 +31,14 @@ describe('Table Component', () => {
     ];
 
     it('renders table with data', () => {
-        render(<Table dataSource={mockData} columns={mockColumns} pagination={false} />);
+        render(<Table dataSource={mockData} columns={mockColumns} />);
 
         expect(screen.getByText('John Doe')).toBeInTheDocument();
         expect(screen.getByText('Jane Smith')).toBeInTheDocument();
     });
 
     it('renders column headers', () => {
-        render(<Table dataSource={mockData} columns={mockColumns} pagination={false} />);
+        render(<Table dataSource={mockData} columns={mockColumns} />);
 
         expect(screen.getByText('Name')).toBeInTheDocument();
         expect(screen.getByText('Email')).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe('Table Component', () => {
 
     it('shows loading state', () => {
         const { container } = render(
-            <Table dataSource={[]} columns={mockColumns} loading={true} pagination={false} />
+            <Table dataSource={[]} columns={mockColumns} loading={true} />
         );
 
         const spinner = container.querySelector('.ant-spin');
@@ -54,20 +54,13 @@ describe('Table Component', () => {
     });
 
     it('displays empty text when no data', () => {
-        render(
-            <Table
-                dataSource={[]}
-                columns={mockColumns}
-                emptyText="No hay registros"
-                pagination={false}
-            />
-        );
+        render(<Table dataSource={[]} columns={mockColumns} emptyText="No hay registros" />);
 
         expect(screen.getByText('No hay registros')).toBeInTheDocument();
     });
 
     it('displays default empty text', () => {
-        render(<Table dataSource={[]} columns={mockColumns} pagination={false} />);
+        render(<Table dataSource={[]} columns={mockColumns} />);
 
         expect(screen.getByText('No hay datos')).toBeInTheDocument();
     });
@@ -103,9 +96,6 @@ describe('Table Component', () => {
                 onChange={onChange}
             />
         );
-
-        // Nota: Las pruebas de cambio de paginación pueden requerir interacciones
-        // más complejas y depender del comportamiento específico de Ant Design
     });
 
     it('renders custom column render function', () => {
@@ -114,7 +104,7 @@ describe('Table Component', () => {
                 title: 'Name',
                 dataIndex: 'name',
                 key: 'name',
-                render: (text: string) => <strong>{text}</strong>,
+                render: (_: any, { name }: any) => <strong>{name}</strong>,
             },
             {
                 title: 'Email',
@@ -123,20 +113,14 @@ describe('Table Component', () => {
             },
         ];
 
-        render(<Table dataSource={mockData} columns={customColumns} pagination={false} />);
+        render(<Table dataSource={mockData} columns={customColumns} />);
 
         const boldElement = screen.getByText('John Doe').closest('strong');
         expect(boldElement).toBeInTheDocument();
     });
 
     it('accepts generic type data', () => {
-        interface CustomRecord {
-            id: string;
-            storeName: string;
-            city: string;
-        }
-
-        const storeData: CustomRecord[] = [
+        const storeData = [
             { id: '1', storeName: 'Store A', city: 'Madrid' },
             { id: '2', storeName: 'Store B', city: 'Barcelona' },
         ];
@@ -154,27 +138,21 @@ describe('Table Component', () => {
             },
         ];
 
-        render(
-            <Table<CustomRecord> dataSource={storeData} columns={storeColumns} pagination={false} />
-        );
+        render(<Table dataSource={storeData} columns={storeColumns} />);
 
         expect(screen.getByText('Store A')).toBeInTheDocument();
         expect(screen.getByText('Madrid')).toBeInTheDocument();
     });
 
     it('handles empty data source gracefully', () => {
-        const { container } = render(
-            <Table dataSource={[]} columns={mockColumns} pagination={false} />
-        );
+        const { container } = render(<Table dataSource={[]} columns={mockColumns} />);
 
         const table = container.querySelector('.ant-table');
         expect(table).toBeInTheDocument();
     });
 
     it('disables pagination when pagination is false', () => {
-        const { container } = render(
-            <Table dataSource={mockData} columns={mockColumns} pagination={false} />
-        );
+        const { container } = render(<Table dataSource={mockData} columns={mockColumns} />);
 
         const pagination = container.querySelector('.ant-pagination');
         expect(pagination).not.toBeInTheDocument();

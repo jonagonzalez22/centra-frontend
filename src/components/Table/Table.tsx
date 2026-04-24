@@ -15,9 +15,21 @@ interface TableProps {
     pagination?: TablePaginationConfig;
     loading?: boolean;
     emptyText?: string;
+    onChange?: (
+        pagination: TablePaginationConfig,
+        filters: Record<string, any>,
+        sorter: Record<string, any>
+    ) => void;
 }
 
-const Table: React.FC<TableProps> = ({ columns, dataSource, pagination, loading, emptyText }) => {
+const Table: React.FC<TableProps> = ({
+    columns,
+    dataSource,
+    pagination,
+    loading,
+    emptyText,
+    onChange,
+}) => {
     return (
         <AntTable
             dataSource={dataSource}
@@ -25,6 +37,7 @@ const Table: React.FC<TableProps> = ({ columns, dataSource, pagination, loading,
             pagination={{ ...pagination, hideOnSinglePage: true }}
             loading={loading}
             locale={{ emptyText: emptyText || 'No hay datos' }}
+            onChange={onChange}
         />
     );
 };
