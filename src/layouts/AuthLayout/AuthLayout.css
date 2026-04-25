@@ -1,5 +1,5 @@
 .cardAuthContainer {
-    @apply w-full max-w-[480px]
+    @apply w-full max-w-[480px] mx-auto
         py-12 px-8
         min-h-[500px]
         bg-white
