@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     set({ loading: true });
                     const response = await authService.logIn(email, password);
-                    const { token, ...user } = response.data;
+                    const { token, user } = response.data;
                     set({
                         isAuthenticated: true,
                         user,
@@ -46,11 +46,16 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'centra-auth-storage',
-            partialize: (state) => ({
-                token: state.token,
-                user: state.user,
-                isAuthenticated: state.isAuthenticated,
-            }),
+            partialize: (state) => {
+                if (!state.isAuthenticated || !state.token) {
+                    return {};
+                }
+                return {
+                    token: state.token,
+                    user: state.user,
+                    isAuthenticated: state.isAuthenticated,
+                };
+            },
         }
     )
 );
