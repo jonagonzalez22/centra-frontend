@@ -16,7 +16,7 @@
     @apply flex items-center justify-center
         min-h-screen
         bg-[#f5f5f5]
-  
+
         max-md:block
         max-md:p-0
         max-md:m-0
