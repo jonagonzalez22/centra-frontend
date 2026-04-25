@@ -11,6 +11,8 @@ interface LoginFormValues {
 
 const LoginForm = () => {
     const [form] = Form.useForm();
+    const emailValidation = emailRules();
+    const passwordValidation = passwordRules();
 
     const handleSubmit = (values: LoginFormValues) => {
         //TODO: integrar con store/api
@@ -18,15 +20,15 @@ const LoginForm = () => {
     };
 
     return (
-        <div className='cardAuthContainer'>
-            <div className='authHeaderContainer'>
-                <div className='authAvatar'>
+        <div className="cardAuthContainer">
+            <div className="authHeaderContainer">
+                <div className="authAvatar">
                     {/*TODO: el logo de la personita se cambiara por el logo de la app */}
                     <UserOutlined className="text-white text-xl" />
                 </div>
 
-                <h2 className='authTitle'>Acceso a plataforma</h2>
-                <p className='authSubtitle'>Ingresa tus credenciales para acceder</p>
+                <h2 className="authTitle">Acceso a plataforma</h2>
+                <p className="authSubtitle">Ingresa tus credenciales para acceder</p>
             </div>
             <Form
                 form={form}
@@ -40,16 +42,16 @@ const LoginForm = () => {
                     label="Email"
                     placeholder="Ingresá tu email"
                     size="large"
-                    rules={emailRules()}
+                    rules={emailValidation}
                 />
                 <InputPassword
                     name="password"
                     label="Password"
                     placeholder="Ingresá tu contraseña"
-                    rules={passwordRules()}
+                    rules={passwordValidation}
                 />
                 {/*TODO: agregar check de "recordarme" y link de olvide contrasena */}
-                <Button type="primary" htmlType="submit" block>
+                <Button type="primary" htmlType="submit" block className='mt-4'>
                     Ingresar
                 </Button>
             </Form>
