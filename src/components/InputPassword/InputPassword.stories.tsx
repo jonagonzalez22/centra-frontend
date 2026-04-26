@@ -4,9 +4,6 @@ import InputPassword from './InputPassword';
 const meta: Meta<typeof InputPassword> = {
   title: 'Components/InputPassword',
   component: InputPassword,
-  argTypes: {
-    error: { control: false },
-  },
 };
 
 export default meta;
@@ -25,19 +22,8 @@ export const Required: Story = {
   args: {
     name: 'password',
     label: 'Password',
-    required: true,
+    rules: [{ required: true, message: 'Password is required' }],
     placeholder: 'Enter password',
-  },
-};
-
-export const WithError: Story = {
-  args: {
-    name: 'password',
-    label: 'Password',
-    error: {
-      status: true,
-      message: 'Password is too weak',
-    },
   },
 };
 

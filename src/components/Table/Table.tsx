@@ -31,6 +31,7 @@ const Table: React.FC<TableProps> = ({
         <AntTable
             dataSource={dataSource}
             columns={columns}
+            rowKey="id"
             pagination={{ ...pagination, hideOnSinglePage: true }}
             loading={loading}
             locale={{ emptyText: emptyText || 'No hay datos' }}

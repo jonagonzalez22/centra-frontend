@@ -1,6 +1,6 @@
 import { Form, Button } from 'antd';
 import InputField from '../../../components/InputField/InputField';
-import InputPassword from '../../../components/InputPassword/InputPassword';
+import { InputPassword } from '@/components/InputPassword';
 import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 

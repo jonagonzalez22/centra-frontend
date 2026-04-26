@@ -7,7 +7,6 @@ const meta: Meta<typeof InputField> = {
   argTypes: {
     prefix: { control: false },
     suffix: { control: false },
-    error: { control: false },
   },
 };
 
@@ -27,19 +26,8 @@ export const Required: Story = {
   args: {
     name: 'username',
     label: 'Username',
-    required: true,
+    rules: [{ required: true, message: 'Username is required' }],
     placeholder: 'Enter username',
-  },
-};
-
-export const WithError: Story = {
-  args: {
-    name: 'email',
-    label: 'Email',
-    error: {
-      status: true,
-      message: 'Invalid email format',
-    },
   },
 };
 
