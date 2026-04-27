@@ -1,3 +1,4 @@
+//TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 .cardAuthContainer {
     @apply w-full max-w-[480px] mx-auto
         py-12 px-8
@@ -22,13 +23,13 @@
         max-md:m-0
         max-md:bg-white;
 }
-
+//TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 .authHeaderContainer {
     @apply flex flex-col items-center
         text-center
         mb-6;
 }
-
+//TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 .authAvatar {
     @apply w-16 h-16
         rounded-full
@@ -36,13 +37,13 @@
         mx-auto mb-4
         bg-[#093764];
 }
-
+//TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 .authTitle {
     @apply m-0
         text-xl
         font-semibold;
 }
-
+//TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 .authSubtitle {
     @apply text-[#666]
         mt-1
