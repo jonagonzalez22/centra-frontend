@@ -1,0 +1,133 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import LoginForm from './LoginForm';
+
+describe('LoginForm', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('renders login form correctly', () => {
+    render(<LoginForm />);
+
+    expect(
+      screen.getByText(/acceso a plataforma/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/ingresa tus credenciales para acceder/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByPlaceholderText(/ingresá tu email/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByPlaceholderText(/ingresá tu contraseña/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole('button', { name: /ingresar/i })
+    ).toBeInTheDocument();
+  });
+
+  test('shows validation errors when submitting empty form', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.click(
+      screen.getByRole('button', { name: /ingresar/i })
+    );
+
+    expect(
+      await screen.findByText('El email es obligatorio.')
+    ).toBeInTheDocument();
+
+    expect(
+      await screen.findByText('La contraseña es obligatoria.')
+    ).toBeInTheDocument();
+
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  test('shows error for invalid email format', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(
+      screen.getByPlaceholderText(/email/i),
+      'email-invalido'
+    );
+
+    await user.type(
+      screen.getByPlaceholderText(/contraseña/i),
+      '12345678'
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: /ingresar/i })
+    );
+
+    expect(
+      await screen.findByText('Formato de email inválido.')
+    ).toBeInTheDocument();
+
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  test('shows error for short password', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(
+      screen.getByPlaceholderText(/email/i),
+      'test@example.com'
+    );
+
+    await user.type(
+      screen.getByPlaceholderText(/contraseña/i),
+      '123'
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: /ingresar/i })
+    );
+
+    expect(
+      await screen.findByText('Mínimo 8 caracteres.')
+    ).toBeInTheDocument();
+
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  test('submits form with valid credentials', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(
+      screen.getByPlaceholderText(/email/i),
+      'test@example.com'
+    );
+
+    await user.type(
+      screen.getByPlaceholderText(/contraseña/i),
+      '12345678'
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: /ingresar/i })
+    );
+
+    expect(console.log).toHaveBeenCalledTimes(1);
+
+    expect(console.log).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: '12345678',
+    });
+  });
+});
