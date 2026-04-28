@@ -41,16 +41,20 @@ describe('useAuthStore', () => {
 
     describe('logIn', () => {
         test('should set loading to true when logIn is called', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'test@example.com',
+                name: 'Test User',
+                store_id: null,
+                roles: ['STORE_ADMIN'],
+                permissions: ['read'],
+            };
+
             const mockResponse: AuthResponse = {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['user'],
-                    permissions: ['read'],
+                    user: mockUser,
                     token: 'test-token',
                 },
                 errors: null,
@@ -73,7 +77,7 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
-                roles: ['user'],
+                roles: ['STORE_ADMIN'],
                 permissions: ['read'],
             };
 
@@ -81,7 +85,7 @@ describe('useAuthStore', () => {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    ...mockUser,
+                    user: mockUser,
                     token: 'test-token-123',
                 },
                 errors: null,
@@ -100,16 +104,20 @@ describe('useAuthStore', () => {
         });
 
         test('should call authService.logIn with correct parameters', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'test@example.com',
+                name: 'Test User',
+                store_id: null,
+                roles: ['STORE_ADMIN'],
+                permissions: ['read'],
+            };
+
             const mockResponse: AuthResponse = {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['user'],
-                    permissions: ['read'],
+                    user: mockUser,
                     token: 'test-token',
                 },
                 errors: null,
@@ -162,16 +170,20 @@ describe('useAuthStore', () => {
         });
 
         test('should separate token from user data when storing', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'test@example.com',
+                name: 'Test User',
+                store_id: null,
+                roles: ['SUPER_ADMIN'],
+                permissions: ['*'],
+            };
+
             const mockResponse: AuthResponse = {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['admin'],
-                    permissions: ['*'],
+                    user: mockUser,
                     token: 'secret-token-should-not-be-in-user',
                 },
                 errors: null,
@@ -198,7 +210,7 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
-                    roles: ['user'],
+                    roles: ['STORE_ADMIN'],
                     permissions: ['read'],
                 },
                 token: 'test-token',
@@ -244,7 +256,7 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
-                    roles: ['user'],
+                    roles: ['STORE_ADMIN'],
                     permissions: ['read'],
                 },
                 token: 'test-token',
@@ -274,7 +286,7 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
-                    roles: ['user'],
+                    roles: ['STORE_ADMIN'],
                     permissions: ['read'],
                 },
                 token: 'test-token',
@@ -302,16 +314,20 @@ describe('useAuthStore', () => {
 
     describe('persistence', () => {
         test('should persist token, user, and isAuthenticated to localStorage', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'test@example.com',
+                name: 'Test User',
+                store_id: null,
+                roles: ['STORE_ADMIN'],
+                permissions: ['read'],
+            };
+
             const mockResponse: AuthResponse = {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['user'],
-                    permissions: ['read'],
+                    user: mockUser,
                     token: 'persistent-token',
                 },
                 errors: null,
@@ -330,16 +346,20 @@ describe('useAuthStore', () => {
         });
 
         test('should not persist loading state', async () => {
+            const mockUser: User = {
+                id: 1,
+                email: 'test@example.com',
+                name: 'Test User',
+                store_id: null,
+                roles: ['STORE_ADMIN'],
+                permissions: ['read'],
+            };
+
             const mockResponse: AuthResponse = {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['user'],
-                    permissions: ['read'],
+                    user: mockUser,
                     token: 'test-token',
                 },
                 errors: null,

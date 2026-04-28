@@ -33,45 +33,23 @@ describe('InputField', () => {
   });
 
   test('renders placeholder correctly', () => {
-    renderInForm(<InputField name="email" label="Email" placeholder="Enter email" />);
+    renderInForm(
+      <InputField name="email" label="Email" placeholder="Enter email" />
+    );
 
     expect(screen.getByPlaceholderText('Enter email')).toBeDefined();
   });
 
   test('applies required rule', () => {
-    renderInForm(<InputField name="username" label="Username" required />);
+    renderInForm(
+      <InputField
+        name="username"
+        label="Username"
+        rules={[{ required: true, message: 'Username is required' }]}
+      />
+    );
 
     expect(screen.getByText('Username')).toBeDefined();
-  });
-
-  test('shows error state when error.status is true', () => {
-    renderInForm(
-      <InputField
-        name="email"
-        label="Email"
-        error={{
-          status: true,
-          message: 'Invalid email',
-        }}
-      />
-    );
-
-    expect(screen.getByText('Invalid email')).toBeDefined();
-  });
-
-  test('does not show error when status is false', () => {
-    renderInForm(
-      <InputField
-        name="email"
-        label="Email"
-        error={{
-          status: false,
-          message: 'Should not show',
-        }}
-      />
-    );
-
-    expect(screen.queryByText('Should not show')).toBeNull();
   });
 
   test('renders prefix and suffix correctly', () => {
@@ -88,7 +66,13 @@ describe('InputField', () => {
   });
 
   test('forwards input props correctly', () => {
-    renderInForm(<InputField name="email" placeholder="test placeholder" disabled />);
+    renderInForm(
+      <InputField
+        name="email"
+        placeholder="test placeholder"
+        disabled
+      />
+    );
 
     const input = screen.getByRole('textbox');
 

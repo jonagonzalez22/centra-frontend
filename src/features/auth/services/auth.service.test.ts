@@ -18,12 +18,14 @@ describe('Auth Service', () => {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'test@example.com',
-                    name: 'Test User',
-                    store_id: null,
-                    roles: ['user'],
-                    permissions: ['read'],
+                    user: {
+                        id: 1,
+                        email: 'test@example.com',
+                        name: 'Test User',
+                        store_id: null,
+                        roles: ['STORE_ADMIN'],
+                        permissions: ['read'],
+                    },
                     token: 'test-token',
                 },
                 errors: null,
@@ -45,12 +47,14 @@ describe('Auth Service', () => {
                 status: 'success',
                 message: 'Login successful',
                 data: {
-                    id: 1,
-                    email: 'user@example.com',
-                    name: 'John Doe',
-                    store_id: null,
-                    roles: ['admin'],
-                    permissions: ['create', 'read', 'update', 'delete'],
+                    user: {
+                        id: 1,
+                        email: 'user@example.com',
+                        name: 'John Doe',
+                        store_id: null,
+                        roles: ['SUPER_ADMIN'],
+                        permissions: ['create', 'read', 'update', 'delete'],
+                    },
                     token: 'jwt-token-12345',
                 },
                 errors: null,
@@ -61,8 +65,8 @@ describe('Auth Service', () => {
             const result = await authService.logIn('user@example.com', 'password');
 
             expect(result.data.token).toBe('jwt-token-12345');
-            expect(result.data.email).toBe('user@example.com');
-            expect(result.data.name).toBe('John Doe');
+            expect(result.data.user.email).toBe('user@example.com');
+            expect(result.data.user.name).toBe('John Doe');
         });
 
         test('should throw error on login failure', async () => {
