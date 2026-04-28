@@ -1,50 +1,12 @@
-import { Button } from '@/components/Button';
-import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout';
-import { useAuthStore } from '@/store/useAuthStore.store';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getHomePath, hasAccessToPath } from '@/router/router.utils';
+import { LoginForm } from '@/features/auth/LoginForm';
+import { AuthLayout } from '@/layouts/AuthLayout';
 
-function LoginPage() {
-    const { logIn, logout } = useAuthStore();
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const handleLogin = async () => {
-        try {
-            await logIn('admin@centra.com', 'password');
-            console.log('Login exitoso');
-
-            const { user } = useAuthStore.getState();
-            if (!user) return;
-
-            const from = location.state?.from?.pathname as string | undefined;
-            console.log('Intentando redirigir a:', from);
-            const destination =
-                from && hasAccessToPath(user.roles, from) ? from : getHomePath(user.roles);
-
-            navigate(destination, { replace: true });
-        } catch (error) {
-            useAuthStore.persist.clearStorage();
-            console.error('Error en login:', error);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            console.log('Logout exitoso');
-        } catch (error) {
-            console.error('Error en logout:', error);
-        }
-    };
+const LoginPage = () => {
     return (
         <AuthLayout>
-            <div>
-                <Button action={handleLogin} label="Login" />
-                <Button action={handleLogout} label="Logout" variant="danger" />
-            </div>
+            <LoginForm />
         </AuthLayout>
     );
-}
+};
 
 export default LoginPage;

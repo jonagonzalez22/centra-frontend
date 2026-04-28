@@ -15,9 +15,10 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    const hasRole = user.roles.some((role) => allowedRoles.includes(role));
+    const userRoles = Array.isArray(user.roles) ? user.roles : [];
+    const hasRole = userRoles.some((role) => allowedRoles.includes(role));
     if (!hasRole) {
-        return <Navigate to={getHomePath(user.roles)} replace />;
+        return <Navigate to={getHomePath(userRoles)} replace />;
     }
 
     return <Outlet />;

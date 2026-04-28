@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
-import { Button } from './Button';
+import Button from './Button';
 
 describe('Button', () => {
     test('renders the provided label', () => {

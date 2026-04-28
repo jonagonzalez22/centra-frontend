@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
-import { AdminLayout } from '@/layouts/AdminLayout/AdminLayout';
-import { StoreLayout } from '@/layouts/StoreLayout/StoreLayout';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { StoreLayout } from '@/layouts/StoreLayout';
 
 //TODO create not found page
 // import { NotFoundPage } from '@/pages/NotFoundPage';

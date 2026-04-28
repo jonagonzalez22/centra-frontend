@@ -20,7 +20,7 @@ describe('AuthLayout', () => {
             </AuthLayout>
         );
 
-        expect(container.firstChild).toHaveStyle('min-height: 100vh');
+        expect(container.firstChild).toHaveClass('min-h-screen');
     });
 });
 

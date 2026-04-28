@@ -9,5 +9,6 @@ export function RootRedirect() {
         return <Navigate to="/login" replace />;
     }
 
-    return <Navigate to={getHomePath(user.roles)} replace />;
+    const roles = Array.isArray(user.roles) ? user.roles : [];
+    return <Navigate to={getHomePath(roles)} replace />;
 }

@@ -1,34 +1,21 @@
 import React from 'react';
 import { Form } from 'antd';
 import Input, { InputProps } from '../Input/Input';
+import { Rule } from 'antd/es/form';
 
 export interface InputFieldProps extends InputProps {
   name: string;
   label?: string;
-  required?: boolean;
-  error?: {
-    status: boolean;
-    message: string;
-  };
+  rules?: Rule[];
 }
 
-const InputField: React.FC<InputFieldProps> = ({ name, label, required, error, ...inputProps }) => {
-  const rules = [];
-
-  if (required) {
-    rules.push({
-      required: true,
-      message: `${label || name} is required`,
-    });
-  }
-
+const InputField: React.FC<InputFieldProps> = ({ name, label,rules, ...inputProps }) => {
   return (
     <Form.Item
       name={name}
       label={label}
       rules={rules}
-      validateStatus={error?.status ? 'error' : undefined}
-      help={error?.status ? error.message : undefined}
+      labelCol={{ style: { paddingBottom: 1 } }}
     >
       <Input {...inputProps} />
     </Form.Item>

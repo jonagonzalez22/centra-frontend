@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .layoutHeader {
+        @apply text-center
+      text-white
+      h-16
+      px-12
+      leading-[64px];
+    }
+
+    .layoutSider {
+        @apply text-center
+      text-white
+      w-[250px]
+      leading-[120px];
+    }
+}
+
+/* ===== BASE ===== */
+
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== ANT DESIGN OVERRIDES ===== */
+
+.ant-form-vertical .ant-form-item-label {
+    padding-bottom: 4px;
+}
+
+.ant-form-item-label > label {
+    font-weight: 600;
+}
