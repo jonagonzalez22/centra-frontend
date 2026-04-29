@@ -1,8 +1,11 @@
-import { Form, Button } from 'antd';
+import { Form, Button, Alert } from 'antd';
 import InputField from '../../../components/InputField/InputField';
 import { InputPassword } from '@/components/InputPassword';
 import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import { useState } from 'react';
+import { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface LoginFormValues {
     email: string;
@@ -11,24 +14,37 @@ interface LoginFormValues {
 
 const LoginForm = () => {
     const [form] = Form.useForm();
+    const { logIn, loading } = useAuthStore();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
     const emailValidation = emailRules();
     const passwordValidation = passwordRules();
 
-    const handleSubmit = (values: LoginFormValues) => {
-        //TODO: integrar con store/api
-        console.log(values);
+    const handleSubmit = async (values: LoginFormValues) => {
+        setErrorMessage(null);
+
+        try {
+            //TODO: integrar con store/api
+            await logIn(values.email, values.password);
+            console.log('Login OK');
+        } catch (error: unknown) {
+            const apiError = error as ApiError;
+            setErrorMessage(apiError?.message || 'Credenciales incorrectas');
+        }
     };
 
     return (
         <div className="cardAuthContainer">
             <div className="authHeaderContainer">
                 <div className="authAvatar">
+                    {/**TODO: cambiar logo de persona por logo CENTRA */}
                     <UserOutlined className="text-white text-xl" />
                 </div>
 
                 <h2 className="authTitle">Acceso a plataforma</h2>
                 <p className="authSubtitle">Ingresa tus credenciales para acceder</p>
             </div>
+
             <Form
                 form={form}
                 layout="vertical"
@@ -43,15 +59,26 @@ const LoginForm = () => {
                     size="large"
                     rules={emailValidation}
                 />
+
                 <InputPassword
                     name="password"
                     label="Password"
                     placeholder="Ingresá tu contraseña"
                     rules={passwordValidation}
                 />
-                <Button type="primary" htmlType="submit" block className="mt-4">
+                {/**TODO: agregar check recordar y olvide contrasena */}
+                <Button type="primary" htmlType="submit" block className="mt-4" loading={loading}>
                     Ingresar
                 </Button>
+
+                {errorMessage && (
+                    <Alert
+                        description={errorMessage}
+                        type="error"
+                        showIcon
+                        style={{ marginTop: 16 }}
+                    />
+                )}
             </Form>
         </div>
     );
