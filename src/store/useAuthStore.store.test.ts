@@ -48,6 +48,7 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
+                features: ['pos', 'inventory'],
             };
 
             const mockResponse: AuthResponse = {
@@ -79,6 +80,7 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
+                features: ['pos', 'inventory'],
             };
 
             const mockResponse: AuthResponse = {
@@ -111,6 +113,7 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
+                features: ['pos', 'inventory'],
             };
 
             const mockResponse: AuthResponse = {
@@ -177,6 +180,15 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['SUPER_ADMIN'],
                 permissions: ['*'],
+                features: [
+                    'pos',
+                    'inventory',
+                    'reports',
+                    'deliveries',
+                    'route_mapping',
+                    'messaging',
+                    'multi_user',
+                ],
             };
 
             const mockResponse: AuthResponse = {
@@ -212,6 +224,7 @@ describe('useAuthStore', () => {
                     store_id: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
+                    features: ['pos', 'inventory'],
                 },
                 token: 'test-token',
                 loading: false,
@@ -258,6 +271,7 @@ describe('useAuthStore', () => {
                     store_id: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
+                    features: ['pos', 'inventory'],
                 },
                 token: 'test-token',
                 loading: false,
@@ -288,6 +302,7 @@ describe('useAuthStore', () => {
                     store_id: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
+                    features: ['pos', 'inventory'],
                 },
                 token: 'test-token',
                 loading: false,
@@ -321,6 +336,7 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
+                features: ['pos', 'inventory'],
             };
 
             const mockResponse: AuthResponse = {
@@ -353,6 +369,7 @@ describe('useAuthStore', () => {
                 store_id: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
+                features: ['pos', 'inventory'],
             };
 
             const mockResponse: AuthResponse = {
