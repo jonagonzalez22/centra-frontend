@@ -5,7 +5,6 @@ import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useState } from 'react';
-import { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface LoginFormValues {
     email: string;
@@ -24,12 +23,14 @@ const LoginForm = () => {
         setErrorMessage(null);
 
         try {
-            //TODO: integrar con store/api
             await logIn(values.email, values.password);
-            console.log('Login OK');
+            /* TODO: agregar logica de redirección despues del login exitoso*/
         } catch (error: unknown) {
-            const apiError = error as ApiError;
-            setErrorMessage(apiError?.message || 'Credenciales incorrectas');
+            if (error instanceof Error) {
+                setErrorMessage(error.message || 'Credenciales incorrectas');
+            } else {
+                setErrorMessage('Credenciales incorrectas');
+            }
         }
     };
 
@@ -62,7 +63,7 @@ const LoginForm = () => {
 
                 <InputPassword
                     name="password"
-                    label="Password"
+                    label="Contraseña"
                     placeholder="Ingresá tu contraseña"
                     rules={passwordValidation}
                 />
