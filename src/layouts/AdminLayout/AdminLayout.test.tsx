@@ -50,6 +50,6 @@ describe('AdminLayout', () => {
         renderWithRouter(<div>Dashboard</div>);
 
         expect(screen.getByText('Backoffice Admin')).toBeInTheDocument();
-        expect(screen.getByText('Dashboard')).toBeInTheDocument();
+        expect(screen.getAllByText('Dashboard')).toHaveLength(2);
     });
 });
