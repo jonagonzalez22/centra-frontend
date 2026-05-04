@@ -78,8 +78,11 @@ describe('LoginForm', () => {
         expect(await screen.findByText('Mínimo 8 caracteres.')).toBeInTheDocument();
     });
 
-    test('submits form with valid credentials', async () => {
+    test('submits form with valid credentials and redirects', async () => {
+        mockLogIn.mockResolvedValue(undefined);
+
         const user = userEvent.setup();
+
         render(<LoginForm />);
 
         await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com');
@@ -87,5 +90,7 @@ describe('LoginForm', () => {
         await user.type(screen.getByPlaceholderText(/contraseña/i), '12345678');
 
         await user.click(screen.getByRole('button', { name: /ingresar/i }));
+
+        expect(mockLogIn).toHaveBeenCalledWith('test@example.com', '12345678');
     });
 });
