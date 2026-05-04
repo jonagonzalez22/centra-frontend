@@ -5,6 +5,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useState } from 'react';
+import { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface LoginFormValues {
     email: string;
@@ -26,11 +27,8 @@ const LoginForm = () => {
             await logIn(values.email, values.password);
             /* TODO: agregar logica de redirección despues del login exitoso*/
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                setErrorMessage(error.message || 'Credenciales incorrectas');
-            } else {
-                setErrorMessage('Credenciales incorrectas');
-            }
+            const apiError = error as ApiError;
+            setErrorMessage(apiError?.message || 'Credenciales incorrectas');
         }
     };
 
