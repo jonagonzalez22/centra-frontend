@@ -5,6 +5,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface LoginFormValues {
@@ -16,6 +17,9 @@ const LoginForm = () => {
     const [form] = Form.useForm();
     const { logIn, loading } = useAuthStore();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
 
     const emailValidation = emailRules();
     const passwordValidation = passwordRules();
@@ -25,7 +29,7 @@ const LoginForm = () => {
 
         try {
             await logIn(values.email, values.password);
-            /* TODO: agregar logica de redirección despues del login exitoso*/
+            navigate(from, { replace: true });
         } catch (error: unknown) {
             const apiError = error as ApiError;
             setErrorMessage(apiError?.message || 'Credenciales incorrectas');

@@ -3,6 +3,29 @@ import userEvent from '@testing-library/user-event';
 import { describe, test, expect } from 'vitest';
 import LoginForm from './LoginForm';
 
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+        useLocation: () => ({
+            state: null,
+        }),
+    };
+});
+
+const mockLogIn = vi.fn();
+
+vi.mock('@/store/useAuthStore.store', () => ({
+    useAuthStore: () => ({
+        logIn: mockLogIn,
+        loading: false,
+    }),
+}));
+
 describe('LoginForm', () => {
     test('renders login form correctly', () => {
         render(<LoginForm />);
@@ -55,8 +78,11 @@ describe('LoginForm', () => {
         expect(await screen.findByText('Mínimo 8 caracteres.')).toBeInTheDocument();
     });
 
-    test('submits form with valid credentials', async () => {
+    test('submits form with valid credentials and redirects', async () => {
+        mockLogIn.mockResolvedValue(undefined);
+
         const user = userEvent.setup();
+
         render(<LoginForm />);
 
         await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com');
@@ -64,5 +90,7 @@ describe('LoginForm', () => {
         await user.type(screen.getByPlaceholderText(/contraseña/i), '12345678');
 
         await user.click(screen.getByRole('button', { name: /ingresar/i }));
+
+        expect(mockLogIn).toHaveBeenCalledWith('test@example.com', '12345678');
     });
 });
