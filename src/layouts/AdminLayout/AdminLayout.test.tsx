@@ -1,59 +1,55 @@
 import { render, screen } from '@testing-library/react';
 import { describe, test, expect } from 'vitest';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 
 describe('AdminLayout', () => {
-    test('renders children content', () => {
-        render(
-            <AdminLayout>
-                <div>Main Content</div>
-            </AdminLayout>
+    const renderWithRouter = (content: React.ReactNode) => {
+        return render(
+            <MemoryRouter initialEntries={['/admin']}>
+                <Routes>
+                    <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={content} />
+                    </Route>
+                </Routes>
+            </MemoryRouter>
         );
+    };
 
-        expect(screen.getByText('Main Content')).toBeDefined();
+    test('renders outlet content', () => {
+        renderWithRouter(<div>Main Content</div>);
+
+        expect(screen.getByText('Main Content')).toBeInTheDocument();
     });
 
-    test('does not break when header and sider are not provided', () => {
-        render(
-            <AdminLayout>
-                <div>Only Content</div>
-            </AdminLayout>
-        );
+    test('renders layout structure correctly', () => {
+        const { container } = renderWithRouter(<div>Content</div>);
 
-        expect(screen.getByText('Only Content')).toBeDefined();
+        expect(container.querySelector('.ant-layout')).toBeInTheDocument();
     });
 
     test('applies layout styles', () => {
-        const { container } = render(
-            <AdminLayout>
-                <div>Styled</div>
-            </AdminLayout>
-        );
+        const { container } = renderWithRouter(<div>Styled</div>);
 
         expect(container.firstChild).toHaveStyle('min-height: 100vh');
     });
-    
-    test('renders multiple children correctly', () => {
-        render(
-            <AdminLayout>
+
+    test('renders multiple outlet elements correctly', () => {
+        renderWithRouter(
+            <>
                 <div>Item 1</div>
                 <div>Item 2</div>
-            </AdminLayout>
+            </>
         );
-    
-        expect(screen.getByText('Item 1')).toBeDefined();
-        expect(screen.getByText('Item 2')).toBeDefined();
+
+        expect(screen.getByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByText('Item 2')).toBeInTheDocument();
     });
-    
-    test('renders antd layout structure', () => {
-        const { container } = render(
-            <AdminLayout>
-                <div>Content</div>
-            </AdminLayout>
-        );
-    
-        expect(container.querySelector('.ant-layout')).toBeInTheDocument();
+
+    test('renders sidebar and header', () => {
+        renderWithRouter(<div>Dashboard</div>);
+
+        expect(screen.getByText('Backoffice Admin')).toBeInTheDocument();
+        expect(screen.getAllByText('Dashboard')).toHaveLength(2);
     });
 });
-
-

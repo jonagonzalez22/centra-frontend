@@ -16,13 +16,26 @@ interface AppHeaderProps {
     user: User;
     isMobile: boolean;
     onToggleMenu?: () => void;
+    onLogout?: () => Promise<void>;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onToggleMenu }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({
+    title,
+    user,
+    isMobile,
+    onToggleMenu,
+    onLogout,
+}) => {
     const items = [
         { key: 'profile', label: 'Mi Perfil', icon: <UserOutlined /> },
         { key: 'logout', label: 'Cerrar Sesión', icon: <LogoutOutlined />, danger: true },
     ];
+
+    const handleMenuClick = async ({ key }: { key: string }) => {
+        if (key === 'logout' && onLogout) {
+            await onLogout();
+        }
+    };
 
     return (
         <Header className="tw-bg-white tw-px-4 md:tw-px-8 tw-flex tw-items-center tw-justify-between tw-shadow-sm tw-z-10">
@@ -38,7 +51,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onT
                 <h1 className="tw-m-0 tw-text-lg tw-font-semibold tw-text-gray-800">{title}</h1>
             </div>
 
-            <Dropdown menu={{ items }} placement="bottomRight" arrow>
+            <Dropdown menu={{ items, onClick: handleMenuClick }} placement="bottomRight" arrow>
                 <div className="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer hover:tw-opacity-80 tw-transition-opacity tw-pl-3 tw-border-l tw-border-gray-200">
                     {!isMobile && (
                         <div className="tw-flex tw-flex-col tw-items-end tw-leading-tight">
