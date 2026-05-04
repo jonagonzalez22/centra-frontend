@@ -3,6 +3,29 @@ import userEvent from '@testing-library/user-event';
 import { describe, test, expect } from 'vitest';
 import LoginForm from './LoginForm';
 
+const mockNavigate = vi.fn();
+
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+        useLocation: () => ({
+            state: null,
+        }),
+    };
+});
+
+const mockLogIn = vi.fn();
+
+vi.mock('@/store/useAuthStore.store', () => ({
+    useAuthStore: () => ({
+        logIn: mockLogIn,
+        loading: false,
+    }),
+}));
+
 describe('LoginForm', () => {
     test('renders login form correctly', () => {
         render(<LoginForm />);
