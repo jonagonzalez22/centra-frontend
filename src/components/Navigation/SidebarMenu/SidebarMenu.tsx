@@ -22,13 +22,14 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     selectedKey,
 }) => {
     const menuContent = (
-        <div className="tw-flex tw-flex-col tw-h-full">
-            <div className="tw-p-6 tw-text-xl tw-font-bold tw-text-blue-600">CENTRA</div>
+        <div className="flex flex-col h-full">
+            <div className="p-6 text-xl font-bold text-blue-600">CENTRA</div>
+
             <Menu
                 mode="inline"
                 selectedKeys={[selectedKey]}
                 items={items}
-                className="tw-border-none [&_.ant-menu-title-content]:tw-flex [&_.ant-menu-title-content]:tw-justify-start"
+                className="border-none [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start"
             />
         </div>
     );
@@ -39,7 +40,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 placement="left"
                 onClose={onClose}
                 open={isOpen}
-                bodyStyle={{ padding: 0 }}
+                styles={{ body: { padding: 0 } }}
                 width={260}
                 closable={false}
             >
@@ -53,7 +54,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
             theme="light"
             breakpoint="lg"
             width={260}
-            className="tw-hidden md:tw-block tw-h-screen tw-sticky tw-top-0 tw-left-0 tw-shadow-sm"
+            className="hidden md:block h-screen sticky top-0 left-0 shadow-sm"
         >
             {menuContent}
         </Sider>

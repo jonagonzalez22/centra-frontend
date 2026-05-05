@@ -1,4 +1,3 @@
-import { siderStyle, headerStyle, contentStyle } from './AdminLayout.style';
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -6,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 
-const { Content, Header, Sider } = Layout;
+const { Content, Header } = Layout;
 
 /* interface IAdminLayoutProps {
     children: ReactNode;
@@ -44,13 +43,10 @@ export const AdminLayout = () => {
 
     //isMobile luego se refactorizara para que sea responsive
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider style={siderStyle}>
-                <SidebarMenu items={items} isMobile={false} selectedKey="/admin" />
-            </Sider>
-
+        <Layout className="min-h-screen">
+            <SidebarMenu items={items} isMobile={false} selectedKey="/admin" />
             <Layout>
-                <Header style={headerStyle}>
+                <Header className="layoutHeader">
                     <AppHeader
                         title="Backoffice Admin"
                         user={user}
@@ -58,7 +54,7 @@ export const AdminLayout = () => {
                         onLogout={handleLogout}
                     />
                 </Header>
-                <Content style={contentStyle}>
+                <Content className="flex justify-center items-center">
                     <Outlet />
                 </Content>
             </Layout>
