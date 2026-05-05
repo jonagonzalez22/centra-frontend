@@ -1,7 +1,7 @@
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
 import { useAuthStore } from '@/store/useAuthStore.store';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ const { Content, Header } = Layout;
 export const AdminLayout = () => {
     const { logout } = useAuthStore();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = async () => {
         await logout();
@@ -44,7 +45,7 @@ export const AdminLayout = () => {
     //isMobile luego se refactorizara para que sea responsive
     return (
         <Layout className="min-h-screen">
-            <SidebarMenu items={items} isMobile={false} selectedKey="/admin" />
+            <SidebarMenu items={items} isMobile={false} selectedKey={location.pathname} />
             <Layout>
                 <Header className="layoutHeader">
                     <AppHeader
