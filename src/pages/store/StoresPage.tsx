@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Table from '@/components/Table/Table';
 import { useStores } from '@/features/store/hooks/useStores';
+import type { Store } from '@/features/store/types/store.types';
 
 const columns = [
     {
@@ -43,9 +44,15 @@ const columns = [
     },
 ];
 
-export const StoresPage = () => {
+interface StoresPageViewProps {
+    stores: Store[];
+    loading: boolean;
+    error: string | null;
+    refetch: () => void;
+}
+
+export const StoresPageView = ({ stores, loading, error, refetch }: StoresPageViewProps) => {
     const [form] = Form.useForm();
-    const { stores, loading, error, refetch } = useStores();
 
     const handleFilter = () => {
         refetch();
@@ -116,4 +123,10 @@ export const StoresPage = () => {
             />
         </div>
     );
+};
+
+export const StoresPage = () => {
+    const { stores, loading, error, refetch } = useStores();
+
+    return <StoresPageView stores={stores} loading={loading} error={error} refetch={refetch} />;
 };
