@@ -32,6 +32,7 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
+                    { path: 'stores', element: <div>Stores Page</div> },
                     //TODO: Include admin pages.
                     //{ path: 'dashboard', element: <AdminDashboardPage /> },
                 ],

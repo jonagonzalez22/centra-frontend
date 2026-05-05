@@ -1,6 +1,7 @@
 import { Layout, Menu, Drawer } from 'antd';
 import React from 'react';
 import type { MenuProps } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const { Sider } = Layout;
 
@@ -21,6 +22,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     onClose,
     selectedKey,
 }) => {
+    const navigate = useNavigate();
     const menuContent = (
         <div className="flex flex-col h-full">
             <div className="p-6 text-xl font-bold text-blue-600">CENTRA</div>
@@ -29,6 +31,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 mode="inline"
                 selectedKeys={[selectedKey]}
                 items={items}
+                onClick={(e) => navigate(e.key)}
                 className="border-none [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start"
             />
         </div>
