@@ -4,9 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
 import { StoresPageView } from './StoresPage';
 
-const renderStoresPage = (
-    props: Partial<React.ComponentProps<typeof StoresPageView>> = {}
-) => {
+const renderStoresPage = (props: Partial<React.ComponentProps<typeof StoresPageView>> = {}) => {
     const defaultProps: React.ComponentProps<typeof StoresPageView> = {
         stores: [],
         loading: false,
@@ -42,10 +40,10 @@ describe('StoresPage', () => {
     test('renders table columns', () => {
         renderStoresPage();
 
-        expect(screen.getByText('Nombre')).toBeInTheDocument();
-        expect(screen.getByText('Email')).toBeInTheDocument();
-        expect(screen.getAllByText('Estado').length).toBeGreaterThan(0);
-        expect(screen.getByText('Acciones')).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Email' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Estado' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Acciones' })).toBeInTheDocument();
     });
 
     test('renders stores when data is available', () => {
