@@ -18,7 +18,7 @@ TODO move next class to login form component (features/auth/LoginForm/LoginForm.
 .authMainContent {
     @apply flex items-center justify-center
         min-h-screen
-        bg-[#f5f5f5]
+        bg-centra-surface
 
         max-md:block
         max-md:p-0
@@ -41,7 +41,7 @@ TODO move next class to login form component (features/auth/LoginForm/LoginForm.
         rounded-full
         flex items-center justify-center
         mx-auto mb-4
-        bg-[#093764];
+        bg-centra-primary;
 }
 /*
 TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
@@ -55,7 +55,7 @@ TODO move next class to login form component (features/auth/LoginForm/LoginForm.
 TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 */
 .authSubtitle {
-    @apply text-[#666]
+    @apply text-centra-text/70
         mt-1
         m-0;
 }

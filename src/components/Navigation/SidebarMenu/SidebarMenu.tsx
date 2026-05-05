@@ -25,7 +25,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     const navigate = useNavigate();
     const menuContent = (
         <div className="flex flex-col h-full">
-            <div className="p-6 text-xl font-bold text-blue-600">CENTRA</div>
+            <div className="p-6 text-xl font-bold text-centra-primary">CENTRA</div>
 
             <Menu
                 mode="inline"
