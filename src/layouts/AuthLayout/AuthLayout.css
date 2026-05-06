@@ -7,35 +7,25 @@ TODO move next class to login form component (features/auth/LoginForm/LoginForm.
         min-h-[500px]
         bg-white
         rounded-xl
-        shadow-lg;
+        shadow-lg
 
-    /* mobile */
-    @apply max-md:min-h-screen
+        max-md:min-h-screen
         max-md:max-w-none
         max-md:rounded-none
         max-md:shadow-none
-        max-md:p-8;
-
-    /* tablet */
-    @apply md:max-lg:max-w-[520px]
-        md:max-lg:min-h-0
-        md:max-lg:rounded-none
-        md:max-lg:shadow-none
-        md:max-lg:p-12;
+        max-md:px-8
+        max-md:pt-24
+        max-md:pb-8;
 }
 
 .authMainContent {
     @apply flex items-center justify-center
         min-h-screen
-        bg-centra-surface;
+        bg-centra-surface
 
-    /* mobile */
-    @apply max-md:bg-white
+        max-md:block
+        max-md:bg-white
         max-md:p-0;
-
-    /* tablet */
-    @apply md:max-lg:bg-white
-        md:max-lg:p-8;
 }
 
 /*
