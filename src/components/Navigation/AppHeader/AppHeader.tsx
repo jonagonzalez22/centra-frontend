@@ -1,7 +1,9 @@
 import { LogoutOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Layout } from 'antd';
+import type { MenuProps } from 'antd';
 import React from 'react';
 import { UserAvatar } from '../UserAvatar';
+import { useAuthStore } from '@/store/useAuthStore.store';
 
 const { Header } = Layout;
 
@@ -16,24 +18,19 @@ interface AppHeaderProps {
     user: User;
     isMobile: boolean;
     onToggleMenu?: () => void;
-    onLogout?: () => Promise<void>;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-    title,
-    user,
-    isMobile,
-    onToggleMenu,
-    onLogout,
-}) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onToggleMenu }) => {
+    const { logout } = useAuthStore();
+
     const items = [
         { key: 'profile', label: 'Mi Perfil', icon: <UserOutlined /> },
         { key: 'logout', label: 'Cerrar Sesion', icon: <LogoutOutlined />, danger: true },
     ];
 
-    const handleMenuClick = async ({ key }: { key: string }) => {
-        if (key === 'logout' && onLogout) {
-            await onLogout();
+    const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
+        if (key === 'logout' && logout) {
+            await logout();
         }
     };
 

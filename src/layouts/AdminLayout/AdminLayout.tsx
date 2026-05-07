@@ -1,27 +1,16 @@
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
-import { useAuthStore } from '@/store/useAuthStore.store';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import './AdminLayout.css';
 
 const { Content } = Layout;
 
-/* interface IAdminLayoutProps {
-    children: ReactNode;
-} */
-
 export const AdminLayout = () => {
-    const { logout } = useAuthStore();
-    const navigate = useNavigate();
     const location = useLocation();
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
+    // TODO: Filtrar los items del menu segun permisos/rol del usuario.
     const items = [
         {
             key: '/admin',
@@ -48,12 +37,7 @@ export const AdminLayout = () => {
         <Layout className="adminLayout">
             <SidebarMenu items={items} isMobile={false} selectedKey={location.pathname} />
             <Layout className="adminMainLayout">
-                <AppHeader
-                    title="Backoffice Admin"
-                    user={user}
-                    isMobile={false}
-                    onLogout={handleLogout}
-                />
+                <AppHeader title="Backoffice Admin" user={user} isMobile={false} />
                 <Content className="adminMainContent">
                     <Outlet />
                 </Content>
