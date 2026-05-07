@@ -93,4 +93,11 @@ describe('LoginForm', () => {
 
         expect(mockLogIn).toHaveBeenCalledWith('test@example.com', '12345678');
     });
+
+    test('renders remember me checkbox and forgot password action', () => {
+        render(<LoginForm />);
+
+        expect(screen.getByRole('checkbox', { name: /recordarme/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /olvidé contraseña/i })).toBeInTheDocument();
+    });
 });
