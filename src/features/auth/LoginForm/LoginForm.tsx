@@ -1,4 +1,4 @@
-import { Form, Button, Alert } from 'antd';
+import { Form, Button, Alert, Checkbox } from 'antd';
 import InputField from '../../../components/InputField/InputField';
 import { InputPassword } from '@/components/InputPassword';
 import { UserOutlined } from '@ant-design/icons';
@@ -11,6 +11,7 @@ import { ApiError } from '@/interfaces/ApiErrors.interface';
 interface LoginFormValues {
     email: string;
     password: string;
+    remember?: boolean;
 }
 
 const LoginForm = () => {
@@ -69,7 +70,17 @@ const LoginForm = () => {
                     placeholder="Ingresá tu contraseña"
                     rules={passwordValidation}
                 />
-                {/**TODO: agregar check recordar y olvide contrasena */}
+
+                <div className="mb-4 flex items-center justify-between gap-4">
+                    <Form.Item name="remember" valuePropName="checked" className="mb-0">
+                        <Checkbox className="text-sm leading-none">Recordarme</Checkbox>
+                    </Form.Item>
+
+                    <Button type="link" className="h-auto p-0 text-sm leading-none hover:underline">
+                        Olvidé contraseña
+                    </Button>
+                </div>
+
                 <Button type="primary" htmlType="submit" block className="mt-4" loading={loading}>
                     Ingresar
                 </Button>
