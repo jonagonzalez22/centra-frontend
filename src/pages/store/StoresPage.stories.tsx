@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MemoryRouter } from 'react-router-dom';
 import { StoresPageView } from './StoresPage';
 
 const meta: Meta<typeof StoresPageView> = {
@@ -10,11 +9,9 @@ const meta: Meta<typeof StoresPageView> = {
     },
     decorators: [
         (Story) => (
-            <MemoryRouter>
-                <div className="bg-centra-surface p-6">
-                    <Story />
-                </div>
-            </MemoryRouter>
+            <div className="bg-centra-surface p-6">
+                <Story />
+            </div>
         ),
     ],
     tags: ['autodocs'],

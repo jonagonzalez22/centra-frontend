@@ -3,6 +3,7 @@ import React from 'react';
 import 'antd/dist/reset.css';
 import '../src/index.css';
 import { CentraThemeProvider } from '../src/design-system/centraThemeProvider.tsx';
+import { MemoryRouter } from 'react-router-dom';
 
 const preview: Preview = {
   parameters: {
@@ -20,11 +21,14 @@ const preview: Preview = {
 
   decorators: [
     (Story) => (
-      <CentraThemeProvider>
-        <Story />
-      </CentraThemeProvider>
+      <MemoryRouter>
+        <CentraThemeProvider>
+          <Story />
+        </CentraThemeProvider>
+      </MemoryRouter>
     ),
   ],
+  
 };
 
 export default preview;

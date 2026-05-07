@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Route, Routes } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 
 const meta: Meta<typeof AdminLayout> = {
@@ -8,14 +9,6 @@ const meta: Meta<typeof AdminLayout> = {
         layout: 'fullscreen',
     },
     tags: ['autodocs'],
-    argTypes: {
-        children: {
-            control: false,
-            table: {
-                type: { summary: 'ReactNode' },
-            },
-        },
-    },
 };
 
 export default meta;
@@ -23,11 +16,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const FullLayout: Story = {
-    args: {
-        children: <div>Dashboard Content</div>
-    },
-};
-
-export const WithoutChildren: Story = {
-    args: {},
+    render: () => (
+        <Routes>
+            <Route path="/" element={<AdminLayout />}>
+                <Route
+                    index
+                    element={
+                        <div>
+                            <h1>Dashboard Content</h1>
+                            <p>Contenido de ejemplo dentro del layout admin.</p>
+                        </div>
+                    }
+                />
+            </Route>
+        </Routes>
+    ),
 };
