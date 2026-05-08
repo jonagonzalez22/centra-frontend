@@ -1,4 +1,4 @@
-import type { UserRole } from '@/entities/User';
+import type { FeatureCode, User, UserRole } from '@/entities/User';
 import { ROLE_CONFIG } from './roles.config';
 
 export interface PageBreadcrumbItem {
@@ -72,4 +72,12 @@ export function getPageNavigation(pathname: string): PageNavigation {
         title: breadcrumbs[breadcrumbs.length - 1]?.label ?? 'CENTRA',
         breadcrumbs,
     };
+}
+
+export function hasFeature(user: User | null, feature: FeatureCode): boolean {
+    if (!user) return false;
+
+    if (user.store_id === null) return true;
+
+    return user.features.includes(feature);
 }
