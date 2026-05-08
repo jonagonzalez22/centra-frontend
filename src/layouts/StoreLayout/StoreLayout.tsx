@@ -1,10 +1,10 @@
 import { Layout } from 'antd';
-import { ReactNode } from 'react';
-import { siderStyle, headerStyle, contentStyle } from './StoreLayout.style';
+import type { ReactNode } from 'react';
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
+import './StoreLayout.css';
 
-const { Header, Sider, Content } = Layout;
+const { Content } = Layout;
 
 interface IStoreLayoutProps {
     children: ReactNode;
@@ -34,17 +34,13 @@ export const StoreLayout = ({ children }: IStoreLayoutProps) => {
 
     //isMobile luego se refactorizara para que sea responsive
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider style={siderStyle}>
-                <SidebarMenu items={items} isMobile={false} isOpen={false} selectedKey="/stock" />
-            </Sider>
+        <Layout className="storeLayout">
+            <SidebarMenu items={items} isMobile={false} isOpen={false} selectedKey="/stock" />
 
-            <Layout>
-                <Header style={headerStyle}>
-                    <AppHeader title="Lista de tiendas" user={user} isMobile={false} />
-                </Header>
+            <Layout className="storeMainLayout">
+                <AppHeader title="Lista de tiendas" user={user} isMobile={false} />
 
-                <Content style={contentStyle}>{children}</Content>
+                <Content className="storeMainContent">{children}</Content>
             </Layout>
         </Layout>
     );

@@ -29,6 +29,8 @@ const stores = [
 
 export const Default: Story = {
     args: {
+        title: 'Gestión de Tiendas',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
         stores,
         loading: false,
         error: null,
@@ -38,6 +40,8 @@ export const Default: Story = {
 
 export const Loading: Story = {
     args: {
+        title: 'Gestión de Tiendas',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
         stores: [],
         loading: true,
         error: null,
@@ -47,6 +51,8 @@ export const Loading: Story = {
 
 export const Empty: Story = {
     args: {
+        title: 'Gestión de Tiendas',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
         stores: [],
         loading: false,
         error: null,
@@ -56,6 +62,8 @@ export const Empty: Story = {
 
 export const WithError: Story = {
     args: {
+        title: 'Gestión de Tiendas',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
         stores: [],
         loading: false,
         error: 'Error al cargar las tiendas',

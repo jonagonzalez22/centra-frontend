@@ -6,6 +6,8 @@ import { StoresPageView } from './StoresPage';
 
 const renderStoresPage = (props: Partial<React.ComponentProps<typeof StoresPageView>> = {}) => {
     const defaultProps: React.ComponentProps<typeof StoresPageView> = {
+        title: 'Gestión de Tiendas',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
         stores: [],
         loading: false,
         error: null,
@@ -23,9 +25,23 @@ describe('StoresPage', () => {
     test('renders the page header and breadcrumb', () => {
         renderStoresPage();
 
-        expect(screen.getByRole('heading', { name: /tiendas/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /gestión de tiendas/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /admin/i })).toBeInTheDocument();
         expect(screen.getByText('Tiendas')).toBeInTheDocument();
+    });
+
+    test('renders the provided page navigation', () => {
+        renderStoresPage({
+            title: 'Reporte de Tiendas',
+            breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Reportes' }],
+        });
+
+        expect(screen.getByRole('heading', { name: /reporte de tiendas/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /admin/i })).toHaveAttribute(
+            'href',
+            '/admin/dashboard'
+        );
+        expect(screen.getByText('Reportes')).toBeInTheDocument();
     });
 
     test('renders filter controls', () => {

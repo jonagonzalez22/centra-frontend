@@ -28,14 +28,14 @@ describe('StoreLayout', () => {
         expect(screen.getByText('Only Content')).toBeDefined();
     });
 
-    test('applies min height style', () => {
+    test('applies layout class', () => {
         const { container } = renderWithRouter(
             <StoreLayout>
                 <div>Styled</div>
             </StoreLayout>
         );
 
-        expect(container.firstChild).toHaveStyle('min-height: 100vh');
+        expect(container.firstChild).toHaveClass('storeLayout');
     });
 
     test('renders multiple children correctly', () => {
