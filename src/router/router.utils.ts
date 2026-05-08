@@ -1,4 +1,4 @@
-import { UserRole } from '@/entities/User';
+import { FeatureCode, User, UserRole } from '@/entities/User';
 import { ROLE_CONFIG } from './roles.config';
 
 export function getHomePath(roles: UserRole[]): string {
@@ -20,4 +20,12 @@ export function hasAccessToPath(roles: UserRole[], path: string): boolean {
         if (!config) return false;
         return config.allowedPaths.some((allowed) => path.startsWith(allowed));
     });
+}
+
+export function hasFeature(user: User | null, feature: FeatureCode): boolean {
+    if (!user) return false;
+
+    if (user.store_id === null) return true;
+
+    return user.features.includes(feature);
 }
