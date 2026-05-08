@@ -15,7 +15,9 @@ describe('SidebarMenu', () => {
     };
 
     test('renders desktop sider when not mobile', () => {
-        renderWithRouter(<SidebarMenu items={items} isMobile={false} selectedKey={'1'} />);
+        renderWithRouter(
+            <SidebarMenu items={items} isMobile={false} isOpen={false} selectedKey={'1'} />
+        );
 
         expect(screen.getByText(/CENTRA/i)).toBeDefined();
         expect(screen.getByText(/One/i)).toBeDefined();

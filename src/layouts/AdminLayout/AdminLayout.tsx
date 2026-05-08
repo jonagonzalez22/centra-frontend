@@ -35,7 +35,12 @@ export const AdminLayout = () => {
     //isMobile luego se refactorizara para que sea responsive
     return (
         <Layout className="adminLayout">
-            <SidebarMenu items={items} isMobile={false} selectedKey={location.pathname} />
+            <SidebarMenu
+                items={items}
+                isMobile={false}
+                isOpen={false}
+                selectedKey={location.pathname}
+            />
             <Layout className="adminMainLayout">
                 <AppHeader title="Backoffice Admin" user={user} isMobile={false} />
                 <Content className="adminMainContent">

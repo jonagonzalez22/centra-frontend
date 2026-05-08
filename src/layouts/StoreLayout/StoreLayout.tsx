@@ -36,7 +36,7 @@ export const StoreLayout = ({ children }: IStoreLayoutProps) => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider style={siderStyle}>
-                <SidebarMenu items={items} isMobile={false} selectedKey="/stock" />
+                <SidebarMenu items={items} isMobile={false} isOpen={false} selectedKey="/stock" />
             </Sider>
 
             <Layout>

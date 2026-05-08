@@ -11,5 +11,5 @@
 }
 
 .sidebarMenuDesktopContainer {
-    @apply sticky left-0 top-0 hidden h-screen shadow-sm md:block;
+    @apply sticky left-0 top-0 hidden h-dvh shadow-sm md:block;
 }

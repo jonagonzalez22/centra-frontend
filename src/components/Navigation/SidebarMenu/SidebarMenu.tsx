@@ -11,7 +11,7 @@ type MenuItem = Required<MenuProps>['items'][number];
 interface SidebarMenuProps {
     items: MenuItem[];
     isMobile: boolean;
-    isOpen?: boolean;
+    isOpen: boolean;
     onClose?: () => void;
     selectedKey: string;
 }
