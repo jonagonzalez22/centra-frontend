@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { FeatureCode, User, UserRole } from '@/entities/User';
 import { ROLE_CONFIG } from './roles.config';
 
@@ -28,6 +29,12 @@ const segmentLabelMap: Record<string, string> = {
     plans: 'Planes',
     stores: 'Tiendas',
 };
+=======
+import { UserRole } from '@/entities/User';
+import { ROLE_CONFIG } from './roles.config';
+
+export { hasFeature } from '@/utils/features';
+>>>>>>> 0b8bc16b6600a54bc69926180452e105efa334ff
 
 export function getHomePath(roles: UserRole[]): string {
     const sorted = [...roles].sort(
@@ -49,6 +56,7 @@ export function hasAccessToPath(roles: UserRole[], path: string): boolean {
         return config.allowedPaths.some((allowed) => path.startsWith(allowed));
     });
 }
+<<<<<<< HEAD
 
 export function getPageNavigation(pathname: string): PageNavigation {
     const normalizedPath = pathname.replace(/\/+$/, '') || '/';
@@ -81,3 +89,5 @@ export function hasFeature(user: User | null, feature: FeatureCode): boolean {
 
     return user.features.includes(feature);
 }
+=======
+>>>>>>> 0b8bc16b6600a54bc69926180452e105efa334ff
