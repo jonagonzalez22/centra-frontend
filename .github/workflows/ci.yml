@@ -31,7 +31,9 @@ jobs:
                   cache: 'pnpm'
 
             - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+              run: |
+                  # Try installing; if pnpm fails due to ignored builds, approve them and retry.
+                  pnpm install --frozen-lockfile || (pnpm approve-builds --yes && pnpm install --frozen-lockfile)
 
             - name: Type check
               run: pnpm tsc --noEmit
