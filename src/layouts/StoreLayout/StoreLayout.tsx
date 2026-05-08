@@ -24,24 +24,24 @@ export const StoreLayout = ({ children }: IStoreLayoutProps) => {
             key: 'store/orders',
             label: 'Pedidos',
         },
-        ];
+    ];
 
     //TODO: esto se cambiara por el hook useAuthStore
-        const user = {
-            name: 'Admin User',
-            role: 'admin'
-        }
+    const user = {
+        name: 'Admin User',
+        role: 'admin',
+    };
 
     //isMobile luego se refactorizara para que sea responsive
     return (
         <Layout style={{ minHeight: '100vh' }}>
-                <Sider style={siderStyle}>
-                    <SidebarMenu items={items} isMobile={false} selectedKey='/stock'/>
-                </Sider>
+            <Sider style={siderStyle}>
+                <SidebarMenu items={items} isMobile={false} selectedKey="/stock" />
+            </Sider>
 
             <Layout>
                 <Header style={headerStyle}>
-                    <AppHeader title='HSBC' user={user} isMobile={false}/>
+                    <AppHeader title="Lista de tiendas" user={user} isMobile={false} />
                 </Header>
 
                 <Content style={contentStyle}>{children}</Content>
