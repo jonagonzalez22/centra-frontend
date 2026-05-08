@@ -21,6 +21,7 @@ export const Desktop: Story = {
 	args: {
 		items,
 		isMobile: false,
+		isOpen: false,
 		selectedKey: 'home',
 	},
 };

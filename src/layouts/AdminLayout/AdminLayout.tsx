@@ -1,14 +1,18 @@
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
 import { useLocation } from 'react-router-dom';
-import { Layout } from 'antd';
+import { Grid, Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
+import { useState } from 'react';
 import './AdminLayout.css';
 
 const { Content } = Layout;
 
 export const AdminLayout = () => {
     const location = useLocation();
+    const screens = Grid.useBreakpoint();
+    const isMobile = screens.xs === true && screens.md === false;
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // TODO: Filtrar los items del menu segun permisos/rol del usuario.
     const items = [
@@ -32,17 +36,22 @@ export const AdminLayout = () => {
         role: 'admin',
     };
 
-    //isMobile luego se refactorizara para que sea responsive
     return (
         <Layout className="adminLayout">
             <SidebarMenu
                 items={items}
-                isMobile={false}
-                isOpen={false}
+                isMobile={isMobile}
+                isOpen={isMobile && isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
                 selectedKey={location.pathname}
             />
             <Layout className="adminMainLayout">
-                <AppHeader title="Backoffice Admin" user={user} isMobile={false} />
+                <AppHeader
+                    title="Backoffice Admin"
+                    user={user}
+                    isMobile={isMobile}
+                    onToggleMenu={() => setIsMenuOpen(true)}
+                />
                 <Content className="adminMainContent">
                     <Outlet />
                 </Content>

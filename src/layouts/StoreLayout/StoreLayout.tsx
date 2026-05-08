@@ -1,5 +1,6 @@
-import { Layout } from 'antd';
+import { Grid, Layout } from 'antd';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { SidebarMenu } from '@/components/Navigation/SidebarMenu';
 import { AppHeader } from '@/components/Navigation/AppHeader';
 import './StoreLayout.css';
@@ -11,6 +12,10 @@ interface IStoreLayoutProps {
 }
 
 export const StoreLayout = ({ children }: IStoreLayoutProps) => {
+    const screens = Grid.useBreakpoint();
+    const isMobile = screens.xs === true && screens.md === false;
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const items = [
         {
             key: 'store/stock',
@@ -32,13 +37,23 @@ export const StoreLayout = ({ children }: IStoreLayoutProps) => {
         role: 'admin',
     };
 
-    //isMobile luego se refactorizara para que sea responsive
     return (
         <Layout className="storeLayout">
-            <SidebarMenu items={items} isMobile={false} isOpen={false} selectedKey="/stock" />
+            <SidebarMenu
+                items={items}
+                isMobile={isMobile}
+                isOpen={isMobile && isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                selectedKey="/stock"
+            />
 
             <Layout className="storeMainLayout">
-                <AppHeader title="Lista de tiendas" user={user} isMobile={false} />
+                <AppHeader
+                    title="Lista de tiendas"
+                    user={user}
+                    isMobile={isMobile}
+                    onToggleMenu={() => setIsMenuOpen(true)}
+                />
 
                 <Content className="storeMainContent">{children}</Content>
             </Layout>

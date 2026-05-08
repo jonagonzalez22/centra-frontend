@@ -24,6 +24,12 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     selectedKey,
 }) => {
     const navigate = useNavigate();
+
+    const handleMenuClick: MenuProps['onClick'] = (event) => {
+        navigate(event.key);
+        onClose?.();
+    };
+
     const menuContent = (
         <div className="sidebarMenuContent">
             <div className="sidebarMenuBrand">CENTRA</div>
@@ -32,7 +38,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 mode="inline"
                 selectedKeys={[selectedKey]}
                 items={items}
-                onClick={(e) => navigate(e.key)}
+                onClick={handleMenuClick}
                 className="sidebarMenuNavigation"
             />
         </div>
