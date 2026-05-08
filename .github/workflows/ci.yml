@@ -30,9 +30,6 @@ jobs:
                   node-version: 24
                   cache: 'pnpm'
 
-            - name: Approve builds
-              run: pnpm approve-builds --yes
-
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
