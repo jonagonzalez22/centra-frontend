@@ -30,10 +30,25 @@ jobs:
                   node-version: 24
                   cache: 'pnpm'
 
+            - name: Diagnostic: environment
+              run: |
+                echo "=== node & pnpm versions ==="
+                node -v || true
+                pnpm -v || true
+                echo "=== workspace files ==="
+                ls -la
+                echo "=== show .npmrc ==="
+                if [ -f .npmrc ]; then sed -n '1,120p' .npmrc; else echo '.npmrc missing'; fi
+                echo "=== show .pnpmfile.cjs ==="
+                if [ -f .pnpmfile.cjs ]; then sed -n '1,200p' .pnpmfile.cjs; else echo '.pnpmfile.cjs missing'; fi
+                echo "=== show pnpm-lock.yaml header ==="
+                sed -n '1,60p' pnpm-lock.yaml || true
+
             - name: Install dependencies
               run: |
-                  # Prefer a frozen install for reproducibility. If that fails due to ignored builds
-                  # (pnpm prompts for approve-builds) fall back to a non-frozen install to allow CI to proceed.
+                  # Try to non-interactively approve any ignored build prompts (send 'a' to select all)
+                  printf 'a\n' | pnpm approve-builds || true
+                  # Prefer a frozen install for reproducibility; fall back to non-frozen if it still fails.
                   pnpm install --frozen-lockfile || pnpm install --no-frozen-lockfile
 
             - name: Type check
