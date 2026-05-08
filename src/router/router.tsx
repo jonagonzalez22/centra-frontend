@@ -7,6 +7,7 @@ import { StoreLayout } from '@/layouts/StoreLayout';
 // import { NotFoundPage } from '@/pages/NotFoundPage';
 import { RootRedirect } from './RootRedirect';
 import LoginPage from '@/pages/auth/LoginPage';
+import { StoresPage } from '@/pages/store/StoresPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
+                    { path: 'stores', element: <StoresPage /> },
                     //TODO: Include admin pages.
                     //{ path: 'dashboard', element: <AdminDashboardPage /> },
                 ],

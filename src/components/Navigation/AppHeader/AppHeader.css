@@ -1,0 +1,31 @@
+.appHeaderContainer {
+    @apply flex h-16 items-center justify-between bg-centra-primary px-4 shadow-sm md:px-8;
+}
+
+.appHeaderTitleGroup {
+    @apply flex items-center gap-4;
+}
+
+.appHeaderMobileMenuButton {
+    @apply text-lg text-white;
+}
+
+.appHeaderTitle {
+    @apply m-0 text-lg font-semibold text-white;
+}
+
+.appHeaderUserMenuTrigger {
+    @apply flex cursor-pointer items-center gap-3 border-l border-white/20 pl-4 transition-opacity hover:opacity-80;
+}
+
+.appHeaderUserDetails {
+    @apply flex flex-col items-end leading-tight;
+}
+
+.appHeaderUserName {
+    @apply text-sm font-semibold text-white;
+}
+
+.appHeaderUserRole {
+    @apply text-xs text-white/70;
+}

@@ -31,7 +31,7 @@ describe('AdminLayout', () => {
     test('applies layout styles', () => {
         const { container } = renderWithRouter(<div>Styled</div>);
 
-        expect(container.firstChild).toHaveStyle('min-height: 100vh');
+        expect(container.firstChild).toHaveClass('adminLayout');
     });
 
     test('renders multiple outlet elements correctly', () => {

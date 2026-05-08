@@ -63,7 +63,7 @@ TODO move next class to login form component (features/auth/LoginForm/LoginForm.
 TODO move next class to login form component (features/auth/LoginForm/LoginForm.tsx)
 */
 .authSubtitle {
-    @apply text-[#666]
+    @apply text-centra-text/70
         mt-1
         m-0
 
