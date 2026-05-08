@@ -4,6 +4,7 @@ import type { MenuProps } from 'antd';
 import React from 'react';
 import { UserAvatar } from '../UserAvatar';
 import { useAuthStore } from '@/store/useAuthStore.store';
+import './AppHeader.css';
 
 const { Header } = Layout;
 
@@ -35,25 +36,25 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onT
     };
 
     return (
-        <Header className="flex h-16 items-center justify-between bg-centra-primary px-4 shadow-sm md:px-8">
-            <div className="flex items-center gap-4">
+        <Header className="appHeaderContainer">
+            <div className="appHeaderTitleGroup">
                 {isMobile && (
                     <Button
                         type="text"
                         icon={<MenuOutlined />}
                         onClick={onToggleMenu}
-                        className="text-lg text-white"
+                        className="appHeaderMobileMenuButton"
                     />
                 )}
-                <h1 className="m-0 text-lg font-semibold text-white">{title}</h1>
+                <h1 className="appHeaderTitle">{title}</h1>
             </div>
 
             <Dropdown menu={{ items, onClick: handleMenuClick }} placement="bottomRight" arrow>
-                <div className="flex cursor-pointer items-center gap-3 border-l border-white/20 pl-4 transition-opacity hover:opacity-80">
+                <div className="appHeaderUserMenuTrigger">
                     {!isMobile && (
-                        <div className="flex flex-col items-end leading-tight">
-                            <span className="text-sm font-semibold text-white">{user.name}</span>
-                            <span className="text-xs text-white/70">{user.role}</span>
+                        <div className="appHeaderUserDetails">
+                            <span className="appHeaderUserName">{user.name}</span>
+                            <span className="appHeaderUserRole">{user.role}</span>
                         </div>
                     )}
 

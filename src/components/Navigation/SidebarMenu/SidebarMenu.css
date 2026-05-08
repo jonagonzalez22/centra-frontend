@@ -1,0 +1,15 @@
+.sidebarMenuContent {
+    @apply flex h-full flex-col;
+}
+
+.sidebarMenuBrand {
+    @apply p-6 text-xl font-bold text-centra-primary;
+}
+
+.sidebarMenuNavigation {
+    @apply border-none [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start;
+}
+
+.sidebarMenuDesktopContainer {
+    @apply sticky left-0 top-0 hidden h-screen shadow-sm md:block;
+}

@@ -1,0 +1,59 @@
+.storeListLoadingMessage {
+    @apply p-4 text-blue-600;
+}
+
+.storeListErrorMessage {
+    @apply p-4 text-red-600;
+}
+
+.storeListRetryButton {
+    @apply ml-2 underline;
+}
+
+.storeListContainer {
+    @apply rounded-lg bg-white p-6 shadow-md;
+}
+
+.storeListTitle {
+    @apply mb-4 text-2xl font-bold text-gray-800;
+}
+
+.storeListEmptyMessage {
+    @apply text-gray-500;
+}
+
+.storeListItems {
+    @apply space-y-3;
+}
+
+.storeListItem {
+    @apply rounded-md border p-4 transition-colors hover:bg-gray-50;
+}
+
+.storeListItemContent {
+    @apply flex items-center justify-between;
+}
+
+.storeListStoreName {
+    @apply text-lg font-semibold text-indigo-700;
+}
+
+.storeListStoreEmail {
+    @apply text-sm text-gray-600;
+}
+
+.storeListStatusBadge {
+    @apply rounded px-2 py-1 text-xs font-bold uppercase;
+}
+
+.storeListStatusBadgeActive {
+    @apply bg-green-100 text-green-700;
+}
+
+.storeListStatusBadgeInactive {
+    @apply bg-red-100 text-red-700;
+}
+
+.storeListRefreshButton {
+    @apply mt-6 rounded bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700;
+}
