@@ -11,25 +11,18 @@ const { Content } = Layout;
 
 export interface AppLayoutProps {
     title: string;
-    menuItems: { key: string; label: string }[];
     children?: ReactNode;
 }
 
-export const AppLayout = ({ title, menuItems, children }: AppLayoutProps) => {
+export const AppLayout = ({ title, children }: AppLayoutProps) => {
     const location = useLocation();
     const screens = Grid.useBreakpoint();
     const isMobile = screens.xs === true && screens.md === false;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const user = {
-        name: 'Admin User',
-        role: 'admin',
-    };
-
     return (
         <Layout className="appLayout">
             <SidebarMenu
-                items={menuItems}
                 isMobile={isMobile}
                 isOpen={isMobile && isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
@@ -38,13 +31,10 @@ export const AppLayout = ({ title, menuItems, children }: AppLayoutProps) => {
             <Layout className="appMainLayout">
                 <AppHeader
                     title={title}
-                    user={user}
                     isMobile={isMobile}
                     onToggleMenu={() => setIsMenuOpen(true)}
                 />
-                <Content className="appMainContent">
-                    {children ? children : <Outlet />}
-                </Content>
+                <Content className="appMainContent">{children ? children : <Outlet />}</Content>
             </Layout>
         </Layout>
     );

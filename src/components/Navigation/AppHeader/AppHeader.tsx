@@ -8,21 +8,14 @@ import './AppHeader.css';
 
 const { Header } = Layout;
 
-interface User {
-    name: string;
-    role: string;
-    avatarUrl?: string;
-}
-
 interface AppHeaderProps {
     title: string;
-    user: User;
     isMobile: boolean;
     onToggleMenu?: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onToggleMenu }) => {
-    const { logout } = useAuthStore();
+export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleMenu }) => {
+    const { logout, user } = useAuthStore();
 
     const items = [
         { key: 'profile', label: 'Mi Perfil', icon: <UserOutlined /> },
@@ -53,12 +46,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, user, isMobile, onT
                 <div className="appHeaderUserMenuTrigger">
                     {!isMobile && (
                         <div className="appHeaderUserDetails">
-                            <span className="appHeaderUserName">{user.name}</span>
-                            <span className="appHeaderUserRole">{user.role}</span>
+                            <span className="appHeaderUserName">{user?.name || '-'}</span>
+                            <span className="appHeaderUserRole">{user?.roles[0] || '-'} </span>
                         </div>
                     )}
 
-                    <UserAvatar name={user.name} />
+                    <UserAvatar name={user?.name || 'User'} />
                 </div>
             </Dropdown>
         </Header>

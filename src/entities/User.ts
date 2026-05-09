@@ -6,7 +6,8 @@ export type FeatureCode =
     | 'deliveries'
     | 'route_mapping'
     | 'messaging'
-    | 'multi_user';
+    | 'multi_user'
+    | 'stores';
 
 export interface User {
     id: number;
