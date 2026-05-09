@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
 import { AppHeader } from './AppHeader';
-import { useAuthStore } from '@/store/useAuthStore.store';
 
 vi.mock('@/store/useAuthStore.store', () => ({
     useAuthStore: vi.fn(() => ({ user: { name: 'Ana Ruiz', roles: ['Admin'] }, logout: vi.fn() })),

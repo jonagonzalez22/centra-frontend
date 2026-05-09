@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, test, expect, vi } from 'vitest';
 import { SidebarMenu } from './SidebarMenu';
 import { MemoryRouter } from 'react-router-dom';
-import { useAuthStore } from '@/store/useAuthStore.store';
 
 vi.mock('@/store/useAuthStore.store', () => ({
     useAuthStore: vi.fn(() => ({ user: null })),
