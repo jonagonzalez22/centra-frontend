@@ -1,0 +1,11 @@
+.appLayout {
+    @apply min-h-screen;
+}
+
+.appMainLayout {
+    @apply min-w-0;
+}
+
+.appMainContent {
+    @apply w-full p-6;
+}
