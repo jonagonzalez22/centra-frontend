@@ -1,5 +1,5 @@
 import { Layout, Menu, Drawer } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import './SidebarMenu.css';
@@ -38,8 +38,6 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 }) => {
     const { user } = useAuthStore();
 
-    const [menuItemPermissions, setMenuItemPermissions] = useState<MenuItem[]>([]);
-
     const navigate = useNavigate();
 
     const handleMenuClick: MenuProps['onClick'] = (event) => {
@@ -47,14 +45,13 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
         onClose?.();
     };
 
-    useEffect(() => {
-        const filtered = menuItems.filter((item: MenuItem) => {
+    const menuItemPermissions = useMemo(() => {
+        return menuItems.filter((item: MenuItem) => {
             if (item.feature && !hasFeature(user, item.feature)) {
                 return false;
             }
             return true;
         });
-        setMenuItemPermissions(filtered);
     }, [user]);
 
     const menuContent = (
