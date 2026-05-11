@@ -1,12 +1,16 @@
-import { Form, Button, Alert, Checkbox } from 'antd';
+import { Form, Alert } from 'antd';
 import InputField from '../../../components/InputField/InputField';
 import { InputPassword } from '@/components/InputPassword';
+import { Button } from '@/components/Button';
+import { Checkbox } from '@/components/Checkbox';
+import { TextLink } from '@/components/TextLink';
 import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ApiError } from '@/interfaces/ApiErrors.interface';
+import './LoginForm.css';
 
 interface LoginFormValues {
     email: string;
@@ -71,17 +75,27 @@ const LoginForm = () => {
                     rules={passwordValidation}
                 />
 
-                <div className="mb-4 flex items-center justify-between gap-4">
-                    <Form.Item name="remember" valuePropName="checked" className="mb-0">
-                        <Checkbox className="text-sm leading-none">Recordarme</Checkbox>
+                <div className="loginFormOptions">
+                    <Form.Item
+                        name="remember"
+                        valuePropName="checked"
+                        className="loginFormRememberItem"
+                    >
+                        <Checkbox className="loginFormRememberCheckbox">Recordarme</Checkbox>
                     </Form.Item>
 
-                    <Button type="link" className="h-auto p-0 text-sm leading-none hover:underline">
+                    <TextLink to="#" className="loginFormForgotPasswordLink">
                         Olvidé contraseña
-                    </Button>
+                    </TextLink>
                 </div>
 
-                <Button type="primary" htmlType="submit" block className="mt-4" loading={loading}>
+                <Button
+                    variant="primary"
+                    htmlType="submit"
+                    block
+                    className="loginFormSubmitButton"
+                    loading={loading}
+                >
                     Ingresar
                 </Button>
 

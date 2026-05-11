@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import LoginForm from './LoginForm';
 
 const mockNavigate = vi.fn();
@@ -27,8 +28,16 @@ vi.mock('@/store/useAuthStore.store', () => ({
 }));
 
 describe('LoginForm', () => {
+    const renderLoginForm = () => {
+        return render(
+            <MemoryRouter>
+                <LoginForm />
+            </MemoryRouter>
+        );
+    };
+
     test('renders login form correctly', () => {
-        render(<LoginForm />);
+        renderLoginForm();
 
         expect(screen.getByText(/acceso a plataforma/i)).toBeInTheDocument();
 
@@ -43,7 +52,7 @@ describe('LoginForm', () => {
 
     test('shows validation errors when submitting empty form', async () => {
         const user = userEvent.setup();
-        render(<LoginForm />);
+        renderLoginForm();
 
         await user.click(screen.getByRole('button', { name: /ingresar/i }));
 
@@ -54,7 +63,7 @@ describe('LoginForm', () => {
 
     test('shows error for invalid email format', async () => {
         const user = userEvent.setup();
-        render(<LoginForm />);
+        renderLoginForm();
 
         await user.type(screen.getByPlaceholderText(/email/i), 'email-invalido');
 
@@ -67,7 +76,7 @@ describe('LoginForm', () => {
 
     test('shows error for short password', async () => {
         const user = userEvent.setup();
-        render(<LoginForm />);
+        renderLoginForm();
 
         await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com');
 
@@ -83,7 +92,7 @@ describe('LoginForm', () => {
 
         const user = userEvent.setup();
 
-        render(<LoginForm />);
+        renderLoginForm();
 
         await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com');
 
@@ -95,9 +104,12 @@ describe('LoginForm', () => {
     });
 
     test('renders remember me checkbox and forgot password action', () => {
-        render(<LoginForm />);
+        renderLoginForm();
 
         expect(screen.getByRole('checkbox', { name: /recordarme/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /olvidé contraseña/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /olvidé contraseña/i })).toHaveAttribute(
+            'href',
+            '#'
+        );
     });
 });

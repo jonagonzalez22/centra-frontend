@@ -10,6 +10,18 @@ describe('Button', () => {
         expect(screen.getByRole('button', { name: /Click me/i })).toBeDefined();
     });
 
+    test('renders children when provided', () => {
+        render(<Button>Save changes</Button>);
+
+        expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+    });
+
+    test('applies custom className', () => {
+        render(<Button className="customButton">Styled</Button>);
+
+        expect(screen.getByRole('button', { name: /styled/i })).toHaveClass('customButton');
+    });
+
     test('calls action when clicked', async () => {
         const user = userEvent.setup();
         const action = vi.fn();
