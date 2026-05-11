@@ -3,57 +3,38 @@ import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
 import { AppHeader } from './AppHeader';
 
+vi.mock('@/store/useAuthStore.store', () => ({
+    useAuthStore: vi.fn(() => ({ user: { name: 'Ana Ruiz', roles: ['Admin'] }, logout: vi.fn() })),
+}));
+
 describe('AppHeader', () => {
-	test('renders the provided title', () => {
-		render(
-			<AppHeader
-				title="Mi Aplicación"
-				user={{ name: 'Ana Ruiz', role: 'Admin' }}
-				isMobile={false}
-			/>
-		);
+    test('renders the provided title', () => {
+        render(<AppHeader title="Mi Aplicación" isMobile={false} />);
 
-		expect(screen.getByText(/Mi Aplicación/i)).toBeDefined();
-	});
+        expect(screen.getByText(/Mi Aplicación/i)).toBeInTheDocument();
+    });
 
-	test('shows user name and role when not mobile', () => {
-		render(
-			<AppHeader
-				title="T"
-				user={{ name: 'Ana Ruiz', role: 'Admin' }}
-				isMobile={false}
-			/>
-		);
+    test('shows user name and role when not mobile', () => {
+        render(<AppHeader title="T" isMobile={false} />);
 
-		expect(screen.getByText(/Ana Ruiz/i)).toBeDefined();
-		expect(screen.getByText(/Admin/i)).toBeDefined();
-	});
+        expect(screen.getByText(/Ana Ruiz/i)).toBeInTheDocument();
+        expect(screen.getByText(/Admin/i)).toBeInTheDocument();
+    });
 
-	test('does not show user name when mobile', () => {
-		render(
-			<AppHeader title="T" user={{ name: 'Ana', role: 'User' }} isMobile={true} />
-		);
+    test('does not show user name when mobile', () => {
+        render(<AppHeader title="T" isMobile={true} />);
 
-		// only avatar initials should be shown; user name text shouldn't be visible
-		expect(screen.queryByText(/Ana/i)).toBeNull();
-	});
+        expect(screen.queryByText(/Ana Ruiz/i)).toBeNull();
+    });
 
-	test('calls onToggleMenu when mobile menu button is clicked', async () => {
-		const user = userEvent.setup();
-		const onToggle = vi.fn();
+    test('calls onToggleMenu when mobile menu button is clicked', async () => {
+        const user = userEvent.setup();
+        const onToggle = vi.fn();
 
-		render(
-			<AppHeader
-				title="T"
-				user={{ name: 'Ana', role: 'User' }}
-				isMobile={true}
-				onToggleMenu={onToggle}
-			/>
-		);
+        render(<AppHeader title="T" isMobile={true} onToggleMenu={onToggle} />);
 
-		// mobile renders a text-button with a Menu icon — there should be a single button
-		await user.click(screen.getByRole('button'));
+        await user.click(screen.getByRole('button'));
 
-		expect(onToggle).toHaveBeenCalled();
-	});
+        expect(onToggle).toHaveBeenCalled();
+    });
 });

@@ -12,7 +12,7 @@ type TableColumn = {
 
 interface TableProps {
     columns: TableColumn[];
-    dataSource: Record<string, string>[] | [];
+    dataSource: Record<string, unknown>[] | [];
     pagination?: TablePaginationConfig;
     loading?: boolean;
     emptyText?: string;

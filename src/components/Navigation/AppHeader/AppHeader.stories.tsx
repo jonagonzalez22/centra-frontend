@@ -14,7 +14,6 @@ type Story = StoryObj<typeof meta>;
 export const Desktop: Story = {
 	args: {
 		title: 'CENTRA Dashboard',
-		user: { name: 'Ana Ruiz', role: 'Administrador' },
 		isMobile: false,
 	},
 };
@@ -22,7 +21,6 @@ export const Desktop: Story = {
 export const Mobile: Story = {
 	args: {
 		title: 'CENTRA',
-		user: { name: 'Ana', role: 'Usuario' },
 		isMobile: true,
 		onToggleMenu: () => {},
 	},

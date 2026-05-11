@@ -1,68 +1,57 @@
-import { Layout, Button, Dropdown } from 'antd';
-import { MenuOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Layout } from 'antd';
+import type { MenuProps } from 'antd';
 import React from 'react';
 import { UserAvatar } from '../UserAvatar';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import './AppHeader.css';
 
 const { Header } = Layout;
 
-interface User {
-    name: string;
-    role: string;
-    avatarUrl?: string;
-}
-
 interface AppHeaderProps {
     title: string;
-    user: User;
     isMobile: boolean;
     onToggleMenu?: () => void;
-    onLogout?: () => Promise<void>;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-    title,
-    user,
-    isMobile,
-    onToggleMenu,
-    onLogout,
-}) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleMenu }) => {
+    const { logout, user } = useAuthStore();
+
     const items = [
         { key: 'profile', label: 'Mi Perfil', icon: <UserOutlined /> },
-        { key: 'logout', label: 'Cerrar Sesión', icon: <LogoutOutlined />, danger: true },
+        { key: 'logout', label: 'Cerrar Sesion', icon: <LogoutOutlined />, danger: true },
     ];
 
-    const handleMenuClick = async ({ key }: { key: string }) => {
-        if (key === 'logout' && onLogout) {
-            await onLogout();
+    const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
+        if (key === 'logout' && logout) {
+            await logout();
         }
     };
 
     return (
-        <Header className="tw-bg-white tw-px-4 md:tw-px-8 tw-flex tw-items-center tw-justify-between tw-shadow-sm tw-z-10">
-            <div className="tw-flex tw-items-center tw-gap-4">
+        <Header className="appHeaderContainer">
+            <div className="appHeaderTitleGroup">
                 {isMobile && (
                     <Button
                         type="text"
                         icon={<MenuOutlined />}
                         onClick={onToggleMenu}
-                        className="tw-text-lg"
+                        className="appHeaderMobileMenuButton"
                     />
                 )}
-                <h1 className="tw-m-0 tw-text-lg tw-font-semibold tw-text-gray-800">{title}</h1>
+                <h1 className="appHeaderTitle">{title}</h1>
             </div>
 
             <Dropdown menu={{ items, onClick: handleMenuClick }} placement="bottomRight" arrow>
-                <div className="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer hover:tw-opacity-80 tw-transition-opacity tw-pl-3 tw-border-l tw-border-gray-200">
+                <div className="appHeaderUserMenuTrigger">
                     {!isMobile && (
-                        <div className="tw-flex tw-flex-col tw-items-end tw-leading-tight">
-                            <span className="tw-font-semibold tw-text-gray-800 tw-text-sm">
-                                {user.name}
-                            </span>
-                            <span className="tw-text-gray-500 tw-text-xs">{user.role}</span>
+                        <div className="appHeaderUserDetails">
+                            <span className="appHeaderUserName">{user?.name || '-'}</span>
+                            <span className="appHeaderUserRole">{user?.roles[0] || '-'} </span>
                         </div>
                     )}
 
-                    <UserAvatar name={user.name} />
+                    <UserAvatar name={user?.name || 'User'} />
                 </div>
             </Dropdown>
         </Header>

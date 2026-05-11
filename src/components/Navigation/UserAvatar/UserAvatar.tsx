@@ -13,5 +13,5 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ name }) => {
         .toUpperCase()
         .slice(0, 2);
 
-    return <Avatar className="tw-bg-blue-600 tw-text-white tw-font-medium">{initials}</Avatar>;
+    return <Avatar className="bg-centra-secondary font-medium text-white">{initials}</Avatar>;
 };

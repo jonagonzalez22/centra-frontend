@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SidebarMenu } from './SidebarMenu';
-import type { MenuProps } from 'antd';
 
 const meta: Meta<typeof SidebarMenu> = {
 	title: 'Components/Navigation/SidebarMenu',
@@ -12,25 +11,19 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const items: MenuProps['items'] = [
-	{ key: 'home', label: 'Home' },
-	{ key: 'settings', label: 'Settings' },
-];
-
 export const Desktop: Story = {
 	args: {
-		items,
 		isMobile: false,
-		selectedKey: 'home',
+		isOpen: false,
+		selectedKey: '/admin/dashboard',
 	},
 };
 
 export const MobileOpen: Story = {
 	args: {
-		items,
 		isMobile: true,
 		isOpen: true,
-		selectedKey: 'settings',
+		selectedKey: '/admin/dashboard',
 		onClose: () => {},
 	},
 };
