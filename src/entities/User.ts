@@ -1,4 +1,4 @@
-export type UserRole = 'SUPER_ADMIN' | 'STORE_ADMIN';
+export type UserRole = 'SUPER_ADMIN' | 'STORE_ADMIN' | 'BACKOFFICE_USER';
 export type FeatureCode =
     | 'pos'
     | 'inventory'

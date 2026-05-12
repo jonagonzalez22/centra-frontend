@@ -29,7 +29,7 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
-                    { path: 'stores', element: <StoresPage /> },
+                    { path: 'tiendas', element: <StoresPage /> },
                 ],
             },
         ],
@@ -38,18 +38,13 @@ export const router = createBrowserRouter([
     // ── Tienda ────────────────────────────────────────
     {
         path: 'tienda',
+        element: <ProtectedRoute allowedRoles={['STORE_ADMIN']} />,
         children: [
             {
-                element: <ProtectedRoute allowedRoles={['STORE_ADMIN']} />,
+                element: <AppLayout title="Mi Tienda" />,
                 children: [
-                    {
-                        element: (
-                            <AppLayout title="Mi Tienda">
-                                <div>Store</div>
-                            </AppLayout>
-                        ),
-                        children: [{ index: true, element: <Navigate to="dashboard" replace /> }],
-                    },
+                    { index: true, element: <Navigate to="dashboard" replace /> },
+                    { path: 'dashboard', element: <div>Admin</div> },
                 ],
             },
         ],

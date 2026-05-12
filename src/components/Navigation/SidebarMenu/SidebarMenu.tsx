@@ -9,10 +9,14 @@ import { FeatureCode } from '@/entities/User';
 
 const { Sider } = Layout;
 
+type MenuContext = 'admin' | 'store' | 'both';
+
 type MenuItem = {
     label: string;
     key: string;
     feature?: FeatureCode;
+    permission?: string;
+    context: MenuContext;
 };
 
 interface SidebarMenuProps {
@@ -23,11 +27,22 @@ interface SidebarMenuProps {
 }
 
 const menuItems: MenuItem[] = [
-    { label: 'Dashboard', key: '/admin/dashboard' },
-    { label: 'Tiendas', key: '/admin/stores', feature: 'stores' },
-    { label: 'Punto de Venta', key: '/tienda/pos', feature: 'pos' },
-    { label: 'Inventario', key: '/tienda/stock', feature: 'inventory' },
-    { label: 'Mensajería', key: '/tienda/mensajes', feature: 'messaging' },
+    { label: 'Dashboard', key: '/admin/dashboard', context: 'admin' },
+    {
+        label: 'Tiendas',
+        key: '/admin/tiendas',
+        context: 'admin',
+        permission: 'stores.view',
+    },
+    {
+        label: 'Planes',
+        key: '/admin/planes',
+        context: 'admin',
+        permission: 'stores.view',
+    },
+    { label: 'Dashboard', key: '/tienda/dashboard', context: 'store' },
+    { label: 'Punto de Venta', key: '/tienda/pos', context: 'store', feature: 'pos' },
+    { label: 'Inventario', key: '/tienda/stock', context: 'store', feature: 'inventory' },
 ];
 
 export const SidebarMenu: React.FC<SidebarMenuProps> = ({
@@ -46,10 +61,26 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     };
 
     const menuItemPermissions = useMemo(() => {
+        if (!user) return [];
+
+        const isSuperAdmin = user.roles.includes('SUPER_ADMIN');
+        const isBackofficeUser = user.roles.includes('BACKOFFICE_USER');
+
+        const currentContext: MenuContext = isSuperAdmin || isBackofficeUser ? 'admin' : 'store';
+
         return menuItems.filter((item: MenuItem) => {
+            if (item.context !== 'both' && item.context !== currentContext) {
+                return false;
+            }
+
+            if (item.permission && !user.permissions.includes(item.permission)) {
+                return false;
+            }
+
             if (item.feature && !hasFeature(user, item.feature)) {
                 return false;
             }
+
             return true;
         });
     }, [user]);

@@ -4,7 +4,17 @@ import { SidebarMenu } from './SidebarMenu';
 import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/store/useAuthStore.store', () => ({
-    useAuthStore: vi.fn(() => ({ user: null })),
+    useAuthStore: vi.fn(() => ({
+        user: {
+            id: 1,
+            name: 'Test User',
+            email: 'test@test.com',
+            store_id: null,
+            roles: ['SUPER_ADMIN'],
+            permissions: [],
+            features: [],
+        },
+    })),
 }));
 
 describe('SidebarMenu', () => {
