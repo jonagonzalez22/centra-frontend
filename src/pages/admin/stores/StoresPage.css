@@ -6,8 +6,24 @@
     @apply mb-6;
 }
 
+.storesPageBreadcrumb {
+    @apply mb-2;
+}
+
+.storesPageHeaderTop {
+    @apply flex items-start justify-between gap-4;
+}
+
+.storesPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
 .storesPageTitle {
-    @apply text-2xl font-bold;
+    @apply text-2xl font-bold text-centra-primary m-0;
+}
+
+.storesPageDescription {
+    @apply text-sm text-centra-text/60 m-0;
 }
 
 .storesPageAlert {

@@ -1,66 +1,31 @@
-import { Alert, Breadcrumb } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
-
-import { StoreSearchBar } from '@/features/admin/stores/components/StoreSearchBar';
-import { StoresTable } from '@/features/admin/stores/components/StoresTable';
+import { StoresPageView } from './StoresPageView';
 import { useStores } from '@/features/admin/stores/hooks/useStores';
-import type { Store } from '@/features/admin/stores/types/store.types';
-import { getPageNavigation, type PageBreadcrumbItem } from '@/router/router.utils';
-import './StoresPage.css';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
 
-interface StoresPageViewProps {
-    title: string;
-    breadcrumbs: PageBreadcrumbItem[];
-    stores: Store[];
-    loading: boolean;
-    error: string | null;
-    refetch: () => void;
-}
-
-export const StoresPageView = ({
-    title,
-    breadcrumbs,
-    stores,
-    loading,
-    error,
-    refetch,
-}: StoresPageViewProps) => {
-    return (
-        <div className="storesPage">
-            <div className="storesPageHeader">
-                <h1 className="storesPageTitle">{title}</h1>
-
-                <Breadcrumb
-                    items={breadcrumbs.map((item) => ({
-                        title: item.path ? <Link to={item.path}>{item.label}</Link> : item.label,
-                    }))}
-                />
-            </div>
-
-            <StoreSearchBar onFilter={refetch} onReset={refetch} />
-
-            {error && (
-                <Alert className="storesPageAlert" type="error" description={error} showIcon />
-            )}
-
-            <StoresTable stores={stores} loading={loading} />
-        </div>
-    );
+const routeMetadata = {
+    title: 'Gestión de Tiendas',
+    description: 'Administra las tiendas registradas en el sistema',
+    breadcrumbs: [
+        { label: 'Admin', path: '/admin/dashboard' },
+        { label: 'Tiendas' },
+    ],
 };
 
 export const StoresPage = () => {
-    const { stores, loading, error, refetch } = useStores();
-    const location = useLocation();
-    const pageNavigation = getPageNavigation(location.pathname);
+    const storesState = useStores();
+    const { user } = useAuthStore();
+    const canCreateStore = user?.permissions.includes('stores.create') ?? false;
 
     return (
-        <StoresPageView
-            title={pageNavigation.title}
-            breadcrumbs={pageNavigation.breadcrumbs}
-            stores={stores}
-            loading={loading}
-            error={error}
-            refetch={refetch}
-        />
+        <StoresProvider value={storesState}>
+            <StoresPageView
+                title={routeMetadata.title}
+                description={routeMetadata.description}
+                breadcrumbs={routeMetadata.breadcrumbs}
+                canCreateStore={canCreateStore}
+                error={storesState.error}
+            />
+        </StoresProvider>
     );
 };
