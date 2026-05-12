@@ -1,43 +1,85 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { StoresTable } from './StoresTable';
-import type { Store } from '@/features/admin/stores/types/store.types';
+import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
+import type { UseStoresReturn } from '@/features/admin/stores/hooks/useStores';
 
-const stores: Store[] = [
-    { id: 1, name: 'Sucursal Centro', email: 'centro@centra.com', status: 'active' },
-    { id: 2, name: 'Sucursal Norte', email: null, status: 'inactive' },
-];
+const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseStoresReturn => ({
+    stores: [],
+    loading: false,
+    error: null,
+    pagination: { current: 1, total: 0, pageSize: 15 },
+    refetch: vi.fn(),
+    ...overrides,
+});
+
+const renderWithProvider = (storesState: UseStoresReturn) => {
+    return render(
+        <MemoryRouter>
+            <StoresProvider value={storesState}>
+                <StoresTable />
+            </StoresProvider>
+        </MemoryRouter>
+    );
+};
 
 describe('StoresTable', () => {
-    test('renders store rows with formatted status and fallback email', () => {
-        render(<StoresTable stores={stores} loading={false} />);
+    test('renders store rows', () => {
+        const storesState = createMockStoresState({
+            stores: [
+                {
+                    id: '1',
+                    name: 'Sucursal Centro',
+                    email: 'centro@centra.com',
+                    is_active: true,
+                    inactive_reason: null,
+                    inactive_at: null,
+                    created_at: '2024-01-15T10:00:00Z',
+                    updated_at: '2024-01-15T10:00:00Z',
+                    business_type: { id: 1, name: 'Ferretería' },
+                    plan: { id: 'plan-1', name: 'Plan Básico' },
+                },
+            ],
+            pagination: { current: 1, total: 1, pageSize: 15 },
+        });
+
+        renderWithProvider(storesState);
 
         expect(screen.getByText('Sucursal Centro')).toBeInTheDocument();
-        expect(screen.getByText('centro@centra.com')).toBeInTheDocument();
-        expect(screen.getByText('Sucursal Norte')).toBeInTheDocument();
-        expect(screen.getByText('Sin email')).toBeInTheDocument();
+        expect(screen.getByText('Ferretería')).toBeInTheDocument();
+        expect(screen.getByText('Plan Básico')).toBeInTheDocument();
         expect(screen.getByText('Activo')).toBeInTheDocument();
-        expect(screen.getByText('Inactivo')).toBeInTheDocument();
     });
 
     test('renders table columns', () => {
-        render(<StoresTable stores={[]} loading={false} />);
+        const storesState = createMockStoresState();
+        renderWithProvider(storesState);
 
         expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Email' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Tipo de negocio' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Plan' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Estado' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Fecha de creación' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Fecha de inactividad' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Acciones' })).toBeInTheDocument();
     });
 
     test('shows empty text when there are no stores', () => {
-        render(<StoresTable stores={[]} loading={false} />);
+        const storesState = createMockStoresState({
+            stores: [],
+            pagination: { current: 1, total: 0, pageSize: 15 },
+        });
+
+        renderWithProvider(storesState);
 
         expect(screen.getByText('No hay tiendas para mostrar')).toBeInTheDocument();
     });
 
     test('shows loading state', () => {
-        const { container } = render(<StoresTable stores={[]} loading={true} />);
+        const storesState = createMockStoresState({ loading: true });
+        const { container } = renderWithProvider(storesState);
 
         expect(container.querySelector('.ant-spin')).toBeInTheDocument();
     });

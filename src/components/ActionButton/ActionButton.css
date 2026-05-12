@@ -1,0 +1,27 @@
+.actionButton {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-md border-0 bg-transparent text-centra-primary/60 transition-colors cursor-pointer;
+
+    &:hover:not(:disabled) {
+        @apply bg-centra-primary/10 text-centra-primary;
+    }
+
+    &:disabled {
+        @apply opacity-40 cursor-not-allowed;
+    }
+
+    svg {
+        @apply w-4 h-4;
+    }
+}
+
+.actionButtonLink {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-md text-centra-primary/60 transition-colors;
+
+    &:hover {
+        @apply bg-centra-primary/10 text-centra-primary;
+    }
+
+    svg {
+        @apply w-4 h-4;
+    }
+}

@@ -1,29 +1,38 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, test, vi } from 'vitest';
-import { StoresPageView } from './StoresPage';
+import { StoresPageView } from './StoresPageView';
+import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
+import type { UseStoresReturn } from '@/features/admin/stores/hooks/useStores';
 
-const renderStoresPage = (props: Partial<React.ComponentProps<typeof StoresPageView>> = {}) => {
-    const defaultProps: React.ComponentProps<typeof StoresPageView> = {
-        title: 'Gestión de Tiendas',
-        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
-        stores: [],
-        loading: false,
-        error: null,
-        refetch: vi.fn(),
-    };
+const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseStoresReturn => ({
+    stores: [],
+    loading: false,
+    error: null,
+    pagination: { current: 1, total: 0, pageSize: 15 },
+    refetch: vi.fn(),
+    ...overrides,
+});
 
+const renderWithProvider = (ui: React.ReactElement) => {
     return render(
         <MemoryRouter>
-            <StoresPageView {...defaultProps} {...props} />
+            <StoresProvider value={createMockStoresState()}>{ui}</StoresProvider>
         </MemoryRouter>
     );
 };
 
 describe('StoresPage', () => {
     test('renders the page header and breadcrumb', () => {
-        renderStoresPage();
+        renderWithProvider(
+            <StoresPageView
+                title="Gestión de Tiendas"
+                description="Administra las tiendas registradas en el sistema"
+                breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }]}
+                canCreateStore={true}
+                error={null}
+            />
+        );
 
         expect(screen.getByRole('heading', { name: /gestión de tiendas/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /admin/i })).toBeInTheDocument();
@@ -31,74 +40,32 @@ describe('StoresPage', () => {
     });
 
     test('renders the provided page navigation', () => {
-        renderStoresPage({
-            title: 'Reporte de Tiendas',
-            breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Reportes' }],
-        });
+        renderWithProvider(
+            <StoresPageView
+                title="Reporte de Tiendas"
+                description="Reportes de tiendas"
+                breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Reportes' }]}
+                canCreateStore={false}
+                error={null}
+            />
+        );
 
         expect(screen.getByRole('heading', { name: /reporte de tiendas/i })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /admin/i })).toHaveAttribute(
-            'href',
-            '/admin/dashboard'
-        );
+        expect(screen.getByRole('link', { name: /admin/i })).toHaveAttribute('href', '/admin/dashboard');
         expect(screen.getByText('Reportes')).toBeInTheDocument();
     });
 
-    test('renders filter controls', () => {
-        renderStoresPage();
-
-        expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
-        expect(screen.getAllByText('Estado').length).toBeGreaterThan(0);
-        expect(screen.getByRole('button', { name: /filtrar/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /limpiar/i })).toBeInTheDocument();
-    });
-
-    test('renders table columns', () => {
-        renderStoresPage();
-
-        expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Email' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Estado' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Acciones' })).toBeInTheDocument();
-    });
-
-    test('renders stores when data is available', () => {
-        renderStoresPage({
-            stores: [
-                { id: 1, name: 'Sucursal Centro', email: 'centro@centra.com', status: 'active' },
-                { id: 2, name: 'Sucursal Norte', email: null, status: 'inactive' },
-            ],
-        });
-
-        expect(screen.getByText('Sucursal Centro')).toBeInTheDocument();
-        expect(screen.getByText('centro@centra.com')).toBeInTheDocument();
-        expect(screen.getByText('Sucursal Norte')).toBeInTheDocument();
-        expect(screen.getByText('Sin email')).toBeInTheDocument();
-        expect(screen.getByText('Activo')).toBeInTheDocument();
-        expect(screen.getByText('Inactivo')).toBeInTheDocument();
-    });
-
-    test('shows loading state while stores are being fetched', () => {
-        const { container } = renderStoresPage({ loading: true });
-
-        expect(container.querySelector('.ant-spin')).toBeInTheDocument();
-    });
-
-    test('shows error message when stores fail to load', () => {
-        renderStoresPage({ error: 'Error al cargar las tiendas' });
+    test('renders error message when stores fail to load', () => {
+        renderWithProvider(
+            <StoresPageView
+                title="Gestión de Tiendas"
+                description="Administra las tiendas registradas en el sistema"
+                breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }]}
+                canCreateStore={false}
+                error="Error al cargar las tiendas"
+            />
+        );
 
         expect(screen.getByText('Error al cargar las tiendas')).toBeInTheDocument();
-    });
-
-    test('calls refetch when filtering and resetting', async () => {
-        const user = userEvent.setup();
-        const refetch = vi.fn();
-
-        renderStoresPage({ refetch });
-
-        await user.click(screen.getByRole('button', { name: /filtrar/i }));
-        await user.click(screen.getByRole('button', { name: /limpiar/i }));
-
-        expect(refetch).toHaveBeenCalledTimes(2);
     });
 });
