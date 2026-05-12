@@ -5,6 +5,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { RootRedirect } from './RootRedirect';
 import LoginPage from '@/pages/auth/LoginPage';
 import { StoresPage } from '@/pages/admin/stores/StoresPage';
+import { PermissionRoute } from './PermissionRoute';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -22,14 +23,23 @@ export const router = createBrowserRouter([
     // ── Admin ─────────────────────────────────────────
     {
         path: 'admin',
-        element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
+        element: <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'BACKOFFICE_USER']} />,
         children: [
             {
                 element: <AppLayout title="Backoffice Admin" />,
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
-                    { path: 'tiendas', element: <StoresPage /> },
+
+                    {
+                        element: <PermissionRoute permission="stores.view" />,
+                        children: [{ path: 'tiendas', element: <StoresPage /> }],
+                    },
+
+                    {
+                        element: <PermissionRoute permission="plans.view" />,
+                        children: [{ path: 'planes', element: <div>Planes</div> }],
+                    },
                 ],
             },
         ],
