@@ -14,7 +14,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     },
     STORE_ADMIN: {
         homePath: '/tienda',
-        allowedPaths: ['/dashboard', '/tienda'],
+        allowedPaths: ['/tienda'],
         priority: 2,
     },
     BACKOFFICE_USER: {
