@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { message } from 'antd';
-import type { Store, StoresFilters } from '../types/store.types';
+import type { FilterOptions, Store, StoresFilters } from '../types/store.types';
 import { StoresService } from '../services/stores.service';
 
 export interface StoresPagination {
@@ -15,7 +15,21 @@ export interface UseStoresReturn {
     error: string | null;
     pagination: StoresPagination;
     refetch: (filters?: StoresFilters) => void;
+    filterOptions: FilterOptions | null;
+    filterOptionsLoading: boolean;
 }
+
+const getErrorMessage = (err: unknown, fallback: string): string => {
+    if (err && typeof err === 'object') {
+        if ('message' in err && typeof (err as { message: unknown }).message === 'string') {
+            return (err as { message: string }).message;
+        }
+        if ('data' in err && (err as { data?: { message?: string } }).data?.message) {
+            return (err as { data: { message: string } }).data.message;
+        }
+    }
+    return fallback;
+};
 
 export const useStores = (): UseStoresReturn => {
     const [stores, setStores] = useState<Store[]>([]);
@@ -26,6 +40,22 @@ export const useStores = (): UseStoresReturn => {
         total: 0,
         pageSize: 15,
     });
+    const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+    const [filterOptionsLoading, setFilterOptionsLoading] = useState<boolean>(true);
+
+    const fetchFilterOptions = useCallback(async () => {
+        setFilterOptionsLoading(true);
+        try {
+            const options = await StoresService.getFilterOptions();
+            setFilterOptions(options);
+        } catch (err) {
+            const errorMessage = getErrorMessage(err, 'Error al cargar opciones de filtro');
+            setError(errorMessage);
+            message.error(errorMessage);
+        } finally {
+            setFilterOptionsLoading(false);
+        }
+    }, []);
 
     const fetchStores = useCallback(async (filters: StoresFilters) => {
         try {
@@ -38,8 +68,8 @@ export const useStores = (): UseStoresReturn => {
                 current: response.current_page,
                 total: response.total,
             }));
-        } catch {
-            const errorMessage = 'Error al cargar las tiendas';
+        } catch (err) {
+            const errorMessage = getErrorMessage(err, 'Error al cargar las tiendas');
             setError(errorMessage);
             message.error(errorMessage);
         } finally {
@@ -56,8 +86,8 @@ export const useStores = (): UseStoresReturn => {
 
     useEffect(() => {
         fetchStores({ page: 1 });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        fetchFilterOptions();
+    }, [fetchStores, fetchFilterOptions]);
 
-    return { stores, loading, error, pagination, refetch };
+    return { stores, loading, error, pagination, refetch, filterOptions, filterOptionsLoading };
 };

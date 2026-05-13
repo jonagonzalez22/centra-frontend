@@ -137,4 +137,40 @@ describe('StoresService', () => {
             ).rejects.toThrow('No autorizado');
         });
     });
+
+    describe('getFilterOptions', () => {
+        test('returns filter options on success', async () => {
+            const filterOptionsResponse = {
+                status: 'success' as const,
+                message: 'Opciones de filtro obtenidas correctamente.',
+                data: {
+                    business_types: [{ id: 1, name: 'Ferretería' }],
+                    plans: [{ id: 'plan-1', name: 'Plan Básico' }],
+                    is_active: [
+                        { value: true, label: 'Activo' },
+                        { value: false, label: 'Inactivo' },
+                    ],
+                },
+                errors: null,
+            };
+            mockApi.get.mockResolvedValue({ data: filterOptionsResponse });
+
+            const result = await StoresService.getFilterOptions();
+
+            expect(result).toEqual(filterOptionsResponse.data);
+            expect(mockApi.get).toHaveBeenCalledWith('/v1/admin/stores/filter-options');
+        });
+
+        test('throws error on API error status', async () => {
+            mockApi.get.mockResolvedValue({ data: mockErrorResponse });
+
+            await expect(StoresService.getFilterOptions()).rejects.toThrow('No autorizado');
+        });
+
+        test('throws error on network error', async () => {
+            mockApi.get.mockRejectedValue(new Error('Network error'));
+
+            await expect(StoresService.getFilterOptions()).rejects.toThrow('Network error');
+        });
+    });
 });

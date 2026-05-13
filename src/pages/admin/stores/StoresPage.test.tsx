@@ -11,6 +11,8 @@ const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseSto
     error: null,
     pagination: { current: 1, total: 0, pageSize: 15 },
     refetch: vi.fn(),
+    filterOptions: null,
+    filterOptionsLoading: false,
     ...overrides,
 });
 

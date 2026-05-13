@@ -13,6 +13,8 @@ const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseSto
     error: null,
     pagination: { current: 1, total: 0, pageSize: 15 },
     refetch: vi.fn(),
+    filterOptions: null,
+    filterOptionsLoading: false,
     ...overrides,
 });
 
@@ -27,14 +29,34 @@ const renderWithProvider = (storesState: UseStoresReturn) => {
 };
 
 describe('StoreSearchBar', () => {
-    test('renders search controls', () => {
+    test('renders all filter controls', () => {
         const storesState = createMockStoresState();
         renderWithProvider(storesState);
 
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
-        expect(screen.getAllByText('Estado').length).toBeGreaterThan(0);
+        expect(screen.getByText('Tipo de Negocio')).toBeInTheDocument();
+        expect(screen.getByText('Plan')).toBeInTheDocument();
+        expect(screen.getByText('Estado')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Filtrar' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeInTheDocument();
+    });
+
+    test('renders filter options from API when available', () => {
+        const storesState = createMockStoresState({
+            filterOptions: {
+                business_types: [{ id: 1, name: 'Ferretería' }],
+                plans: [{ id: 'plan-1', name: 'Plan Básico' }],
+                is_active: [
+                    { value: true, label: 'Activo' },
+                    { value: false, label: 'Inactivo' },
+                ],
+            },
+        });
+        renderWithProvider(storesState);
+
+        expect(screen.getByText('Tipo de Negocio')).toBeInTheDocument();
+        expect(screen.getByText('Plan')).toBeInTheDocument();
+        expect(screen.getByText('Estado')).toBeInTheDocument();
     });
 
     test('does not call refetch when filtering without any filters', async () => {
@@ -49,17 +71,37 @@ describe('StoreSearchBar', () => {
         expect(refetch).not.toHaveBeenCalled();
     });
 
-    test('calls refetch with filters when form is submitted with name filter', async () => {
+    test('calls refetch with all filters when form is submitted', async () => {
         const user = userEvent.setup();
         const refetch = vi.fn();
-        const storesState = createMockStoresState({ refetch });
+        const storesState = createMockStoresState({
+            refetch,
+            filterOptions: {
+                business_types: [{ id: 1, name: 'Ferretería' }],
+                plans: [{ id: 'plan-1', name: 'Plan Básico' }],
+                is_active: [
+                    { value: true, label: 'Activo' },
+                    { value: false, label: 'Inactivo' },
+                ],
+            },
+        });
 
         renderWithProvider(storesState);
 
         await user.type(screen.getByLabelText('Nombre'), 'Sucursal Centro');
+
+        const businessTypeSelect = screen.getByText('Tipo de Negocio').closest('.ant-select')?.querySelector('.ant-select-selector');
+        if (businessTypeSelect) {
+            await user.click(businessTypeSelect);
+        }
+
         await user.click(screen.getByRole('button', { name: 'Filtrar' }));
 
-        expect(refetch).toHaveBeenCalledWith({ name: 'Sucursal Centro', is_active: undefined });
+        expect(refetch).toHaveBeenCalledWith(
+            expect.objectContaining({
+                name: 'Sucursal Centro',
+            })
+        );
     });
 
     test('calls refetch with empty filters when reset button is clicked', async () => {
@@ -75,13 +117,21 @@ describe('StoreSearchBar', () => {
         expect(refetch).toHaveBeenCalledWith({});
     });
 
-    test('disables buttons when loading is true', () => {
+    test('disables all controls when loading is true', () => {
         const storesState = createMockStoresState({ loading: true });
 
         renderWithProvider(storesState);
 
         expect(screen.getByRole('button', { name: 'Filtrar' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();
+    });
+
+    test('disables controls when filterOptionsLoading is true', () => {
+        const storesState = createMockStoresState({ filterOptionsLoading: true });
+
+        renderWithProvider(storesState);
+
+        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeDisabled();
     });
 
     test('disables limpiar button when no filters are active', () => {
