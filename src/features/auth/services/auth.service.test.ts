@@ -36,7 +36,7 @@ describe('Auth Service', () => {
 
             const result = await authService.logIn('test@example.com', 'password123');
 
-            expect(mockApi.post).toHaveBeenCalledWith('/login', {
+            expect(mockApi.post).toHaveBeenCalledWith('v1/login', {
                 email: 'test@example.com',
                 password: 'password123',
             });
@@ -130,7 +130,7 @@ describe('Auth Service', () => {
 
             const result = await authService.logOut();
 
-            expect(mockApi.post).toHaveBeenCalledWith('/logout');
+            expect(mockApi.post).toHaveBeenCalledWith('v1/logout');
             expect(result).toEqual(mockResponse);
         });
 
