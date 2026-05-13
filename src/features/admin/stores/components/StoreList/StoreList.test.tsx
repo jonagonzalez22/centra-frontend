@@ -21,6 +21,8 @@ describe('StoreList', () => {
             error: null,
             pagination: mockPagination,
             refetch: vi.fn(),
+            filterOptions: null,
+            filterOptionsLoading: false,
         });
 
         render(<StoreList />);
@@ -60,6 +62,8 @@ describe('StoreList', () => {
             error: null,
             pagination: { ...mockPagination, total: 2 },
             refetch: vi.fn(),
+            filterOptions: null,
+            filterOptionsLoading: false,
         });
 
         render(<StoreList />);
@@ -78,6 +82,8 @@ describe('StoreList', () => {
             error: null,
             pagination: mockPagination,
             refetch: vi.fn(),
+            filterOptions: null,
+            filterOptionsLoading: false,
         });
 
         render(<StoreList />);

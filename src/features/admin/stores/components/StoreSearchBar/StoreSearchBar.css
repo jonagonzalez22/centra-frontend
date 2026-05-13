@@ -1,15 +1,19 @@
 .storeSearchBar {
-    @apply mb-6 flex flex-wrap items-end gap-3;
+    @apply mb-6;
 }
 
-.storeSearchBarName {
-    @apply mb-0 min-w-[220px] flex-1;
+.storeSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
 }
 
-.storeSearchBarStatus {
+.storeSearchBarRow > * {
     @apply mb-0 min-w-[180px];
 }
 
-.storeSearchBarAction {
-    @apply mb-0;
+.storeSearchBarName {
+    @apply min-w-[220px] flex-1;
+}
+
+.storeSearchBarActions {
+    @apply flex gap-2 items-end;
 }

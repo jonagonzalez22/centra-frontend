@@ -1,20 +1,34 @@
-import { Form, Input, Select } from 'antd';
+import { Form } from 'antd';
 import { Button } from '@/components/Button';
+import InputField from '@/components/InputField/InputField';
+import SelectField from '@/components/SelectField/SelectField';
 import { useStoresContext } from '@/features/admin/stores/hooks/useStoresContext';
 import type { StoresFilters } from '@/features/admin/stores/types/store.types';
 import './StoreSearchBar.css';
 
+interface StoreFiltersForm {
+    name?: string;
+    business_type_id?: number;
+    plan_id?: string;
+    is_active?: boolean;
+}
+
 export const StoreSearchBar = () => {
-    const { loading, refetch } = useStoresContext();
+    const { loading, filterOptions, filterOptionsLoading, refetch } = useStoresContext();
     const [form] = Form.useForm();
 
     const nameValue = Form.useWatch('name', form);
-    const statusValue = Form.useWatch('status', form);
+    const businessTypeValue = Form.useWatch('business_type_id', form);
+    const planValue = Form.useWatch('plan_id', form);
+    const isActiveValue = Form.useWatch('is_active', form);
 
-    const hasActiveFilters = nameValue || statusValue;
+    const hasActiveFilters =
+        nameValue || businessTypeValue || planValue || isActiveValue !== undefined;
 
-    const handleFinish = (values: { name?: string; status?: 'active' | 'inactive' }) => {
-        const hasFilters = values.name || values.status;
+    const isDisabled = loading || filterOptionsLoading;
+
+    const handleFinish = (values: StoreFiltersForm) => {
+        const hasFilters = values.name || values.business_type_id || values.plan_id || values.is_active !== undefined;
 
         if (!hasFilters) {
             return;
@@ -22,12 +36,9 @@ export const StoreSearchBar = () => {
 
         const filters: StoresFilters = {
             name: values.name,
-            is_active:
-                values.status === 'active'
-                    ? true
-                    : values.status === 'inactive'
-                      ? false
-                      : undefined,
+            business_type_id: values.business_type_id,
+            plan_id: values.plan_id,
+            is_active: values.is_active,
         };
         refetch(filters);
     };
@@ -37,6 +48,24 @@ export const StoreSearchBar = () => {
         refetch({});
     };
 
+    const businessTypeOptions =
+        filterOptions?.business_types.map((bt) => ({
+            label: bt.name,
+            value: bt.id,
+        })) ?? [];
+
+    const planOptions =
+        filterOptions?.plans.map((p) => ({
+            label: p.name,
+            value: p.id,
+        })) ?? [];
+
+    const isActiveOptions =
+        filterOptions?.is_active.map((ia) => ({
+            label: ia.label,
+            value: ia.value,
+        })) ?? [];
+
     return (
         <Form
             form={form}
@@ -44,39 +73,62 @@ export const StoreSearchBar = () => {
             className="storeSearchBar"
             onFinish={handleFinish}
         >
-            <Form.Item name="name" label="Nombre" className="storeSearchBarName">
-                <Input placeholder="Buscar por nombre" allowClear />
-            </Form.Item>
-
-            <Form.Item name="status" label="Estado" className="storeSearchBarStatus">
-                <Select
-                    placeholder="Estado"
+            <div className="storeSearchBarRow">
+                <InputField
+                    name="name"
+                    label="Nombre"
+                    placeholder="Buscar por nombre"
                     allowClear
-                    options={[
-                        { label: 'Activo', value: 'active' },
-                        { label: 'Inactivo', value: 'inactive' },
-                    ]}
+                    disabled={isDisabled}
                 />
-            </Form.Item>
 
-            <Form.Item className="storeSearchBarAction">
-                <Button
-                    variant="primary"
-                    label="Filtrar"
-                    htmlType="submit"
-                    action={() => form.submit()}
-                    disabled={loading}
+                <SelectField
+                    name="business_type_id"
+                    label="Tipo de Negocio"
+                    placeholder="Seleccionar"
+                    options={businessTypeOptions}
+                    allowClear
+                    disabled={isDisabled}
+                    loading={filterOptionsLoading}
                 />
-            </Form.Item>
 
-            <Form.Item className="storeSearchBarAction">
-                <Button
-                    variant="default"
-                    label="Limpiar"
-                    action={handleReset}
-                    disabled={loading || !hasActiveFilters}
+                <SelectField
+                    name="plan_id"
+                    label="Plan"
+                    placeholder="Seleccionar"
+                    options={planOptions}
+                    allowClear
+                    disabled={isDisabled}
+                    loading={filterOptionsLoading}
                 />
-            </Form.Item>
+
+                <SelectField
+                    name="is_active"
+                    label="Estado"
+                    placeholder="Seleccionar"
+                    options={isActiveOptions}
+                    allowClear
+                    disabled={isDisabled}
+                    loading={filterOptionsLoading}
+                />
+
+                <div className="storeSearchBarActions">
+                    <Button
+                        variant="primary"
+                        label="Filtrar"
+                        htmlType="submit"
+                        action={() => form.submit()}
+                        disabled={isDisabled}
+                    />
+
+                    <Button
+                        variant="default"
+                        label="Limpiar"
+                        action={handleReset}
+                        disabled={isDisabled || !hasActiveFilters}
+                    />
+                </div>
+            </div>
         </Form>
     );
 };

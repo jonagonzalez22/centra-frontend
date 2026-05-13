@@ -43,3 +43,9 @@ export interface StoresFilters {
     page?: number;
     per_page?: number;
 }
+
+export interface FilterOptions {
+    business_types: { id: number; name: string }[];
+    plans: { id: string; name: string }[];
+    is_active: { value: boolean; label: string }[];
+}
