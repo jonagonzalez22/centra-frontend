@@ -6,7 +6,11 @@ import { formatDate } from '@/utils/formatDate';
 import type { Store } from '@/features/admin/stores/types/store.types';
 import './StoresTable.css';
 
-export const StoresTable = () => {
+interface StoresTableProps {
+    onEdit: (store: Store) => void;
+}
+
+export const StoresTable = ({ onEdit }: StoresTableProps) => {
     const { stores, loading, pagination, refetch } = useStoresContext();
 
     const columns = [
@@ -62,7 +66,7 @@ export const StoresTable = () => {
                     <ActionButton
                         icon={<EditOutlined />}
                         label="Editar"
-                        href={`/admin/tiendas/${record.id}/editar`}
+                        action={() => onEdit(record)}
                     />
                 </div>
             ),

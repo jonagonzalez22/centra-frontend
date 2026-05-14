@@ -7,21 +7,28 @@ vi.mock('../services/stores.service');
 
 const mockedStoresService = vi.mocked(StoresService);
 
+const mockStore = {
+    id: '1',
+    name: 'Sucursal Centro',
+    email: 'centro@centra.com',
+    is_active: true,
+    inactive_reason: null,
+    inactive_at: null,
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-01-15T10:00:00Z',
+    business_type: { id: 1, name: 'Ferretería' },
+    plan: { id: 'plan-1', name: 'Plan Básico' },
+    cuit: '20123456789',
+    address: 'Calle 123',
+    state: 'Buenos Aires',
+    city: 'CABA',
+    country: 'Argentina',
+    phone: '+541123456789',
+    url_logo: null,
+};
+
 const mockApiResponse = {
-    items: [
-        {
-            id: '1',
-            name: 'Sucursal Centro',
-            email: 'centro@centra.com',
-            is_active: true,
-            inactive_reason: null,
-            inactive_at: null,
-            created_at: '2024-01-15T10:00:00Z',
-            updated_at: '2024-01-15T10:00:00Z',
-            business_type: { id: 1, name: 'Ferretería' },
-            plan: { id: 'plan-1', name: 'Plan Básico' },
-        },
-    ],
+    items: [mockStore],
     total: 1,
     per_page: 15,
     current_page: 1,

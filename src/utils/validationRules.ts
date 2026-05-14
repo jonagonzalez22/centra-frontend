@@ -9,3 +9,21 @@ export const passwordRules = (min = 8): Rule[] => [
     { required: true, message: 'La contraseña es obligatoria.' },
     { min, message: `Mínimo ${min} caracteres.` },
 ];
+
+export const storeNameRules = (): Rule[] => [
+    { required: true, message: 'El nombre de tienda es obligatorio.' },
+    { min: 3, message: 'Mínimo 3 caracteres.' },
+    { max: 100, message: 'Máximo 100 caracteres.' },
+];
+
+export const storePhoneRules = (): Rule[] => [
+    { required: true, message: 'El teléfono es obligatorio.' },
+    { pattern: /^\+?[0-9\s-]{8,20}$/, message: 'Formato de teléfono inválido.' },
+];
+
+export const requiredStringRules = (fieldName: string, min = 1, max?: number): Rule[] => {
+    const rules: Rule[] = [{ required: true, message: `${fieldName} es obligatorio.` }];
+    if (min > 1) rules.push({ min, message: `Mínimo ${min} caracteres.` });
+    if (max) rules.push({ max, message: `Máximo ${max} caracteres.` });
+    return rules;
+};

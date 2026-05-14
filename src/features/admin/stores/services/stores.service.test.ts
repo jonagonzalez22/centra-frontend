@@ -119,12 +119,28 @@ describe('StoresService', () => {
 
             const result = await StoresService.create({
                 name: 'Nueva Tienda',
+                business_type_id: 1,
+                cuit: '20123456789',
+                address: 'Calle 123',
+                state: 'Buenos Aires',
+                city: 'CABA',
+                country: 'Argentina',
+                phone: '+541123456789',
+                email: 'nueva@tienda.com',
                 is_active: true,
             });
 
             expect(result).toEqual(createResponse.data);
             expect(mockApi.post).toHaveBeenCalledWith('/v1/admin/stores', {
                 name: 'Nueva Tienda',
+                business_type_id: 1,
+                cuit: '20123456789',
+                address: 'Calle 123',
+                state: 'Buenos Aires',
+                city: 'CABA',
+                country: 'Argentina',
+                phone: '+541123456789',
+                email: 'nueva@tienda.com',
                 is_active: true,
             });
         });
@@ -133,7 +149,18 @@ describe('StoresService', () => {
             mockApi.post.mockResolvedValue({ data: mockErrorResponse });
 
             await expect(
-                StoresService.create({ name: 'Nueva Tienda', is_active: true })
+                StoresService.create({
+                    name: 'Nueva Tienda',
+                    business_type_id: 1,
+                    cuit: '20123456789',
+                    address: 'Calle 123',
+                    state: 'Buenos Aires',
+                    city: 'CABA',
+                    country: 'Argentina',
+                    phone: '+541123456789',
+                    email: 'nueva@tienda.com',
+                    is_active: true,
+                })
             ).rejects.toThrow('No autorizado');
         });
     });

@@ -2,7 +2,7 @@ import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
-import type { CreateStoreDto, FilterOptions, StoresFilters, Store, StoresListResponse } from '../types/store.types';
+import type { CreateStoreDto, FilterOptions, StoresFilters, Store, StoresListResponse, UpdateStoreDto } from '../types/store.types';
 
 export const StoresService = {
     getStores: async (filters: StoresFilters = {}): Promise<StoresListResponse> => {
@@ -43,6 +43,24 @@ export const StoresService = {
     create: async (storeData: CreateStoreDto): Promise<Store> => {
         const { data } = await api.post<ApiListResponse<Store>>(
             API_ENDPOINTS.ADMIN.STORES.URL,
+            storeData
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    update: async (id: string, storeData: UpdateStoreDto): Promise<Store> => {
+        const { data } = await api.put<ApiListResponse<Store>>(
+            `${API_ENDPOINTS.ADMIN.STORES.URL}/${id}`,
             storeData
         );
 

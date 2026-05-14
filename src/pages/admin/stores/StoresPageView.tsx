@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { StoreSearchBar } from '@/features/admin/stores/components/StoreSearchBar';
 import { StoresTable } from '@/features/admin/stores/components/StoresTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
+import type { Store } from '@/features/admin/stores/types/store.types';
 import './StoresPage.css';
 
 interface StoresPageViewProps {
@@ -13,6 +14,8 @@ interface StoresPageViewProps {
     breadcrumbs: PageBreadcrumbItem[];
     canCreateStore: boolean;
     error: string | null;
+    onEdit: (store: Store) => void;
+    onCreate: () => void;
 }
 
 export const StoresPageView = ({
@@ -21,6 +24,8 @@ export const StoresPageView = ({
     breadcrumbs,
     canCreateStore,
     error,
+    onEdit,
+    onCreate,
 }: StoresPageViewProps) => {
     return (
         <div className="storesPage">
@@ -45,7 +50,7 @@ export const StoresPageView = ({
                             variant="primary"
                             label="Nueva Tienda"
                             icon={<PlusOutlined />}
-                            action={() => {}}
+                            action={onCreate}
                         />
                     )}
                 </div>
@@ -57,7 +62,7 @@ export const StoresPageView = ({
                 <Alert className="storesPageAlert" type="error" description={error} showIcon />
             )}
 
-            <StoresTable />
+            <StoresTable onEdit={onEdit} />
         </div>
     );
 };
