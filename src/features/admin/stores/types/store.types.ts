@@ -19,13 +19,33 @@ export interface Store {
     updated_at: string;
     business_type: BusinessType | null;
     plan: Plan | null;
+    cuit: string;
+    address: string;
+    state: string;
+    city: string;
+    country: string;
+    phone: string;
+    url_logo: string | null;
 }
 
 export interface CreateStoreDto {
     name: string;
-    email?: string;
-    is_active: boolean;
+    business_type_id: number;
+    cuit: string;
+    address: string;
+    state: string;
+    city: string;
+    country: string;
+    phone: string;
+    email: string;
+    plan_id?: string;
+    is_active?: boolean;
+    inactive_reason?: string;
+    inactive_at?: string | null;
+    url_logo?: string;
 }
+
+export type UpdateStoreDto = Partial<CreateStoreDto>;
 
 export interface StoresListResponse {
     items: Store[];

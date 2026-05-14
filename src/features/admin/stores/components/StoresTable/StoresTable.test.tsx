@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { StoresTable } from './StoresTable';
 import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
 import type { UseStoresReturn } from '@/features/admin/stores/hooks/useStores';
+import type { Store } from '@/features/admin/stores/types/store.types';
 
 const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseStoresReturn => ({
     stores: [],
@@ -17,11 +18,11 @@ const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseSto
     ...overrides,
 });
 
-const renderWithProvider = (storesState: UseStoresReturn) => {
+const renderWithProvider = (storesState: UseStoresReturn, onEdit: (store: Store) => void) => {
     return render(
         <MemoryRouter>
             <StoresProvider value={storesState}>
-                <StoresTable />
+                <StoresTable onEdit={onEdit} />
             </StoresProvider>
         </MemoryRouter>
     );
@@ -29,25 +30,32 @@ const renderWithProvider = (storesState: UseStoresReturn) => {
 
 describe('StoresTable', () => {
     test('renders store rows', () => {
+        const mockStore = {
+            id: '1',
+            name: 'Sucursal Centro',
+            email: 'centro@centra.com',
+            is_active: true,
+            inactive_reason: null,
+            inactive_at: null,
+            created_at: '2024-01-15T10:00:00Z',
+            updated_at: '2024-01-15T10:00:00Z',
+            business_type: { id: 1, name: 'Ferretería' },
+            plan: { id: 'plan-1', name: 'Plan Básico' },
+            cuit: '20123456789',
+            address: 'Calle 123',
+            state: 'Buenos Aires',
+            city: 'CABA',
+            country: 'Argentina',
+            phone: '+541123456789',
+            url_logo: null,
+        };
+
         const storesState = createMockStoresState({
-            stores: [
-                {
-                    id: '1',
-                    name: 'Sucursal Centro',
-                    email: 'centro@centra.com',
-                    is_active: true,
-                    inactive_reason: null,
-                    inactive_at: null,
-                    created_at: '2024-01-15T10:00:00Z',
-                    updated_at: '2024-01-15T10:00:00Z',
-                    business_type: { id: 1, name: 'Ferretería' },
-                    plan: { id: 'plan-1', name: 'Plan Básico' },
-                },
-            ],
+            stores: [mockStore],
             pagination: { current: 1, total: 1, pageSize: 15 },
         });
 
-        renderWithProvider(storesState);
+        renderWithProvider(storesState, vi.fn());
 
         expect(screen.getByText('Sucursal Centro')).toBeInTheDocument();
         expect(screen.getByText('Ferretería')).toBeInTheDocument();
@@ -57,7 +65,7 @@ describe('StoresTable', () => {
 
     test('renders table columns', () => {
         const storesState = createMockStoresState();
-        renderWithProvider(storesState);
+        renderWithProvider(storesState, vi.fn());
 
         expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Tipo de negocio' })).toBeInTheDocument();
@@ -74,14 +82,14 @@ describe('StoresTable', () => {
             pagination: { current: 1, total: 0, pageSize: 15 },
         });
 
-        renderWithProvider(storesState);
+        renderWithProvider(storesState, vi.fn());
 
         expect(screen.getByText('No hay tiendas para mostrar')).toBeInTheDocument();
     });
 
     test('shows loading state', () => {
         const storesState = createMockStoresState({ loading: true });
-        const { container } = renderWithProvider(storesState);
+        const { container } = renderWithProvider(storesState, vi.fn());
 
         expect(container.querySelector('.ant-spin')).toBeInTheDocument();
     });

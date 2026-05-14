@@ -80,8 +80,9 @@ export const useStores = (): UseStoresReturn => {
     const refetch = useCallback(
         (filters: StoresFilters = {}) => {
             fetchStores({ ...filters, page: 1 });
+            fetchFilterOptions();
         },
-        [fetchStores]
+        [fetchStores, fetchFilterOptions]
     );
 
     useEffect(() => {

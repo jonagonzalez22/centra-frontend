@@ -33,6 +33,8 @@ describe('StoresPage', () => {
                 breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }]}
                 canCreateStore={true}
                 error={null}
+                onEdit={vi.fn()}
+                onCreate={vi.fn()}
             />
         );
 
@@ -49,6 +51,8 @@ describe('StoresPage', () => {
                 breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Reportes' }]}
                 canCreateStore={false}
                 error={null}
+                onEdit={vi.fn()}
+                onCreate={vi.fn()}
             />
         );
 
@@ -65,6 +69,8 @@ describe('StoresPage', () => {
                 breadcrumbs={[{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }]}
                 canCreateStore={false}
                 error="Error al cargar las tiendas"
+                onEdit={vi.fn()}
+                onCreate={vi.fn()}
             />
         );
 
