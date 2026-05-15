@@ -1,16 +1,21 @@
-import { Form, Button, Alert } from 'antd';
+import { Form, Alert } from 'antd';
 import InputField from '../../../components/InputField/InputField';
 import { InputPassword } from '@/components/InputPassword';
+import { Button } from '@/components/Button';
+import { Checkbox } from '@/components/Checkbox';
+import { TextLink } from '@/components/TextLink';
 import { UserOutlined } from '@ant-design/icons';
 import { emailRules, passwordRules } from '../../../utils/validationRules';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ApiError } from '@/interfaces/ApiErrors.interface';
+import './LoginForm.css';
 
 interface LoginFormValues {
     email: string;
     password: string;
+    remember?: boolean;
 }
 
 const LoginForm = () => {
@@ -69,8 +74,28 @@ const LoginForm = () => {
                     placeholder="Ingresá tu contraseña"
                     rules={passwordValidation}
                 />
-                {/**TODO: agregar check recordar y olvide contrasena */}
-                <Button type="primary" htmlType="submit" block className="mt-4" loading={loading}>
+
+                <div className="loginFormOptions">
+                    <Form.Item
+                        name="remember"
+                        valuePropName="checked"
+                        className="loginFormRememberItem"
+                    >
+                        <Checkbox className="loginFormRememberCheckbox">Recordarme</Checkbox>
+                    </Form.Item>
+
+                    <TextLink to="/" className="loginFormForgotPasswordLink">
+                        Olvidé contraseña
+                    </TextLink>
+                </div>
+
+                <Button
+                    variant="primary"
+                    htmlType="submit"
+                    block
+                    className="loginFormSubmitButton"
+                    loading={loading}
+                >
                     Ingresar
                 </Button>
 

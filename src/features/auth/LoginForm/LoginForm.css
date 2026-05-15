@@ -1,0 +1,19 @@
+.loginFormOptions {
+    @apply mb-4 flex items-center justify-between gap-4;
+}
+
+.loginFormRememberItem {
+    @apply mb-0;
+}
+
+.loginFormRememberCheckbox {
+    @apply text-sm leading-none;
+}
+
+.loginFormForgotPasswordLink {
+    @apply text-sm leading-none hover:underline;
+}
+
+.loginFormSubmitButton {
+    @apply mt-4;
+}
