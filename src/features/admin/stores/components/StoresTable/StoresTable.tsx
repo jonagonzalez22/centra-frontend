@@ -25,12 +25,14 @@ export const StoresTable = ({ onEdit }: StoresTableProps) => {
             title: 'Tipo de negocio',
             dataIndex: 'business_type',
             key: 'business_type',
+            responsive: ['md'],
             render: (_: unknown, record: Store) => record.business_type?.name ?? '—',
         },
         {
             title: 'Plan',
             dataIndex: 'plan',
             key: 'plan',
+            responsive: ['md'],
             render: (_: unknown, record: Store) => record.plan?.name ?? '—',
         },
         {
@@ -47,12 +49,14 @@ export const StoresTable = ({ onEdit }: StoresTableProps) => {
             title: 'Fecha de creación',
             dataIndex: 'created_at',
             key: 'created_at',
+            responsive: ['md'],
             render: (date: string) => formatDate(date),
         },
         {
             title: 'Fecha de inactividad',
             dataIndex: 'inactive_at',
             key: 'inactive_at',
+            responsive: ['md'],
             render: (date: string | null) => formatDate(date),
         },
         {
@@ -90,6 +94,7 @@ export const StoresTable = ({ onEdit }: StoresTableProps) => {
                 refetch({ page: pag.current ?? 1, per_page: pag.pageSize ?? 15 });
             }}
             emptyText="No hay tiendas para mostrar"
+            scroll={{ x: 'max-content' }}
         />
     );
 };
