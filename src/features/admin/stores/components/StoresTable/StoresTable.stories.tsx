@@ -14,17 +14,20 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         onEdit: () => {},
+        onView: () => {},
     },
 };
 
 export const Loading: Story = {
     args: {
         onEdit: () => {},
+        onView: () => {},
     },
 };
 
 export const Empty: Story = {
     args: {
         onEdit: () => {},
+        onView: () => {},
     },
 };
