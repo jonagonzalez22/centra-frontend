@@ -35,6 +35,7 @@ describe('StoresPage', () => {
                 error={null}
                 onEdit={vi.fn()}
                 onCreate={vi.fn()}
+                onView={vi.fn()}
             />
         );
 
@@ -53,6 +54,7 @@ describe('StoresPage', () => {
                 error={null}
                 onEdit={vi.fn()}
                 onCreate={vi.fn()}
+                onView={vi.fn()}
             />
         );
 
@@ -71,6 +73,7 @@ describe('StoresPage', () => {
                 error="Error al cargar las tiendas"
                 onEdit={vi.fn()}
                 onCreate={vi.fn()}
+                onView={vi.fn()}
             />
         );
 

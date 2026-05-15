@@ -18,11 +18,11 @@ const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseSto
     ...overrides,
 });
 
-const renderWithProvider = (storesState: UseStoresReturn, onEdit: (store: Store) => void) => {
+const renderWithProvider = (storesState: UseStoresReturn, onEdit: (store: Store) => void, onView: (storeId: string) => void) => {
     return render(
         <MemoryRouter>
             <StoresProvider value={storesState}>
-                <StoresTable onEdit={onEdit} />
+                <StoresTable onEdit={onEdit} onView={onView} />
             </StoresProvider>
         </MemoryRouter>
     );
@@ -55,7 +55,7 @@ describe('StoresTable', () => {
             pagination: { current: 1, total: 1, pageSize: 15 },
         });
 
-        renderWithProvider(storesState, vi.fn());
+        renderWithProvider(storesState, vi.fn(), vi.fn());
 
         expect(screen.getByText('Sucursal Centro')).toBeInTheDocument();
         expect(screen.getByText('Ferretería')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('StoresTable', () => {
 
     test('renders table columns', () => {
         const storesState = createMockStoresState();
-        renderWithProvider(storesState, vi.fn());
+        renderWithProvider(storesState, vi.fn(), vi.fn());
 
         expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Tipo de negocio' })).toBeInTheDocument();
@@ -82,14 +82,14 @@ describe('StoresTable', () => {
             pagination: { current: 1, total: 0, pageSize: 15 },
         });
 
-        renderWithProvider(storesState, vi.fn());
+        renderWithProvider(storesState, vi.fn(), vi.fn());
 
         expect(screen.getByText('No hay tiendas para mostrar')).toBeInTheDocument();
     });
 
     test('shows loading state', () => {
         const storesState = createMockStoresState({ loading: true });
-        const { container } = renderWithProvider(storesState, vi.fn());
+        const { container } = renderWithProvider(storesState, vi.fn(), vi.fn());
 
         expect(container.querySelector('.ant-spin')).toBeInTheDocument();
     });

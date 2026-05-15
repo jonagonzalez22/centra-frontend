@@ -8,9 +8,10 @@ import './StoresTable.css';
 
 interface StoresTableProps {
     onEdit: (store: Store) => void;
+    onView: (storeId: string) => void;
 }
 
-export const StoresTable = ({ onEdit }: StoresTableProps) => {
+export const StoresTable = ({ onEdit, onView }: StoresTableProps) => {
     const { stores, loading, pagination, refetch } = useStoresContext();
 
     const columns = [
@@ -61,7 +62,7 @@ export const StoresTable = ({ onEdit }: StoresTableProps) => {
                     <ActionButton
                         icon={<EyeOutlined />}
                         label="Ver"
-                        href={`/admin/tiendas/${record.id}`}
+                        action={() => onView(record.id)}
                     />
                     <ActionButton
                         icon={<EditOutlined />}
