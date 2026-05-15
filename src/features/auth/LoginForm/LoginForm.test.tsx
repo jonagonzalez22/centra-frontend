@@ -109,7 +109,7 @@ describe('LoginForm', () => {
         expect(screen.getByRole('checkbox', { name: /recordarme/i })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /olvidé contraseña/i })).toHaveAttribute(
             'href',
-            '#'
+            '/'
         );
     });
 });

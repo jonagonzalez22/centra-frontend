@@ -1,7 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import TextLink from './TextLink';
+
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        Link: vi.fn(({ to, children, ...props }) => (
+            <a href={String(to)} {...props}>{children}</a>
+        )),
+    };
+});
 
 describe('TextLink', () => {
     test('renders a navigation link', () => {
