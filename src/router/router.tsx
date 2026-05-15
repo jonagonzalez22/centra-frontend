@@ -6,6 +6,7 @@ import { RootRedirect } from './RootRedirect';
 import LoginPage from '@/pages/auth/LoginPage';
 import { StoresPage } from '@/pages/admin/stores/StoresPage';
 import { PermissionRoute } from './PermissionRoute';
+import { NotFoundPage } from '@/pages/not-found';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -58,5 +59,11 @@ export const router = createBrowserRouter([
                 ],
             },
         ],
+    },
+
+    // ── Catch-all 404 ─────────────────────────────────
+    {
+        path: '*',
+        element: <NotFoundPage />,
     },
 ]);
