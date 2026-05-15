@@ -84,7 +84,7 @@ const LoginForm = () => {
                         <Checkbox className="loginFormRememberCheckbox">Recordarme</Checkbox>
                     </Form.Item>
 
-                    <TextLink to="#" className="loginFormForgotPasswordLink">
+                    <TextLink to="/" className="loginFormForgotPasswordLink">
                         Olvidé contraseña
                     </TextLink>
                 </div>
