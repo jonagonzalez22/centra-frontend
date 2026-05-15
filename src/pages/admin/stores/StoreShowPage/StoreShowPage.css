@@ -1,0 +1,19 @@
+.storeShowPage {
+    @apply w-full;
+}
+
+.storeShowPageHeader {
+    @apply mb-6;
+}
+
+.storeShowPageBreadcrumb {
+    @apply mb-4;
+}
+
+.storeShowPageHeaderTop {
+    @apply flex items-center gap-4;
+}
+
+.storeShowPageLoading {
+    @apply flex justify-center items-center min-h-[400px];
+}

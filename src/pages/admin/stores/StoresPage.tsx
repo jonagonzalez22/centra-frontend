@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { StoresPageView } from './StoresPageView';
 import { StoreModal } from '@/features/admin/stores/components/StoreModal';
-import { StoreDetailDrawer } from '@/features/admin/stores/components/StoreDetailDrawer';
 import { useStores } from '@/features/admin/stores/hooks/useStores';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
@@ -23,7 +22,6 @@ export const StoresPage = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedStore, setSelectedStore] = useState<Store | undefined>(undefined);
-    const [viewStoreId, setViewStoreId] = useState<string | undefined>(undefined);
 
     const handleEdit = (store: Store) => {
         setSelectedStore(store);
@@ -46,14 +44,6 @@ export const StoresPage = () => {
         storesState.refetch();
     };
 
-    const handleView = (storeId: string) => {
-        setViewStoreId(storeId);
-    };
-
-    const handleViewClose = () => {
-        setViewStoreId(undefined);
-    };
-
     return (
         <StoresProvider value={storesState}>
             <StoresPageView
@@ -64,7 +54,6 @@ export const StoresPage = () => {
                 error={storesState.error}
                 onEdit={handleEdit}
                 onCreate={handleCreate}
-                onView={handleView}
             />
             <StoreModal
                 open={modalOpen}
@@ -73,11 +62,6 @@ export const StoresPage = () => {
                 store={selectedStore}
                 filterOptions={storesState.filterOptions}
                 filterOptionsLoading={storesState.filterOptionsLoading}
-            />
-            <StoreDetailDrawer
-                open={!!viewStoreId}
-                onClose={handleViewClose}
-                storeId={viewStoreId}
             />
         </StoresProvider>
     );

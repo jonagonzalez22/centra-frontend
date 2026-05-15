@@ -16,7 +16,6 @@ interface StoresPageViewProps {
     error: string | null;
     onEdit: (store: Store) => void;
     onCreate: () => void;
-    onView: (storeId: string) => void;
 }
 
 export const StoresPageView = ({
@@ -27,7 +26,6 @@ export const StoresPageView = ({
     error,
     onEdit,
     onCreate,
-    onView,
 }: StoresPageViewProps) => {
     return (
         <div className="storesPage">
@@ -64,7 +62,7 @@ export const StoresPageView = ({
                 <Alert className="storesPageAlert" type="error" description={error} showIcon />
             )}
 
-            <StoresTable onEdit={onEdit} onView={onView} />
+            <StoresTable onEdit={onEdit} />
         </div>
     );
 };

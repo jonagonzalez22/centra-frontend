@@ -18,9 +18,17 @@ const routeNavigationMap: Record<string, PageNavigation> = {
         title: 'Dashboard',
         breadcrumbs: [{ label: 'Admin' }, { label: 'Dashboard' }],
     },
-    '/admin/stores': {
+    '/admin/tiendas': {
         title: 'Gestión de Tiendas',
         breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Tiendas' }],
+    },
+    '/admin/tiendas/:id': {
+        title: 'Detalle de Tienda',
+        breadcrumbs: [
+            { label: 'Admin', path: '/admin/dashboard' },
+            { label: 'Tiendas', path: '/admin/tiendas' },
+            { label: 'Detalle' },
+        ],
     },
 };
 
@@ -29,6 +37,7 @@ const segmentLabelMap: Record<string, string> = {
     dashboard: 'Dashboard',
     plans: 'Planes',
     stores: 'Tiendas',
+    tiendas: 'Tiendas',
 };
 
 export function getHomePath(roles: UserRole[]): string {

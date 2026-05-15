@@ -1,4 +1,5 @@
 import { EyeOutlined, EditOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import Table from '@/components/Table/Table';
 import { ActionButton } from '@/components/ActionButton';
 import { useStoresContext } from '@/features/admin/stores/hooks/useStoresContext';
@@ -8,11 +9,11 @@ import './StoresTable.css';
 
 interface StoresTableProps {
     onEdit: (store: Store) => void;
-    onView: (storeId: string) => void;
 }
 
-export const StoresTable = ({ onEdit, onView }: StoresTableProps) => {
+export const StoresTable = ({ onEdit }: StoresTableProps) => {
     const { stores, loading, pagination, refetch } = useStoresContext();
+    const navigate = useNavigate();
 
     const columns = [
         {
@@ -62,7 +63,7 @@ export const StoresTable = ({ onEdit, onView }: StoresTableProps) => {
                     <ActionButton
                         icon={<EyeOutlined />}
                         label="Ver"
-                        action={() => onView(record.id)}
+                        action={() => navigate(`/admin/tiendas/${record.id}`)}
                     />
                     <ActionButton
                         icon={<EditOutlined />}
