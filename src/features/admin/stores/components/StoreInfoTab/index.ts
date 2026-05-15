@@ -1,0 +1,1 @@
+export { StoreInfoTab } from './StoreInfoTab';

@@ -5,6 +5,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { RootRedirect } from './RootRedirect';
 import LoginPage from '@/pages/auth/LoginPage';
 import { StoresPage } from '@/pages/admin/stores/StoresPage';
+import { StoreShowPage } from '@/pages/admin/stores/StoreShowPage';
 import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
 
@@ -34,7 +35,10 @@ export const router = createBrowserRouter([
 
                     {
                         element: <PermissionRoute permission="stores.view" />,
-                        children: [{ path: 'tiendas', element: <StoresPage /> }],
+                        children: [
+        { path: 'tiendas', element: <StoresPage /> },
+        { path: 'tiendas/:id', element: <StoreShowPage /> },
+    ],
                     },
 
                     {
