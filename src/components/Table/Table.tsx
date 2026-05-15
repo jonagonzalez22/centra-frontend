@@ -7,6 +7,7 @@ type TableColumn = {
     title: string;
     dataIndex?: string;
     key: string;
+    responsive?: ('xxxl' | 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs')[];
     render?: (text?: unknown, record?: Record<string, unknown>) => React.ReactNode;
 };
 
@@ -17,6 +18,7 @@ interface TableProps {
     loading?: boolean;
     emptyText?: string;
     onChange?: TableChangeHandler;
+    scroll?: { x?: number | string };
 }
 
 const Table: React.FC<TableProps> = ({
@@ -26,6 +28,7 @@ const Table: React.FC<TableProps> = ({
     loading,
     emptyText,
     onChange,
+    scroll,
 }) => {
     return (
         <AntTable
@@ -36,6 +39,7 @@ const Table: React.FC<TableProps> = ({
             loading={loading}
             locale={{ emptyText: emptyText || 'No hay datos' }}
             onChange={onChange}
+            scroll={scroll}
         />
     );
 };

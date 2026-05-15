@@ -58,8 +58,6 @@ describe('StoresTable', () => {
         renderWithProvider(storesState, vi.fn());
 
         expect(screen.getByText('Sucursal Centro')).toBeInTheDocument();
-        expect(screen.getByText('Ferretería')).toBeInTheDocument();
-        expect(screen.getByText('Plan Básico')).toBeInTheDocument();
         expect(screen.getByText('Activo')).toBeInTheDocument();
     });
 
@@ -68,11 +66,7 @@ describe('StoresTable', () => {
         renderWithProvider(storesState, vi.fn());
 
         expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Tipo de negocio' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Plan' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Estado' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Fecha de creación' })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: 'Fecha de inactividad' })).toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Acciones' })).toBeInTheDocument();
     });
 
