@@ -1,0 +1,15 @@
+.storeUserTable {
+    @apply w-full;
+}
+
+.storeUserTableToolbar {
+    @apply flex flex-wrap items-center justify-between gap-3 mb-4;
+}
+
+.storeUserTableRoles {
+    @apply flex flex-wrap gap-1;
+}
+
+.storeUserTableActions {
+    @apply flex items-center gap-1;
+}

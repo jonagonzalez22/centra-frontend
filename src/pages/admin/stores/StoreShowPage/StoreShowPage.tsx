@@ -1,10 +1,11 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Breadcrumb, Empty, Spin } from 'antd';
+import { Breadcrumb, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Tabs } from '@/components/Tabs';
 import { StoreInfoTab } from '@/features/admin/stores/components/StoreInfoTab';
+import { StoreUserTable } from '@/features/admin/users/components/StoreUserTable';
 import { useStore } from '@/features/admin/stores/hooks/useStore';
 import './StoreShowPage.css';
 
@@ -35,7 +36,7 @@ export const StoreShowPage = () => {
         {
             key: 'users',
             label: 'Usuarios',
-            children: <Empty description="Próximamente" />,
+            children: <StoreUserTable storeId={id} />,
         },
     ];
 

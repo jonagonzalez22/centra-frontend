@@ -19,6 +19,7 @@ interface TableProps {
     emptyText?: string;
     onChange?: TableChangeHandler;
     scroll?: { x?: number | string };
+    size?: 'small' | 'middle' | 'large';
 }
 
 const Table: React.FC<TableProps> = ({
@@ -29,6 +30,7 @@ const Table: React.FC<TableProps> = ({
     emptyText,
     onChange,
     scroll,
+    size = 'middle',
 }) => {
     return (
         <AntTable
@@ -40,6 +42,7 @@ const Table: React.FC<TableProps> = ({
             locale={{ emptyText: emptyText || 'No hay datos' }}
             onChange={onChange}
             scroll={scroll}
+            size={size}
         />
     );
 };
