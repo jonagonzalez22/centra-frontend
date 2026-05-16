@@ -10,6 +10,18 @@ export const passwordRules = (min = 8): Rule[] => [
     { min, message: `Mínimo ${min} caracteres.` },
 ];
 
+export const confirmPasswordRules = (): Rule[] => [
+    { required: true, message: 'La confirmación de contraseña es obligatoria.' },
+    ({ getFieldValue }) => ({
+        validator: (_, value) => {
+            if (!value || getFieldValue('password') === value) {
+                return Promise.resolve();
+            }
+            return Promise.reject(new Error('Las contraseñas no coinciden.'));
+        },
+    }),
+];
+
 export const storeNameRules = (): Rule[] => [
     { required: true, message: 'El nombre de tienda es obligatorio.' },
     { min: 3, message: 'Mínimo 3 caracteres.' },
@@ -19,6 +31,10 @@ export const storeNameRules = (): Rule[] => [
 export const storePhoneRules = (): Rule[] => [
     { required: true, message: 'El teléfono es obligatorio.' },
     { pattern: /^\+?[0-9\s-]{8,20}$/, message: 'Formato de teléfono inválido.' },
+];
+
+export const roleRules = (): Rule[] => [
+    { required: true, message: 'El rol es obligatorio.' },
 ];
 
 export const requiredStringRules = (fieldName: string, min = 1, max?: number): Rule[] => {
