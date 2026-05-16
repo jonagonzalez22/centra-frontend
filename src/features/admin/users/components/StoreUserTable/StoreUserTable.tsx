@@ -1,10 +1,9 @@
-import { Popconfirm } from 'antd';
+import { Popconfirm, Button as AntButton } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { InputSearch } from '@/components/InputSearch';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
-import { ActionButton } from '@/components/ActionButton';
 import { useUsers } from '../../hooks/useUsers';
 import type { User } from '@/entities/User';
 import './StoreUserTable.css';
@@ -21,12 +20,12 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
             title: 'Nombre',
             dataIndex: 'name',
             key: 'name',
+            responsive: ['md'],
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
-            responsive: ['md'],
         },
         {
             title: 'Roles',
@@ -55,9 +54,11 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
                         cancelText="Cancelar"
                         okButtonProps={{ danger: true }}
                     >
-                        <ActionButton
+                        <AntButton
+                            type="text"
+                            danger
+                            size="small"
                             icon={<DeleteOutlined />}
-                            label="Eliminar"
                         />
                     </Popconfirm>
                 </div>
