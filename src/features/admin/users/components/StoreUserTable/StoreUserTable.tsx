@@ -54,12 +54,7 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
                         cancelText="Cancelar"
                         okButtonProps={{ danger: true }}
                     >
-                        <AntButton
-                            type="text"
-                            danger
-                            size="small"
-                            icon={<DeleteOutlined />}
-                        />
+                        <AntButton type="text" danger size="small" icon={<DeleteOutlined />} />
                     </Popconfirm>
                 </div>
             ),
@@ -98,6 +93,7 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
                     refetch({ page: pag.current ?? 1, per_page: pag.pageSize ?? 15 });
                 }}
                 emptyText="No hay usuarios para mostrar"
+                scroll={{ x: 'max-content' }}
             />
         </div>
     );
