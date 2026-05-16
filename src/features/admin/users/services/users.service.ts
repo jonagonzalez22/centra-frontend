@@ -2,7 +2,7 @@ import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
-import type { UsersFilters, UsersListResponse, CreateUserDto, UpdateUserDto } from '../types/user.types';
+import type { UsersFilters, UsersListResponse, CreateUserDto, UpdateUserDto, UsersFilterOptions } from '../types/user.types';
 import type { User } from '@/entities/User';
 
 export const UsersService = {
@@ -61,6 +61,23 @@ export const UsersService = {
         const { data } = await api.put<ApiListResponse<User>>(
             `${API_ENDPOINTS.ADMIN.USERS.URL}/${id}`,
             userData
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    getFilterOptions: async (): Promise<UsersFilterOptions> => {
+        const { data } = await api.get<ApiListResponse<UsersFilterOptions>>(
+            API_ENDPOINTS.ADMIN.USERS.FILTER_OPTIONS
         );
 
         if (data.status === 'error') {

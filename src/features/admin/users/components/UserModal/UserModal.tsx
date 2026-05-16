@@ -4,6 +4,7 @@ import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
 import { UserForm } from '../UserForm';
 import { useUserForm } from '../../hooks/useUserForm';
+import type { UsersFilterOptions } from '../../types/user.types';
 import type { User } from '@/entities/User';
 import './UserModal.css';
 
@@ -11,9 +12,16 @@ interface UserModalProps {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    storeId: string;
+    storeId?: string;
     user?: User;
+    filterOptions?: UsersFilterOptions | null;
+    filterOptionsLoading?: boolean;
 }
+
+const defaultRoleOptions = [
+    { label: 'STORE_ADMIN', value: 'STORE_ADMIN' },
+    { label: 'STORE_USER', value: 'STORE_USER' },
+];
 
 export const UserModal: React.FC<UserModalProps> = ({
     open,
@@ -21,11 +29,14 @@ export const UserModal: React.FC<UserModalProps> = ({
     onSuccess,
     storeId,
     user,
+    filterOptions = null,
+    filterOptionsLoading = false,
 }) => {
     const [form] = Form.useForm();
     const { loading, createUser, updateUser } = useUserForm({ onSuccess });
 
     const isEditing = !!user;
+    const isGlobalMode = !storeId;
     const title = isEditing ? 'Editar Usuario' : 'Crear Usuario';
 
     useEffect(() => {
@@ -42,23 +53,28 @@ export const UserModal: React.FC<UserModalProps> = ({
         }
     }, [open, user, form]);
 
-    const handleSubmit = async (values: { name: string; email: string; password: string; password_confirmation: string; role: string; store_id?: string }) => {
+    const handleSubmit = async (values: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string }) => {
         if (isEditing && user) {
-            const payload = {
+            const payload: { name: string; email: string; role: string; store_id?: string | null } = {
                 name: values.name,
                 email: values.email,
                 role: values.role,
             };
+            if (values.store_id !== undefined) {
+                payload.store_id = values.store_id || null;
+            }
             await updateUser(user.id, payload);
         } else {
-            const payload = {
+            const payload: { name: string; email: string; password: string; password_confirmation: string; role: string; store_id?: string } = {
                 name: values.name,
                 email: values.email,
-                password: values.password,
-                password_confirmation: values.password_confirmation,
+                password: values.password!,
+                password_confirmation: values.password_confirmation!,
                 role: values.role,
-                store_id: storeId,
             };
+            if (values.store_id) {
+                payload.store_id = values.store_id;
+            }
             await createUser(payload as Parameters<typeof createUser>[0]);
         }
     };
@@ -68,6 +84,14 @@ export const UserModal: React.FC<UserModalProps> = ({
             onClose();
         }
     };
+
+    const roleOptions = isGlobalMode && filterOptions
+        ? filterOptions.roles.map((r) => ({ label: r.name, value: r.name }))
+        : defaultRoleOptions;
+
+    const storeOptions = filterOptions
+        ? filterOptions.stores.map((s) => ({ label: s.name, value: s.id }))
+        : [];
 
     return (
         <Modal
@@ -109,6 +133,10 @@ export const UserModal: React.FC<UserModalProps> = ({
                 loading={loading}
                 isEditing={isEditing}
                 onSubmit={handleSubmit}
+                isGlobalMode={isGlobalMode}
+                roleOptions={roleOptions}
+                storeOptions={storeOptions}
+                storesLoading={filterOptionsLoading}
             />
         </Modal>
     );

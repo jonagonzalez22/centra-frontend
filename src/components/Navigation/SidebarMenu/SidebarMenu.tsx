@@ -35,6 +35,12 @@ const menuItems: MenuItem[] = [
         permission: 'stores.view',
     },
     {
+        label: 'Usuarios',
+        key: '/admin/usuarios',
+        context: 'admin',
+        permission: 'users.view',
+    },
+    {
         label: 'Planes',
         key: '/admin/planes',
         context: 'admin',

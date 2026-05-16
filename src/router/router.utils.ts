@@ -30,6 +30,10 @@ const routeNavigationMap: Record<string, PageNavigation> = {
             { label: 'Detalle' },
         ],
     },
+    '/admin/usuarios': {
+        title: 'Gestión de Usuarios',
+        breadcrumbs: [{ label: 'Admin', path: '/admin/dashboard' }, { label: 'Usuarios' }],
+    },
 };
 
 const segmentLabelMap: Record<string, string> = {
@@ -38,6 +42,7 @@ const segmentLabelMap: Record<string, string> = {
     plans: 'Planes',
     stores: 'Tiendas',
     tiendas: 'Tiendas',
+    usuarios: 'Usuarios',
 };
 
 export function getHomePath(roles: UserRole[]): string {

@@ -6,6 +6,7 @@ import { RootRedirect } from './RootRedirect';
 import LoginPage from '@/pages/auth/LoginPage';
 import { StoresPage } from '@/pages/admin/stores/StoresPage';
 import { StoreShowPage } from '@/pages/admin/stores/StoreShowPage';
+import { UsersPage } from '@/pages/admin/users/UsersPage';
 import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
 
@@ -33,12 +34,19 @@ export const router = createBrowserRouter([
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
 
-                    {
+{
                         element: <PermissionRoute permission="stores.view" />,
                         children: [
-        { path: 'tiendas', element: <StoresPage /> },
-        { path: 'tiendas/:id', element: <StoreShowPage /> },
-    ],
+                            { path: 'tiendas', element: <StoresPage /> },
+                            { path: 'tiendas/:id', element: <StoreShowPage /> },
+                        ],
+                    },
+
+                    {
+                        element: <PermissionRoute permission="users.view" />,
+                        children: [
+                            { path: 'usuarios', element: <UsersPage /> },
+                        ],
                     },
 
                     {
