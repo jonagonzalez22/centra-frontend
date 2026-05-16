@@ -4,5 +4,8 @@ export const API_ENDPOINTS = {
             URL: '/v1/admin/stores',
             FILTER_OPTIONS: '/v1/admin/stores/filter-options',
         },
+        USERS: {
+            URL: '/v1/admin/users',
+        },
     },
 } as const;
