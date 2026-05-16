@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
         },
         USERS: {
             URL: '/v1/admin/users',
+            FILTER_OPTIONS: '/v1/admin/users/filter-options',
         },
     },
 } as const;

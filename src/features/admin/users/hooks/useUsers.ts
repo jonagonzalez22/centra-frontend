@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { UsersService } from '../services/users.service';
 import type { User } from '@/entities/User';
-import type { UsersFilters } from '../types/user.types';
+import type { UsersFilters, UsersFilterOptions } from '../types/user.types';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface UsersPagination {
@@ -11,16 +11,30 @@ interface UsersPagination {
     pageSize: number;
 }
 
-interface UseUsersReturn {
+export interface UseUsersReturn {
     users: User[];
     loading: boolean;
     error: string | null;
     pagination: UsersPagination;
     refetch: (filters?: UsersFilters) => void;
     deleteUser: (id: number) => Promise<void>;
+    filterOptions: UsersFilterOptions | null;
+    filterOptionsLoading: boolean;
 }
 
-export const useUsers = (storeId: string): UseUsersReturn => {
+const getErrorMessage = (err: unknown, fallback: string): string => {
+    if (err && typeof err === 'object') {
+        if ('message' in err && typeof (err as { message: unknown }).message === 'string') {
+            return (err as { message: string }).message;
+        }
+        if ('data' in err && (err as { data?: { message?: string } }).data?.message) {
+            return (err as { data: { message: string } }).data.message;
+        }
+    }
+    return fallback;
+};
+
+export const useUsers = (storeId?: string): UseUsersReturn => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -29,15 +43,31 @@ export const useUsers = (storeId: string): UseUsersReturn => {
         total: 0,
         pageSize: 15,
     });
+    const [filterOptions, setFilterOptions] = useState<UsersFilterOptions | null>(null);
+    const [filterOptionsLoading, setFilterOptionsLoading] = useState<boolean>(true);
     const currentPageRef = useRef(1);
 
-    const fetchUsers = useCallback(async (filters: UsersFilters = {}) => {
-        if (!storeId) return;
+    const fetchFilterOptions = useCallback(async () => {
+        setFilterOptionsLoading(true);
+        try {
+            const options = await UsersService.getFilterOptions();
+            setFilterOptions(options);
+        } catch (err) {
+            const apiError = err as ApiError;
+            const errorMessage = getErrorMessage(apiError, 'Error al cargar opciones de filtro');
+            setError(errorMessage);
+            message.error(errorMessage);
+        } finally {
+            setFilterOptionsLoading(false);
+        }
+    }, []);
 
+    const fetchUsers = useCallback(async (filters: UsersFilters = {}) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await UsersService.getUsers({ store_id: storeId, ...filters });
+            const apiFilters = storeId ? { store_id: storeId, ...filters } : filters;
+            const response = await UsersService.getUsers(apiFilters);
             setUsers(response.items);
             currentPageRef.current = response.current_page;
             setPagination((prev) => ({
@@ -58,8 +88,9 @@ export const useUsers = (storeId: string): UseUsersReturn => {
     const refetch = useCallback(
         (filters?: UsersFilters) => {
             fetchUsers({ page: 1, ...filters });
+            fetchFilterOptions();
         },
-        [fetchUsers]
+        [fetchUsers, fetchFilterOptions]
     );
 
     const deleteUser = useCallback(
@@ -79,7 +110,8 @@ export const useUsers = (storeId: string): UseUsersReturn => {
 
     useEffect(() => {
         fetchUsers({ page: 1 });
-    }, [fetchUsers]);
+        fetchFilterOptions();
+    }, [fetchUsers, fetchFilterOptions]);
 
-    return { users, loading, error, pagination, refetch, deleteUser };
+    return { users, loading, error, pagination, refetch, deleteUser, filterOptions, filterOptionsLoading };
 };

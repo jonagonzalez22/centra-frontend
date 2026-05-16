@@ -12,7 +12,11 @@ interface UserFormProps {
     form?: FormInstance;
     loading: boolean;
     isEditing: boolean;
-    onSubmit: (values: { name: string; email: string; password: string; password_confirmation: string; role: string; store_id?: string }) => Promise<void>;
+    onSubmit: (values: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string }) => Promise<void>;
+    isGlobalMode?: boolean;
+    roleOptions?: { label: string; value: string }[];
+    storeOptions?: { label: string; value: string }[];
+    storesLoading?: boolean;
 }
 
 interface UserFormValues {
@@ -21,9 +25,10 @@ interface UserFormValues {
     password?: string;
     password_confirmation?: string;
     role: string;
+    store_id?: string;
 }
 
-const roleOptions = [
+const defaultRoleOptions = [
     { label: 'STORE_ADMIN', value: 'STORE_ADMIN' },
     { label: 'STORE_USER', value: 'STORE_USER' },
 ];
@@ -34,6 +39,10 @@ export const UserForm: React.FC<UserFormProps> = ({
     loading,
     isEditing,
     onSubmit,
+    isGlobalMode = false,
+    roleOptions = defaultRoleOptions,
+    storeOptions = [],
+    storesLoading = false,
 }) => {
     const [internalForm] = Form.useForm<UserFormValues>();
     const form = externalForm ?? internalForm;
@@ -44,13 +53,18 @@ export const UserForm: React.FC<UserFormProps> = ({
 
     const handleFinish = async (values: UserFormValues) => {
         try {
-            const payload = {
+            const payload: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string } = {
                 name: values.name,
                 email: values.email,
-                password: values.password!,
-                password_confirmation: values.password_confirmation!,
                 role: values.role,
             };
+            if (!isEditing) {
+                payload.password = values.password;
+                payload.password_confirmation = values.password_confirmation;
+            }
+            if (values.store_id !== undefined) {
+                payload.store_id = values.store_id;
+            }
             await onSubmit(payload);
         } catch (err) {
             const apiError = err as ApiError;
@@ -120,6 +134,20 @@ export const UserForm: React.FC<UserFormProps> = ({
                     disabled={loading}
                 />
             </div>
+
+            {isGlobalMode && (
+                <div className="userFormRow">
+                    <SelectField
+                        name="store_id"
+                        label="Tienda"
+                        placeholder="Seleccionar"
+                        options={storeOptions}
+                        allowClear
+                        disabled={loading || storesLoading}
+                        loading={storesLoading}
+                    />
+                </div>
+            )}
         </Form>
     );
 };

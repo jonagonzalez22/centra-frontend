@@ -14,6 +14,7 @@ export interface User {
     name: string;
     email: string;
     store_id: number | null;
+    store?: { id: string; name: string } | null;
     roles: UserRole[];
     permissions: string[];
     features: FeatureCode[];

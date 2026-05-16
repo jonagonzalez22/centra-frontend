@@ -1,0 +1,19 @@
+.userSearchBar {
+    @apply mb-6;
+}
+
+.userSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.userSearchBarRow > * {
+    @apply mb-0 min-w-[180px];
+}
+
+.userSearchBarName {
+    @apply min-w-[220px] flex-1;
+}
+
+.userSearchBarActions {
+    @apply flex gap-2 items-end;
+}

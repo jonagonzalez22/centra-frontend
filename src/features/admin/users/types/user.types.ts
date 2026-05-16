@@ -11,6 +11,7 @@ export interface UsersListResponse {
 export interface UsersFilters {
     store_id?: string;
     name?: string;
+    role?: string;
     page?: number;
     per_page?: number;
 }
@@ -21,7 +22,19 @@ export interface CreateUserDto {
     password: string;
     password_confirmation: string;
     role: string;
-    store_id: string;
+    store_id?: string | null;
 }
 
-export type UpdateUserDto = Partial<Omit<CreateUserDto, 'store_id'>>;
+export interface UpdateUserDto {
+    name?: string;
+    email?: string;
+    password?: string;
+    password_confirmation?: string;
+    role?: string;
+    store_id?: string | null;
+}
+
+export interface UsersFilterOptions {
+    roles: { id: number; name: string }[];
+    stores: { id: string; name: string }[];
+}

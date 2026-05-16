@@ -1,0 +1,7 @@
+.usersTableRoles {
+    @apply flex flex-wrap gap-1;
+}
+
+.usersTableActions {
+    @apply flex gap-1;
+}
