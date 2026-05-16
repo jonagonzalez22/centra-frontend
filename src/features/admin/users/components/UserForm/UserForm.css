@@ -1,0 +1,13 @@
+.userFormRow {
+    @apply flex flex-col gap-4 mb-4;
+}
+
+@media (min-width: 768px) {
+    .userFormRow {
+        @apply flex-row gap-4;
+    }
+
+    .userFormRow > * {
+        @apply flex-1;
+    }
+}

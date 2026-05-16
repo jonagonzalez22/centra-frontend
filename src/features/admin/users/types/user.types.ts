@@ -14,3 +14,14 @@ export interface UsersFilters {
     page?: number;
     per_page?: number;
 }
+
+export interface CreateUserDto {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    role: string;
+    store_id: string;
+}
+
+export type UpdateUserDto = Partial<Omit<CreateUserDto, 'store_id'>>;

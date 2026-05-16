@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Popconfirm, Button as AntButton } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { InputSearch } from '@/components/InputSearch';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
+import { UserModal } from '../UserModal';
 import { useUsers } from '../../hooks/useUsers';
 import type { User } from '@/entities/User';
 import './StoreUserTable.css';
@@ -14,6 +16,29 @@ interface StoreUserTableProps {
 
 const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
     const { users, loading, pagination, refetch, deleteUser } = useUsers(storeId);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+
+    const handleNewUser = () => {
+        setSelectedUser(undefined);
+        setModalOpen(true);
+    };
+
+    const handleEditUser = (user: User) => {
+        setSelectedUser(user);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedUser(undefined);
+    };
+
+    const handleSuccess = () => {
+        setModalOpen(false);
+        setSelectedUser(undefined);
+        refetch();
+    };
 
     const columns = [
         {
@@ -46,6 +71,12 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
             key: 'actions',
             render: (_: unknown, record: User) => (
                 <div className="storeUserTableActions">
+                    <Button
+                        variant="text"
+                        size="small"
+                        icon={<EditOutlined />}
+                        action={() => handleEditUser(record)}
+                    />
                     <Popconfirm
                         title="¿Eliminar usuario?"
                         description="Esta acción no se puede deshacer."
@@ -74,7 +105,7 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
                     variant="primary"
                     label="Nuevo Usuario"
                     icon={<PlusOutlined />}
-                    action={() => console.log('Nuevo usuario')}
+                    action={handleNewUser}
                 />
             </div>
 
@@ -94,6 +125,14 @@ const StoreUserTable: React.FC<StoreUserTableProps> = ({ storeId }) => {
                 }}
                 emptyText="No hay usuarios para mostrar"
                 scroll={{ x: 'max-content' }}
+            />
+
+            <UserModal
+                open={modalOpen}
+                onClose={handleCloseModal}
+                onSuccess={handleSuccess}
+                storeId={storeId}
+                user={selectedUser}
             />
         </div>
     );
