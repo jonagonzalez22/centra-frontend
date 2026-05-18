@@ -58,13 +58,22 @@ describe('PermissionRoute', () => {
         expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
 
-    test('renders outlet when user is SUPER_ADMIN (bypasses permission check)', () => {
+    test('renders outlet when user is SUPER_ADMIN with required permission', () => {
         renderWithAuth(
-            { ...mockUser, id: 1, roles: ['SUPER_ADMIN'], permissions: [] },
+            { ...mockUser, id: 1, roles: ['SUPER_ADMIN'], permissions: ['stores.view'] },
             true
         );
 
         expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    });
+
+    test('redirects when SUPER_ADMIN lacks required permission', () => {
+        renderWithAuth(
+            { ...mockUser, id: 2, roles: ['SUPER_ADMIN'], permissions: [] },
+            true
+        );
+
+        expect(screen.getByText('Fallback')).toBeInTheDocument();
     });
 
     test('renders outlet when user has required permission', () => {
