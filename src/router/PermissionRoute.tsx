@@ -16,10 +16,6 @@ export function PermissionRoute({
         return <Navigate to="/login" replace />;
     }
 
-    if (user.roles.includes('SUPER_ADMIN')) {
-        return <Outlet />;
-    }
-
     const hasPermission = user.permissions.includes(permission);
 
     if (!hasPermission) {

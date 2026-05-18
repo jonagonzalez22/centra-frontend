@@ -11,7 +11,7 @@ vi.mock('@/store/useAuthStore.store', () => ({
             email: 'test@test.com',
             store_id: null,
             roles: ['SUPER_ADMIN'],
-            permissions: [],
+            permissions: ['stores.view', 'users.view', 'settings.view'],
             features: [],
         },
     })),
@@ -38,5 +38,26 @@ describe('SidebarMenu', () => {
 
         expect(screen.getByText(/CENTRA/i)).toBeInTheDocument();
         expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+    });
+
+    test('renders Configuraciones submenu for admin users with permission', () => {
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey={'/admin/dashboard'} />
+        );
+
+        expect(screen.getByText(/Configuraciones/i)).toBeInTheDocument();
+    });
+
+    test('opens Configuraciones submenu when on a settings route', () => {
+        renderWithRouter(
+            <SidebarMenu
+                isMobile={false}
+                isOpen={false}
+                selectedKey={'/admin/configuraciones/tipos-de-negocio'}
+            />
+        );
+
+        expect(screen.getByText(/Configuraciones/i)).toBeInTheDocument();
+        expect(screen.getByText(/Tipos de Negocio/i)).toBeInTheDocument();
     });
 });

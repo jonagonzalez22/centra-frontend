@@ -53,6 +53,16 @@ export const router = createBrowserRouter([
                         element: <PermissionRoute permission="plans.view" />,
                         children: [{ path: 'planes', element: <div>Planes</div> }],
                     },
+
+                    {
+                        element: <PermissionRoute permission="settings.view" />,
+                        children: [
+                            {
+                                path: 'configuraciones/tipos-de-negocio',
+                                element: <div>Tipos de Negocio</div>,
+                            },
+                        ],
+                    },
                 ],
             },
         ],
