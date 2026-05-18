@@ -1,5 +1,5 @@
 import { Layout, Menu, Drawer } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Store, User as LucideUser, CreditCard, Settings } from 'lucide-react';
@@ -151,12 +151,16 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
         submenuKeys.filter((key) => selectedKey.startsWith(key + '/') || selectedKey === key)
     );
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const relevantParents = submenuKeys.filter(
             (key) => selectedKey.startsWith(key + '/') || selectedKey === key
         );
         if (relevantParents.length > 0) {
-            setOpenKeys((prev) => [...new Set([...prev, ...relevantParents])]);
+            import('react-dom').then(({ flushSync }) => {
+                flushSync(() => {
+                    setOpenKeys((prev) => [...new Set([...prev, ...relevantParents])]);
+                });
+            });
         }
     }, [selectedKey, submenuKeys]);
 
