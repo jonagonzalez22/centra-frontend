@@ -46,6 +46,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                     name: user.name,
                     email: user.email,
                     role: user.roles[0] ?? undefined,
+                    store_id: user.store?.id,
                 });
             } else {
                 form.resetFields();
@@ -53,19 +54,34 @@ export const UserModal: React.FC<UserModalProps> = ({
         }
     }, [open, user, form]);
 
-    const handleSubmit = async (values: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string }) => {
+    const handleSubmit = async (values: {
+        name: string;
+        email: string;
+        password?: string;
+        password_confirmation?: string;
+        role: string;
+        store_id?: string;
+    }) => {
         if (isEditing && user) {
-            const payload: { name: string; email: string; role: string; store_id?: string | null } = {
-                name: values.name,
-                email: values.email,
-                role: values.role,
-            };
+            const payload: { name: string; email: string; role: string; store_id?: string | null } =
+                {
+                    name: values.name,
+                    email: values.email,
+                    role: values.role,
+                };
             if (values.store_id !== undefined) {
                 payload.store_id = values.store_id || null;
             }
             await updateUser(user.id, payload);
         } else {
-            const payload: { name: string; email: string; password: string; password_confirmation: string; role: string; store_id?: string } = {
+            const payload: {
+                name: string;
+                email: string;
+                password: string;
+                password_confirmation: string;
+                role: string;
+                store_id?: string;
+            } = {
                 name: values.name,
                 email: values.email,
                 password: values.password!,
@@ -85,9 +101,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         }
     };
 
-    const roleOptions = isGlobalMode && filterOptions
-        ? filterOptions.roles.map((r) => ({ label: r.name, value: r.name }))
-        : defaultRoleOptions;
+    const roleOptions =
+        isGlobalMode && filterOptions
+            ? filterOptions.roles.map((r) => ({ label: r.name, value: r.name }))
+            : defaultRoleOptions;
 
     const storeOptions = filterOptions
         ? filterOptions.stores.map((s) => ({ label: s.name, value: s.id }))
