@@ -9,6 +9,7 @@ import { StoreShowPage } from '@/pages/admin/stores/StoreShowPage';
 import { UsersPage } from '@/pages/admin/users/UsersPage';
 import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
+import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -59,7 +60,7 @@ export const router = createBrowserRouter([
                         children: [
                             {
                                 path: 'configuraciones/tipos-de-negocio',
-                                element: <div>Tipos de Negocio</div>,
+                                element: <BusinessTypePage />,
                             },
                         ],
                     },
