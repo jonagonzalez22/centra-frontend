@@ -37,7 +37,6 @@ describe('UserSearchBar', () => {
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
         expect(screen.getByText('Rol')).toBeInTheDocument();
         expect(screen.getByText('Tienda')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeInTheDocument();
     });
 
@@ -61,19 +60,9 @@ describe('UserSearchBar', () => {
         expect(screen.getByText('Tienda')).toBeInTheDocument();
     });
 
-    test('does not call refetch when filtering without any filters', async () => {
-        const user = userEvent.setup();
-        const refetch = vi.fn();
-        const usersState = createMockUsersState({ refetch });
+    test('calls refetch with filters after 500ms debounce when typing', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
 
-        renderWithProvider(usersState);
-
-        await user.click(screen.getByRole('button', { name: 'Filtrar' }));
-
-        expect(refetch).not.toHaveBeenCalled();
-    });
-
-    test('calls refetch with all filters when form is submitted', async () => {
         const user = userEvent.setup();
         const refetch = vi.fn();
         const usersState = createMockUsersState({
@@ -87,14 +76,59 @@ describe('UserSearchBar', () => {
         renderWithProvider(usersState);
 
         await user.type(screen.getByLabelText('Nombre'), 'Juan Pérez');
+        await vi.advanceTimersByTimeAsync(500);
 
-        await user.click(screen.getByRole('button', { name: 'Filtrar' }));
-
+        expect(refetch).toHaveBeenCalledTimes(1);
         expect(refetch).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'Juan Pérez',
             })
         );
+
+        vi.useRealTimers();
+    });
+
+    test('debounces multiple rapid keystrokes into a single refetch call', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
+        const user = userEvent.setup();
+        const refetch = vi.fn();
+        const usersState = createMockUsersState({ refetch });
+
+        renderWithProvider(usersState);
+
+        await user.type(screen.getByLabelText('Nombre'), 'Test');
+        await vi.advanceTimersByTimeAsync(400);
+
+        expect(refetch).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(100);
+
+        expect(refetch).toHaveBeenCalledTimes(1);
+
+        vi.useRealTimers();
+    });
+
+    test('calls refetch with empty filters after debounce when clearing filter', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
+        const user = userEvent.setup();
+        const refetch = vi.fn();
+        const usersState = createMockUsersState({ refetch });
+
+        renderWithProvider(usersState);
+
+        await user.type(screen.getByLabelText('Nombre'), 'Juan');
+        await vi.advanceTimersByTimeAsync(500);
+        refetch.mockClear();
+
+        await user.clear(screen.getByLabelText('Nombre'));
+        await vi.advanceTimersByTimeAsync(500);
+
+        expect(refetch).toHaveBeenCalledTimes(1);
+        expect(refetch).toHaveBeenCalledWith({});
+
+        vi.useRealTimers();
     });
 
     test('calls refetch with empty filters when reset button is clicked', async () => {
@@ -115,7 +149,6 @@ describe('UserSearchBar', () => {
 
         renderWithProvider(usersState);
 
-        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();
     });
 

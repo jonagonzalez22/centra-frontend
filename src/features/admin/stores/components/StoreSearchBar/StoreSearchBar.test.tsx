@@ -37,7 +37,6 @@ describe('StoreSearchBar', () => {
         expect(screen.getByText('Tipo de Negocio')).toBeInTheDocument();
         expect(screen.getByText('Plan')).toBeInTheDocument();
         expect(screen.getByText('Estado')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeInTheDocument();
     });
 
@@ -59,19 +58,9 @@ describe('StoreSearchBar', () => {
         expect(screen.getByText('Estado')).toBeInTheDocument();
     });
 
-    test('does not call refetch when filtering without any filters', async () => {
-        const user = userEvent.setup();
-        const refetch = vi.fn();
-        const storesState = createMockStoresState({ refetch });
+    test('calls refetch with filters after 400ms debounce when typing', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
 
-        renderWithProvider(storesState);
-
-        await user.click(screen.getByRole('button', { name: 'Filtrar' }));
-
-        expect(refetch).not.toHaveBeenCalled();
-    });
-
-    test('calls refetch with all filters when form is submitted', async () => {
         const user = userEvent.setup();
         const refetch = vi.fn();
         const storesState = createMockStoresState({
@@ -89,19 +78,59 @@ describe('StoreSearchBar', () => {
         renderWithProvider(storesState);
 
         await user.type(screen.getByLabelText('Nombre'), 'Sucursal Centro');
+        await vi.advanceTimersByTimeAsync(400);
 
-        const businessTypeSelect = screen.getByText('Tipo de Negocio').closest('.ant-select')?.querySelector('.ant-select-selector');
-        if (businessTypeSelect) {
-            await user.click(businessTypeSelect);
-        }
-
-        await user.click(screen.getByRole('button', { name: 'Filtrar' }));
-
+        expect(refetch).toHaveBeenCalledTimes(1);
         expect(refetch).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: 'Sucursal Centro',
             })
         );
+
+        vi.useRealTimers();
+    });
+
+    test('debounces multiple rapid keystrokes into a single refetch call', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
+        const user = userEvent.setup();
+        const refetch = vi.fn();
+        const storesState = createMockStoresState({ refetch });
+
+        renderWithProvider(storesState);
+
+        await user.type(screen.getByLabelText('Nombre'), 'Test');
+        await vi.advanceTimersByTimeAsync(300);
+
+        expect(refetch).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(100);
+
+        expect(refetch).toHaveBeenCalledTimes(1);
+
+        vi.useRealTimers();
+    });
+
+    test('calls refetch with empty filters after debounce when clearing filter', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
+        const user = userEvent.setup();
+        const refetch = vi.fn();
+        const storesState = createMockStoresState({ refetch });
+
+        renderWithProvider(storesState);
+
+        await user.type(screen.getByLabelText('Nombre'), 'Sucursal');
+        await vi.advanceTimersByTimeAsync(400);
+        refetch.mockClear();
+
+        await user.clear(screen.getByLabelText('Nombre'));
+        await vi.advanceTimersByTimeAsync(400);
+
+        expect(refetch).toHaveBeenCalledTimes(1);
+        expect(refetch).toHaveBeenCalledWith({});
+
+        vi.useRealTimers();
     });
 
     test('calls refetch with empty filters when reset button is clicked', async () => {
@@ -122,7 +151,6 @@ describe('StoreSearchBar', () => {
 
         renderWithProvider(storesState);
 
-        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();
     });
 
@@ -131,7 +159,7 @@ describe('StoreSearchBar', () => {
 
         renderWithProvider(storesState);
 
-        expect(screen.getByRole('button', { name: 'Filtrar' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();
     });
 
     test('disables limpiar button when no filters are active', () => {

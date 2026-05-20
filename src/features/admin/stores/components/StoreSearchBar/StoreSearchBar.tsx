@@ -1,4 +1,6 @@
+import { useCallback, useMemo } from 'react';
 import { Form } from 'antd';
+import { debounce } from 'lodash';
 import { Button } from '@/components/Button';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
@@ -15,6 +17,7 @@ interface StoreFiltersForm {
 
 export const StoreSearchBar = () => {
     const { loading, filterOptions, filterOptionsLoading, refetch } = useStoresContext();
+
     const [form] = Form.useForm();
 
     const nameValue = Form.useWatch('name', form);
@@ -27,26 +30,47 @@ export const StoreSearchBar = () => {
 
     const isDisabled = loading || filterOptionsLoading;
 
-    const handleFinish = (values: StoreFiltersForm) => {
-        const hasFilters = values.name || values.business_type_id || values.plan_id || values.is_active !== undefined;
+    const buildFilters = useCallback((values: StoreFiltersForm): StoresFilters => {
+        const filters: StoresFilters = {};
 
-        if (!hasFilters) {
-            return;
-        }
+        if (values.name) filters.name = values.name;
+        if (values.business_type_id) filters.business_type_id = values.business_type_id;
+        if (values.plan_id) filters.plan_id = values.plan_id;
+        if (values.is_active !== undefined) filters.is_active = values.is_active;
 
-        const filters: StoresFilters = {
-            name: values.name,
-            business_type_id: values.business_type_id,
-            plan_id: values.plan_id,
-            is_active: values.is_active,
-        };
-        refetch(filters);
-    };
+        return filters;
+    }, []);
 
-    const handleReset = () => {
+    const debouncedRefetch = useMemo(
+        () =>
+            debounce((values: StoreFiltersForm) => {
+                const hasFilters =
+                    values.name ||
+                    values.business_type_id ||
+                    values.plan_id ||
+                    values.is_active !== undefined;
+
+                if (!hasFilters) {
+                    refetch({});
+                    return;
+                }
+
+                refetch(buildFilters(values));
+            }, 400),
+        [refetch, buildFilters]
+    );
+
+    const handleValuesChange = useCallback(
+        (_: unknown, allValues: StoreFiltersForm) => {
+            debouncedRefetch(allValues);
+        },
+        [debouncedRefetch]
+    );
+
+    const handleReset = useCallback(() => {
         form.resetFields();
         refetch({});
-    };
+    }, [form, refetch]);
 
     const businessTypeOptions =
         filterOptions?.business_types.map((bt) => ({
@@ -71,7 +95,8 @@ export const StoreSearchBar = () => {
             form={form}
             layout="vertical"
             className="storeSearchBar"
-            onFinish={handleFinish}
+            onValuesChange={handleValuesChange}
+            onFinish={(values) => refetch(buildFilters(values))}
         >
             <div className="storeSearchBarRow">
                 <InputField
@@ -113,14 +138,6 @@ export const StoreSearchBar = () => {
                 />
 
                 <div className="storeSearchBarActions">
-                    <Button
-                        variant="primary"
-                        label="Filtrar"
-                        htmlType="submit"
-                        action={() => form.submit()}
-                        disabled={isDisabled}
-                    />
-
                     <Button
                         variant="default"
                         label="Limpiar"
