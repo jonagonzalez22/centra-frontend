@@ -1,0 +1,3 @@
+.businessTypesTableActions {
+    @apply flex items-center gap-1;
+}

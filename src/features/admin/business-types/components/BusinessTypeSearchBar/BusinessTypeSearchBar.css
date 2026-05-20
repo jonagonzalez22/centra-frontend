@@ -1,0 +1,19 @@
+.businessTypeSearchBar {
+    @apply mb-6;
+}
+
+.businessTypeSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.businessTypeSearchBarRow > * {
+    @apply mb-0 min-w-[180px];
+}
+
+.businessTypeSearchBarName {
+    @apply min-w-[220px] flex-1;
+}
+
+.businessTypeSearchBarActions {
+    @apply flex gap-2 items-end;
+}

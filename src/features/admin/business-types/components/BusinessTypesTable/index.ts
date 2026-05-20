@@ -1,0 +1,1 @@
+export { BusinessTypesTable } from './BusinessTypesTable';
