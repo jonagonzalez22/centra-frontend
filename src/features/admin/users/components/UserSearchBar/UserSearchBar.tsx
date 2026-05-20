@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Form } from 'antd';
+import { debounce } from 'lodash';
 import { Button } from '@/components/Button';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
@@ -23,20 +24,37 @@ export const UserSearchBar = () => {
 
     const hasActiveFilters = nameValue || roleValue || storeValue;
 
-    const handleFinish = useCallback((values: UserFiltersForm) => {
-        const hasFilters = values.name || values.role || values.store_id;
-
-        if (!hasFilters) {
-            return;
-        }
-
+    const buildFilters = useCallback((values: UserFiltersForm): UsersFilters => {
         const filters: UsersFilters = {};
+
         if (values.name) filters.name = values.name;
         if (values.role) filters.role = values.role;
         if (values.store_id) filters.store_id = values.store_id;
 
-        refetch(filters);
-    }, [refetch]);
+        return filters;
+    }, []);
+
+    const debouncedRefetch = useMemo(
+        () =>
+            debounce((values: UserFiltersForm) => {
+                const hasFilters = values.name || values.role || values.store_id;
+
+                if (!hasFilters) {
+                    refetch({});
+                    return;
+                }
+
+                refetch(buildFilters(values));
+            }, 500),
+        [refetch, buildFilters]
+    );
+
+    const handleValuesChange = useCallback(
+        (_: unknown, allValues: UserFiltersForm) => {
+            debouncedRefetch(allValues);
+        },
+        [debouncedRefetch]
+    );
 
     const handleReset = useCallback(() => {
         form.resetFields();
@@ -56,7 +74,8 @@ export const UserSearchBar = () => {
             form={form}
             layout="vertical"
             className="userSearchBar"
-            onFinish={handleFinish}
+            onValuesChange={handleValuesChange}
+            onFinish={(values) => refetch(buildFilters(values))}
         >
             <div className="userSearchBarRow">
                 <InputField
@@ -83,18 +102,9 @@ export const UserSearchBar = () => {
                     options={storeOptions}
                     allowClear
                     disabled={filterOptionsLoading}
-                    loading={filterOptionsLoading}
                 />
 
                 <div className="userSearchBarActions">
-                    <Button
-                        variant="primary"
-                        label="Filtrar"
-                        htmlType="submit"
-                        action={() => form.submit()}
-                        disabled={filterOptionsLoading}
-                    />
-
                     <Button
                         variant="default"
                         label="Limpiar"
