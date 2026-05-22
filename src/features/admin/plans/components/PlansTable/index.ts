@@ -1,0 +1,1 @@
+export { PlansTable } from './PlansTable';

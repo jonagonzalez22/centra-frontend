@@ -14,5 +14,8 @@ export const API_ENDPOINTS = {
         FEATURES: {
             URL: '/v1/admin/features',
         },
+        PLANS: {
+            URL: '/v1/admin/plans',
+        },
     },
 } as const;

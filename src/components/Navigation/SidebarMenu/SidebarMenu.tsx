@@ -57,7 +57,7 @@ const menuItems: MenuItem[] = [
         key: '/admin/planes',
         icon: <CreditCard size={ICON_SIZE} />,
         context: 'admin',
-        permission: 'stores.view',
+        permission: 'plans.view',
     },
     {
         label: 'Configuraciones',
