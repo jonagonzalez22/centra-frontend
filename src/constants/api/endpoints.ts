@@ -11,5 +11,8 @@ export const API_ENDPOINTS = {
         BUSINESS_TYPES: {
             URL: '/v1/admin/business-types',
         },
+        FEATURES: {
+            URL: '/v1/admin/features',
+        },
     },
 } as const;

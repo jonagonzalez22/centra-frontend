@@ -43,3 +43,11 @@ export const requiredStringRules = (fieldName: string, min = 1, max?: number): R
     if (max) rules.push({ max, message: `Máximo ${max} caracteres.` });
     return rules;
 };
+
+export const featureCodeRules = (): Rule[] => [
+    { required: true, message: 'El código es obligatorio.' },
+    {
+        pattern: /^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/,
+        message: 'Formato snake_case requerido (ej: punto_venta).',
+    },
+];

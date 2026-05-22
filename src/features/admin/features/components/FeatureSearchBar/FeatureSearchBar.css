@@ -1,0 +1,19 @@
+.featureSearchBar {
+    @apply mb-6;
+}
+
+.featureSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.featureSearchBarRow > * {
+    @apply mb-0 min-w-[180px];
+}
+
+.featureSearchBarName {
+    @apply min-w-[220px] flex-1;
+}
+
+.featureSearchBarActions {
+    @apply flex gap-2 items-end;
+}

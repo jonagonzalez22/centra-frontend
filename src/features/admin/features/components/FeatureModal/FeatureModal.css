@@ -1,0 +1,7 @@
+.featureModalFooter {
+    @apply flex flex-wrap justify-end gap-2 pt-4;
+}
+
+.featureModalFooter > * {
+    @apply min-w-[100px];
+}
