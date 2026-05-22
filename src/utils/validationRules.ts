@@ -44,6 +44,19 @@ export const requiredStringRules = (fieldName: string, min = 1, max?: number): R
     return rules;
 };
 
+export const planPriceRules = (): Rule[] => [
+    { required: true, message: 'El precio es obligatorio.' },
+    {
+        type: 'number',
+        min: 0,
+        message: 'El precio debe ser mayor o igual a 0.',
+    },
+];
+
+export const planBillingCycleRules = (): Rule[] => [
+    { required: true, message: 'El ciclo de facturación es obligatorio.' },
+];
+
 export const featureCodeRules = (): Rule[] => [
     { required: true, message: 'El código es obligatorio.' },
     {

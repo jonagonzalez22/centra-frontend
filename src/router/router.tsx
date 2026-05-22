@@ -11,6 +11,7 @@ import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
+import { PlansPage } from '@/pages/admin/plans/PlansPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -53,7 +54,7 @@ export const router = createBrowserRouter([
 
                     {
                         element: <PermissionRoute permission="plans.view" />,
-                        children: [{ path: 'planes', element: <div>Planes</div> }],
+                        children: [{ path: 'planes', element: <PlansPage /> }],
                     },
 
                     {
