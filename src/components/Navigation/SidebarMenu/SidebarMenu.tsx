@@ -71,6 +71,11 @@ const menuItems: MenuItem[] = [
                 key: '/admin/configuraciones/tipos-de-negocio',
                 context: 'admin',
             },
+            {
+                label: 'Funcionalidades',
+                key: '/admin/configuraciones/funcionalidades',
+                context: 'admin',
+            },
         ],
     },
     {
