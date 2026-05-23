@@ -76,7 +76,7 @@ export const usePlanForm = (options?: UsePlanFormOptions): UsePlanFormReturn => 
 export const buildInitialValuesFromPlan = (plan: Plan): Partial<CreatePlanDto> => ({
     name: plan.name,
     description: plan.description,
-    price: plan.price,
+    price: Number(plan.price),
     billing_cycle: plan.billing_cycle,
     is_trial: plan.is_trial,
     is_active: plan.is_active,

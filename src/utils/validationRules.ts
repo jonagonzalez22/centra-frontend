@@ -47,9 +47,13 @@ export const requiredStringRules = (fieldName: string, min = 1, max?: number): R
 export const planPriceRules = (): Rule[] => [
     { required: true, message: 'El precio es obligatorio.' },
     {
-        type: 'number',
-        min: 0,
-        message: 'El precio debe ser mayor o igual a 0.',
+        validator: (_: unknown, value: number | undefined) => {
+            if (value === undefined || value === null) return Promise.resolve();
+            if (typeof value === 'number' && !isNaN(value) && value >= 0) {
+                return Promise.resolve();
+            }
+            return Promise.reject(new Error('El precio debe ser mayor o igual a 0.'));
+        },
     },
 ];
 
