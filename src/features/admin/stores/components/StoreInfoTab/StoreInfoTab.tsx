@@ -1,9 +1,11 @@
 import { MapPin, CreditCard, AlertTriangle, User } from 'lucide-react';
+import { Button } from '@/components/Button';
 import { formatDate } from '@/utils/formatDate';
 import type { Store } from '../../types/store.types';
 
 interface StoreInfoTabProps {
     store: Store;
+    onChangePlan?: () => void;
 }
 
 interface FieldProps {
@@ -39,7 +41,7 @@ const Section = ({ icon, title, children, variant = 'default' }: SectionProps) =
     </div>
 );
 
-export const StoreInfoTab: React.FC<StoreInfoTabProps> = ({ store }) => {
+export const StoreInfoTab: React.FC<StoreInfoTabProps> = ({ store, onChangePlan }) => {
     return (
         <div className="flex flex-col gap-2">
             <Section icon={<User size={16} />} title="Información">
@@ -57,7 +59,14 @@ export const StoreInfoTab: React.FC<StoreInfoTabProps> = ({ store }) => {
             </Section>
 
             <Section icon={<CreditCard size={16} />} title="Suscripción y Estado">
-                <Field label="Plan" value={store.plan?.name} />
+                <div className="flex items-center justify-between">
+                    <Field label="Plan" value={store.plan?.name} />
+                    <Button
+                        variant="default"
+                        label="Cambiar Plan"
+                        action={onChangePlan}
+                    />
+                </div>
                 <Field label="Tipo de Negocio" value={store.business_type?.name} />
                 <Field label="Fecha de Creación" value={formatDate(store.created_at)} />
                 <div className="flex flex-col gap-0.5">

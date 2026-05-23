@@ -5,14 +5,22 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Tabs } from '@/components/Tabs';
 import { StoreInfoTab } from '@/features/admin/stores/components/StoreInfoTab';
+import { ChangePlanModal } from '@/features/admin/stores/components/ChangePlanModal';
 import { StoreUserTable } from '@/features/admin/users/components/StoreUserTable';
 import { useStore } from '@/features/admin/stores/hooks/useStore';
+import { useState } from 'react';
 import './StoreShowPage.css';
 
 export const StoreShowPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { store, loading, error } = useStore(id);
+    const { store, loading, error, refetch } = useStore(id);
+    const [changePlanOpen, setChangePlanOpen] = useState(false);
+
+    const handleChangePlanSuccess = () => {
+        setChangePlanOpen(false);
+        refetch();
+    };
 
     if (loading) {
         return (
@@ -31,7 +39,7 @@ export const StoreShowPage = () => {
         {
             key: 'general',
             label: 'Información General',
-            children: <StoreInfoTab store={store} />,
+            children: <StoreInfoTab store={store} onChangePlan={() => setChangePlanOpen(true)} />,
         },
         {
             key: 'users',
@@ -64,6 +72,14 @@ export const StoreShowPage = () => {
             <Card>
                 <Tabs items={tabItems} defaultActiveKey="general" />
             </Card>
+
+            <ChangePlanModal
+                open={changePlanOpen}
+                onClose={() => setChangePlanOpen(false)}
+                onSuccess={handleChangePlanSuccess}
+                storeId={id!}
+                currentPlanId={store?.plan?.id}
+            />
         </div>
     );
 };
