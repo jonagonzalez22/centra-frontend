@@ -188,15 +188,14 @@ export const FeaturesDrawer: React.FC<FeaturesDrawerProps> = ({
                     })}
 
                     <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            gap: 12,
-                            marginTop: 24,
-                            paddingTop: 16,
-                            borderTop: '1px solid #f0f0f0',
-                        }}
+                        className="flex justify-end items-center gap-3 mt-6 pt-4"
+                        style={{ borderTop: '1px solid #f0f0f0' }}
                     >
+                        {checkedIds.size === 0 && (
+                            <span className="text-xs text-gray-500 mr-auto">
+                                Seleccioná al menos una funcionalidad
+                            </span>
+                        )}
                         <Button
                             variant="default"
                             label="Cancelar"
@@ -208,6 +207,7 @@ export const FeaturesDrawer: React.FC<FeaturesDrawerProps> = ({
                             label="Guardar cambios"
                             loading={loading}
                             action={handleSave}
+                            disabled={loading || checkedIds.size === 0}
                         />
                     </div>
                 </>
