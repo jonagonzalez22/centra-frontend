@@ -76,6 +76,11 @@ const menuItems: MenuItem[] = [
                 key: '/admin/configuraciones/funcionalidades',
                 context: 'admin',
             },
+            {
+                label: 'Roles y Permisos',
+                key: '/admin/configuraciones/roles',
+                context: 'admin',
+            },
         ],
     },
     {

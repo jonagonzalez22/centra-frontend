@@ -1,0 +1,17 @@
+.rolesTableActions {
+    @apply flex items-center gap-1;
+}
+
+.rolesTablePermissionTag {
+    @apply text-xs;
+}
+
+.rolesTableOverflowTag {
+    @apply text-xs;
+}
+
+@media (max-width: 768px) {
+    .rolesTableActions {
+        @apply flex-wrap;
+    }
+}
