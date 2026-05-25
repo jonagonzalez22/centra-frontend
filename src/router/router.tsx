@@ -11,6 +11,7 @@ import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
+import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
 
 export const router = createBrowserRouter([
@@ -67,6 +68,10 @@ export const router = createBrowserRouter([
                             {
                                 path: 'configuraciones/funcionalidades',
                                 element: <FeaturesPage />,
+                            },
+                            {
+                                path: 'configuraciones/roles',
+                                element: <RolesPage />,
                             },
                         ],
                     },

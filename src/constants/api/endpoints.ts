@@ -17,5 +17,11 @@ export const API_ENDPOINTS = {
         PLANS: {
             URL: '/v1/admin/plans',
         },
+        ROLES: {
+            URL: '/v1/admin/roles',
+        },
+        PERMISSIONS: {
+            URL: '/v1/admin/permissions',
+        },
     },
 } as const;
