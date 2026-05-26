@@ -7,6 +7,7 @@ import LoginPage from '@/pages/auth/LoginPage';
 import { StoresPage } from '@/pages/admin/stores/StoresPage';
 import { StoreShowPage } from '@/pages/admin/stores/StoreShowPage';
 import { UsersPage } from '@/pages/admin/users/UsersPage';
+import { DashboardPage } from '@/pages/admin/dashboard/DashboardPage';
 import { PermissionRoute } from './PermissionRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
@@ -35,10 +36,10 @@ export const router = createBrowserRouter([
             {
                 element: <AppLayout title="Backoffice Admin" />,
                 children: [
-                    { index: true, element: <Navigate to="dashboard" replace /> },
-                    { path: 'dashboard', element: <div>Admin</div> },
+{ index: true, element: <Navigate to="dashboard" replace /> },
+                    { path: 'dashboard', element: <DashboardPage /> },
 
-{
+                    {
                         element: <PermissionRoute permission="stores.view" />,
                         children: [
                             { path: 'tiendas', element: <StoresPage /> },

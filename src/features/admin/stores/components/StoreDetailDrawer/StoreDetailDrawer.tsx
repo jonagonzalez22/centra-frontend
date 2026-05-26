@@ -3,7 +3,7 @@ import { Spin, message } from 'antd';
 import { MapPin, CreditCard, AlertTriangle, Store, User } from 'lucide-react';
 import Drawer from '@/components/Drawer/Drawer';
 import { StoresService } from '../../services/stores.service';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/utils/formatters';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { Store as StoreType } from '../../types/store.types';
 

@@ -4,7 +4,7 @@ import Table from '@/components/Table/Table';
 import { ActionButton } from '@/components/ActionButton';
 import { CanDo } from '@/components/auth/CanDo';
 import { useStoresContext } from '@/features/admin/stores/hooks/useStoresContext';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/utils/formatters';
 import type { Store } from '@/features/admin/stores/types/store.types';
 import './StoresTable.css';
 

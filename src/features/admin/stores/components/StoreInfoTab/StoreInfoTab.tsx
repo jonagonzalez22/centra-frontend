@@ -1,6 +1,6 @@
 import { MapPin, CreditCard, AlertTriangle, User } from 'lucide-react';
 import { Button } from '@/components/Button';
-import { formatDate } from '@/utils/formatDate';
+import { formatDate } from '@/utils/formatters';
 import type { Store } from '../../types/store.types';
 
 interface StoreInfoTabProps {

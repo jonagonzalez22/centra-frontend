@@ -23,5 +23,8 @@ export const API_ENDPOINTS = {
         PERMISSIONS: {
             URL: '/v1/admin/permissions',
         },
+        DASHBOARD: {
+            URL: '/v1/admin/dashboard',
+        },
     },
 } as const;
