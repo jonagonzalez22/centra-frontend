@@ -7,6 +7,15 @@ import { BusinessTypesProvider } from '@/features/admin/business-types/contexts/
 import type { UseBusinessTypesReturn } from '@/features/admin/business-types/hooks/useBusinessTypes';
 import type { BusinessType } from '@/features/admin/business-types/types/business-type.types';
 
+const mockBusinessType: BusinessType = {
+    id: 1,
+    name: 'Ferretería',
+    description: 'Businesses that sell hardware and tools',
+    status: 'active',
+    created_at: '2026-04-07T22:00:06.000000Z',
+    updated_at: '2026-04-07T22:00:06.000000Z',
+};
+
 const createMockState = (overrides: Partial<UseBusinessTypesReturn> = {}): UseBusinessTypesReturn => ({
     businessTypes: [],
     loading: false,
@@ -25,16 +34,26 @@ const renderWithProvider = (ui: React.ReactElement) => {
     );
 };
 
-const mockBusinessType: BusinessType = {
-    id: 1,
-    name: 'Ferretería',
-    description: 'Businesses that sell hardware and tools',
-    status: 'active',
-    created_at: '2026-04-07T22:00:06.000000Z',
-    updated_at: '2026-04-07T22:00:06.000000Z',
+const mockCanFn = (permissions: string[]) => {
+    (globalThis as Record<string, unknown>).__testPermissions = permissions;
 };
 
 describe('BusinessTypesPage', () => {
+    beforeAll(() => {
+        vi.mock('@/hooks/usePermissions', () => ({
+            usePermissions: vi.fn(() => ({
+                can: (permission: string) => {
+                    const permissions = (globalThis as Record<string, unknown>).__testPermissions as string[] | undefined;
+                    return permissions?.includes(permission) ?? false;
+                },
+            })),
+        }));
+    });
+
+    beforeEach(() => {
+        mockCanFn(['settings.view', 'settings.edit']);
+    });
+
     test('renders the page header and breadcrumb', () => {
         renderWithProvider(
             <BusinessTypesPageView

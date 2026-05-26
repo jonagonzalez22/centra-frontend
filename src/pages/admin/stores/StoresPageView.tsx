@@ -2,6 +2,7 @@ import { Alert, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { StoreSearchBar } from '@/features/admin/stores/components/StoreSearchBar';
 import { StoresTable } from '@/features/admin/stores/components/StoresTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
@@ -46,12 +47,14 @@ export const StoresPageView = ({
                         <p className="storesPageDescription">{description}</p>
                     </div>
                     {canCreateStore && (
-                        <Button
-                            variant="primary"
-                            label="Nueva Tienda"
-                            icon={<PlusOutlined />}
-                            action={onCreate}
-                        />
+                        <CanDo permission="stores.create">
+                            <Button
+                                variant="primary"
+                                label="Nueva Tienda"
+                                icon={<PlusOutlined />}
+                                action={onCreate}
+                            />
+                        </CanDo>
                     )}
                 </div>
             </div>

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { UsersPageView } from './UsersPageView';
 import { UserModal } from '@/features/admin/users/components/UserModal';
 import { useUsers } from '@/features/admin/users/hooks/useUsers';
-import { useAuthStore } from '@/store/useAuthStore.store';
 import { UsersProvider } from '@/features/admin/users/contexts/UsersProvider';
 import type { User } from '@/entities/User';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const routeMetadata = {
     title: 'Gestión de Usuarios',
@@ -17,8 +17,8 @@ const routeMetadata = {
 
 export const UsersPage = () => {
     const usersState = useUsers();
-    const { user } = useAuthStore();
-    const canCreateUser = user?.permissions.includes('users.create') ?? false;
+    const { can } = usePermissions();
+    const canCreateUser = can('users.create');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);

@@ -3,6 +3,7 @@ import { Popconfirm, Button as AntButton, Tooltip, Space } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
 import { ActionButton } from '@/components/ActionButton';
+import { CanDo } from '@/components/auth/CanDo';
 import { usePlansContext } from '../../hooks/usePlansContext';
 import type { Plan, PlanFeature } from '../../types/plan.types';
 
@@ -117,31 +118,37 @@ export const PlansTable = ({ onEdit, onManageFeatures, onDelete }: PlansTablePro
             key: 'actions',
             render: (_: unknown, record: Plan) => (
                 <div className="flex items-center gap-1">
-                    <ActionButton
-                        icon={<EditOutlined />}
-                        label="Editar"
-                        action={() => onEdit(record)}
-                    />
-                    <ActionButton
-                        icon={<SettingOutlined />}
-                        label="Gestionar funcionalidades"
-                        action={() => onManageFeatures(record)}
-                    />
-                    <Popconfirm
-                        title="¿Eliminar plan?"
-                        description={`¿Estás seguro de eliminar "${record.name}"?`}
-                        onConfirm={() => onDelete(record)}
-                        okText="Eliminar"
-                        cancelText="Cancelar"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <AntButton
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                            aria-label="Eliminar"
+                    <CanDo permission="plans.edit">
+                        <ActionButton
+                            icon={<EditOutlined />}
+                            label="Editar"
+                            action={() => onEdit(record)}
                         />
-                    </Popconfirm>
+                    </CanDo>
+                    <CanDo permission="plans.edit">
+                        <ActionButton
+                            icon={<SettingOutlined />}
+                            label="Gestionar funcionalidades"
+                            action={() => onManageFeatures(record)}
+                        />
+                    </CanDo>
+                    <CanDo permission="plans.delete">
+                        <Popconfirm
+                            title="¿Eliminar plan?"
+                            description={`¿Estás seguro de eliminar "${record.name}"?`}
+                            onConfirm={() => onDelete(record)}
+                            okText="Eliminar"
+                            cancelText="Cancelar"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <AntButton
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                aria-label="Eliminar"
+                            />
+                        </Popconfirm>
+                    </CanDo>
                 </div>
             ),
         },

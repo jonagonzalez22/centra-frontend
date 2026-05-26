@@ -6,6 +6,17 @@ import { UsersProvider } from '@/features/admin/users/contexts/UsersProvider';
 import type { UseUsersReturn } from '@/features/admin/users/hooks/useUsers';
 import type { User } from '@/entities/User';
 
+const mockUser: User = {
+    id: 1,
+    name: 'Juan Pérez',
+    email: 'juan@centra.com',
+    store_id: 1,
+    store: { id: '1', name: 'Ferretería Central' },
+    roles: ['STORE_ADMIN'],
+    permissions: ['users.view'],
+    features: ['pos'],
+};
+
 const createMockUsersState = (overrides: Partial<UseUsersReturn> = {}): UseUsersReturn => ({
     users: [],
     loading: false,
@@ -26,18 +37,26 @@ const renderWithProvider = (ui: React.ReactElement) => {
     );
 };
 
-const mockUser: User = {
-    id: 1,
-    name: 'Juan Pérez',
-    email: 'juan@centra.com',
-    store_id: 1,
-    store: { id: '1', name: 'Ferretería Central' },
-    roles: ['STORE_ADMIN'],
-    permissions: ['users.view'],
-    features: ['pos'],
+const mockCanFn = (permissions: string[]) => {
+    (globalThis as Record<string, unknown>).__testPermissions = permissions;
 };
 
 describe('UsersPage', () => {
+    beforeAll(() => {
+        vi.mock('@/hooks/usePermissions', () => ({
+            usePermissions: vi.fn(() => ({
+                can: (permission: string) => {
+                    const permissions = (globalThis as Record<string, unknown>).__testPermissions as string[] | undefined;
+                    return permissions?.includes(permission) ?? false;
+                },
+            })),
+        }));
+    });
+
+    beforeEach(() => {
+        mockCanFn(['users.view']);
+    });
+
     test('renders the page header and breadcrumb', () => {
         renderWithProvider(
             <UsersPageView
@@ -94,6 +113,8 @@ describe('UsersPage', () => {
     });
 
     test('shows create button when canCreateUser is true', () => {
+        mockCanFn(['users.view', 'users.create', 'users.edit', 'users.delete']);
+
         renderWithProvider(
             <UsersPageView
                 title="Gestión de Usuarios"
@@ -111,6 +132,8 @@ describe('UsersPage', () => {
     });
 
     test('hides create button when canCreateUser is false', () => {
+        mockCanFn(['users.view']);
+
         renderWithProvider(
             <UsersPageView
                 title="Gestión de Usuarios"
@@ -128,6 +151,8 @@ describe('UsersPage', () => {
     });
 
     test('renders user rows from context', () => {
+        mockCanFn(['users.view', 'users.create', 'users.edit', 'users.delete']);
+
         const usersState = createMockUsersState({
             users: [mockUser],
             pagination: { current: 1, total: 1, pageSize: 15 },

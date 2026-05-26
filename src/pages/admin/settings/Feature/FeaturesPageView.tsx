@@ -2,6 +2,7 @@ import { Alert, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { FeatureSearchBar } from '@/features/admin/features/components/FeatureSearchBar';
 import { FeaturesTable } from '@/features/admin/features/components/FeaturesTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
@@ -43,12 +44,14 @@ export const FeaturesPageView = ({
                         </h1>
                         <p className="featuresPageDescription">{description}</p>
                     </div>
-                    <Button
-                        variant="primary"
-                        label="Nueva Funcionalidad"
-                        icon={<PlusOutlined />}
-                        action={onCreate}
-                    />
+                    <CanDo permission="settings.edit">
+                        <Button
+                            variant="primary"
+                            label="Nueva Funcionalidad"
+                            icon={<PlusOutlined />}
+                            action={onCreate}
+                        />
+                    </CanDo>
                 </div>
             </div>
 

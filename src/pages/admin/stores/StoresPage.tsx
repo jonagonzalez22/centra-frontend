@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { StoresPageView } from './StoresPageView';
 import { StoreModal } from '@/features/admin/stores/components/StoreModal';
 import { useStores } from '@/features/admin/stores/hooks/useStores';
-import { useAuthStore } from '@/store/useAuthStore.store';
 import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
 import type { Store } from '@/features/admin/stores/types/store.types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const routeMetadata = {
     title: 'Gestión de Tiendas',
@@ -17,8 +17,8 @@ const routeMetadata = {
 
 export const StoresPage = () => {
     const storesState = useStores();
-    const { user } = useAuthStore();
-    const canCreateStore = user?.permissions.includes('stores.create') ?? false;
+    const { can } = usePermissions();
+    const canCreateStore = can('stores.create');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedStore, setSelectedStore] = useState<Store | undefined>(undefined);

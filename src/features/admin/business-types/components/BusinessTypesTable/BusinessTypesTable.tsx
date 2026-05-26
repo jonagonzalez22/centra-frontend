@@ -3,6 +3,7 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
+import { CanDo } from '@/components/auth/CanDo';
 import { useBusinessTypesContext } from '../../hooks/useBusinessTypesContext';
 import type { BusinessType } from '../../types/business-type.types';
 import './BusinessTypesTable.css';
@@ -38,22 +39,26 @@ export const BusinessTypesTable = ({ onEdit }: BusinessTypesTableProps) => {
             key: 'actions',
             render: (_: unknown, record: BusinessType) => (
                 <div className="businessTypesTableActions">
-                    <Button
-                        variant="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        action={() => onEdit(record)}
-                    />
-                    <Popconfirm
-                        title="¿Eliminar tipo de negocio?"
-                        description="Esta acción no se puede deshacer."
-                        onConfirm={() => deleteBusinessType(record.id)}
-                        okText="Eliminar"
-                        cancelText="Cancelar"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <AntButton type="text" danger size="small" icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    <CanDo permission="settings.edit">
+                        <Button
+                            variant="text"
+                            size="small"
+                            icon={<EditOutlined />}
+                            action={() => onEdit(record)}
+                        />
+                    </CanDo>
+                    <CanDo permission="settings.edit">
+                        <Popconfirm
+                            title="¿Eliminar tipo de negocio?"
+                            description="Esta acción no se puede deshacer."
+                            onConfirm={() => deleteBusinessType(record.id)}
+                            okText="Eliminar"
+                            cancelText="Cancelar"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <AntButton type="text" danger size="small" icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                    </CanDo>
                 </div>
             ),
         },

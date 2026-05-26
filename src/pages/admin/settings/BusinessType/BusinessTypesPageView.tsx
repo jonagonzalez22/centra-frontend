@@ -2,6 +2,7 @@ import { Alert, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { BusinessTypeSearchBar } from '@/features/admin/business-types/components/BusinessTypeSearchBar';
 import { BusinessTypesTable } from '@/features/admin/business-types/components/BusinessTypesTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
@@ -43,12 +44,14 @@ export const BusinessTypesPageView = ({
                         </h1>
                         <p className="businessTypesPageDescription">{description}</p>
                     </div>
-                    <Button
-                        variant="primary"
-                        label="Nuevo Tipo de Negocio"
-                        icon={<PlusOutlined />}
-                        action={onCreate}
-                    />
+                    <CanDo permission="settings.edit">
+                        <Button
+                            variant="primary"
+                            label="Nuevo Tipo de Negocio"
+                            icon={<PlusOutlined />}
+                            action={onCreate}
+                        />
+                    </CanDo>
                 </div>
             </div>
 

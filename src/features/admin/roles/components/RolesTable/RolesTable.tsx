@@ -3,6 +3,7 @@ import { Tooltip, Space } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
 import { ActionButton } from '@/components/ActionButton';
+import { CanDo } from '@/components/auth/CanDo';
 import type { Role } from '../../types/role.types';
 import './RolesTable.css';
 
@@ -85,11 +86,13 @@ export const RolesTable = ({
             key: 'actions',
             render: (_: unknown, record: Role) => (
                 <div className="rolesTableActions">
-                    <ActionButton
-                        icon={<EditOutlined />}
-                        label="Editar permisos"
-                        action={() => onEditPermissions(record)}
-                    />
+                    <CanDo permission="roles.edit">
+                        <ActionButton
+                            icon={<EditOutlined />}
+                            label="Editar permisos"
+                            action={() => onEditPermissions(record)}
+                        />
+                    </CanDo>
                 </div>
             ),
         },
