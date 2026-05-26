@@ -62,6 +62,7 @@ export interface StoresFilters {
     plan_id?: string;
     page?: number;
     per_page?: number;
+    cuit?: string;
 }
 
 export interface FilterOptions {
