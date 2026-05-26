@@ -1,0 +1,74 @@
+.dashboardPage {
+    @apply w-full;
+}
+
+.dashboardPageHeader {
+    @apply mb-6;
+}
+
+.dashboardPageBreadcrumb {
+    @apply mb-2;
+}
+
+.dashboardPageHeaderTop {
+    @apply flex flex-wrap items-start justify-between gap-4;
+}
+
+.dashboardPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.dashboardPageTitle {
+    @apply text-2xl font-bold text-centra-primary m-0;
+}
+
+.dashboardPageDescription {
+    @apply text-sm text-centra-text/60 m-0;
+}
+
+.dashboardPageAlert {
+    @apply mb-4 py-2 text-sm;
+}
+
+.dashboardPageMetrics {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6;
+}
+
+.dashboardPageCharts {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6;
+}
+
+.dashboardPageRecentActivity {
+    @apply mt-6;
+}
+
+.dashboardPageTableSkeleton {
+    @apply flex flex-col gap-2 p-4;
+}
+
+.dashboardPageTableSkeletonRow {
+    @apply h-10 bg-gray-100 rounded animate-pulse;
+}
+
+@media (max-width: 768px) {
+    .dashboardPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .dashboardPageHeader {
+        @apply mb-4;
+    }
+
+    .dashboardPageTitle {
+        @apply text-xl;
+    }
+
+    .dashboardPageMetrics {
+        @apply grid-cols-1;
+    }
+
+    .dashboardPageCharts {
+        @apply grid-cols-1;
+    }
+}

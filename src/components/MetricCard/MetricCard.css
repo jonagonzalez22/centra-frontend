@@ -1,0 +1,19 @@
+.metricCard {
+    @apply flex items-center gap-4 p-5 bg-white rounded-lg border border-gray-200 min-h-[100px];
+}
+
+.metricCardIcon {
+    @apply flex items-center justify-center w-12 h-12 rounded-lg bg-centra-primary/10 text-centra-primary flex-shrink-0;
+}
+
+.metricCardContent {
+    @apply flex flex-col gap-1 min-w-0;
+}
+
+.metricCardTitle {
+    @apply text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis;
+}
+
+.metricCardValue {
+    @apply text-xl font-semibold text-centra-text;
+}
