@@ -2,6 +2,7 @@ import { EyeOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Table from '@/components/Table/Table';
 import { ActionButton } from '@/components/ActionButton';
+import { CanDo } from '@/components/auth/CanDo';
 import { useStoresContext } from '@/features/admin/stores/hooks/useStoresContext';
 import { formatDate } from '@/utils/formatDate';
 import type { Store } from '@/features/admin/stores/types/store.types';
@@ -64,16 +65,20 @@ export const StoresTable = ({ onEdit }: StoresTableProps) => {
             key: 'actions',
             render: (_: unknown, record: Store) => (
                 <div className="storesTableActions">
-                    <ActionButton
-                        icon={<EyeOutlined />}
-                        label="Ver"
-                        action={() => navigate(`/admin/tiendas/${record.id}`)}
-                    />
-                    <ActionButton
-                        icon={<EditOutlined />}
-                        label="Editar"
-                        action={() => onEdit(record)}
-                    />
+                    <CanDo permission="stores.view">
+                        <ActionButton
+                            icon={<EyeOutlined />}
+                            label="Ver"
+                            action={() => navigate(`/admin/tiendas/${record.id}`)}
+                        />
+                    </CanDo>
+                    <CanDo permission="stores.edit">
+                        <ActionButton
+                            icon={<EditOutlined />}
+                            label="Editar"
+                            action={() => onEdit(record)}
+                        />
+                    </CanDo>
                 </div>
             ),
         },

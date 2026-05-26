@@ -2,6 +2,7 @@ import { Alert, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { PlansTable } from '@/features/admin/plans/components/PlansTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
 import type { Plan } from '@/features/admin/plans/types/plan.types';
@@ -42,12 +43,14 @@ export const PlansPageView = ({
                         <h1 className="m-0 text-2xl font-semibold leading-tight">{title}</h1>
                         <p className="mt-1 text-[#666] text-sm">{description}</p>
                     </div>
-                    <Button
-                        variant="primary"
-                        label="Crear Plan"
-                        icon={<PlusOutlined />}
-                        action={onCreate}
-                    />
+                    <CanDo permission="plans.create">
+                        <Button
+                            variant="primary"
+                            label="Crear Plan"
+                            icon={<PlusOutlined />}
+                            action={onCreate}
+                        />
+                    </CanDo>
                 </div>
             </div>
 

@@ -2,6 +2,7 @@ import { Alert, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { UserSearchBar } from '@/features/admin/users/components/UserSearchBar';
 import { UsersTable } from '@/features/admin/users/components/UsersTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
@@ -48,12 +49,14 @@ export const UsersPageView = ({
                         <p className="usersPageDescription">{description}</p>
                     </div>
                     {canCreateUser && (
-                        <Button
-                            variant="primary"
-                            label="Nuevo Usuario"
-                            icon={<PlusOutlined />}
-                            action={onCreate}
-                        />
+                        <CanDo permission="users.create">
+                            <Button
+                                variant="primary"
+                                label="Nuevo Usuario"
+                                icon={<PlusOutlined />}
+                                action={onCreate}
+                            />
+                        </CanDo>
                     )}
                 </div>
             </div>

@@ -5,6 +5,16 @@ import { MemoryRouter } from 'react-router-dom';
 import { RolesTable } from './RolesTable';
 import type { Role } from '../../types/role.types';
 
+interface TestGlobal {
+    __permissions?: string[];
+}
+
+vi.mock('@/hooks/usePermissions', () => {
+    return {
+        usePermissions: vi.fn(() => ({ can: (permission: string) => (globalThis as TestGlobal).__permissions?.includes(permission) ?? false })),
+    };
+});
+
 const mockRole: Role = {
     id: 'r1',
     name: 'Administrador',
@@ -20,6 +30,14 @@ const renderWithRouter = (component: React.ReactElement) => {
 };
 
 describe('RolesTable', () => {
+    beforeEach(() => {
+        (globalThis as TestGlobal).__permissions = ['roles.edit'];
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     test('renders role name', () => {
         const onEditPermissions = vi.fn();
 
