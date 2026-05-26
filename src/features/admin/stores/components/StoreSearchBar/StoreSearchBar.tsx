@@ -13,6 +13,7 @@ interface StoreFiltersForm {
     business_type_id?: number;
     plan_id?: string;
     is_active?: boolean;
+    cuit?: string;
 }
 
 export const StoreSearchBar = () => {
@@ -24,9 +25,10 @@ export const StoreSearchBar = () => {
     const businessTypeValue = Form.useWatch('business_type_id', form);
     const planValue = Form.useWatch('plan_id', form);
     const isActiveValue = Form.useWatch('is_active', form);
+    const cuitValue = Form.useWatch('cuit', form);
 
     const hasActiveFilters =
-        nameValue || businessTypeValue || planValue || isActiveValue !== undefined;
+        nameValue || businessTypeValue || planValue || isActiveValue !== undefined || cuitValue;
 
     const isDisabled = loading || filterOptionsLoading;
 
@@ -37,6 +39,7 @@ export const StoreSearchBar = () => {
         if (values.business_type_id) filters.business_type_id = values.business_type_id;
         if (values.plan_id) filters.plan_id = values.plan_id;
         if (values.is_active !== undefined) filters.is_active = values.is_active;
+        if (values.cuit) filters.cuit = values.cuit;
 
         return filters;
     }, []);
@@ -48,7 +51,8 @@ export const StoreSearchBar = () => {
                     values.name ||
                     values.business_type_id ||
                     values.plan_id ||
-                    values.is_active !== undefined;
+                    values.is_active !== undefined ||
+                    values.cuit;
 
                 if (!hasFilters) {
                     refetch({});
@@ -103,6 +107,14 @@ export const StoreSearchBar = () => {
                     name="name"
                     label="Nombre"
                     placeholder="Buscar por nombre"
+                    allowClear
+                    disabled={isDisabled}
+                />
+
+                <InputField
+                    name="cuit"
+                    label="CUIT"
+                    placeholder="CUIT"
                     allowClear
                     disabled={isDisabled}
                 />
