@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MemoryRouter } from 'react-router-dom';
 import NotFoundPage from './NotFoundPage';
 
 const meta: Meta<typeof NotFoundPage> = {
@@ -14,13 +13,6 @@ const meta: Meta<typeof NotFoundPage> = {
             },
         },
     },
-    decorators: [
-        (Story) => (
-            <MemoryRouter initialEntries={['/ruta-inexistente']}>
-                <Story />
-            </MemoryRouter>
-        ),
-    ],
 };
 
 export default meta;

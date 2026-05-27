@@ -1,5 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BusinessTypesPageView } from './BusinessTypesPageView';
+import { BusinessTypesProvider } from '@/features/admin/business-types/contexts/BusinessTypesProvider';
+import type { UseBusinessTypesReturn } from '@/features/admin/business-types/hooks/useBusinessTypes';
+
+const createMockState = (overrides: Partial<UseBusinessTypesReturn> = {}): UseBusinessTypesReturn => ({
+    businessTypes: [],
+    loading: false,
+    error: null,
+    pagination: { current: 1, total: 0, pageSize: 15 },
+    refetch: () => {},
+    deleteBusinessType: () => Promise.resolve(),
+    ...overrides,
+});
 
 const meta: Meta<typeof BusinessTypesPageView> = {
     title: 'Pages/Admin/Settings/BusinessType/BusinessTypesPage',
@@ -9,9 +21,11 @@ const meta: Meta<typeof BusinessTypesPageView> = {
     },
     decorators: [
         (Story) => (
-            <div className="bg-centra-surface p-6">
-                <Story />
-            </div>
+            <BusinessTypesProvider value={createMockState()}>
+                <div className="bg-centra-surface p-6">
+                    <Story />
+                </div>
+            </BusinessTypesProvider>
         ),
     ],
     tags: ['autodocs'],
