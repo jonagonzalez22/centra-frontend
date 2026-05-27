@@ -1,5 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StoresPageView } from './StoresPageView';
+import { StoresProvider } from '@/features/admin/stores/contexts/StoresProvider';
+import type { UseStoresReturn } from '@/features/admin/stores/hooks/useStores';
+
+const createMockStoresState = (overrides: Partial<UseStoresReturn> = {}): UseStoresReturn => ({
+    stores: [],
+    loading: false,
+    error: null,
+    pagination: { current: 1, total: 0, pageSize: 15 },
+    refetch: () => {},
+    filterOptions: null,
+    filterOptionsLoading: false,
+    ...overrides,
+});
 
 const meta: Meta<typeof StoresPageView> = {
     title: 'Pages/Admin/Stores/StoresPage',
@@ -9,9 +22,11 @@ const meta: Meta<typeof StoresPageView> = {
     },
     decorators: [
         (Story) => (
-            <div className="bg-centra-surface p-6">
-                <Story />
-            </div>
+            <StoresProvider value={createMockStoresState()}>
+                <div className="bg-centra-surface p-6">
+                    <Story />
+                </div>
+            </StoresProvider>
         ),
     ],
     tags: ['autodocs'],

@@ -1,5 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { UsersPageView } from './UsersPageView';
+import { UsersProvider } from '@/features/admin/users/contexts/UsersProvider';
+import type { UseUsersReturn } from '@/features/admin/users/hooks/useUsers';
+
+const createMockUsersState = (overrides: Partial<UseUsersReturn> = {}): UseUsersReturn => ({
+    users: [],
+    loading: false,
+    error: null,
+    pagination: { current: 1, total: 0, pageSize: 15 },
+    refetch: () => {},
+    deleteUser: () => Promise.resolve(),
+    filterOptions: null,
+    filterOptionsLoading: false,
+    ...overrides,
+});
 
 const meta: Meta<typeof UsersPageView> = {
     title: 'Pages/Admin/Users/UsersPage',
@@ -9,9 +23,11 @@ const meta: Meta<typeof UsersPageView> = {
     },
     decorators: [
         (Story) => (
-            <div className="bg-centra-surface p-6">
-                <Story />
-            </div>
+            <UsersProvider value={createMockUsersState()}>
+                <div className="bg-centra-surface p-6">
+                    <Story />
+                </div>
+            </UsersProvider>
         ),
     ],
     tags: ['autodocs'],
