@@ -46,9 +46,19 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
-                features: ['pos', 'inventory'],
+                features: [
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -57,6 +67,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'test-token',
+                    store: mockStore,
                 },
                 errors: null,
             };
@@ -78,9 +89,19 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
-                features: ['pos', 'inventory'],
+                features: [
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -89,6 +110,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'test-token-123',
+                    store: mockStore,
                 },
                 errors: null,
             };
@@ -111,9 +133,19 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
-                features: ['pos', 'inventory'],
+                features: [
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -122,6 +154,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'test-token',
+                    store: mockStore,
                 },
                 errors: null,
             };
@@ -178,17 +211,24 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['SUPER_ADMIN'],
                 permissions: ['*'],
                 features: [
-                    'pos',
-                    'inventory',
-                    'reports',
-                    'deliveries',
-                    'route_mapping',
-                    'messaging',
-                    'multi_user',
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                    { code: 'reports', limit: null },
+                    { code: 'deliveries', limit: null },
+                    { code: 'route_mapping', limit: null },
+                    { code: 'messaging', limit: null },
+                    { code: 'multi_user', limit: null },
                 ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -197,6 +237,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'secret-token-should-not-be-in-user',
+                    store: mockStore,
                 },
                 errors: null,
             };
@@ -222,9 +263,13 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
+                    store: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
-                    features: ['pos', 'inventory'],
+                    features: [
+                        { code: 'pos', limit: null },
+                        { code: 'inventory', limit: null },
+                    ],
                 },
                 token: 'test-token',
                 loading: false,
@@ -269,9 +314,13 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
+                    store: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
-                    features: ['pos', 'inventory'],
+                    features: [
+                        { code: 'pos', limit: null },
+                        { code: 'inventory', limit: null },
+                    ],
                 },
                 token: 'test-token',
                 loading: false,
@@ -300,9 +349,13 @@ describe('useAuthStore', () => {
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
+                    store: null,
                     roles: ['STORE_ADMIN'],
                     permissions: ['read'],
-                    features: ['pos', 'inventory'],
+                    features: [
+                        { code: 'pos', limit: null },
+                        { code: 'inventory', limit: null },
+                    ],
                 },
                 token: 'test-token',
                 loading: false,
@@ -334,9 +387,19 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
-                features: ['pos', 'inventory'],
+                features: [
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -345,6 +408,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'persistent-token',
+                    store: mockStore,
                 },
                 errors: null,
             };
@@ -367,9 +431,19 @@ describe('useAuthStore', () => {
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
+                store: null,
                 roles: ['STORE_ADMIN'],
                 permissions: ['read'],
-                features: ['pos', 'inventory'],
+                features: [
+                    { code: 'pos', limit: null },
+                    { code: 'inventory', limit: null },
+                ],
+            };
+
+            const mockStore = {
+                id: 'store-1',
+                name: 'Test Store',
+                business_type: 'retail',
             };
 
             const mockResponse: AuthResponse = {
@@ -378,6 +452,7 @@ describe('useAuthStore', () => {
                 data: {
                     user: mockUser,
                     token: 'test-token',
+                    store: mockStore,
                 },
                 errors: null,
             };

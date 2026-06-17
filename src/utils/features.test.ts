@@ -6,9 +6,13 @@ const baseUser: User = {
     name: 'Test User',
     email: 'test@example.com',
     store_id: 1,
+    store: null,
     roles: ['STORE_ADMIN'],
     permissions: [],
-    features: ['pos', 'inventory'],
+    features: [
+        { code: 'pos', limit: null },
+        { code: 'inventory', limit: null },
+    ],
 };
 
 describe('hasFeature', () => {

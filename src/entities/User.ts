@@ -9,13 +9,24 @@ export type FeatureCode =
     | 'multi_user'
     | 'stores';
 
+export interface FeatureFlag {
+    code: FeatureCode;
+    limit: number | null;
+}
+
+export interface Store {
+    id: string;
+    name: string;
+    business_type: string;
+}
+
 export interface User {
     id: number;
     name: string;
     email: string;
     store_id: number | null;
-    store?: { id: string; name: string } | null;
+    store: Store | null;
     roles: UserRole[];
     permissions: string[];
-    features: FeatureCode[];
+    features: FeatureFlag[];
 }
