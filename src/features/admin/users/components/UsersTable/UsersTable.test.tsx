@@ -34,10 +34,10 @@ const mockUser: User = {
     name: 'Juan Pérez',
     email: 'juan@centra.com',
     store_id: 1,
-    store: { id: '1', name: 'Ferretería Central' },
+    store: { id: '1', name: 'Ferretería Central', business_type: 'ferreteria' },
     roles: ['STORE_ADMIN'],
     permissions: ['users.view'],
-    features: ['pos'],
+    features: [{ code: 'pos', limit: null }],
 };
 
 describe('UsersTable', () => {

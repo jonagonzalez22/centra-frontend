@@ -1,4 +1,4 @@
-import { User } from '../../../entities/User';
+import { Store, User } from '../../../entities/User';
 
 export interface LoginPayload {
     email: string;
@@ -8,6 +8,7 @@ export interface LoginPayload {
 interface IData {
     token: string;
     user: User;
+    store: Store;
 }
 
 export interface AuthResponse {

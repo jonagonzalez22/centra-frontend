@@ -14,6 +14,7 @@ const mockUser: User = {
     name: 'Test User',
     email: 'test@test.com',
     store_id: null,
+    store: null,
     roles: [],
     permissions: [],
     features: [],
