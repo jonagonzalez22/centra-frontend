@@ -1,0 +1,15 @@
+.categoriesSearchBar {
+    @apply mb-6;
+}
+
+.categoriesSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.categoriesSearchBarRow > * {
+    @apply mb-0 min-w-[180px];
+}
+
+.categoriesSearchBarActions {
+    @apply flex gap-2 items-end;
+}

@@ -1,0 +1,11 @@
+.categoryFormModalFooter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 16px;
+}
+
+.categoryFormModalFooter > * {
+    min-width: 100px;
+}
