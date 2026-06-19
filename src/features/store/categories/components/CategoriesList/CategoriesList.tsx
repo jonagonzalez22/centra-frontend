@@ -1,5 +1,6 @@
 import { Button } from '@/components/Button';
 import { PlusOutlined } from '@ant-design/icons';
+import { CanDo } from '@/components/auth/CanDo';
 import { CategoriesSearchBar } from '../CategoriesSearchBar';
 import { CategoriesTable } from '../CategoriesTable';
 import type { Category, CategoriesFilters } from '../../interfaces/category.interface';
@@ -31,7 +32,9 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({
     return (
         <div className="categoriesList">
             <div className="categoriesListHeader">
-                <Button icon={<PlusOutlined />} label="Nueva Categoría" action={onNewCategory} />
+                <CanDo permission="categories.create">
+                    <Button icon={<PlusOutlined />} label="Nueva Categoría" action={onNewCategory} />
+                </CanDo>
             </div>
 
             <CategoriesSearchBar loading={loading} refetch={refetch} />

@@ -3,6 +3,7 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
+import { CanDo } from '@/components/auth/CanDo';
 import type { Category } from '../../interfaces/category.interface';
 import './CategoriesTable.css';
 
@@ -47,22 +48,26 @@ export const CategoriesTable: React.FC<CategoriesTableProps> = ({
             key: 'actions',
             render: (_: unknown, record: Category) => (
                 <div className="categoriesTableActions">
-                    <Button
-                        variant="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        action={() => onEdit(record)}
-                    />
-                    <Popconfirm
-                        title="¿Eliminar categoría?"
-                        description="Esta acción no se puede deshacer."
-                        onConfirm={() => onDelete(record.id)}
-                        okText="Eliminar"
-                        cancelText="Cancelar"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <AntButton type="text" danger size="small" icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    <CanDo permission="categories.edit">
+                        <Button
+                            variant="text"
+                            size="small"
+                            icon={<EditOutlined />}
+                            action={() => onEdit(record)}
+                        />
+                    </CanDo>
+                    <CanDo permission="categories.delete">
+                        <Popconfirm
+                            title="¿Eliminar categoría?"
+                            description="Esta acción no se puede deshacer."
+                            onConfirm={() => onDelete(record.id)}
+                            okText="Eliminar"
+                            cancelText="Cancelar"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <AntButton type="text" danger size="small" icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                    </CanDo>
                 </div>
             ),
         },
