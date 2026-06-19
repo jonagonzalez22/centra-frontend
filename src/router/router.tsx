@@ -14,6 +14,7 @@ import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTy
 import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
 import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
+import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
+                    { path: 'categorias', element: <CategoriesPage /> },
                 ],
             },
         ],

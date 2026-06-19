@@ -1,0 +1,1 @@
+export { CategoriesSearchBar } from './CategoriesSearchBar';

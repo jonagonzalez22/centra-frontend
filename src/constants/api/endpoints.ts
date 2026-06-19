@@ -1,4 +1,9 @@
 export const API_ENDPOINTS = {
+    STORE: {
+        CATEGORIES: {
+            URL: '/v1/store/categories',
+        },
+    },
     ADMIN: {
         STORES: {
             URL: '/v1/admin/stores',

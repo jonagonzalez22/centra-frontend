@@ -7,7 +7,8 @@ export type FeatureCode =
     | 'route_mapping'
     | 'messaging'
     | 'multi_user'
-    | 'stores';
+    | 'stores'
+    | 'categories';
 
 export interface FeatureFlag {
     code: FeatureCode;

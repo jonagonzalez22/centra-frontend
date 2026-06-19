@@ -58,6 +58,7 @@ const getResourceName = (resource: string): string => {
         business_types: 'Tipos de Negocio',
         settings: 'Configuraciones',
         roles: 'Roles',
+        categories: 'Categorías',
     };
     return names[resource] ?? resource.charAt(0).toUpperCase() + resource.slice(1);
 };
@@ -72,16 +73,12 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         business_types: <Tag size={16} />,
         settings: <Settings size={16} />,
         roles: <Shield size={16} />,
+        categories: <Tag size={16} />,
     };
     return icons[resource] ?? <Key size={16} />;
 };
 
-export const PermissionDrawer = ({
-    open,
-    onClose,
-    onSuccess,
-    role,
-}: PermissionDrawerProps) => {
+export const PermissionDrawer = ({ open, onClose, onSuccess, role }: PermissionDrawerProps) => {
     const [permissionsByResource, setPermissionsByResource] = useState<PermissionsByResource>({});
     const [checkedCodes, setCheckedCodes] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
@@ -186,9 +183,7 @@ export const PermissionDrawer = ({
                 <>
                     <div className="permissionDrawerContent">
                         {groupedPermissions.length === 0 ? (
-                            <div className="permissionDrawerEmpty">
-                                No hay permisos disponibles
-                            </div>
+                            <div className="permissionDrawerEmpty">No hay permisos disponibles</div>
                         ) : (
                             <div className="permissionDrawerGroups">
                                 {groupedPermissions.map((group) => (

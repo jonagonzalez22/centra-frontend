@@ -1,0 +1,7 @@
+.categoriesList {
+    @apply flex flex-col;
+}
+
+.categoriesListHeader {
+    @apply flex justify-end mb-4;
+}
