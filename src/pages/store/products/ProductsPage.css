@@ -1,0 +1,46 @@
+.productsPage {
+    @apply w-full p-6;
+}
+
+.productsPageHeader {
+    @apply mb-6;
+}
+
+.productsPageBreadcrumb {
+    @apply mb-2;
+}
+
+.productsPageHeaderTop {
+    @apply flex flex-wrap items-start justify-between gap-4;
+}
+
+.productsPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.productsPageTitle {
+    @apply text-2xl font-bold text-centra-primary m-0;
+}
+
+.productsPageDescription {
+    @apply text-sm text-centra-text/60 m-0;
+}
+
+.productsPageAlert {
+    @apply mb-4 py-2 text-sm;
+}
+
+@media (max-width: 768px) {
+    .productsPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .productsPageHeader {
+        @apply mb-4;
+    }
+
+    .productsPageTitle {
+        @apply text-xl;
+    }
+}

@@ -1,0 +1,15 @@
+.productsSearchBar {
+    @apply mb-4;
+}
+
+.productsSearchBarRow {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end;
+}
+
+.productsSearchBarRow .ant-form-item {
+    @apply mb-0;
+}
+
+.productsSearchBarActions {
+    @apply flex gap-2 items-end;
+}

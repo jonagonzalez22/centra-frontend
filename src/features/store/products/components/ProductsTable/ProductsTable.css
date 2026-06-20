@@ -1,0 +1,7 @@
+.productsTableNameLink {
+    @apply text-blue-600 cursor-pointer hover:underline;
+}
+
+.productsTableActions {
+    @apply flex items-center gap-1;
+}

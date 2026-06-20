@@ -3,6 +3,9 @@ export const API_ENDPOINTS = {
         CATEGORIES: {
             URL: '/v1/store/categories',
         },
+        PRODUCTS: {
+            URL: '/v1/store/products',
+        },
     },
     ADMIN: {
         STORES: {
