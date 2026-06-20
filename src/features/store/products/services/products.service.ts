@@ -96,4 +96,22 @@ export const ProductsService = {
             throw error;
         }
     },
+
+    generateSku: async (params?: { category_id?: string; name?: string }): Promise<string> => {
+        const { data } = await api.get<ApiListResponse<{ sku: string }>>(
+            `${API_ENDPOINTS.STORE.PRODUCTS.URL}/generate-sku`,
+            { params }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data.sku;
+    },
 };

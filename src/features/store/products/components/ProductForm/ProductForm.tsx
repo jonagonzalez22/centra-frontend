@@ -1,7 +1,9 @@
-import { Form, Row, Col, Switch, InputNumber, message } from 'antd';
+import { Form, Row, Col, Switch, InputNumber, message, Spin } from 'antd';
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
+import Input from '@/components/Input/Input';
 import SelectField from '@/components/SelectField/SelectField';
+import { Button } from '@/components/Button';
 import { requiredStringRules } from '@/utils/validationRules';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { CreateProductDto, Product } from '../../interfaces/product.interface';
@@ -16,6 +18,8 @@ interface ProductFormProps {
     categoriesLoading: boolean;
     onSubmit: (values: CreateProductDto) => Promise<void>;
     product?: Product;
+    skuGenerating?: boolean;
+    handleGenerateSku?: () => void;
 }
 
 interface ProductFormValues {
@@ -56,6 +60,8 @@ export const ProductForm = ({
     categories,
     categoriesLoading,
     onSubmit,
+    skuGenerating = false,
+    handleGenerateSku,
 }: ProductFormProps) => {
     const [internalForm] = Form.useForm<ProductFormValues>();
     const form = externalForm ?? internalForm;
@@ -93,6 +99,9 @@ export const ProductForm = ({
 
     const categoryOptions = buildCategoryOptions(categories);
     const isDisabled = loading || categoriesLoading;
+    const nameValue = Form.useWatch('name', form);
+    const categoryValue = Form.useWatch('category_id', form);
+    const canGenerateSku = !!nameValue || !!categoryValue;
 
     return (
         <Form
@@ -135,13 +144,31 @@ export const ProductForm = ({
 
             <Row gutter={16}>
                 <Col {...colResponsive}>
-                    <InputField
+                    <Form.Item
                         name="sku"
-                        label="SKU"
-                        placeholder="Código interno"
+                        label="Código Interno (SKU)"
                         rules={requiredStringRules('El SKU')}
-                        disabled={isDisabled}
-                    />
+                    >
+                        <Input
+                            placeholder="Código interno"
+                            disabled={isDisabled}
+                            suffix={
+                                <div className="flex items-center gap-1">
+                                    {skuGenerating ? (
+                                        <Spin size="small" />
+                                    ) : (
+                                        <Button
+                                            variant="link"
+                                            size="small"
+                                            label="Generar"
+                                            action={handleGenerateSku}
+                                            disabled={!canGenerateSku || isDisabled}
+                                        />
+                                    )}
+                                </div>
+                            }
+                        />
+                    </Form.Item>
                 </Col>
                 <Col {...colResponsive}>
                     <InputField
