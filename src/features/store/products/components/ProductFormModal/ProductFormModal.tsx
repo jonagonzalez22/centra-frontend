@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
-import { Form } from 'antd';
+import { useEffect, useState } from 'react';
+import { Form, message } from 'antd';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
 import { ProductForm } from '../ProductForm';
 import { useProductForm, buildInitialValuesFromProduct } from '../../hooks/useProductForm';
 import { useProductsContext } from '../../context/ProductsContext';
+import { ProductsService } from '../../services/products.service';
+import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { Product, CreateProductDto } from '../../interfaces/product.interface';
 import './ProductFormModal.css';
 
@@ -19,6 +21,7 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const [form] = Form.useForm();
     const { categories, categoriesLoading } = useProductsContext();
     const { loading, createProduct, updateProduct } = useProductForm({ onSuccess });
+    const [skuGenerating, setSkuGenerating] = useState(false);
 
     const isEditing = !!product;
     const title = isEditing ? 'Editar Producto' : 'Crear Producto';
@@ -32,6 +35,25 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
             }
         }
     }, [open, product, form]);
+
+    const handleGenerateSku = async () => {
+        const values = form.getFieldsValue(['name', 'category_id']);
+        if (!values.name && !values.category_id) return;
+
+        setSkuGenerating(true);
+        try {
+            const sku = await ProductsService.generateSku({
+                category_id: values.category_id || undefined,
+                name: values.name || undefined,
+            });
+            form.setFieldsValue({ sku });
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al generar SKU');
+        } finally {
+            setSkuGenerating(false);
+        }
+    };
 
     const handleSubmit = async (values: CreateProductDto) => {
         if (isEditing && product) {
@@ -89,6 +111,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 categoriesLoading={categoriesLoading}
                 onSubmit={handleSubmit}
                 product={product}
+                skuGenerating={skuGenerating}
+                handleGenerateSku={handleGenerateSku}
             />
         </Modal>
     );
