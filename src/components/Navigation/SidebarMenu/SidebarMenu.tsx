@@ -2,7 +2,15 @@ import { Layout, Menu, Drawer } from 'antd';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Store, User as LucideUser, CreditCard, Settings, FolderTree } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Store,
+    User as LucideUser,
+    CreditCard,
+    Settings,
+    FolderTree,
+    Package,
+} from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
@@ -89,9 +97,20 @@ const menuItems: MenuItem[] = [
         icon: <LayoutDashboard size={ICON_SIZE} />,
         context: 'store',
     },
-    { label: 'Categorías', key: '/tienda/categorias', icon: <FolderTree size={ICON_SIZE} />, context: 'store', feature: 'categories' },
-    { label: 'Punto de Venta', key: '/tienda/pos', context: 'store', feature: 'pos' },
-    { label: 'Inventario', key: '/tienda/stock', context: 'store', feature: 'inventory' },
+    {
+        label: 'Categorías',
+        key: '/tienda/categorias',
+        icon: <FolderTree size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'categories',
+    },
+    {
+        label: 'Inventario',
+        key: '/tienda/productos',
+        icon: <Package size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'inventory',
+    },
 ];
 
 function filterMenuItems(

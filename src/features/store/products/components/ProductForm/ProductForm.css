@@ -1,0 +1,7 @@
+.productForm .ant-form-item {
+    @apply mb-4;
+}
+
+.productForm .ant-form-item-label {
+    @apply pb-1;
+}

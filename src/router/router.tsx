@@ -9,12 +9,14 @@ import { StoreShowPage } from '@/pages/admin/stores/StoreShowPage';
 import { UsersPage } from '@/pages/admin/users/UsersPage';
 import { DashboardPage } from '@/pages/admin/dashboard/DashboardPage';
 import { PermissionRoute } from './PermissionRoute';
+import { FeatureRoute } from './FeatureRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
 import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
+import { ProductsPage } from '@/pages/store/products/ProductsPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -37,7 +39,7 @@ export const router = createBrowserRouter([
             {
                 element: <AppLayout title="Backoffice Admin" />,
                 children: [
-{ index: true, element: <Navigate to="dashboard" replace /> },
+                    { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <DashboardPage /> },
 
                     {
@@ -50,9 +52,7 @@ export const router = createBrowserRouter([
 
                     {
                         element: <PermissionRoute permission="users.view" />,
-                        children: [
-                            { path: 'usuarios', element: <UsersPage /> },
-                        ],
+                        children: [{ path: 'usuarios', element: <UsersPage /> }],
                     },
 
                     {
@@ -92,7 +92,14 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <div>Admin</div> },
-                    { path: 'categorias', element: <CategoriesPage /> },
+
+                    {
+                        element: <FeatureRoute feature="inventory" />,
+                        children: [
+                            { path: 'productos', element: <ProductsPage /> },
+                            { path: 'categorias', element: <CategoriesPage /> },
+                        ],
+                    },
                 ],
             },
         ],

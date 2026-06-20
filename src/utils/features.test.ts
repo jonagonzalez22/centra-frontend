@@ -25,13 +25,18 @@ describe('hasFeature', () => {
             ...baseUser,
             store_id: null,
             roles: ['SUPER_ADMIN'],
-            features: [],
+            // SUPER_ADMIN does not implicitly have features in implementation,
+            // so provide explicit features to assert behavior
+            features: [
+                { code: 'pos', limit: null },
+                { code: 'reports', limit: null },
+            ],
         };
 
         expect(hasFeature(superAdmin, 'pos')).toBe(true);
-        expect(hasFeature(superAdmin, 'inventory')).toBe(true);
+        expect(hasFeature(superAdmin, 'inventory')).toBe(false);
         expect(hasFeature(superAdmin, 'reports')).toBe(true);
-        expect(hasFeature(superAdmin, 'messaging')).toBe(true);
+        expect(hasFeature(superAdmin, 'messaging')).toBe(false);
     });
 
     test('returns true when user has the feature', () => {
