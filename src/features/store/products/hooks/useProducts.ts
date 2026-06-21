@@ -47,14 +47,14 @@ export const useProducts = (): UseProductsReturn => {
     const [filters, setFiltersState] = useState<ProductsFilters>({});
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true);
-    
+
     const currentPageRef = useRef(1);
     const currentPerPageRef = useRef(DEFAULT_PER_PAGE);
 
     const fetchCategories = useCallback(async () => {
         setCategoriesLoading(true);
         try {
-            const response = await CategoriesService.getAll({ per_page: 100 });
+            const response = await CategoriesService.getAll({ per_page: 100, is_active: true });
             setCategories(response.items);
         } catch (err) {
             console.error('Error fetching categories:', err);
@@ -92,43 +92,56 @@ export const useProducts = (): UseProductsReturn => {
         }
     }, []);
 
-    const setPage = useCallback((page: number) => {
-        setFiltersState((prev) => ({ ...prev, page }));
-        fetchProducts({ ...filters, page });
-    }, [filters, fetchProducts]);
+    const setPage = useCallback(
+        (page: number) => {
+            setFiltersState((prev) => ({ ...prev, page }));
+            fetchProducts({ ...filters, page });
+        },
+        [filters, fetchProducts]
+    );
 
-    const setPerPage = useCallback((perPage: number) => {
-        setFiltersState((prev) => ({ ...prev, per_page: perPage, page: 1 }));
-        fetchProducts({ ...filters, per_page: perPage, page: 1 });
-    }, [filters, fetchProducts]);
+    const setPerPage = useCallback(
+        (perPage: number) => {
+            setFiltersState((prev) => ({ ...prev, per_page: perPage, page: 1 }));
+            fetchProducts({ ...filters, per_page: perPage, page: 1 });
+        },
+        [filters, fetchProducts]
+    );
 
-    const setFilters = useCallback((newFilters: ProductsFilters) => {
-        const filtersWithPage = { ...newFilters, page: 1 };
-        setFiltersState(filtersWithPage);
-        fetchProducts(filtersWithPage);
-    }, [fetchProducts]);
+    const setFilters = useCallback(
+        (newFilters: ProductsFilters) => {
+            const filtersWithPage = { ...newFilters, page: 1 };
+            setFiltersState(filtersWithPage);
+            fetchProducts(filtersWithPage);
+        },
+        [fetchProducts]
+    );
 
     const refresh = useCallback(() => {
         fetchProducts({ ...filters, page: currentPageRef.current });
     }, [filters, fetchProducts]);
 
-    const deleteProduct = useCallback(async (id: string) => {
-        try {
-            await ProductsService.delete(id);
-            message.success('Producto eliminado correctamente.');
-            const lastPage = Math.ceil(pagination.total / currentPerPageRef.current);
-            const targetPage = currentPageRef.current > lastPage ? lastPage : currentPageRef.current;
-            if (targetPage !== currentPageRef.current) {
-                currentPageRef.current = targetPage;
-                setFiltersState((prev) => ({ ...prev, page: targetPage }));
+    const deleteProduct = useCallback(
+        async (id: string) => {
+            try {
+                await ProductsService.delete(id);
+                message.success('Producto eliminado correctamente.');
+                const lastPage = Math.ceil(pagination.total / currentPerPageRef.current);
+                const targetPage =
+                    currentPageRef.current > lastPage ? lastPage : currentPageRef.current;
+                if (targetPage !== currentPageRef.current) {
+                    currentPageRef.current = targetPage;
+                    setFiltersState((prev) => ({ ...prev, page: targetPage }));
+                }
+                fetchProducts({ ...filters, page: targetPage });
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'Error al eliminar el producto.');
+                throw err;
             }
-            fetchProducts({ ...filters, page: targetPage });
-        } catch (err) {
-            const apiError = err as ApiError;
-            message.error(apiError.message || 'Error al eliminar el producto.');
-            throw err;
-        }
-    }, [filters, pagination.total, fetchProducts]);
+        },
+        [filters, pagination.total, fetchProducts]
+    );
 
     useEffect(() => {
         fetchProducts({ page: 1, per_page: DEFAULT_PER_PAGE });
