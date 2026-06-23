@@ -1,0 +1,23 @@
+.movementsTableProductLink {
+    @apply text-centra-primary cursor-pointer hover:underline;
+}
+
+.movementsTableTypeCell {
+    @apply flex items-center;
+}
+
+.movementsTableTag {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.movementsTableTaggreen {
+    @apply bg-centra-success/10 text-centra-success;
+}
+
+.movementsTableTagred {
+    @apply bg-centra-error/10 text-centra-error;
+}
+
+.movementsTableTagblue {
+    @apply bg-blue-50 text-blue-600;
+}

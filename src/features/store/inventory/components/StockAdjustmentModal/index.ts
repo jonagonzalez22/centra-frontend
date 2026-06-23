@@ -1,0 +1,1 @@
+export { StockAdjustmentModal } from './StockAdjustmentModal';

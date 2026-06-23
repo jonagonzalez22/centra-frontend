@@ -53,7 +53,3 @@
 .productDrawerLowStockTag {
     @apply mt-1;
 }
-
-.productDrawerActions {
-    @apply flex gap-2 mt-2 pt-4 border-t border-gray-200;
-}

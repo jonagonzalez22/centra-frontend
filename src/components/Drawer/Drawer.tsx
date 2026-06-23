@@ -9,6 +9,7 @@ interface DrawerProps {
     width?: number;
     loading?: boolean;
     destroyOnClose?: boolean;
+    extra?: React.ReactNode;
 }
 
 const Drawer: React.FC<DrawerProps> = ({
@@ -19,6 +20,7 @@ const Drawer: React.FC<DrawerProps> = ({
     width = 480,
     loading = false,
     destroyOnClose = true,
+    extra,
 }) => {
     const [isMobile, setIsMobile] = useState(false);
 
@@ -39,6 +41,7 @@ const Drawer: React.FC<DrawerProps> = ({
             closable={!loading}
             maskClosable={!loading}
             keyboard={!loading}
+            extra={extra}
         >
             {children}
         </AntDrawer>
