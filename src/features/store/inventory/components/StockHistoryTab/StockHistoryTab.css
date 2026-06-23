@@ -1,0 +1,35 @@
+.stockHistoryTab {
+    @apply flex flex-col gap-3;
+}
+
+.stockHistoryTabLoading {
+    @apply flex justify-center items-center min-h-[100px];
+}
+
+.stockHistoryTabHeader {
+    @apply flex items-center justify-between;
+}
+
+.stockHistoryTabViewAll {
+    @apply text-sm text-centra-primary hover:underline;
+}
+
+.stockHistoryTabEmpty {
+    @apply text-sm text-gray-500 text-center py-4;
+}
+
+.stockHistoryTabTag {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.stockHistoryTabTaggreen {
+    @apply bg-centra-success/10 text-centra-success;
+}
+
+.stockHistoryTabTagred {
+    @apply bg-centra-error/10 text-centra-error;
+}
+
+.stockHistoryTabTagblue {
+    @apply bg-blue-50 text-blue-600;
+}

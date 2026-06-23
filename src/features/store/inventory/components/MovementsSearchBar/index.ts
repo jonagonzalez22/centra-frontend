@@ -1,0 +1,1 @@
+export { MovementsSearchBar } from './MovementsSearchBar';

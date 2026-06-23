@@ -1,0 +1,54 @@
+.inventoryMovementsPage {
+    @apply w-full p-6;
+}
+
+.inventoryMovementsPageHeader {
+    @apply mb-6;
+}
+
+.inventoryMovementsPageBreadcrumb {
+    @apply mb-2;
+}
+
+.inventoryMovementsPageHeaderTop {
+    @apply flex flex-wrap items-start justify-between gap-4;
+}
+
+.inventoryMovementsPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.inventoryMovementsPageTitle {
+    @apply text-2xl font-bold text-centra-primary m-0;
+}
+
+.inventoryMovementsPageDescription {
+    @apply text-sm text-centra-text/60 m-0;
+}
+
+.inventoryMovementsPageAlert {
+    @apply mb-4 py-2 text-sm;
+}
+
+.inventoryMovementsPageActions {
+    @apply flex items-center gap-3;
+}
+
+.inventoryMovementsPageProductSelect {
+    @apply px-3 py-2 border border-gray-300 rounded-md text-sm min-w-[250px];
+}
+
+@media (max-width: 768px) {
+    .inventoryMovementsPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .inventoryMovementsPageHeader {
+        @apply mb-4;
+    }
+
+    .inventoryMovementsPageTitle {
+        @apply text-xl;
+    }
+}

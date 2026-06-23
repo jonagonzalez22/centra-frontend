@@ -1,0 +1,15 @@
+.stockAdjustmentModalInfo {
+    @apply flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-md;
+}
+
+.stockAdjustmentModalLabel {
+    @apply text-sm text-gray-600;
+}
+
+.stockAdjustmentModalValue {
+    @apply text-sm font-semibold text-centra-primary;
+}
+
+.stockAdjustmentModalFooter {
+    @apply flex justify-end gap-3;
+}

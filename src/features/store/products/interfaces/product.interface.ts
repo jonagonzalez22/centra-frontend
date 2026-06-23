@@ -29,7 +29,7 @@ export interface CreateProductDto {
     description?: string;
     price: string | number;
     cost?: string | number | null;
-    stock: number;
+    stock?: number;
     stock_min: number;
     is_active?: boolean;
     category_id: string;

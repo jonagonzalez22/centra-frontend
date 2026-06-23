@@ -17,6 +17,7 @@ import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
+import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -97,6 +98,7 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="inventory" />,
                         children: [
                             { path: 'productos', element: <ProductsPage /> },
+                            { path: 'inventario/movimientos', element: <InventoryMovementsPage /> },
                             { path: 'categorias', element: <CategoriesPage /> },
                         ],
                     },

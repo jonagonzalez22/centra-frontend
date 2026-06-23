@@ -10,6 +10,7 @@ import {
     Settings,
     FolderTree,
     Package,
+    ArrowLeftRight,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -110,6 +111,14 @@ const menuItems: MenuItem[] = [
         icon: <Package size={ICON_SIZE} />,
         context: 'store',
         feature: 'inventory',
+    },
+    {
+        label: 'Movimientos',
+        key: '/tienda/inventario/movimientos',
+        icon: <ArrowLeftRight size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'inventory',
+        permission: 'inventory.view',
     },
 ];
 

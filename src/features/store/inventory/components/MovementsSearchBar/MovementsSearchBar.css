@@ -1,0 +1,15 @@
+.movementsSearchBar {
+    @apply mb-4;
+}
+
+.movementsSearchBarRow {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end;
+}
+
+.movementsSearchBarRow .ant-form-item {
+    @apply mb-0;
+}
+
+.movementsSearchBarActions {
+    @apply flex gap-2 items-end;
+}

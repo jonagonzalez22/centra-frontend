@@ -60,11 +60,14 @@ export const ProductForm = ({
     categories,
     categoriesLoading,
     onSubmit,
+    product,
     skuGenerating = false,
     handleGenerateSku,
 }: ProductFormProps) => {
     const [internalForm] = Form.useForm<ProductFormValues>();
     const form = externalForm ?? internalForm;
+
+    const isEditing = !!product;
 
     const handleFinishFailed = () => {
         message.error('Por favor, revisá los campos marcados en rojo.');
@@ -79,7 +82,7 @@ export const ProductForm = ({
                 description: values.description,
                 price: values.price ?? 0,
                 cost: values.cost,
-                stock: values.stock ?? 0,
+                stock: isEditing ? undefined : (values.stock ?? 0),
                 stock_min: values.stock_min ?? 0,
                 is_active: values.is_active,
                 category_id: values.category_id,
@@ -225,21 +228,23 @@ export const ProductForm = ({
             </Row>
 
             <Row gutter={16}>
-                <Col {...colResponsive}>
-                    <Form.Item
-                        name="stock"
-                        label="Stock Inicial"
-                        rules={requiredNumberRules('El stock inicial')}
-                    >
-                        <InputNumber
-                            placeholder="0"
-                            style={{ width: '100%' }}
-                            min={0}
-                            precision={0}
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
-                </Col>
+                {!isEditing && (
+                    <Col {...colResponsive}>
+                        <Form.Item
+                            name="stock"
+                            label="Stock Inicial"
+                            rules={requiredNumberRules('El stock inicial')}
+                        >
+                            <InputNumber
+                                placeholder="0"
+                                style={{ width: '100%' }}
+                                min={0}
+                                precision={0}
+                                disabled={isDisabled}
+                            />
+                        </Form.Item>
+                    </Col>
+                )}
                 <Col {...colResponsive}>
                     <Form.Item
                         name="stock_min"

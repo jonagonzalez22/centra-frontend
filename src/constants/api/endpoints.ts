@@ -6,6 +6,15 @@ export const API_ENDPOINTS = {
         PRODUCTS: {
             URL: '/v1/store/products',
         },
+        USERS: {
+            URL: '/v1/admin/users',
+        },
+        STOCK_ADJUST: {
+            URL: '/v1/store/inventory/adjust',
+        },
+        STOCK_MOVEMENTS: {
+            URL: '/v1/store/inventory/movements',
+        },
     },
     ADMIN: {
         STORES: {
