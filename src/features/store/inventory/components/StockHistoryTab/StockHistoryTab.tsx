@@ -48,6 +48,9 @@ export const StockHistoryTab = ({ productId }: StockHistoryTabProps) => {
     }, [productId]);
 
     const formatQuantity = (quantity: number, type: MovementType) => {
+        if (type === 'adjustment') {
+            return `${quantity >= 0 ? '+' : ''}${quantity}`;
+        }
         const prefix = type === 'output' ? '-' : '+';
         return `${prefix}${Math.abs(quantity)}`;
     };
@@ -64,7 +67,7 @@ export const StockHistoryTab = ({ productId }: StockHistoryTabProps) => {
             key: 'quantity',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const movement = record as unknown as InventoryMovement;
-                const isNegative = movement.type === 'output';
+                const isNegative = movement.type === 'output' || (movement.type === 'adjustment' && movement.quantity < 0);
                 return (
                     <span className={isNegative ? 'text-red-600' : 'text-green-600'}>
                         {formatQuantity(movement.quantity, movement.type)}
@@ -128,6 +131,7 @@ export const StockHistoryTab = ({ productId }: StockHistoryTabProps) => {
                 <Table
                     columns={columns as unknown as Parameters<typeof Table>[0]['columns']}
                     dataSource={movements as unknown as Record<string, unknown>[]}
+                    scroll={{ x: 'max-content' }}
                     size="small"
                 />
             )}
