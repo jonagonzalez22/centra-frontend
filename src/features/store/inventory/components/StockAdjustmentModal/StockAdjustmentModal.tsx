@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Form, InputNumber, message } from 'antd';
 import type { FormInstance } from 'antd';
 import { Button } from '@/components/Button';
+import Card from '@/components/Card/Card';
 import Modal from '@/components/Modal/Modal';
 import SelectField from '@/components/SelectField/SelectField';
 import InputField from '@/components/InputField/InputField';
@@ -40,6 +41,33 @@ export const StockAdjustmentModal = ({
     const [loading, setLoading] = useState(false);
 
     const typeValue = Form.useWatch('type', form);
+    const quantityValue = Form.useWatch('quantity', form);
+
+    const stockResultante = useMemo(() => {
+        if (!typeValue || !quantityValue || quantityValue === 0) {
+            return product.available_stock;
+        }
+
+        if (typeValue === 'input') {
+            return product.available_stock + quantityValue;
+        }
+        if (typeValue === 'output') {
+            return product.available_stock - quantityValue;
+        }
+        if (typeValue === 'adjustment') {
+            return product.available_stock + quantityValue;
+        }
+        return product.available_stock;
+    }, [typeValue, quantityValue, product.available_stock]);
+
+    const isStockResultanteValid = stockResultante >= 0;
+    const stockIncreased = stockResultante > product.available_stock;
+    const stockDecreased = stockResultante < product.available_stock;
+
+    const isSaveDisabled = loading || !isStockResultanteValid || !quantityValue || quantityValue === 0;
+
+    const quantityMin = typeValue === 'adjustment' ? undefined : 1;
+    const quantityMax = undefined;
 
     useEffect(() => {
         if (open) {
@@ -80,28 +108,6 @@ export const StockAdjustmentModal = ({
         }
     };
 
-    const validateQuantity = (_: unknown, value: number) => {
-        if (!value || value === 0) {
-            return Promise.reject(new Error('La cantidad no puede ser 0.'));
-        }
-
-        if (typeValue === 'input' && value <= 0) {
-            return Promise.reject(new Error('Para entrada, la cantidad debe ser positiva.'));
-        }
-
-        if (typeValue === 'output' && value >= 0) {
-            return Promise.reject(new Error('Para salida, la cantidad debe ser negativa.'));
-        }
-
-        if (typeValue === 'output' && Math.abs(value) > product.available_stock) {
-            return Promise.reject(
-                new Error(`No puedes retirar más stock del disponible (${product.available_stock}).`)
-            );
-        }
-
-        return Promise.resolve();
-    };
-
     return (
         <Modal
             open={open}
@@ -121,6 +127,7 @@ export const StockAdjustmentModal = ({
                         variant="primary"
                         label="Guardar"
                         loading={loading}
+                        disabled={isSaveDisabled}
                         htmlType="button"
                         action={() => {
                             const formEl = document.getElementById(
@@ -137,10 +144,35 @@ export const StockAdjustmentModal = ({
             }
             destroyOnClose={false}
         >
-            <div className="stockAdjustmentModalInfo">
-                <span className="stockAdjustmentModalLabel">Stock disponible actual:</span>
-                <span className="stockAdjustmentModalValue">{product.available_stock}</span>
-            </div>
+            <Card className="stockAdjustmentCard">
+                <div className="stockAdjustmentCardRow">
+                    <div className="stockAdjustmentCardItem">
+                        <span className="stockAdjustmentCardLabel">Stock Actual</span>
+                        <span className="stockAdjustmentCardValue">{product.available_stock}</span>
+                    </div>
+                    <span className="stockAdjustmentCardArrow">→</span>
+                    <div className="stockAdjustmentCardItem">
+                        <span className="stockAdjustmentCardLabel">Stock Resultante</span>
+                        <span
+                            className={`stockAdjustmentCardValue ${
+                                stockIncreased
+                                    ? 'stockAdjustmentCardValue--increased'
+                                    : stockDecreased
+                                      ? 'stockAdjustmentCardValue--decreased'
+                                      : ''
+                            }`}
+                        >
+                            {stockResultante}
+                        </span>
+                    </div>
+                </div>
+            </Card>
+
+            {!isStockResultanteValid && (
+                <div className="stockAdjustmentError">
+                    El stock resultante no puede ser menor a 0.
+                </div>
+            )}
 
             <Form
                 form={form}
@@ -159,12 +191,13 @@ export const StockAdjustmentModal = ({
                 <Form.Item
                     name="quantity"
                     label="Cantidad"
-                    rules={[{ required: true, message: 'La cantidad es obligatoria.' }, { validator: validateQuantity }]}
+                    rules={[{ required: true, message: 'La cantidad es obligatoria.' }]}
                 >
                     <InputNumber
                         placeholder="0"
                         style={{ width: '100%' }}
-                        min={typeValue === 'input' ? 1 : -product.available_stock}
+                        min={quantityMin}
+                        max={quantityMax}
                         precision={0}
                     />
                 </Form.Item>
