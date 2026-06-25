@@ -52,6 +52,10 @@ export const ProductsPage = () => {
         setDrawerProductId(undefined);
     };
 
+    const handleAdjustStockSuccess = () => {
+        productsState.refresh();
+    };
+
     const handleSuccess = () => {
         setModalOpen(false);
         setSelectedProduct(undefined);
@@ -75,6 +79,7 @@ export const ProductsPage = () => {
                 open={drawerOpen}
                 onClose={handleCloseDrawer}
                 productId={drawerProductId}
+                onAdjustSuccess={handleAdjustStockSuccess}
             />
             <ProductFormModal
                 open={modalOpen}

@@ -17,6 +17,7 @@ interface ProductDrawerProps {
     open: boolean;
     onClose: () => void;
     productId?: string;
+    onAdjustSuccess?: () => void;
 }
 
 interface FieldProps {
@@ -48,7 +49,7 @@ const Section = ({ icon, title, children, variant = 'default' }: SectionProps) =
     </div>
 );
 
-export const ProductDrawer = ({ open, onClose, productId }: ProductDrawerProps) => {
+export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: ProductDrawerProps) => {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(false);
     const [adjustModalOpen, setAdjustModalOpen] = useState(false);
@@ -94,6 +95,7 @@ export const ProductDrawer = ({ open, onClose, productId }: ProductDrawerProps) 
         setAdjustModalOpen(false);
         loadProduct();
         setStockHistoryKey((prev) => prev + 1);
+        onAdjustSuccess?.();
     };
 
     const isLowStock = product ? product.available_stock <= product.stock_min : false;
