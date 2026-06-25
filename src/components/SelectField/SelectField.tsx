@@ -4,13 +4,18 @@ import type { Rule } from 'antd/es/form';
 
 export interface SelectFieldProps {
     name: string;
-    label?: string;
+    label?: React.ReactNode;
     rules?: Rule[];
     options: { label: string; value: string | number | boolean }[];
     placeholder?: string;
     allowClear?: boolean;
     loading?: boolean;
     disabled?: boolean;
+    showSearch?: boolean;
+    onSearch?: (value: string) => void;
+    filterOption?: boolean | ((input: string, option: unknown) => boolean);
+    notFoundContent?: React.ReactNode;
+    onClear?: () => void;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({

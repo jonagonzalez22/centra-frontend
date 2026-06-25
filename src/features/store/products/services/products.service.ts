@@ -97,6 +97,24 @@ export const ProductsService = {
         }
     },
 
+    searchProducts: async (q: string): Promise<Product[]> => {
+        const { data } = await api.get<ApiListResponse<Product[]>>(
+            API_ENDPOINTS.STORE.PRODUCTS_SEARCH.URL,
+            { params: { q } }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
     generateSku: async (params?: { category_id?: string; name?: string }): Promise<string> => {
         const { data } = await api.get<ApiListResponse<{ sku: string }>>(
             `${API_ENDPOINTS.STORE.PRODUCTS.URL}/generate-sku`,

@@ -15,6 +15,9 @@ export const API_ENDPOINTS = {
         STOCK_MOVEMENTS: {
             URL: '/v1/store/inventory/movements',
         },
+        PRODUCTS_SEARCH: {
+            URL: '/v1/store/products/search',
+        },
     },
     ADMIN: {
         STORES: {

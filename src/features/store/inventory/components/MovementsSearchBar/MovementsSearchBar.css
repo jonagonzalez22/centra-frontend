@@ -3,7 +3,7 @@
 }
 
 .movementsSearchBarRow {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end;
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end;
 }
 
 .movementsSearchBarRow .ant-form-item {

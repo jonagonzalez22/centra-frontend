@@ -1,12 +1,17 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { Form } from 'antd';
+import { Form, Tooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { debounce } from 'lodash';
 import SelectField from '@/components/SelectField/SelectField';
 import { DatePickerField } from '@/components/DatePickerField';
 import { Button } from '@/components/Button';
 import { useInventoryMovementsContext } from '../../context/InventoryMovementsContext';
 import { StoreUsersService } from '../../../users/services/storeUsers.service';
-import type { InventoryMovementsFilters, MovementType } from '../../interfaces/inventory-movement.interface';
+import { ProductsService } from '../../../products/services/products.service';
+import type {
+    InventoryMovementsFilters,
+    MovementType,
+} from '../../interfaces/inventory-movement.interface';
 import type { StoreUser } from '../../../users/services/storeUsers.service';
 import './MovementsSearchBar.css';
 
@@ -17,6 +22,7 @@ interface MovementsSearchFormValues {
     user_id: string;
     date_from?: Date | null;
     date_to?: Date | null;
+    product_id?: string;
 }
 
 const TYPE_OPTIONS = [
@@ -39,13 +45,21 @@ export const MovementsSearchBar = () => {
     const { setFilters } = useInventoryMovementsContext();
     const [form] = Form.useForm<MovementsSearchFormValues>();
     const [users, setUsers] = useState<StoreUser[]>([]);
+    const [productOptions, setProductOptions] = useState<{ label: string; value: string }[]>([]);
+    const [productLoading, setProductLoading] = useState(false);
 
     const typeValue = Form.useWatch('type', form);
     const userValue = Form.useWatch('user_id', form);
     const dateFromValue = Form.useWatch('date_from', form);
     const dateToValue = Form.useWatch('date_to', form);
+    const productIdValue = Form.useWatch('product_id', form);
 
-    const hasActiveFilters = !!(typeValue && typeValue !== 'all') || !!userValue || !!dateFromValue || !!dateToValue;
+    const hasActiveFilters =
+        !!(typeValue && typeValue !== 'all') ||
+        !!userValue ||
+        !!dateFromValue ||
+        !!dateToValue ||
+        !!productIdValue;
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -59,24 +73,59 @@ export const MovementsSearchBar = () => {
         fetchUsers();
     }, []);
 
-    const buildFilters = useCallback((values: MovementsSearchFormValues): InventoryMovementsFilters => {
-        const filters: InventoryMovementsFilters = {};
+    const debouncedProductSearch = useMemo(
+        () =>
+            debounce(async (q: string) => {
+                if (q.length < 2) {
+                    setProductOptions([]);
+                    return;
+                }
+                setProductLoading(true);
+                try {
+                    const products = await ProductsService.searchProducts(q);
+                    setProductOptions(
+                        products.map((p) => ({ label: `${p.name} — ${p.sku}`, value: p.id }))
+                    );
+                } catch {
+                    setProductOptions([]);
+                } finally {
+                    setProductLoading(false);
+                }
+            }, 300),
+        []
+    );
 
-        if (values.type && values.type !== 'all') {
-            filters.type = values.type as MovementType;
-        }
-        if (values.user_id) {
-            filters.user_id = values.user_id;
-        }
-        if (values.date_from) {
-            filters.date_from = formatDateToString(values.date_from);
-        }
-        if (values.date_to) {
-            filters.date_to = formatDateToString(values.date_to);
-        }
+    const handleProductSearch = useCallback(
+        (value: string) => {
+            debouncedProductSearch(value);
+        },
+        [debouncedProductSearch]
+    );
 
-        return filters;
-    }, []);
+    const buildFilters = useCallback(
+        (values: MovementsSearchFormValues): InventoryMovementsFilters => {
+            const filters: InventoryMovementsFilters = {};
+
+            if (values.type && values.type !== 'all') {
+                filters.type = values.type as MovementType;
+            }
+            if (values.user_id) {
+                filters.user_id = values.user_id;
+            }
+            if (values.date_from) {
+                filters.date_from = formatDateToString(values.date_from);
+            }
+            if (values.date_to) {
+                filters.date_to = formatDateToString(values.date_to);
+            }
+            if (values.product_id) {
+                filters.product_id = values.product_id;
+            }
+
+            return filters;
+        },
+        []
+    );
 
     const debouncedSetFilters = useMemo(
         () =>
@@ -95,6 +144,7 @@ export const MovementsSearchBar = () => {
 
     const handleReset = useCallback(() => {
         form.resetFields();
+        setProductOptions([]);
         setFilters({});
     }, [form, setFilters]);
 
@@ -114,6 +164,27 @@ export const MovementsSearchBar = () => {
             onValuesChange={handleValuesChange}
         >
             <div className="movementsSearchBarRow">
+                <SelectField
+                    name="product_id"
+                    label={
+                        <span>
+                            Producto{' '}
+                            <Tooltip title="Busca por nombre de producto o SKU">
+                                <QuestionCircleOutlined className="text-gray-400 cursor-help" />
+                            </Tooltip>
+                        </span>
+                    }
+                    placeholder="Buscar producto..."
+                    showSearch
+                    onSearch={handleProductSearch}
+                    filterOption={false}
+                    notFoundContent={productLoading ? 'Buscando...' : 'Sin resultados'}
+                    options={productOptions}
+                    loading={productLoading}
+                    allowClear
+                    onClear={() => setProductOptions([])}
+                />
+
                 <SelectField
                     name="type"
                     label="Tipo"
@@ -135,6 +206,19 @@ export const MovementsSearchBar = () => {
                     label="Desde"
                     placeholder="Fecha inicio"
                     allowClear
+                    rules={[
+                        ({ getFieldValue }) => ({
+                            validator: (_: unknown, value: Date | null) => {
+                                const dateTo = getFieldValue('date_to') as Date | null;
+                                if (!value || !dateTo || value <= dateTo) return Promise.resolve();
+                                return Promise.reject(
+                                    new Error(
+                                        'La fecha desde debe ser igual o anterior a la fecha de fin.'
+                                    )
+                                );
+                            },
+                        }),
+                    ]}
                 />
 
                 <DatePickerField
@@ -142,6 +226,20 @@ export const MovementsSearchBar = () => {
                     label="Hasta"
                     placeholder="Fecha fin"
                     allowClear
+                    rules={[
+                        ({ getFieldValue }) => ({
+                            validator: (_: unknown, value: Date | null) => {
+                                const dateFrom = getFieldValue('date_from') as Date | null;
+                                if (!value || !dateFrom || value >= dateFrom)
+                                    return Promise.resolve();
+                                return Promise.reject(
+                                    new Error(
+                                        'La fecha hasta debe ser igual o posterior a la fecha de inicio.'
+                                    )
+                                );
+                            },
+                        }),
+                    ]}
                 />
 
                 <div className="movementsSearchBarActions">
