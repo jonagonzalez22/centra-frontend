@@ -1,13 +1,37 @@
-.stockAdjustmentModalInfo {
-    @apply flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-md;
+.stockAdjustmentCard {
+    @apply mb-4;
 }
 
-.stockAdjustmentModalLabel {
-    @apply text-sm text-gray-600;
+.stockAdjustmentCardRow {
+    @apply flex items-center justify-between gap-4;
 }
 
-.stockAdjustmentModalValue {
-    @apply text-sm font-semibold text-centra-primary;
+.stockAdjustmentCardItem {
+    @apply flex flex-col items-center flex-1;
+}
+
+.stockAdjustmentCardLabel {
+    @apply text-xs text-gray-500 mb-1 uppercase tracking-wide;
+}
+
+.stockAdjustmentCardValue {
+    @apply text-2xl font-bold text-centra-primary;
+}
+
+.stockAdjustmentCardValue--increased {
+    @apply text-green-600;
+}
+
+.stockAdjustmentCardValue--decreased {
+    @apply text-red-600;
+}
+
+.stockAdjustmentCardArrow {
+    @apply text-xl text-gray-300;
+}
+
+.stockAdjustmentError {
+    @apply mb-4 text-sm text-red-600 text-center;
 }
 
 .stockAdjustmentModalFooter {
