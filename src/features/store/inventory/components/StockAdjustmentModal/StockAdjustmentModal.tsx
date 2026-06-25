@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Form, InputNumber, message } from 'antd';
+import { Form, InputNumber, message, notification } from 'antd';
 import type { FormInstance } from 'antd';
 import { Button } from '@/components/Button';
 import Card from '@/components/Card/Card';
@@ -15,7 +15,7 @@ import './StockAdjustmentModal.css';
 interface StockAdjustmentModalProps {
     open: boolean;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess?: (response?: unknown) => void;
     product: Product;
 }
 
@@ -37,6 +37,7 @@ export const StockAdjustmentModal = ({
     onSuccess,
     product,
 }: StockAdjustmentModalProps) => {
+    const onSuccessCb = onSuccess ?? (() => {});
     const [form] = Form.useForm<AdjustmentFormValues>();
     const [loading, setLoading] = useState(false);
 
@@ -84,9 +85,9 @@ export const StockAdjustmentModal = ({
                 quantity: values.quantity,
                 concept: values.concept,
             };
-            await InventoryMovementsService.create(dto);
-            message.success('Ajuste de stock realizado correctamente.');
-            onSuccess();
+            const response = await InventoryMovementsService.create(dto);
+            notification.success({ message: 'Stock actualizado correctamente.' });
+            onSuccessCb(response);
         } catch (err) {
             const apiError = err as ApiError;
             message.error(apiError.message || 'Error al realizar el ajuste de stock.');
