@@ -40,6 +40,9 @@ export const MovementsTable = () => {
     );
 
     const formatQuantity = (quantity: number, type: MovementType) => {
+        if (type === 'adjustment') {
+            return `${quantity >= 0 ? '+' : ''}${quantity}`;
+        }
         const prefix = type === 'output' ? '-' : '+';
         return `${prefix}${Math.abs(quantity)}`;
     };
@@ -74,7 +77,7 @@ export const MovementsTable = () => {
             key: 'quantity',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const movement = record as unknown as InventoryMovement;
-                const isNegative = movement.type === 'output';
+                const isNegative = movement.type === 'output' || (movement.type === 'adjustment' && movement.quantity < 0);
                 return (
                     <span className={isNegative ? 'text-red-600' : 'text-green-600'}>
                         {formatQuantity(movement.quantity, movement.type)}
