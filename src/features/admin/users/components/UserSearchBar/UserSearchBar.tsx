@@ -12,6 +12,7 @@ interface UserFiltersForm {
     name?: string;
     role?: string;
     store_id?: string;
+    is_active?: boolean;
 }
 
 export const UserSearchBar = () => {
@@ -21,8 +22,9 @@ export const UserSearchBar = () => {
     const nameValue = Form.useWatch('name', form);
     const roleValue = Form.useWatch('role', form);
     const storeValue = Form.useWatch('store_id', form);
+    const isActiveValue = Form.useWatch('is_active', form);
 
-    const hasActiveFilters = nameValue || roleValue || storeValue;
+    const hasActiveFilters = nameValue || roleValue || storeValue || isActiveValue !== undefined;
 
     const buildFilters = useCallback((values: UserFiltersForm): UsersFilters => {
         const filters: UsersFilters = {};
@@ -30,6 +32,7 @@ export const UserSearchBar = () => {
         if (values.name) filters.name = values.name;
         if (values.role) filters.role = values.role;
         if (values.store_id) filters.store_id = values.store_id;
+        if (values.is_active !== undefined) filters.is_active = values.is_active;
 
         return filters;
     }, []);
@@ -37,7 +40,7 @@ export const UserSearchBar = () => {
     const debouncedRefetch = useMemo(
         () =>
             debounce((values: UserFiltersForm) => {
-                const hasFilters = values.name || values.role || values.store_id;
+                const hasFilters = values.name || values.role || values.store_id || values.is_active !== undefined;
 
                 if (!hasFilters) {
                     refetch({});
@@ -68,6 +71,11 @@ export const UserSearchBar = () => {
     const storeOptions = filterOptions
         ? filterOptions.stores.map((s) => ({ label: s.name, value: s.id }))
         : [];
+
+    const isActiveOptions = [
+        { label: 'Activos', value: true },
+        { label: 'Inactivos', value: false },
+    ];
 
     return (
         <Form
@@ -100,6 +108,15 @@ export const UserSearchBar = () => {
                     label="Tienda"
                     placeholder="Seleccionar"
                     options={storeOptions}
+                    allowClear
+                    disabled={filterOptionsLoading}
+                />
+
+                <SelectField
+                    name="is_active"
+                    label="Estado"
+                    placeholder="Seleccionar"
+                    options={isActiveOptions}
                     allowClear
                     disabled={filterOptionsLoading}
                 />

@@ -47,6 +47,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                     email: user.email,
                     role: user.roles[0] ?? undefined,
                     store_id: user.store?.id,
+                    is_active: user.is_active,
                 });
             } else {
                 form.resetFields();
@@ -61,9 +62,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         password_confirmation?: string;
         role: string;
         store_id?: string;
+        is_active?: boolean;
     }) => {
         if (isEditing && user) {
-            const payload: { name: string; email: string; role: string; store_id?: string | null } =
+            const payload: { name: string; email: string; role: string; store_id?: string | null; is_active?: boolean } =
                 {
                     name: values.name,
                     email: values.email,
@@ -71,6 +73,9 @@ export const UserModal: React.FC<UserModalProps> = ({
                 };
             if (values.store_id !== undefined) {
                 payload.store_id = values.store_id || null;
+            }
+            if (values.is_active !== undefined) {
+                payload.is_active = values.is_active;
             }
             await updateUser(user.id, payload);
         } else {
@@ -81,6 +86,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                 password_confirmation: string;
                 role: string;
                 store_id?: string;
+                is_active?: boolean;
             } = {
                 name: values.name,
                 email: values.email,
@@ -90,6 +96,9 @@ export const UserModal: React.FC<UserModalProps> = ({
             };
             if (values.store_id) {
                 payload.store_id = values.store_id;
+            }
+            if (values.is_active !== undefined) {
+                payload.is_active = values.is_active;
             }
             await createUser(payload as Parameters<typeof createUser>[0]);
         }

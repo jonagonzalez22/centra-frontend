@@ -2,6 +2,19 @@
     @apply flex flex-wrap gap-1;
 }
 
+.usersTableStatusActive,
+.usersTableStatusInactive {
+    @apply inline-flex rounded px-2 py-1 text-xs font-semibold;
+}
+
+.usersTableStatusActive {
+    @apply bg-centra-success/10 text-centra-success;
+}
+
+.usersTableStatusInactive {
+    @apply bg-centra-error/10 text-centra-error;
+}
+
 .usersTableActions {
     @apply flex gap-1;
 }
