@@ -42,6 +42,16 @@ export const UsersTable = ({ onEdit, onDelete }: UsersTableProps) => {
             ),
         },
         {
+            title: 'Estado',
+            dataIndex: 'is_active',
+            key: 'is_active',
+            render: (isActive: boolean) => (
+                <span className={isActive ? 'usersTableStatusActive' : 'usersTableStatusInactive'}>
+                    {isActive ? 'Activo' : 'Inactivo'}
+                </span>
+            ),
+        },
+        {
             title: 'Tienda',
             dataIndex: 'store',
             key: 'store',

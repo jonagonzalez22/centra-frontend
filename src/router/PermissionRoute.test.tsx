@@ -11,6 +11,7 @@ vi.mock('@/store/useAuthStore.store', () => ({
 
 const mockUser: User = {
     id: 1,
+    is_active: true,
     name: 'Test User',
     email: 'test@test.com',
     store_id: null,

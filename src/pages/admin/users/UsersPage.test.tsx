@@ -8,6 +8,7 @@ import type { User } from '@/entities/User';
 
 const mockUser: User = {
     id: 1,
+    is_active: true,
     name: 'Juan Pérez',
     email: 'juan@centra.com',
     store_id: 1,

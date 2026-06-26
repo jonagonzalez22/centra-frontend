@@ -1,4 +1,4 @@
-import { Form, message } from 'antd';
+import { Form, Switch, message } from 'antd';
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
 import InputPassword from '@/components/InputPassword/InputPassword';
@@ -12,7 +12,7 @@ interface UserFormProps {
     form?: FormInstance;
     loading: boolean;
     isEditing: boolean;
-    onSubmit: (values: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string }) => Promise<void>;
+    onSubmit: (values: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string; is_active?: boolean }) => Promise<void>;
     isGlobalMode?: boolean;
     roleOptions?: { label: string; value: string }[];
     storeOptions?: { label: string; value: string }[];
@@ -26,6 +26,7 @@ interface UserFormValues {
     password_confirmation?: string;
     role: string;
     store_id?: string;
+    is_active?: boolean;
 }
 
 const defaultRoleOptions = [
@@ -53,7 +54,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
     const handleFinish = async (values: UserFormValues) => {
         try {
-            const payload: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string } = {
+            const payload: { name: string; email: string; password?: string; password_confirmation?: string; role: string; store_id?: string; is_active?: boolean } = {
                 name: values.name,
                 email: values.email,
                 role: values.role,
@@ -64,6 +65,9 @@ export const UserForm: React.FC<UserFormProps> = ({
             }
             if (values.store_id !== undefined) {
                 payload.store_id = values.store_id;
+            }
+            if (values.is_active !== undefined) {
+                payload.is_active = values.is_active;
             }
             await onSubmit(payload);
         } catch (err) {
@@ -148,6 +152,12 @@ export const UserForm: React.FC<UserFormProps> = ({
                     />
                 </div>
             )}
+
+            <div className="userFormRow">
+                <Form.Item name="is_active" label="Estado del Usuario" valuePropName="checked" initialValue={true}>
+                    <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" disabled={loading} />
+                </Form.Item>
+            </div>
         </Form>
     );
 };

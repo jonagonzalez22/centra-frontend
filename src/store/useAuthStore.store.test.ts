@@ -43,6 +43,7 @@ describe('useAuthStore', () => {
         test('should set loading to true when logIn is called', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
@@ -86,6 +87,7 @@ describe('useAuthStore', () => {
         test('should update state with user data and token on successful login', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
@@ -130,6 +132,7 @@ describe('useAuthStore', () => {
         test('should call authService.logIn with correct parameters', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
@@ -208,6 +211,7 @@ describe('useAuthStore', () => {
         test('should separate token from user data when storing', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
@@ -260,6 +264,7 @@ describe('useAuthStore', () => {
                 isAuthenticated: true,
                 user: {
                     id: 1,
+                    is_active: true,
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
@@ -311,6 +316,7 @@ describe('useAuthStore', () => {
                 isAuthenticated: true,
                 user: {
                     id: 1,
+                    is_active: true,
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
@@ -346,6 +352,7 @@ describe('useAuthStore', () => {
                 isAuthenticated: true,
                 user: {
                     id: 1,
+                    is_active: true,
                     email: 'test@example.com',
                     name: 'Test User',
                     store_id: null,
@@ -384,6 +391,7 @@ describe('useAuthStore', () => {
         test('should persist token, user, and isAuthenticated to localStorage', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,
@@ -428,6 +436,7 @@ describe('useAuthStore', () => {
         test('should not persist loading state', async () => {
             const mockUser: User = {
                 id: 1,
+                is_active: true,
                 email: 'test@example.com',
                 name: 'Test User',
                 store_id: null,

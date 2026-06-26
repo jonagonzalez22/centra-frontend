@@ -3,6 +3,7 @@ import { hasFeature } from './features';
 
 const baseUser: User = {
     id: 1,
+    is_active: true,
     name: 'Test User',
     email: 'test@example.com',
     store_id: 1,

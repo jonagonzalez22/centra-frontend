@@ -20,6 +20,7 @@ describe('Auth Service', () => {
                 data: {
                     user: {
                         id: 1,
+                        is_active: true,
                         email: 'test@example.com',
                         name: 'Test User',
                         store_id: null,
@@ -59,6 +60,7 @@ describe('Auth Service', () => {
                 data: {
                     user: {
                         id: 1,
+                        is_active: true,
                         email: 'user@example.com',
                         name: 'John Doe',
                         store_id: null,

@@ -12,6 +12,7 @@ export interface UsersFilters {
     store_id?: string;
     name?: string;
     role?: string;
+    is_active?: boolean;
     page?: number;
     per_page?: number;
 }
@@ -23,6 +24,7 @@ export interface CreateUserDto {
     password_confirmation: string;
     role: string;
     store_id?: string | null;
+    is_active?: boolean;
 }
 
 export interface UpdateUserDto {
@@ -32,6 +34,7 @@ export interface UpdateUserDto {
     password_confirmation?: string;
     role?: string;
     store_id?: string | null;
+    is_active?: boolean;
 }
 
 export interface UsersFilterOptions {

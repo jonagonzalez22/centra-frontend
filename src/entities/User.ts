@@ -28,6 +28,7 @@ export interface User {
     store_id: number | null;
     store: Store | null;
     roles: UserRole[];
+    is_active: boolean;
     permissions: string[];
     features: FeatureFlag[];
 }
