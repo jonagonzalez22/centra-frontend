@@ -22,4 +22,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         allowedPaths: ['/admin'],
         priority: 3,
     },
+    STORE_USER: {
+        homePath: '/tienda',
+        allowedPaths: ['/tienda'],
+        priority: 4,
+    },
 };

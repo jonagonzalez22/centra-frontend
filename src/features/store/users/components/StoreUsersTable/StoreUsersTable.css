@@ -1,0 +1,20 @@
+.storeUsersTableRoles {
+    @apply flex flex-wrap gap-1;
+}
+
+.storeUsersTableStatusActive,
+.storeUsersTableStatusInactive {
+    @apply inline-flex rounded px-2 py-1 text-xs font-semibold;
+}
+
+.storeUsersTableStatusActive {
+    @apply bg-centra-success/10 text-centra-success;
+}
+
+.storeUsersTableStatusInactive {
+    @apply bg-centra-error/10 text-centra-error;
+}
+
+.storeUsersTableActions {
+    @apply flex gap-1;
+}
