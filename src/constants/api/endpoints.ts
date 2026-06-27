@@ -7,7 +7,8 @@ export const API_ENDPOINTS = {
             URL: '/v1/store/products',
         },
         USERS: {
-            URL: '/v1/admin/users',
+            URL: '/v1/store/users',
+            FILTER_OPTIONS: '/v1/store/users/filter-options',
         },
         STOCK_ADJUST: {
             URL: '/v1/store/inventory/adjust',

@@ -18,6 +18,7 @@ import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
+import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -100,6 +101,16 @@ export const router = createBrowserRouter([
                             { path: 'productos', element: <ProductsPage /> },
                             { path: 'inventario/movimientos', element: <InventoryMovementsPage /> },
                             { path: 'categorias', element: <CategoriesPage /> },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="multi_user" />,
+                        children: [
+                            {
+                                element: <PermissionRoute permission="store_users.view" redirectTo="/tienda/dashboard" />,
+                                children: [{ path: 'usuarios', element: <StoreUsersPage /> }],
+                            },
                         ],
                     },
                 ],

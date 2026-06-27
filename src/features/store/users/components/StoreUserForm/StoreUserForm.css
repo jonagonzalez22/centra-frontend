@@ -1,0 +1,13 @@
+.storeUserFormRow {
+    @apply flex flex-col gap-4 mb-4;
+}
+
+@media (min-width: 768px) {
+    .storeUserFormRow {
+        @apply flex-row gap-4;
+    }
+
+    .storeUserFormRow > * {
+        @apply flex-1;
+    }
+}

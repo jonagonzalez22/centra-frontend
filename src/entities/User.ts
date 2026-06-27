@@ -1,4 +1,4 @@
-export type UserRole = 'SUPER_ADMIN' | 'STORE_ADMIN' | 'BACKOFFICE_USER';
+export type UserRole = 'SUPER_ADMIN' | 'STORE_ADMIN' | 'BACKOFFICE_USER' | 'STORE_USER';
 export type FeatureCode =
     | 'pos'
     | 'inventory'
@@ -31,4 +31,5 @@ export interface User {
     is_active: boolean;
     permissions: string[];
     features: FeatureFlag[];
+    created_at?: string;
 }

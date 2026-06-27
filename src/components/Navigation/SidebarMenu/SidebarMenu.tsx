@@ -99,6 +99,14 @@ const menuItems: MenuItem[] = [
         context: 'store',
     },
     {
+        label: 'Usuarios',
+        key: '/tienda/usuarios',
+        icon: <LucideUser size={ICON_SIZE} />,
+        context: 'store',
+        permission: 'store_users.view',
+        feature: 'multi_user',
+    },
+    {
         label: 'Categorías',
         key: '/tienda/categorias',
         icon: <FolderTree size={ICON_SIZE} />,

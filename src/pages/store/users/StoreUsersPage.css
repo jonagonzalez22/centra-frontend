@@ -1,0 +1,46 @@
+.storeUsersPage {
+    @apply w-full;
+}
+
+.storeUsersPageHeader {
+    @apply mb-6;
+}
+
+.storeUsersPageBreadcrumb {
+    @apply mb-2;
+}
+
+.storeUsersPageHeaderTop {
+    @apply flex flex-wrap items-start justify-between gap-4;
+}
+
+.storeUsersPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.storeUsersPageTitle {
+    @apply text-2xl font-bold text-centra-primary m-0;
+}
+
+.storeUsersPageDescription {
+    @apply text-sm text-centra-text/60 m-0;
+}
+
+.storeUsersPageAlert {
+    @apply mb-4 py-2 text-sm;
+}
+
+@media (max-width: 768px) {
+    .storeUsersPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .storeUsersPageHeader {
+        @apply mb-4;
+    }
+
+    .storeUsersPageTitle {
+        @apply text-xl;
+    }
+}

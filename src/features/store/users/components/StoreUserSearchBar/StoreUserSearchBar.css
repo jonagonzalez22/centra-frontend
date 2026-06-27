@@ -1,0 +1,15 @@
+.storeUserSearchBar {
+    @apply mb-6;
+}
+
+.storeUserSearchBarRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.storeUserSearchBarRow > * {
+    @apply mb-0 min-w-[180px];
+}
+
+.storeUserSearchBarActions {
+    @apply flex gap-2 items-end;
+}

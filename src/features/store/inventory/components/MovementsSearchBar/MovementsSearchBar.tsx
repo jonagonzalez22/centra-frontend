@@ -12,7 +12,7 @@ import type {
     InventoryMovementsFilters,
     MovementType,
 } from '../../interfaces/inventory-movement.interface';
-import type { StoreUser } from '../../../users/services/storeUsers.service';
+import type { User } from '@/entities/User';
 import './MovementsSearchBar.css';
 
 type StatusValue = 'all' | MovementType;
@@ -44,7 +44,7 @@ const formatDateToString = (date: Date | null): string | undefined => {
 export const MovementsSearchBar = () => {
     const { setFilters } = useInventoryMovementsContext();
     const [form] = Form.useForm<MovementsSearchFormValues>();
-    const [users, setUsers] = useState<StoreUser[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [productOptions, setProductOptions] = useState<{ label: string; value: string }[]>([]);
     const [productLoading, setProductLoading] = useState(false);
 
@@ -64,8 +64,8 @@ export const MovementsSearchBar = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const data = await StoreUsersService.getAll();
-                setUsers(data);
+                const response = await StoreUsersService.getAll();
+                setUsers(response.items);
             } catch (err) {
                 console.error('Error fetching users:', err);
             }
