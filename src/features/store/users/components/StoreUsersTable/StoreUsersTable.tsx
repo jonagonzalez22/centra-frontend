@@ -1,5 +1,5 @@
-import { Popconfirm, Button as AntButton } from 'antd';
-import { DeleteOutlined, EditOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Popconfirm, Button as AntButton, Tooltip } from 'antd';
+import { DeleteOutlined, EditOutlined, StopOutlined, CheckCircleOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
@@ -13,9 +13,10 @@ interface StoreUsersTableProps {
     onEdit: (user: User) => void;
     onDelete: (id: number) => Promise<void>;
     onToggleActive: (id: number, isActive: boolean) => Promise<void>;
+    onManagePermissions: (user: User) => void;
 }
 
-export const StoreUsersTable = ({ onEdit, onDelete, onToggleActive }: StoreUsersTableProps) => {
+export const StoreUsersTable = ({ onEdit, onDelete, onToggleActive, onManagePermissions }: StoreUsersTableProps) => {
     const { users, loading, pagination, refetch } = useStoreUsersContext();
     const currentUser = useAuthStore((state) => state.user);
     const currentUserId = currentUser?.id;
@@ -80,6 +81,26 @@ export const StoreUsersTable = ({ onEdit, onDelete, onToggleActive }: StoreUsers
             key: 'actions',
             render: (_: unknown, record: User) => (
                 <div className="storeUsersTableActions">
+                    <CanDo permission="store_users.edit">
+                        {isSelf(record) ? (
+                            <Tooltip title="No podés modificar tus propios permisos">
+                                <AntButton
+                                    type="text"
+                                    size="small"
+                                    icon={<SafetyCertificateOutlined />}
+                                    disabled
+                                />
+                            </Tooltip>
+                        ) : (
+                            <AntButton
+                                type="text"
+                                size="small"
+                                icon={<SafetyCertificateOutlined />}
+                                onClick={() => onManagePermissions(record)}
+                            />
+                        )}
+                    </CanDo>
+
                     <CanDo permission="store_users.edit">
                         <Button
                             variant="text"

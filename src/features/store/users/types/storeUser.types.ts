@@ -37,3 +37,22 @@ export interface UpdateStoreUserDto {
 export interface StoreUsersFilterOptions {
     roles: { id: number; name: string }[];
 }
+
+export interface PermissionCatalogGroupItem {
+    name: string;
+    label: string;
+}
+
+export interface PermissionCatalogResponse {
+    groups: Record<string, PermissionCatalogGroupItem[]>;
+}
+
+export type PermissionCatalog = Record<string, PermissionCatalogGroupItem[]>;
+
+export interface SyncPermissionsDto {
+    permissions: string[];
+}
+
+export interface UserPermissionsResponse {
+    permissions: string[];
+}

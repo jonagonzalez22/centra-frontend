@@ -1,0 +1,74 @@
+.permissionDrawerLoading {
+    @apply text-center py-10;
+}
+
+.permissionDrawerContent {
+    @apply max-h-[calc(100vh-240px)] overflow-y-auto pr-2;
+}
+
+.permissionDrawerGroups {
+    @apply flex flex-col gap-4;
+}
+
+.permissionDrawerCard {
+    @apply flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4;
+}
+
+.permissionDrawerCardHeader {
+    @apply flex items-center justify-between gap-3;
+}
+
+.permissionDrawerCardTitle {
+    @apply flex items-center gap-2 text-sm font-semibold text-gray-700;
+}
+
+.permissionDrawerDivider {
+    @apply h-px w-full bg-gray-200;
+}
+
+.permissionDrawerSelectAll {
+    @apply text-xs text-gray-600;
+}
+
+.permissionDrawerGrid {
+    @apply grid grid-cols-2 gap-x-4 gap-y-2;
+}
+
+.permissionDrawerItem {
+    @apply flex items-start gap-2 py-1;
+}
+
+.permissionDrawerItemInfo {
+    @apply flex flex-col gap-0.5 min-w-0;
+}
+
+.permissionDrawerItemName {
+    @apply text-sm font-medium text-gray-900;
+}
+
+.permissionDrawerItemCode {
+    @apply text-xs text-gray-400 font-mono;
+}
+
+.permissionDrawerFooter {
+    @apply flex items-center gap-3 pt-4 mt-4;
+    border-top: 1px solid #f0f0f0;
+}
+
+.permissionDrawerEmptyText {
+    @apply text-xs text-gray-500 mr-auto;
+}
+
+.permissionDrawerEmpty {
+    @apply text-center py-8 text-gray-500;
+}
+
+@media (max-width: 768px) {
+    .permissionDrawerContent {
+        @apply max-h-[calc(100vh-200px)];
+    }
+
+    .permissionDrawerGrid {
+        @apply grid-cols-1;
+    }
+}

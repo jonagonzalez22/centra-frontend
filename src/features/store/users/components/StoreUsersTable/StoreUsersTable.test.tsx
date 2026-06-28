@@ -24,12 +24,13 @@ const renderWithProvider = (
     usersState: UseStoreUsersReturn,
     onEdit: (user: User) => void,
     onDelete: (id: number) => Promise<void>,
-    onToggleActive: (id: number, isActive: boolean) => Promise<void>
+    onToggleActive: (id: number, isActive: boolean) => Promise<void>,
+    onManagePermissions: (user: User) => void = vi.fn()
 ) => {
     return render(
         <MemoryRouter>
             <StoreUsersProvider value={usersState}>
-                <StoreUsersTable onEdit={onEdit} onDelete={onDelete} onToggleActive={onToggleActive} />
+                <StoreUsersTable onEdit={onEdit} onDelete={onDelete} onToggleActive={onToggleActive} onManagePermissions={onManagePermissions} />
             </StoreUsersProvider>
         </MemoryRouter>
     );

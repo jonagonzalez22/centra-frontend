@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
         USERS: {
             URL: '/v1/store/users',
             FILTER_OPTIONS: '/v1/store/users/filter-options',
+            PERMISSION_CATALOG: '/v1/store/permissions/catalog',
         },
         STOCK_ADJUST: {
             URL: '/v1/store/inventory/adjust',
