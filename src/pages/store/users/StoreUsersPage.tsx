@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StoreUsersPageView } from './StoreUsersPageView';
 import { StoreUserModal } from '@/features/store/users/components/StoreUserModal';
+import { PermissionDrawer } from '@/features/store/users/components/PermissionDrawer';
 import { useStoreUsers } from '@/features/store/users/hooks/useStoreUsers';
 import { StoreUsersProvider } from '@/features/store/users/contexts/StoreUsersProvider';
 import type { User } from '@/entities/User';
@@ -19,6 +20,8 @@ export const StoreUsersPage = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+    const [permDrawerOpen, setPermDrawerOpen] = useState(false);
+    const [selectedPermUser, setSelectedPermUser] = useState<User | undefined>(undefined);
 
     const handleEdit = (user: User) => {
         setSelectedUser(user);
@@ -41,6 +44,21 @@ export const StoreUsersPage = () => {
         usersState.refetch();
     };
 
+    const handleManagePermissions = (user: User) => {
+        setSelectedPermUser(user);
+        setPermDrawerOpen(true);
+    };
+
+    const handlePermDrawerClose = () => {
+        setPermDrawerOpen(false);
+        setSelectedPermUser(undefined);
+    };
+
+    const handlePermDrawerSuccess = () => {
+        setPermDrawerOpen(false);
+        setSelectedPermUser(undefined);
+    };
+
     return (
         <StoreUsersProvider value={usersState}>
             <StoreUsersPageView
@@ -53,12 +71,19 @@ export const StoreUsersPage = () => {
                 onCreate={handleCreate}
                 onDelete={usersState.deleteUser}
                 onToggleActive={usersState.toggleActive}
+                onManagePermissions={handleManagePermissions}
             />
             <StoreUserModal
                 open={modalOpen}
                 onClose={handleClose}
                 onSuccess={handleSuccess}
                 user={selectedUser}
+            />
+            <PermissionDrawer
+                open={permDrawerOpen}
+                onClose={handlePermDrawerClose}
+                onSuccess={handlePermDrawerSuccess}
+                user={selectedPermUser ?? null}
             />
         </StoreUsersProvider>
     );

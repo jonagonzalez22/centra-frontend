@@ -19,6 +19,7 @@ interface StoreUsersPageViewProps {
     onCreate: () => void;
     onDelete: (id: number) => Promise<void>;
     onToggleActive: (id: number, isActive: boolean) => Promise<void>;
+    onManagePermissions: (user: User) => void;
 }
 
 export const StoreUsersPageView = ({
@@ -31,6 +32,7 @@ export const StoreUsersPageView = ({
     onCreate,
     onDelete,
     onToggleActive,
+    onManagePermissions,
 }: StoreUsersPageViewProps) => {
     return (
         <div className="storeUsersPage">
@@ -73,6 +75,7 @@ export const StoreUsersPageView = ({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onToggleActive={onToggleActive}
+                onManagePermissions={onManagePermissions}
             />
         </div>
     );

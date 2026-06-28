@@ -71,6 +71,7 @@ describe('StoreUsersPage', () => {
                 onCreate={vi.fn()}
                 onDelete={vi.fn()}
                 onToggleActive={vi.fn()}
+                onManagePermissions={vi.fn()}
             />
         );
 
@@ -91,6 +92,7 @@ describe('StoreUsersPage', () => {
                 onCreate={vi.fn()}
                 onDelete={vi.fn()}
                 onToggleActive={vi.fn()}
+                onManagePermissions={vi.fn()}
             />
         );
 
@@ -111,6 +113,7 @@ describe('StoreUsersPage', () => {
                 onCreate={vi.fn()}
                 onDelete={vi.fn()}
                 onToggleActive={vi.fn()}
+                onManagePermissions={vi.fn()}
             />
         );
 
@@ -131,6 +134,7 @@ describe('StoreUsersPage', () => {
                 onCreate={vi.fn()}
                 onDelete={vi.fn()}
                 onToggleActive={vi.fn()}
+                onManagePermissions={vi.fn()}
             />
         );
 
@@ -151,6 +155,7 @@ describe('StoreUsersPage', () => {
                 onCreate={vi.fn()}
                 onDelete={vi.fn()}
                 onToggleActive={vi.fn()}
+                onManagePermissions={vi.fn()}
             />
         );
 
@@ -178,6 +183,7 @@ describe('StoreUsersPage', () => {
                         onCreate={vi.fn()}
                         onDelete={vi.fn()}
                         onToggleActive={vi.fn()}
+                        onManagePermissions={vi.fn()}
                     />
                 </StoreUsersProvider>
             </MemoryRouter>

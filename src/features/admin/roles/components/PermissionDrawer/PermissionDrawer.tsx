@@ -344,11 +344,6 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, role }: PermissionD
                     </div>
 
                     <div className="permissionDrawerFooter">
-                        {checkedCodes.size === 0 && (
-                            <span className="permissionDrawerEmptyText">
-                                Seleccioná al menos un permiso
-                            </span>
-                        )}
                         <Button
                             variant="default"
                             label="Cancelar"
@@ -360,7 +355,7 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, role }: PermissionD
                             label="Guardar cambios"
                             loading={loading}
                             action={handleSave}
-                            disabled={loading || checkedCodes.size === 0}
+                            disabled={loading}
                         />
                     </div>
                 </>

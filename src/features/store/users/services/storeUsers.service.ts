@@ -9,6 +9,10 @@ import type {
     CreateStoreUserDto,
     UpdateStoreUserDto,
     StoreUsersFilterOptions,
+    PermissionCatalog,
+    PermissionCatalogResponse,
+    SyncPermissionsDto,
+    UserPermissionsResponse,
 } from '../types/storeUser.types';
 
 export const StoreUsersService = {
@@ -102,5 +106,50 @@ export const StoreUsersService = {
             throw error;
         }
         return data.data;
+    },
+
+    getPermissionCatalog: async (): Promise<PermissionCatalog> => {
+        const { data } = await api.get<ApiListResponse<PermissionCatalogResponse>>(
+            API_ENDPOINTS.STORE.USERS.PERMISSION_CATALOG
+        );
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+        return data.data.groups;
+    },
+
+    getUserPermissions: async (userId: number): Promise<string[]> => {
+        const { data } = await api.get<ApiListResponse<UserPermissionsResponse>>(
+            `${API_ENDPOINTS.STORE.USERS.URL}/${userId}/permissions`
+        );
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+        return data.data.permissions;
+    },
+
+    syncUserPermissions: async (userId: number, dto: SyncPermissionsDto): Promise<void> => {
+        const { data } = await api.post<ApiListResponse<null>>(
+            `${API_ENDPOINTS.STORE.USERS.URL}/${userId}/permissions`,
+            dto
+        );
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
     },
 };
