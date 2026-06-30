@@ -10,6 +10,11 @@ import {
     Shield,
     Key,
     Package,
+    UsersRound,
+    MapPinHouse,
+    Phone,
+    Contact,
+    Globe,
 } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
@@ -93,6 +98,12 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         sales: <Key size={16} />,
         clients: <Key size={16} />,
         deliveries: <Key size={16} />,
+        commercial_groups: <UsersRound size={16} />,
+        customer_addresses: <MapPinHouse size={16} />,
+        customer_contacts: <Phone size={16} />,
+        customers: <Contact size={16} />,
+        store_users: <User size={16} />,
+        geography: <Globe size={16} />,
     };
     return icons[resource] ?? <Key size={16} />;
 };
