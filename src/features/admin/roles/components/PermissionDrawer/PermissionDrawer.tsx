@@ -14,7 +14,6 @@ import {
     MapPinHouse,
     Phone,
     Contact,
-    MapPin,
     Globe,
 } from 'lucide-react';
 import { Button } from '@/components/Button';
