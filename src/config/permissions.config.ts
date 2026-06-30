@@ -18,6 +18,11 @@ export const PREFIX_TO_CONTEXT: Record<string, PermissionContext> = {
     sales: 'store',
     clients: 'store',
     deliveries: 'store',
+    commercial_groups: 'store',
+    customer_addresses: 'store',
+    customer_contacts: 'store',
+    customers: 'store',
+    geography: 'store',
 };
 
 export const MODULE_DISPLAY_NAMES: Record<string, string> = {
@@ -30,7 +35,7 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     users: 'Usuarios',
     settings: 'Configuraciones',
     stores: 'Tiendas',
-    store_users: 'Usuarios',
+    store_users: 'Usuarios de Tienda',
     categories: 'Categorías',
     products: 'Productos',
     inventory: 'Stock',
@@ -38,6 +43,11 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     sales: 'Ventas',
     clients: 'Clientes',
     deliveries: 'Deliveries',
+    commercial_groups: 'Gupos Comerciales',
+    customer_addresses: 'Direcciones de Clientes',
+    customer_contacts: 'Contactos de Clientes',
+    customers: 'Clientes',
+    geography: 'Geografía',
 };
 
 export const getPermissionContext = (permissionCode: string): PermissionContext => {
