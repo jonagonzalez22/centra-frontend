@@ -8,7 +8,8 @@ export type FeatureCode =
     | 'messaging'
     | 'multi_user'
     | 'stores'
-    | 'categories';
+    | 'categories'
+    | 'customers';
 
 export interface FeatureFlag {
     code: FeatureCode;

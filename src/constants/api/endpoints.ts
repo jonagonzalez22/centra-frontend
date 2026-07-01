@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
         PRODUCTS_SEARCH: {
             URL: '/v1/store/products/search',
         },
+        COMMERCIAL_GROUPS: {
+            URL: '/v1/store/commercial-groups',
+        },
     },
     ADMIN: {
         STORES: {
