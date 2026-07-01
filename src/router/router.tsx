@@ -16,6 +16,7 @@ import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
 import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
+import { CustomersPage } from '@/pages/store/customers/CustomersPage';
 import { CommercialGroupsPage } from '@/pages/store/commercial-groups/CommercialGroupsPage';
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
@@ -118,6 +119,13 @@ export const router = createBrowserRouter([
                     {
                         element: <FeatureRoute feature="customers" />,
                         children: [
+                            {
+                                element: <PermissionRoute permission="customers.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { index: true, element: <Navigate to="clientes" replace /> },
+                                    { path: 'clientes', element: <CustomersPage /> },
+                                ],
+                            },
                             {
                                 element: <PermissionRoute permission="commercial_groups.view" redirectTo="/tienda/dashboard" />,
                                 children: [{ path: 'clientes/grupos', element: <CommercialGroupsPage /> }],

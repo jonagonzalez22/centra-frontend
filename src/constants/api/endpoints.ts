@@ -23,6 +23,9 @@ export const API_ENDPOINTS = {
         COMMERCIAL_GROUPS: {
             URL: '/v1/store/commercial-groups',
         },
+        CUSTOMERS: {
+            URL: '/v1/store/customers',
+        },
     },
     ADMIN: {
         STORES: {
