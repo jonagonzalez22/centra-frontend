@@ -11,6 +11,7 @@ import {
     FolderTree,
     Package,
     ArrowLeftRight,
+    UsersRound,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -127,6 +128,21 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'inventory',
         permission: 'inventory.view',
+    },
+    {
+        label: 'Clientes',
+        key: '/tienda/clientes',
+        icon: <UsersRound size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'customers',
+        children: [
+            {
+                label: 'Grupos Comerciales',
+                key: '/tienda/clientes/grupos',
+                context: 'store',
+                permission: 'commercial_groups.view',
+            },
+        ],
     },
 ];
 

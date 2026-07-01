@@ -1,0 +1,1 @@
+export { CommercialGroupsTable } from './CommercialGroupsTable';
