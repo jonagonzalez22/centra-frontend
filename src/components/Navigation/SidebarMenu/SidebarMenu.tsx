@@ -131,11 +131,16 @@ const menuItems: MenuItem[] = [
     },
     {
         label: 'Clientes',
-        key: '/tienda/clientes',
+        key: '/tienda/clientes/parent',
         icon: <UsersRound size={ICON_SIZE} />,
         context: 'store',
         feature: 'customers',
         children: [
+            {
+                label: 'Listado',
+                key: '/tienda/clientes',
+                context: 'store',
+            },
             {
                 label: 'Grupos Comerciales',
                 key: '/tienda/clientes/grupos',
@@ -168,6 +173,14 @@ function filterMenuItems(
         acc.push(filtered);
         return acc;
     }, []);
+}
+
+function isChildOf(parentKey: string, childKey: string): boolean {
+    if (childKey === parentKey) return true;
+    if (childKey.startsWith(parentKey + '/')) return true;
+    const baseKey = parentKey.replace(/\/parent$/, '');
+    if (baseKey !== parentKey && (childKey === baseKey || childKey.startsWith(baseKey + '/'))) return true;
+    return false;
 }
 
 function collectSubMenuKeys(items: MenuItem[]): string[] {
@@ -211,12 +224,12 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     );
 
     const [openKeys, setOpenKeys] = useState<string[]>(() =>
-        submenuKeys.filter((key) => selectedKey.startsWith(key + '/') || selectedKey === key)
+        submenuKeys.filter((key) => isChildOf(key, selectedKey))
     );
 
     useLayoutEffect(() => {
-        const relevantParents = submenuKeys.filter(
-            (key) => selectedKey.startsWith(key + '/') || selectedKey === key
+        const relevantParents = submenuKeys.filter((key) =>
+            isChildOf(key, selectedKey)
         );
         if (relevantParents.length > 0) {
             import('react-dom').then(({ flushSync }) => {
