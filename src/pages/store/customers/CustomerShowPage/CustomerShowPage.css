@@ -1,0 +1,19 @@
+.customerShowPage {
+    @apply w-full;
+}
+
+.customerShowPageHeader {
+    @apply mb-6;
+}
+
+.customerShowPageBreadcrumb {
+    @apply mb-4;
+}
+
+.customerShowPageHeaderTop {
+    @apply flex items-center gap-4;
+}
+
+.customerShowPageLoading {
+    @apply flex justify-center items-center min-h-[400px];
+}

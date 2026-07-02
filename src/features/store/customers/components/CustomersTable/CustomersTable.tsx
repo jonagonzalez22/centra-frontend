@@ -12,7 +12,7 @@ interface CustomersTableProps {
     loading: boolean;
     pagination: { current: number; total: number; pageSize: number };
     onPageChange: (page: number, pageSize: number) => void;
-    onDelete: (id: number) => Promise<void>;
+    onDelete: (id: string) => Promise<void>;
 }
 
 export const CustomersTable = ({
@@ -27,8 +27,8 @@ export const CustomersTable = ({
     const columns = [
         {
             title: 'Código',
-            dataIndex: 'code',
-            key: 'code',
+            dataIndex: 'customer_code',
+            key: 'customer_code',
             render: (code: string) => <Tag color="blue">{code}</Tag>,
         },
         {
@@ -40,22 +40,17 @@ export const CustomersTable = ({
             title: 'Documento',
             key: 'document',
             render: (_: unknown, record: Customer) => {
-                const docTypeLabel =
-                    record.document_type === 'DNI'
-                        ? 'DNI'
-                        : record.document_type === 'RUC'
-                          ? 'RUC'
-                          : record.document_type;
-                return `${docTypeLabel}: ${record.document_number}`;
+                return `${record.document_type.name}: ${record.document_number}`;
             },
         },
         {
             title: 'Grupo Comercial',
-            dataIndex: 'commercial_group_name',
-            key: 'commercial_group_name',
+            key: 'commercial_group',
             responsive: ['md'] as ('md' | 'lg' | 'xl' | 'sm' | 'xs' | 'xxl' | 'xxxl')[],
-            render: (name: string | null) =>
-                name ? <Tag color="geekblue">{name}</Tag> : '—',
+            render: (_: unknown, record: Customer) =>
+                record.commercial_group?.name
+                    ? <Tag color="geekblue">{record.commercial_group.name}</Tag>
+                    : '—',
         },
         {
             title: 'Estado',

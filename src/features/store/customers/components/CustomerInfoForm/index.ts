@@ -1,0 +1,1 @@
+export { CustomerInfoForm } from './CustomerInfoForm';

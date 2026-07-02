@@ -18,7 +18,7 @@ interface CustomersPageViewProps {
     loading: boolean;
     pagination: { current: number; total: number; pageSize: number };
     onRefetch: (filters?: CustomersFilters) => void;
-    onDelete: (id: number) => Promise<void>;
+    onDelete: (id: string) => Promise<void>;
     commercialGroups: CommercialGroup[];
     groupsLoading: boolean;
 }
