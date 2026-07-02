@@ -18,6 +18,7 @@ import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 import { CustomersPage } from '@/pages/store/customers/CustomersPage';
 import { CustomerShowPage } from '@/pages/store/customers/CustomerShowPage';
+import { CustomersCreatePage } from '@/pages/store/customers/CustomersCreatePage';
 import { CommercialGroupsPage } from '@/pages/store/commercial-groups/CommercialGroupsPage';
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
@@ -126,6 +127,12 @@ export const router = createBrowserRouter([
                                     { index: true, element: <Navigate to="clientes" replace /> },
                                     { path: 'clientes', element: <CustomersPage /> },
                                     { path: 'clientes/:id', element: <CustomerShowPage /> },
+                                    {
+                                        element: <PermissionRoute permission="customers.create" redirectTo="/tienda/clientes" />,
+                                        children: [
+                                            { path: 'clientes/nuevo', element: <CustomersCreatePage /> },
+                                        ],
+                                    },
                                 ],
                             },
                             {

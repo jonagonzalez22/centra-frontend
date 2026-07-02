@@ -14,9 +14,12 @@ interface CustomerShowPageViewProps {
     loading: boolean;
     commercialGroupOptions: { label: string; value: string }[];
     groupsLoading: boolean;
+    documentTypeOptions: { label: string; value: string }[];
+    documentTypesLoading: boolean;
     breadcrumbs: { label: string; path?: string }[];
     onSubmit: (values: UpdateCustomerDto) => Promise<void>;
     onBack: () => void;
+    canEdit: boolean;
 }
 
 export const CustomerShowPageView = ({
@@ -25,9 +28,12 @@ export const CustomerShowPageView = ({
     loading,
     commercialGroupOptions,
     groupsLoading,
+    documentTypeOptions,
+    documentTypesLoading,
     breadcrumbs,
     onSubmit,
     onBack,
+    canEdit,
 }: CustomerShowPageViewProps) => {
     const tabItems = [
         {
@@ -40,7 +46,10 @@ export const CustomerShowPageView = ({
                     loading={loading}
                     commercialGroupOptions={commercialGroupOptions}
                     groupsLoading={groupsLoading}
+                    documentTypeOptions={documentTypeOptions}
+                    documentTypesLoading={documentTypesLoading}
                     onSubmit={onSubmit}
+                    canEdit={canEdit}
                 />
             ),
         },

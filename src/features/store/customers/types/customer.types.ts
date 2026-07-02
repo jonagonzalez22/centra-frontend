@@ -33,6 +33,18 @@ export interface Customer {
     updated_at: string;
 }
 
+export interface CreateCustomerDto {
+    display_name: string;
+    first_name: string | null;
+    last_name: string | null;
+    company_name: string | null;
+    document_type_id: string;
+    document_number: string;
+    commercial_group_id: string | null;
+    status: 'active' | 'inactive';
+    notes: string | null;
+}
+
 export interface UpdateCustomerDto {
     display_name?: string;
     first_name?: string | null;

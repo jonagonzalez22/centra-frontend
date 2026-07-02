@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type {
+    CreateCustomerDto,
     Customer,
     CustomersFilters,
     CustomersListResponse,
@@ -76,5 +77,23 @@ export const CustomersService = {
             };
             throw error;
         }
+    },
+
+    create: async (dto: CreateCustomerDto): Promise<Customer> => {
+        const { data } = await api.post<ApiListResponse<Customer>>(
+            API_ENDPOINTS.STORE.CUSTOMERS.URL,
+            dto
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
     },
 };
