@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Form, Row, Col, Switch, Input, message } from 'antd';
+import { useEffect, useState } from 'react';
+import { Form, Row, Col, Switch, Input, Tag, Typography, Badge, message } from 'antd';
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
@@ -8,13 +8,18 @@ import { Button } from '@/components/Button';
 import type { Customer, UpdateCustomerDto } from '../../types/customer.types';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
+const { Text, Paragraph } = Typography;
+
 interface CustomerInfoFormProps {
     form: FormInstance;
     customer: Customer;
     loading: boolean;
     commercialGroupOptions: { label: string; value: string }[];
     groupsLoading: boolean;
+    documentTypeOptions: { label: string; value: string }[];
+    documentTypesLoading: boolean;
     onSubmit: (values: UpdateCustomerDto) => Promise<void>;
+    canEdit: boolean;
 }
 
 const colResponsive = {
@@ -31,13 +36,16 @@ export const CustomerInfoForm = ({
     loading,
     commercialGroupOptions,
     groupsLoading,
+    documentTypeOptions,
+    documentTypesLoading,
     onSubmit,
+    canEdit,
 }: CustomerInfoFormProps) => {
+    const [isEditing, setIsEditing] = useState(false);
     const isDisabled = loading;
+    const isReadOnly = !isEditing;
 
-    const documentTypeOptions = customer
-        ? [{ label: customer.document_type.name, value: customer.document_type.id }]
-        : [];
+    const commercialGroupName = customer.commercial_group?.name ?? null;
 
     useEffect(() => {
         if (customer) {
@@ -75,6 +83,7 @@ export const CustomerInfoForm = ({
         };
         try {
             await onSubmit(payload);
+            setIsEditing(false);
         } catch (err) {
             const apiError = err as ApiError;
             if (apiError.errors) {
@@ -85,6 +94,24 @@ export const CustomerInfoForm = ({
                 form.setFields(fieldErrors as Parameters<FormInstance['setFields']>[0]);
             }
         }
+    };
+
+    const handleCancel = () => {
+        if (customer) {
+            form.setFieldsValue({
+                customer_code: customer.customer_code,
+                display_name: customer.display_name,
+                first_name: customer.first_name ?? undefined,
+                last_name: customer.last_name ?? undefined,
+                company_name: customer.company_name ?? undefined,
+                document_type_id: customer.document_type.id,
+                document_number: customer.document_number,
+                commercial_group_id: customer.commercial_group?.id ?? undefined,
+                status: customer.status === 'active',
+                notes: customer.notes ?? undefined,
+            });
+        }
+        setIsEditing(false);
     };
 
     return (
@@ -98,123 +125,208 @@ export const CustomerInfoForm = ({
         >
             <Row gutter={16}>
                 <Col {...colResponsive}>
-                    <InputField
-                        name="customer_code"
-                        label="Código de Cliente"
-                        disabled
-                    />
+                    <Form.Item label="Código de Cliente">
+                        <Tag color="default">{customer.customer_code}</Tag>
+                    </Form.Item>
                 </Col>
                 <Col {...colResponsive}>
-                    <InputField
-                        name="display_name"
-                        label="Nombre de Visualización"
-                        placeholder="Ingresá el nombre"
-                        rules={requiredStringRules('El nombre de visualización')}
-                        disabled={isDisabled}
-                    />
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-                <Col {...colResponsive}>
-                    <InputField
-                        name="first_name"
-                        label="Nombres"
-                        placeholder="Ingresá los nombres"
-                        disabled={isDisabled}
-                    />
-                </Col>
-                <Col {...colResponsive}>
-                    <InputField
-                        name="last_name"
-                        label="Apellidos"
-                        placeholder="Ingresá los apellidos"
-                        disabled={isDisabled}
-                    />
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-                <Col {...colResponsive}>
-                    <InputField
-                        name="company_name"
-                        label="Razón Social"
-                        placeholder="Ingresá la razón social"
-                        disabled={isDisabled}
-                    />
-                </Col>
-                <Col {...colResponsive}>
-                    <SelectField
-                        name="document_type_id"
-                        label="Tipo de Documento"
-                        placeholder="Seleccionar"
-                        options={documentTypeOptions}
-                        rules={requiredStringRules('El tipo de documento')}
-                        disabled={isDisabled}
-                    />
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-                <Col {...colResponsive}>
-                    <InputField
-                        name="document_number"
-                        label="Número de Documento"
-                        placeholder="Ingresá el número"
-                        rules={requiredStringRules('El número de documento')}
-                        disabled={isDisabled}
-                    />
-                </Col>
-                <Col {...colResponsive}>
-                    <SelectField
-                        name="commercial_group_id"
-                        label="Grupo Comercial"
-                        placeholder="Seleccionar"
-                        options={commercialGroupOptions}
-                        allowClear
-                        disabled={isDisabled || groupsLoading}
-                        loading={groupsLoading}
-                    />
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-                <Col {...colResponsive}>
-                    <Form.Item
-                        name="status"
-                        label="Estado"
-                        valuePropName="checked"
-                    >
-                        <Switch
-                            checkedChildren="Activo"
-                            unCheckedChildren="Inactivo"
+                    {isReadOnly ? (
+                        <Form.Item label="Nombre de Visualización">
+                            <Text className="text-centra-text">{customer.display_name}</Text>
+                        </Form.Item>
+                    ) : (
+                        <InputField
+                            name="display_name"
+                            label="Nombre de Visualización"
+                            placeholder="Ingresá el nombre"
+                            rules={requiredStringRules('El nombre de visualización')}
                             disabled={isDisabled}
                         />
-                    </Form.Item>
+                    )}
+                </Col>
+            </Row>
+
+            <Row gutter={16}>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Nombres">
+                            <Text className="text-centra-text">{customer.first_name ?? '—'}</Text>
+                        </Form.Item>
+                    ) : (
+                        <InputField
+                            name="first_name"
+                            label="Nombres"
+                            placeholder="Ingresá los nombres"
+                            disabled={isDisabled}
+                        />
+                    )}
+                </Col>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Apellidos">
+                            <Text className="text-centra-text">{customer.last_name ?? '—'}</Text>
+                        </Form.Item>
+                    ) : (
+                        <InputField
+                            name="last_name"
+                            label="Apellidos"
+                            placeholder="Ingresá los apellidos"
+                            disabled={isDisabled}
+                        />
+                    )}
+                </Col>
+            </Row>
+
+            <Row gutter={16}>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Razón Social">
+                            <Text className="text-centra-text">{customer.company_name ?? '—'}</Text>
+                        </Form.Item>
+                    ) : (
+                        <InputField
+                            name="company_name"
+                            label="Razón Social"
+                            placeholder="Ingresá la razón social"
+                            disabled={isDisabled}
+                        />
+                    )}
+                </Col>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Tipo de Documento">
+                            <Text className="text-centra-text">{customer.document_type.name}</Text>
+                        </Form.Item>
+                    ) : (
+                        <SelectField
+                            name="document_type_id"
+                            label="Tipo de Documento"
+                            placeholder="Seleccionar"
+                            options={documentTypeOptions}
+                            rules={requiredStringRules('El tipo de documento')}
+                            disabled={isDisabled || documentTypesLoading}
+                            loading={documentTypesLoading}
+                        />
+                    )}
+                </Col>
+            </Row>
+
+            <Row gutter={16}>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Número de Documento">
+                            <Text className="text-centra-text">{customer.document_number}</Text>
+                        </Form.Item>
+                    ) : (
+                        <InputField
+                            name="document_number"
+                            label="Número de Documento"
+                            placeholder="Ingresá el número"
+                            rules={requiredStringRules('El número de documento')}
+                            disabled={isDisabled}
+                        />
+                    )}
+                </Col>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Grupo Comercial">
+                            <Text className="text-centra-text">{commercialGroupName ?? '—'}</Text>
+                        </Form.Item>
+                    ) : (
+                        <SelectField
+                            name="commercial_group_id"
+                            label="Grupo Comercial"
+                            placeholder="Seleccionar"
+                            options={commercialGroupOptions}
+                            allowClear
+                            disabled={isDisabled || groupsLoading}
+                            loading={groupsLoading}
+                        />
+                    )}
+                </Col>
+            </Row>
+
+            <Row gutter={16}>
+                <Col {...colResponsive}>
+                    {isReadOnly ? (
+                        <Form.Item label="Estado">
+                            <Badge
+                                status={customer.status === 'active' ? 'success' : 'error'}
+                                text={customer.status === 'active' ? 'Activo' : 'Inactivo'}
+                            />
+                        </Form.Item>
+                    ) : (
+                        <Form.Item
+                            name="status"
+                            label="Estado"
+                            valuePropName="checked"
+                        >
+                            <Switch
+                                checkedChildren="Activo"
+                                unCheckedChildren="Inactivo"
+                                disabled={isDisabled}
+                            />
+                        </Form.Item>
+                    )}
                 </Col>
             </Row>
 
             <Row gutter={16}>
                 <Col span={24}>
-                    <Form.Item name="notes" label="Notas">
-                        <Input.TextArea
-                            rows={3}
-                            placeholder="Notas adicionales..."
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
+                    {isReadOnly ? (
+                        <Form.Item label="Notas">
+                            {customer.notes ? (
+                                <Paragraph className="text-centra-text" style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                    {customer.notes}
+                                </Paragraph>
+                            ) : (
+                                <Text className="text-centra-text-secondary">—</Text>
+                            )}
+                        </Form.Item>
+                    ) : (
+                        <Form.Item name="notes" label="Notas">
+                            <Input.TextArea
+                                rows={3}
+                                placeholder="Notas adicionales..."
+                                disabled={isDisabled}
+                            />
+                        </Form.Item>
+                    )}
                 </Col>
             </Row>
 
-            <Row>
-                <Col>
-                    <Button
-                        variant="primary"
-                        label="Guardar Cambios"
-                        htmlType="submit"
-                        loading={isDisabled}
-                    />
-                </Col>
+            <Row gutter={16} align="middle">
+                {isReadOnly && canEdit && (
+                    <Col>
+                        <Button
+                            variant="primary"
+                            label="Editar"
+                            htmlType="button"
+                            action={() => setIsEditing(true)}
+                        />
+                    </Col>
+                )}
+                {isEditing && (
+                    <>
+                        <Col>
+                            <Button
+                                variant="primary"
+                                label="Guardar Cambios"
+                                htmlType="submit"
+                                loading={isDisabled}
+                            />
+                        </Col>
+                        <Col>
+                            <Button
+                                variant="default"
+                                label="Cancelar"
+                                htmlType="button"
+                                action={handleCancel}
+                                disabled={isDisabled}
+                            />
+                        </Col>
+                    </>
+                )}
             </Row>
         </Form>
     );

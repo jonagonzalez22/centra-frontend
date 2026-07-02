@@ -1,7 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form, Spin, message } from 'antd';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useCustomer } from '@/features/store/customers/hooks/useCustomer';
 import { useCommercialGroups } from '@/features/store/commercial-groups/hooks/useCommercialGroups';
+import { useDocumentTypes } from '@/features/store/document-types/hooks/useDocumentTypes';
 import { CustomersService } from '@/features/store/customers/services/customers.service';
 import { CustomerShowPageView } from './CustomerShowPageView';
 import type { UpdateCustomerDto } from '@/features/store/customers/types/customer.types';
@@ -16,11 +18,18 @@ const buildGroupOptions = (
 export const CustomerShowPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { can } = usePermissions();
     const { customer, loading, error, refetch } = useCustomer(id);
     const { groups, loading: groupsLoading } = useCommercialGroups();
+    const { documentTypes, loading: documentTypesLoading } = useDocumentTypes();
     const [form] = Form.useForm();
 
+    const canEdit = can('customers.edit');
     const commercialGroupOptions = buildGroupOptions(groups);
+    const documentTypeOptions = documentTypes.map((dt) => ({
+        label: dt.name,
+        value: dt.id,
+    }));
 
     const handleSubmit = async (values: UpdateCustomerDto) => {
         if (!id) return;
@@ -72,9 +81,12 @@ export const CustomerShowPage = () => {
             loading={loading}
             commercialGroupOptions={commercialGroupOptions}
             groupsLoading={groupsLoading}
+            documentTypeOptions={documentTypeOptions}
+            documentTypesLoading={documentTypesLoading}
             breadcrumbs={routeMetadata.breadcrumbs}
             onSubmit={handleSubmit}
             onBack={() => navigate('/tienda/clientes')}
+            canEdit={canEdit}
         />
     );
 };

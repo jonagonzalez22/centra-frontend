@@ -1,0 +1,15 @@
+.customersCreatePage {
+    @apply w-full;
+}
+
+.customersCreatePageHeader {
+    @apply mb-6;
+}
+
+.customersCreatePageBreadcrumb {
+    @apply mb-4;
+}
+
+.customersCreatePageHeaderTop {
+    @apply flex items-center gap-4;
+}

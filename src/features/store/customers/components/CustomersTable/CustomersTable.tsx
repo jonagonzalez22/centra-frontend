@@ -1,6 +1,5 @@
 import { Popconfirm, Button as AntButton } from 'antd';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button } from '@/components/Button';
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
@@ -48,9 +47,11 @@ export const CustomersTable = ({
             key: 'commercial_group',
             responsive: ['md'] as ('md' | 'lg' | 'xl' | 'sm' | 'xs' | 'xxl' | 'xxxl')[],
             render: (_: unknown, record: Customer) =>
-                record.commercial_group?.name
-                    ? <Tag color="geekblue">{record.commercial_group.name}</Tag>
-                    : '—',
+                record.commercial_group?.name ? (
+                    <Tag color="geekblue">{record.commercial_group.name}</Tag>
+                ) : (
+                    '—'
+                ),
         },
         {
             title: 'Estado',
@@ -73,14 +74,6 @@ export const CustomersTable = ({
                             size="small"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`/tienda/clientes/${record.id}`)}
-                        />
-                    </CanDo>
-                    <CanDo permission="customers.edit">
-                        <Button
-                            variant="text"
-                            size="small"
-                            icon={<EditOutlined />}
-                            action={() => navigate(`/tienda/clientes/${record.id}/editar`)}
                         />
                     </CanDo>
                     <CanDo permission="customers.delete">

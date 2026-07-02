@@ -26,6 +26,9 @@ export const API_ENDPOINTS = {
         CUSTOMERS: {
             URL: '/v1/store/customers',
         },
+        DOCUMENT_TYPES: {
+            URL: '/v1/catalogs/document-types',
+        },
     },
     ADMIN: {
         STORES: {
