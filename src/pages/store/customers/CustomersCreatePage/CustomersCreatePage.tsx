@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, message } from 'antd';
 import { useCommercialGroups } from '@/features/store/commercial-groups/hooks/useCommercialGroups';
@@ -11,6 +11,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 export const CustomersCreatePage = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
+    const [submitting, setSubmitting] = useState(false);
     const { groups, loading: groupsLoading } = useCommercialGroups();
     const { documentTypes, loading: documentTypesLoading } = useDocumentTypes();
 
@@ -42,6 +43,7 @@ export const CustomersCreatePage = () => {
             notes: (values.notes as string) || null,
         };
 
+        setSubmitting(true);
         try {
             const created = await CustomersService.create(payload);
             message.success('Cliente creado correctamente.');
@@ -58,10 +60,12 @@ export const CustomersCreatePage = () => {
             }
             message.error(apiError.message || 'Error al crear el cliente.');
             throw err;
+        } finally {
+            setSubmitting(false);
         }
     };
 
-    const loading = documentTypesLoading || groupsLoading;
+    const loading = documentTypesLoading || groupsLoading || submitting;
 
     return (
         <CustomersCreatePageView
