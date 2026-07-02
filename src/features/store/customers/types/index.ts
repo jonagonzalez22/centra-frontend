@@ -7,3 +7,9 @@ export type {
     CustomersListResponse,
     CustomersFilters,
 } from './customer.types';
+
+export type {
+    CustomerContact,
+    CreateCustomerContactDto,
+    UpdateCustomerContactDto,
+} from './customerContact.types';

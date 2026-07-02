@@ -42,7 +42,8 @@ export const CustomerInfoForm = ({
     canEdit,
 }: CustomerInfoFormProps) => {
     const [isEditing, setIsEditing] = useState(false);
-    const isDisabled = loading;
+    const [submitting, setSubmitting] = useState(false);
+    const isDisabled = loading || submitting;
     const isReadOnly = !isEditing;
 
     const commercialGroupName = customer.commercial_group?.name ?? null;
@@ -81,6 +82,7 @@ export const CustomerInfoForm = ({
             status: values.status ? 'active' : 'inactive',
             notes: (values.notes as string) || null,
         };
+        setSubmitting(true);
         try {
             await onSubmit(payload);
             setIsEditing(false);
@@ -93,6 +95,8 @@ export const CustomerInfoForm = ({
                 }));
                 form.setFields(fieldErrors as Parameters<FormInstance['setFields']>[0]);
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -313,7 +317,7 @@ export const CustomerInfoForm = ({
                                 variant="primary"
                                 label="Guardar Cambios"
                                 htmlType="submit"
-                                loading={isDisabled}
+                                loading={submitting}
                             />
                         </Col>
                         <Col>
@@ -322,7 +326,7 @@ export const CustomerInfoForm = ({
                                 label="Cancelar"
                                 htmlType="button"
                                 action={handleCancel}
-                                disabled={isDisabled}
+                                disabled={submitting}
                             />
                         </Col>
                     </>

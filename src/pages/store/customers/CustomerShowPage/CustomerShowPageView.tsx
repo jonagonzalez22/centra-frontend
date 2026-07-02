@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Breadcrumb } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Tabs } from '@/components/Tabs';
 import { CustomerInfoForm } from '@/features/store/customers/components/CustomerInfoForm';
+import { CustomerContactsTab } from '@/features/store/customers/components/CustomerContactsTab';
 import type { FormInstance } from 'antd';
 import type { Customer, UpdateCustomerDto } from '@/features/store/customers/types/customer.types';
 
@@ -35,6 +37,8 @@ export const CustomerShowPageView = ({
     onBack,
     canEdit,
 }: CustomerShowPageViewProps) => {
+    const [activeTab, setActiveTab] = useState('general');
+
     const tabItems = [
         {
             key: 'general',
@@ -61,7 +65,10 @@ export const CustomerShowPageView = ({
         {
             key: 'contacts',
             label: 'Contactos',
-            children: <div className="p-4 text-centra-text/60">Próximamente</div>,
+            children:
+                activeTab === 'contacts' ? (
+                    <CustomerContactsTab customerId={customer.id} />
+                ) : null,
         },
     ];
 
@@ -85,7 +92,7 @@ export const CustomerShowPageView = ({
             </div>
 
             <Card>
-                <Tabs items={tabItems} defaultActiveKey="general" />
+                <Tabs items={tabItems} activeKey={activeTab} onChange={setActiveTab} />
             </Card>
         </div>
     );
