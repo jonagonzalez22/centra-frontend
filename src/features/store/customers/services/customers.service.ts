@@ -6,6 +6,7 @@ import type {
     Customer,
     CustomersFilters,
     CustomersListResponse,
+    UpdateCustomerDto,
 } from '../types/customer.types';
 
 export const CustomersService = {
@@ -27,7 +28,7 @@ export const CustomersService = {
         return data.data;
     },
 
-    getById: async (id: number): Promise<Customer> => {
+    getById: async (id: string): Promise<Customer> => {
         const { data } = await api.get<ApiListResponse<Customer>>(
             `${API_ENDPOINTS.STORE.CUSTOMERS.URL}/${id}`
         );
@@ -44,7 +45,25 @@ export const CustomersService = {
         return data.data;
     },
 
-    delete: async (id: number): Promise<void> => {
+    update: async (id: string, dto: UpdateCustomerDto): Promise<Customer> => {
+        const { data } = await api.put<ApiListResponse<Customer>>(
+            `${API_ENDPOINTS.STORE.CUSTOMERS.URL}/${id}`,
+            dto
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    delete: async (id: string): Promise<void> => {
         const { data } = await api.delete<ApiListResponse<null>>(
             `${API_ENDPOINTS.STORE.CUSTOMERS.URL}/${id}`
         );

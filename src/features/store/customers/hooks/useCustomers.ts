@@ -16,7 +16,7 @@ export interface UseCustomersReturn {
     error: string | null;
     pagination: CustomersPagination;
     refetch: (filters?: CustomersFilters) => void;
-    deleteCustomer: (id: number) => Promise<void>;
+    deleteCustomer: (id: string) => Promise<void>;
 }
 
 export const useCustomers = (): UseCustomersReturn => {
@@ -60,7 +60,7 @@ export const useCustomers = (): UseCustomersReturn => {
     );
 
     const deleteCustomer = useCallback(
-        async (id: number) => {
+        async (id: string) => {
             try {
                 await CustomersService.delete(id);
                 message.success('Cliente eliminado correctamente.');
