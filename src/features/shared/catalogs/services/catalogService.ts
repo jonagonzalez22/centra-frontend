@@ -1,12 +1,9 @@
 import api from '@/api/api.config';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { CatalogApiResponse } from '../types/catalog.types';
-
 export const CatalogService = {
     get: async <T>(catalogName: string): Promise<T[]> => {
-        const { data } = await api.get<CatalogApiResponse<T>>(
-            `/v1/catalogs/${catalogName}`
-        );
+        const { data } = await api.get<CatalogApiResponse<T>>(`/v1/catalogs/${catalogName}`);
 
         if (data.status === 'error') {
             const error: ApiError = {

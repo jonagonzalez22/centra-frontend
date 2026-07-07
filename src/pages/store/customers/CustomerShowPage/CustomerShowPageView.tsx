@@ -7,6 +7,7 @@ import { Card } from '@/components/Card';
 import { Tabs } from '@/components/Tabs';
 import { CustomerInfoForm } from '@/features/store/customers/components/CustomerInfoForm';
 import { CustomerContactsTab } from '@/features/store/customers/components/CustomerContactsTab';
+import { AddressesTab } from '@/features/store/customers/components/AddressesTab';
 import type { FormInstance } from 'antd';
 import type { Customer, UpdateCustomerDto } from '@/features/store/customers/types/customer.types';
 
@@ -60,7 +61,10 @@ export const CustomerShowPageView = ({
         {
             key: 'addresses',
             label: 'Domicilios',
-            children: <div className="p-4 text-centra-text/60">Próximamente</div>,
+            children:
+                activeTab === 'addresses' ? (
+                    <AddressesTab customerId={customer.id} />
+                ) : null,
         },
         {
             key: 'contacts',
