@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { Form, Input, Select, Checkbox, Modal, message } from 'antd';
+import { Form, Input, Select, Checkbox, Modal, Spin, message } from 'antd';
 import { EnvironmentOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
+import { GeocodingService } from '@/features/shared/geocoding/services/geocoding.service';
 import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import { AddressMap, type AddressMapRef } from '../AddressMap';
@@ -59,6 +60,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
     const [geocodingLoading, setGeocodingLoading] = useState(false);
     const [pasteModalOpen, setPasteModalOpen] = useState(false);
     const [pastedValue, setPastedValue] = useState('');
+    const [pasteLoading, setPasteLoading] = useState(false);
     const mapRef = useRef<AddressMapRef>(null);
 
     const isEditing = !!address;
@@ -170,6 +172,24 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
             }
         } finally {
             setGeocodingLoading(false);
+        }
+    };
+
+    const handlePasteLocation = async () => {
+        if (!pastedValue.trim()) return;
+
+        setPasteLoading(true);
+        try {
+            const result = await GeocodingService.searchAddress(pastedValue.trim());
+            handleCoordinatesChange(result.latitude, result.longitude);
+            message.success('Ubicación aplicada correctamente.');
+            setPasteModalOpen(false);
+            setPastedValue('');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'No se pudo resolver la ubicación.');
+        } finally {
+            setPasteLoading(false);
         }
     };
 
@@ -393,7 +413,10 @@ Ingreso por calle lateral."
             <Modal
                 title="Pegar ubicación"
                 open={pasteModalOpen}
+                maskClosable={!pasteLoading}
+                keyboard={!pasteLoading}
                 onCancel={() => {
+                    if (pasteLoading) return;
                     setPasteModalOpen(false);
                     setPastedValue('');
                 }}
@@ -402,6 +425,7 @@ Ingreso por calle lateral."
                         key="cancel"
                         variant="default"
                         label="Cancelar"
+                        disabled={pasteLoading}
                         action={() => {
                             setPasteModalOpen(false);
                             setPastedValue('');
@@ -410,26 +434,30 @@ Ingreso por calle lateral."
                     <Button
                         key="accept"
                         variant="primary"
-                        label="Aceptar"
+                        label="Resolver"
+                        loading={pasteLoading}
                         disabled={!pastedValue.trim()}
-                        action={() => {
-                            // TODO: implementar lógica de parsing en ticket posterior
-                            setPasteModalOpen(false);
-                            setPastedValue('');
-                        }}
+                        action={handlePasteLocation}
                     />,
                 ]}
                 width={480}
             >
-                <p className="text-sm text-gray-600 mb-3">
-                    Pegá aquí un enlace de Google Maps, WhatsApp o unas coordenadas.
-                </p>
-                <Input.TextArea
-                    value={pastedValue}
-                    onChange={(e) => setPastedValue(e.target.value)}
-                    placeholder="Pega aquí un enlace de Google Maps, WhatsApp o unas coordenadas."
-                    rows={4}
-                />
+                <div className="relative">
+                    {pasteLoading && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+                            <Spin size="large" />
+                        </div>
+                    )}
+                    <p className="text-sm text-gray-600 mb-3">
+                        Pegá aquí un enlace de Google Maps, WhatsApp o unas coordenadas.
+                    </p>
+                    <Input
+                        value={pastedValue}
+                        onChange={(e) => setPastedValue(e.target.value)}
+                        placeholder="Pegue aquí link de Google Maps, WhatsApp o Coordenadas"
+                        disabled={pasteLoading}
+                    />
+                </div>
             </Modal>
         </>
     );
