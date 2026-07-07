@@ -29,9 +29,20 @@ export const API_ENDPOINTS = {
         CUSTOMER_CONTACTS: {
             URL: '/v1/store/customers/:customerId/contacts',
         },
+        CUSTOMER_ADDRESSES: {
+            URL: '/v1/store/customers/:customerId/addresses',
+        },
         DOCUMENT_TYPES: {
             URL: '/v1/catalogs/document-types',
         },
+        GEOGRAPHY: {
+            PROVINCES: '/v1/catalogs/provinces',
+            PROVINCE_LOCALITIES: (provinceId: string) =>
+                `/v1/catalogs/provinces/${provinceId}/localities`,
+        },
+    },
+    GEOCODING: {
+        SEARCH: '/v1/geocoding/search',
     },
     ADMIN: {
         STORES: {
