@@ -136,7 +136,12 @@ export const CustomerInfoForm = ({
                 <Col {...colResponsive}>
                     {isReadOnly ? (
                         <Form.Item label="Nombre de Visualización">
-                            <Text className="text-centra-text">{customer.display_name}</Text>
+                            <div className="flex items-center gap-2">
+                                <Text className="text-centra-text">{customer.display_name}</Text>
+                                <Tag color={customer.has_location ? 'blue' : 'default'}>
+                                    {customer.has_location ? 'Geolocalizado' : 'Pendiente de Geolocalización'}
+                                </Tag>
+                            </div>
                         </Form.Item>
                     ) : (
                         <InputField

@@ -18,6 +18,7 @@ interface SearchFormValues {
     search_text?: string;
     status?: 'active' | 'inactive';
     commercial_group_id?: string;
+    location_status?: 'all' | 'with_location' | 'without_location';
 }
 
 export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
@@ -31,21 +32,23 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
     const searchTextValue = Form.useWatch('search_text', form);
     const statusValue = Form.useWatch('status', form);
     const groupValue = Form.useWatch('commercial_group_id', form);
+    const locationStatusValue = Form.useWatch('location_status', form);
 
-    const hasActiveFilters = !!(searchTextValue || statusValue || groupValue);
+    const hasActiveFilters = !!(searchTextValue || statusValue || groupValue || locationStatusValue);
 
     const buildFilters = useCallback((values: SearchFormValues): CustomersFilters => {
         const filters: CustomersFilters = {};
         if (values.search_text) filters.search_text = values.search_text;
         if (values.status) filters.status = values.status;
         if (values.commercial_group_id) filters.commercial_group_id = values.commercial_group_id;
+        if (values.location_status) filters.location_status = values.location_status;
         return filters;
     }, []);
 
     const debouncedRefetch = useMemo(
         () =>
             debounce((values: SearchFormValues) => {
-                const hasFilters = !!(values.search_text || values.status || values.commercial_group_id);
+                const hasFilters = !!(values.search_text || values.status || values.commercial_group_id || values.location_status);
 
                 if (!hasFilters) {
                     refetch({});
@@ -78,6 +81,12 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
         label: group.name,
         value: group.id,
     }));
+
+    const locationStatusOptions = [
+        { label: 'Todas', value: 'all' },
+        { label: 'Geolocalizados', value: 'with_location' },
+        { label: 'Pendientes de Ubicación', value: 'without_location' },
+    ];
 
     return (
         <Form
@@ -122,6 +131,16 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
                                 .toLowerCase()
                                 .includes(input.toLowerCase())
                         }
+                    />
+                </div>
+                <div className="min-w-[180px]">
+                    <SelectField
+                        name="location_status"
+                        label="Estado de Ubicación"
+                        placeholder="Todas"
+                        options={locationStatusOptions}
+                        allowClear
+                        disabled={loading}
                     />
                 </div>
                 <div className="flex gap-2 min-[332px]:mt-6">
