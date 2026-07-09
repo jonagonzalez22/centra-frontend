@@ -25,6 +25,7 @@ export interface Customer {
     document_number: string;
     commercial_group: CustomerCommercialGroup | null;
     status: 'active' | 'inactive';
+    has_location: boolean;
     blocked_at: string | null;
     notes: string | null;
     created_by: string | null;
@@ -71,4 +72,5 @@ export interface CustomersFilters {
     per_page?: number;
     status?: 'active' | 'inactive';
     commercial_group_id?: string;
+    location_status?: 'all' | 'with_location' | 'without_location';
 }

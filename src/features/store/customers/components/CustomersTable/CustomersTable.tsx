@@ -1,5 +1,5 @@
-import { Popconfirm, Button as AntButton } from 'antd';
-import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { Popconfirm, Button as AntButton, Tooltip } from 'antd';
+import { DeleteOutlined, EyeOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
@@ -61,6 +61,22 @@ export const CustomersTable = ({
                 <Tag color={status === 'active' ? 'green' : 'red'}>
                     {status === 'active' ? 'Activo' : 'Inactivo'}
                 </Tag>
+            ),
+        },
+        {
+            title: 'Ubicación',
+            key: 'location',
+            render: (_: unknown, record: Customer) => (
+                <Tooltip
+                    title={record.has_location ? 'Ubicación confirmada' : 'Sin ubicación geográfica'}
+                >
+                    <EnvironmentOutlined
+                        style={{
+                            fontSize: 18,
+                            color: record.has_location ? '#093764' : '#d9d9d9',
+                        }}
+                    />
+                </Tooltip>
             ),
         },
         {
