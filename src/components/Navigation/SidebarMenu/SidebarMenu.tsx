@@ -12,6 +12,8 @@ import {
     Package,
     ArrowLeftRight,
     UsersRound,
+    Wallet,
+    ShoppingCart,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -106,6 +108,22 @@ const menuItems: MenuItem[] = [
         context: 'store',
         permission: 'store_users.view',
         feature: 'multi_user',
+    },
+    {
+        label: 'Ventas',
+        key: '/tienda/caja/parent',
+        icon: <ShoppingCart size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'cash',
+        permission: 'cash.view',
+        children: [
+            {
+                label: 'Caja',
+                key: '/tienda/caja',
+                icon: <Wallet size={ICON_SIZE} />,
+                context: 'store',
+            },
+        ],
     },
     {
         label: 'Categorías',

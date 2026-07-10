@@ -23,6 +23,7 @@ import { CommercialGroupsPage } from '@/pages/store/commercial-groups/Commercial
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
 import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
+import { CashPage } from '@/pages/store/cash';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -91,7 +92,7 @@ export const router = createBrowserRouter([
     // ── Tienda ────────────────────────────────────────
     {
         path: 'tienda',
-        element: <ProtectedRoute allowedRoles={['STORE_ADMIN']} />,
+        element: <ProtectedRoute allowedRoles={['STORE_ADMIN', 'STORE_USER']} />,
         children: [
             {
                 element: <AppLayout title="Mi Tienda" />,
@@ -138,6 +139,18 @@ export const router = createBrowserRouter([
                             {
                                 element: <PermissionRoute permission="commercial_groups.view" redirectTo="/tienda/dashboard" />,
                                 children: [{ path: 'clientes/grupos', element: <CommercialGroupsPage /> }],
+                            },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="cash" />,
+                        children: [
+                            {
+                                element: <PermissionRoute permission="cash.view" />,
+                                children: [
+                                    { path: 'caja', element: <CashPage /> },
+                                ],
                             },
                         ],
                     },

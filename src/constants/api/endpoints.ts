@@ -40,6 +40,11 @@ export const API_ENDPOINTS = {
             PROVINCE_LOCALITIES: (provinceId: string) =>
                 `/v1/catalogs/provinces/${provinceId}/localities`,
         },
+        CASH: {
+            CURRENT: { URL: '/v1/store/cash/current' },
+            OPEN: { URL: '/v1/store/cash/open' },
+            CLOSE: (cashSessionId: string) => `/v1/store/cash/${cashSessionId}/close`,
+        },
     },
     GEOCODING: {
         SEARCH: '/v1/geocoding/search',
