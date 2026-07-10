@@ -15,6 +15,7 @@ import {
     Phone,
     Contact,
     Globe,
+    Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
@@ -75,6 +76,8 @@ const formatPermissionName = (code: string): string => {
             create: 'Crear',
             edit: 'Editar',
             delete: 'Eliminar',
+            open: 'Abrir',
+            close: 'Cerrar',
         };
         return actionNames[action] ?? action;
     }
@@ -104,6 +107,7 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         customers: <Contact size={16} />,
         store_users: <User size={16} />,
         geography: <Globe size={16} />,
+        cash: <Wallet size={16} />,
     };
     return icons[resource] ?? <Key size={16} />;
 };
