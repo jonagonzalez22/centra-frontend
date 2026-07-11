@@ -9,8 +9,6 @@ import {
 describe('permissions.config', () => {
     describe('getPermissionContext', () => {
         test('devuelve store para permisos de tienda', () => {
-            expect(getPermissionContext('stores.view')).toBe('store');
-            expect(getPermissionContext('stores.edit')).toBe('store');
             expect(getPermissionContext('categories.create')).toBe('store');
             expect(getPermissionContext('products.list')).toBe('store');
             expect(getPermissionContext('pos.create')).toBe('store');
@@ -31,6 +29,8 @@ describe('permissions.config', () => {
             expect(getPermissionContext('backoffice_users.view')).toBe('admin');
             expect(getPermissionContext('users.view')).toBe('admin');
             expect(getPermissionContext('settings.edit')).toBe('admin');
+            expect(getPermissionContext('stores.view')).toBe('admin');
+            expect(getPermissionContext('stores.edit')).toBe('admin');
         });
 
         test('devuelve unknown para prefijos desconocidos', () => {
@@ -82,9 +82,9 @@ describe('permissions.config', () => {
                 'backoffice_users',
                 'users',
                 'settings',
+                'stores',
             ];
             const storePrefixes = [
-                'stores',
                 'categories',
                 'products',
                 'pos',
