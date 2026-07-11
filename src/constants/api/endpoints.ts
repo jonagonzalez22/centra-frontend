@@ -76,5 +76,8 @@ export const API_ENDPOINTS = {
         DASHBOARD: {
             URL: '/v1/admin/dashboard',
         },
+        PAYMENT_METHODS: {
+            URL: '/v1/admin/payment-methods',
+        },
     },
 } as const;

@@ -89,7 +89,7 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         stores: <Store size={16} />,
         users: <User size={16} />,
         backoffice_users: <User size={16} />,
-        plans: <CreditCard size={16} />,
+        plans: <Settings2 size={16} />,
         features: <Settings2 size={16} />,
         business_types: <Tag size={16} />,
         settings: <Settings size={16} />,
@@ -108,6 +108,7 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         store_users: <User size={16} />,
         geography: <Globe size={16} />,
         cash: <Wallet size={16} />,
+        payment_methods: <CreditCard size={16} />,
     };
     return icons[resource] ?? <Key size={16} />;
 };

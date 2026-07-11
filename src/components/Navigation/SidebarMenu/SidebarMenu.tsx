@@ -15,6 +15,7 @@ import {
     Wallet,
     ShoppingCart,
 } from 'lucide-react';
+import { CreditCardOutlined } from '@ant-design/icons';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
@@ -91,6 +92,12 @@ const menuItems: MenuItem[] = [
             {
                 label: 'Roles y Permisos',
                 key: '/admin/configuraciones/roles',
+                context: 'admin',
+            },
+            {
+                label: 'Medios de Pago',
+                key: '/admin/configuraciones/metodos-de-pago',
+                icon: <CreditCardOutlined />,
                 context: 'admin',
             },
         ],
@@ -197,7 +204,8 @@ function isChildOf(parentKey: string, childKey: string): boolean {
     if (childKey === parentKey) return true;
     if (childKey.startsWith(parentKey + '/')) return true;
     const baseKey = parentKey.replace(/\/parent$/, '');
-    if (baseKey !== parentKey && (childKey === baseKey || childKey.startsWith(baseKey + '/'))) return true;
+    if (baseKey !== parentKey && (childKey === baseKey || childKey.startsWith(baseKey + '/')))
+        return true;
     return false;
 }
 
@@ -246,9 +254,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     );
 
     useLayoutEffect(() => {
-        const relevantParents = submenuKeys.filter((key) =>
-            isChildOf(key, selectedKey)
-        );
+        const relevantParents = submenuKeys.filter((key) => isChildOf(key, selectedKey));
         if (relevantParents.length > 0) {
             import('react-dom').then(({ flushSync }) => {
                 flushSync(() => {

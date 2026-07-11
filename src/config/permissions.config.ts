@@ -9,7 +9,8 @@ export const PREFIX_TO_CONTEXT: Record<string, PermissionContext> = {
     backoffice_users: 'admin',
     users: 'admin',
     settings: 'admin',
-    stores: 'store',
+    payment_methods: 'admin',
+    stores: 'admin',
     store_users: 'store',
     categories: 'store',
     products: 'store',
@@ -50,6 +51,7 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     customers: 'Clientes',
     geography: 'Geografía',
     cash: 'Caja',
+    payment_methods: 'Métodos de Pago',
 };
 
 export const getPermissionContext = (permissionCode: string): PermissionContext => {
