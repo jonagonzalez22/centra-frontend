@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { CashService } from '@/features/store/cash/services/cash.service';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -7,7 +7,8 @@ import { OpenCashModal } from '@/features/store/cash/components/OpenCashModal';
 import { CloseCashModal } from '@/features/store/cash/components/CloseCashModal';
 
 export const CashPage = () => {
-    const { cash_session, setCashSession } = useAuthStore();
+    const { user, setCashSession } = useAuthStore();
+    const cashSession = user?.cash_session ?? null;
     const { can } = usePermissions();
     const [loading, setLoading] = useState(true);
     const [openModalOpen, setOpenModalOpen] = useState(false);
@@ -16,34 +17,37 @@ export const CashPage = () => {
     const canOpen = can('cash.open');
     const canClose = can('cash.close');
 
-    useEffect(() => {
-        const fetchCurrent = async () => {
-            setLoading(true);
-            try {
-                const session = await CashService.getCurrent();
-                setCashSession(session);
-            } catch {
-                setCashSession(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCurrent();
+    const refetch = useCallback(async () => {
+        setLoading(true);
+        try {
+            const session = await CashService.getCurrent();
+            setCashSession(session);
+        } catch {
+            setCashSession(null);
+        } finally {
+            setLoading(false);
+        }
     }, [setCashSession]);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
 
     const handleOpenSuccess = () => {
         setOpenModalOpen(false);
+        refetch();
     };
 
     const handleCloseSuccess = () => {
         setCloseModalOpen(false);
+        refetch();
     };
 
     return (
         <>
             <CashPageView
                 loading={loading}
-                cashSession={cash_session}
+                cashSession={cashSession}
                 canOpen={canOpen}
                 canClose={canClose}
                 onOpenCash={() => setOpenModalOpen(true)}
