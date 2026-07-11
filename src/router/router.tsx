@@ -12,6 +12,7 @@ import { PermissionRoute } from './PermissionRoute';
 import { FeatureRoute } from './FeatureRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
+import { PaymentMethodsPage } from '@/pages/admin/payment-methods/PaymentMethodsPage';
 import { FeaturesPage } from '@/pages/admin/settings/Feature/FeaturesPage';
 import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
                             {
                                 path: 'configuraciones/roles',
                                 element: <RolesPage />,
+                            },
+                            {
+                                path: 'configuraciones/metodos-de-pago',
+                                element: <PaymentMethodsPage />,
                             },
                         ],
                     },
