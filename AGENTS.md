@@ -168,6 +168,35 @@ semi: true, tabWidth: 4, printWidth: 100, singleQuote: true, trailingComma: "es5
 
 - `User.id` is `number` (not string like `Store.id`). API responses use `number` for user IDs.
 - `User.store_id` is `number | null`. Form payloads send `store_id` as `string` — the API handles conversion.
+- `User.cash_session` is `CashSession | null` — set automatically after open/close operations.
+
+## Cash Module
+
+Location: `src/features/store/cash/`, page at `src/pages/store/cash/`.
+
+- **Entity**: `CashSession` in `src/entities/CashSession.ts` — fields: `id`, `status` (`'open'` | `'closed'`), `opening_amount`, `real_amount`, `closing_amount`, `notes`, `opened_at`, `closed_at`, `opened_by`, `closed_by`.
+- **Service**: `CashService` in `services/cash.service.ts` — `getCurrent()` (GET), `open(data)` (POST), `close(cashSessionId, data)` (PATCH). Endpoints in `src/constants/api/endpoints.ts` under `STORE.CASH`.
+- **Hook**: `useCashSessionForm` in `hooks/useCashSessionForm.ts` — wraps API calls, updates Zustand store via `setCashSession`, and directly writes to `localStorage` key `centra-auth-storage` for immediate persistence (Zustand v5 persist middleware may not flush synchronously).
+- **CashSession lives inside `user` object** in the Zustand auth store (not as a separate store property). Updated via `setCashSession(session)` which does `set(state => ({ user: { ...state.user, cash_session: session } }))`.
+- **Page pattern**: Orchestrator `CashPage.tsx` fetches `CashService.getCurrent()` on mount via `useCallback` + `useEffect`, manages modal open/close state, checks `cash.view`/`cash.open`/`cash.close` permissions. Passes props to presentational `CashPageView.tsx`.
+- **Modals**: `OpenCashModal` (fields: `opening_amount`, `notes`) and `CloseCashModal` (fields: `real_amount`, `notes`). Both use `useCashSessionForm` hook with `onSuccess` callback that closes modal and triggers `refetch()`.
+- **Permissions**: Feature `'cash'` in `FeatureCode`, permissions `cash.view` (page access), `cash.open` (open button), `cash.close` (close button).
+- **Roles**: Available to `STORE_ADMIN` and `STORE_USER` roles. Route is under `/tienda/caja` with `FeatureRoute cash` and `PermissionRoute cash.view`.
+- **Sidebar**: "Ventas" (icon `ShoppingCart`) as parent → "Caja" (icon `Wallet`) as child item.
+- **localStorage**: Direct `localStorage.setItem` after `setCashSession` in the hook to guarantee persistence, since Zustand v5 persist may not write immediately. Key used: `centra-auth-storage`.
+
+Pattern:
+```tsx
+// Open cash
+const session = await CashService.open(data);
+setCashSession(session);
+persistCashSession(session); // direct localStorage write
+
+// Close cash
+const session = await CashService.close(cashSessionId, data);
+setCashSession(session);
+persistCashSession(session);
+```
 
 ## Environment
 

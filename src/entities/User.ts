@@ -33,5 +33,8 @@ export interface User {
     is_active: boolean;
     permissions: string[];
     features: FeatureFlag[];
+    cash_session?: CashSession | null;
     created_at?: string;
 }
+
+import type { CashSession } from './CashSession';

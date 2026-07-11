@@ -3,6 +3,7 @@ import { message } from 'antd';
 import { CashService } from '../services/cash.service';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import type { CashSession } from '@/entities/CashSession';
 
 interface UseCashSessionFormReturn {
     loading: boolean;
@@ -15,12 +16,27 @@ interface UseCashSessionFormOptions {
     onError?: (errors: Record<string, string[]>) => void;
 }
 
+function persistCashSession(session: CashSession | null): void {
+    const raw = localStorage.getItem('centra-auth-storage');
+    if (!raw) return;
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.state?.user) {
+            parsed.state.user.cash_session = session;
+            localStorage.setItem('centra-auth-storage', JSON.stringify(parsed));
+        }
+    } catch {
+        /* ignore parse errors */
+    }
+}
+
 export const useCashSessionForm = (
     options?: UseCashSessionFormOptions
 ): UseCashSessionFormReturn => {
     const { onSuccess, onError } = options ?? {};
     const [loading, setLoading] = useState(false);
-    const { cash_session, setCashSession } = useAuthStore();
+    const { user, setCashSession } = useAuthStore();
+    const cashSession = user?.cash_session ?? null;
 
     const openCashSession = useCallback(
         async (data: { opening_amount: number; notes?: string }) => {
@@ -28,6 +44,7 @@ export const useCashSessionForm = (
             try {
                 const session = await CashService.open(data);
                 setCashSession(session);
+                persistCashSession(session);
                 message.success('Caja abierta correctamente.');
                 onSuccess?.();
             } catch (err) {
@@ -48,14 +65,15 @@ export const useCashSessionForm = (
 
     const closeCashSession = useCallback(
         async (data: { real_amount: number; notes?: string }) => {
-            if (!cash_session?.id) {
+            if (!cashSession?.id) {
                 message.error('No hay una sesión de caja activa.');
                 return;
             }
             setLoading(true);
             try {
-                const session = await CashService.close(cash_session.id, data);
+                const session = await CashService.close(cashSession.id, data);
                 setCashSession(session);
+                persistCashSession(session);
                 message.success('Caja cerrada correctamente.');
                 onSuccess?.();
             } catch (err) {
@@ -71,7 +89,7 @@ export const useCashSessionForm = (
                 setLoading(false);
             }
         },
-        [onSuccess, onError, setCashSession, cash_session]
+        [onSuccess, onError, setCashSession, cashSession]
     );
 
     return { loading, openCashSession, closeCashSession };
