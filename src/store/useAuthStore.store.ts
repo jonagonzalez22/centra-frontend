@@ -1,4 +1,5 @@
 import { User } from '@/entities/User';
+import type { CashSession } from '@/entities/CashSession';
 import { authService } from '@/features/auth/services/auth.service';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -8,8 +9,10 @@ interface AuthState {
     user: User | null;
     token: string | null;
     loading: boolean;
+    cash_session: CashSession | null;
     logIn: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    setCashSession: (session: CashSession | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -19,6 +22,8 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             token: null,
             loading: false,
+            cash_session: null,
+            setCashSession: (session) => set({ cash_session: session }),
             logIn: async (email, password) => {
                 try {
                     set({ loading: true });
@@ -54,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
                     token: state.token,
                     user: state.user,
                     isAuthenticated: state.isAuthenticated,
+                    cash_session: state.cash_session,
                 };
             },
         }

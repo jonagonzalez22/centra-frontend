@@ -23,6 +23,7 @@ export const PREFIX_TO_CONTEXT: Record<string, PermissionContext> = {
     customer_contacts: 'store',
     customers: 'store',
     geography: 'store',
+    cash: 'store',
 };
 
 export const MODULE_DISPLAY_NAMES: Record<string, string> = {
@@ -48,6 +49,7 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     customer_contacts: 'Contactos de Clientes',
     customers: 'Clientes',
     geography: 'Geografía',
+    cash: 'Caja',
 };
 
 export const getPermissionContext = (permissionCode: string): PermissionContext => {
