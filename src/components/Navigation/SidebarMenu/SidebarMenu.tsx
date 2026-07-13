@@ -15,7 +15,6 @@ import {
     Wallet,
     ShoppingCart,
 } from 'lucide-react';
-import { CreditCardOutlined } from '@ant-design/icons';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
@@ -97,7 +96,6 @@ const menuItems: MenuItem[] = [
             {
                 label: 'Medios de Pago',
                 key: '/admin/configuraciones/metodos-de-pago',
-                icon: <CreditCardOutlined />,
                 context: 'admin',
             },
         ],
@@ -171,6 +169,22 @@ const menuItems: MenuItem[] = [
                 key: '/tienda/clientes/grupos',
                 context: 'store',
                 permission: 'commercial_groups.view',
+            },
+        ],
+    },
+    {
+        label: 'Configuraciones',
+        key: '/tienda/configuraciones/parent',
+        icon: <Settings size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'store_settings',
+        children: [
+            {
+                label: 'Medios de pago',
+                key: '/tienda/configuraciones/medios-de-pago',
+                context: 'store',
+                feature: 'store_settings',
+                permission: 'store_payment_methods.view',
             },
         ],
     },

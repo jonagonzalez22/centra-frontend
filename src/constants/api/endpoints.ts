@@ -45,6 +45,10 @@ export const API_ENDPOINTS = {
             OPEN: { URL: '/v1/store/cash/open' },
             CLOSE: (cashSessionId: string) => `/v1/store/cash/${cashSessionId}/close`,
         },
+        PAYMENT_METHODS: {
+            LIST: { URL: '/v1/store/payment-methods' },
+            UPDATE: (paymentMethodId: string) => `/v1/store/payment-methods/${paymentMethodId}`,
+        },
     },
     GEOCODING: {
         SEARCH: '/v1/geocoding/search',

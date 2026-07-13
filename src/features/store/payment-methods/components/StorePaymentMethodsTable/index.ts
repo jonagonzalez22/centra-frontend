@@ -1,0 +1,1 @@
+export { StorePaymentMethodsTable } from './StorePaymentMethodsTable';
