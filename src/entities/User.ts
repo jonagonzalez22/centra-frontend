@@ -10,7 +10,8 @@ export type FeatureCode =
     | 'stores'
     | 'categories'
     | 'customers'
-    | 'cash';
+    | 'cash'
+    | 'store_settings';
 
 export interface FeatureFlag {
     code: FeatureCode;

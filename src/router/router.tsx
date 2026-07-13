@@ -25,6 +25,7 @@ import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
 import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
 import { CashPage } from '@/pages/store/cash';
+import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -155,6 +156,21 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="cash.view" />,
                                 children: [
                                     { path: 'caja', element: <CashPage /> },
+                                ],
+                            },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="store_settings" />,
+                        children: [
+                            {
+                                element: <PermissionRoute permission="store_payment_methods.view" />,
+                                children: [
+                                    {
+                                        path: 'configuraciones/medios-de-pago',
+                                        element: <StorePaymentMethodsPage />,
+                                    },
                                 ],
                             },
                         ],
