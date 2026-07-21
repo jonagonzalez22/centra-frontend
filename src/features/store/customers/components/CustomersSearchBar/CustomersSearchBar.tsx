@@ -15,7 +15,7 @@ interface CustomersSearchBarProps {
 }
 
 interface SearchFormValues {
-    search_text?: string;
+    search?: string;
     status?: 'active' | 'inactive';
     commercial_group_id?: string;
     location_status?: 'all' | 'with_location' | 'without_location';
@@ -29,7 +29,7 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
 }) => {
     const [form] = Form.useForm();
 
-    const searchTextValue = Form.useWatch('search_text', form);
+    const searchTextValue = Form.useWatch('search', form);
     const statusValue = Form.useWatch('status', form);
     const groupValue = Form.useWatch('commercial_group_id', form);
     const locationStatusValue = Form.useWatch('location_status', form);
@@ -38,7 +38,7 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
 
     const buildFilters = useCallback((values: SearchFormValues): CustomersFilters => {
         const filters: CustomersFilters = {};
-        if (values.search_text) filters.search_text = values.search_text;
+        if (values.search) filters.search = values.search;
         if (values.status) filters.status = values.status;
         if (values.commercial_group_id) filters.commercial_group_id = values.commercial_group_id;
         if (values.location_status) filters.location_status = values.location_status;
@@ -48,7 +48,7 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
     const debouncedRefetch = useMemo(
         () =>
             debounce((values: SearchFormValues) => {
-                const hasFilters = !!(values.search_text || values.status || values.commercial_group_id || values.location_status);
+                const hasFilters = !!(values.search || values.status || values.commercial_group_id || values.location_status);
 
                 if (!hasFilters) {
                     refetch({});
@@ -99,7 +99,7 @@ export const CustomersSearchBar: React.FC<CustomersSearchBarProps> = ({
             <div className="flex flex-wrap items-start gap-3">
                 <div className="min-w-[200px]">
                     <InputField
-                        name="search_text"
+                        name="search"
                         label="Búsqueda"
                         placeholder="Buscar por nombre o código"
                         allowClear

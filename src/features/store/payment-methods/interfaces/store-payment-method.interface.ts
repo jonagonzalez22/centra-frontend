@@ -8,6 +8,7 @@ export interface AccountDetails {
 
 export interface StorePaymentMethod {
     id: string;
+    store_payment_method_id: string | null;
     name: string;
     code: string;
     icon: string | null;

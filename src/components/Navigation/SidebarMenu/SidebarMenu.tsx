@@ -14,6 +14,7 @@ import {
     UsersRound,
     Wallet,
     ShoppingCart,
+    PlusCircle,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -116,17 +117,25 @@ const menuItems: MenuItem[] = [
     },
     {
         label: 'Ventas',
-        key: '/tienda/caja/parent',
+        key: '/tienda/ventas/parent',
         icon: <ShoppingCart size={ICON_SIZE} />,
         context: 'store',
-        feature: 'cash',
-        permission: 'cash.view',
         children: [
             {
                 label: 'Caja',
                 key: '/tienda/caja',
                 icon: <Wallet size={ICON_SIZE} />,
                 context: 'store',
+                feature: 'cash',
+                permission: 'cash.view',
+            },
+            {
+                label: 'Punto de Venta',
+                key: '/tienda/ventas/pos',
+                icon: <PlusCircle size={ICON_SIZE} />,
+                context: 'store',
+                feature: 'pos',
+                permission: 'pos.view',
             },
         ],
     },

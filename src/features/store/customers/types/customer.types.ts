@@ -67,7 +67,7 @@ export interface CustomersListResponse {
 }
 
 export interface CustomersFilters {
-    search_text?: string;
+    search?: string;
     page?: number;
     per_page?: number;
     status?: 'active' | 'inactive';

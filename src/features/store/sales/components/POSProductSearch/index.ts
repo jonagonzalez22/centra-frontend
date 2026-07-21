@@ -1,0 +1,1 @@
+export { POSProductSearch } from './POSProductSearch';

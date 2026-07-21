@@ -49,6 +49,9 @@ export const API_ENDPOINTS = {
             LIST: { URL: '/v1/store/payment-methods' },
             UPDATE: (paymentMethodId: string) => `/v1/store/payment-methods/${paymentMethodId}`,
         },
+        OPERATIONS: {
+            URL: '/v1/store/operations',
+        },
     },
     GEOCODING: {
         SEARCH: '/v1/geocoding/search',
