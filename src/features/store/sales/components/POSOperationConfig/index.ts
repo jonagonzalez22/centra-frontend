@@ -1,0 +1,1 @@
+export { POSOperationConfig } from './POSOperationConfig';

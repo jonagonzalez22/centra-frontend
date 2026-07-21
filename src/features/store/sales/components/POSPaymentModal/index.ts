@@ -1,0 +1,1 @@
+export { POSPaymentModal } from './POSPaymentModal';
