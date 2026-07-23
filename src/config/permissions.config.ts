@@ -25,6 +25,8 @@ export const PREFIX_TO_CONTEXT: Record<string, PermissionContext> = {
     customers: 'store',
     geography: 'store',
     cash: 'store',
+    orders: 'store',
+    store_payment_methods: 'store',
 };
 
 export const MODULE_DISPLAY_NAMES: Record<string, string> = {
@@ -52,6 +54,8 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     geography: 'Geografía',
     cash: 'Caja',
     payment_methods: 'Métodos de Pago',
+    orders: 'Pedidos',
+    store_payment_methods: 'Métodos de Pago de Tienda',
 };
 
 export const getPermissionContext = (permissionCode: string): PermissionContext => {

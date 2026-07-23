@@ -15,6 +15,7 @@ import {
     Wallet,
     ShoppingCart,
     PlusCircle,
+    ClipboardList,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -136,6 +137,14 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'pos',
                 permission: 'pos.view',
+            },
+            {
+                label: 'Pedidos',
+                key: '/tienda/ventas/pedidos',
+                icon: <ClipboardList size={ICON_SIZE} />,
+                context: 'store',
+                feature: 'pos',
+                permission: 'orders.view',
             },
         ],
     },

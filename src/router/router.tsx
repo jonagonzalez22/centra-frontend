@@ -26,6 +26,7 @@ import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovemen
 import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
 import { CashPage } from '@/pages/store/cash';
 import { POSPage } from '@/pages/store/sales';
+import { OrdersPage } from '@/pages/store/orders';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 
 export const router = createBrowserRouter([
@@ -172,6 +173,12 @@ export const router = createBrowserRouter([
                                         path: 'ventas/pos',
                                         element: <POSPage />,
                                     },
+                                ],
+                            },
+                            {
+                                element: <PermissionRoute permission="orders.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'ventas/pedidos', element: <OrdersPage /> },
                                 ],
                             },
                         ],

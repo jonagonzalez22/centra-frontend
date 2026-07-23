@@ -21,11 +21,11 @@ CI order: `tsc --noEmit` → `lint` → `test`. All three must pass before merge
 - **React 19 + TypeScript 5.9 + Vite 7** SPA with Ant Design 6 for UI and Tailwind CSS for utility styles.
 - **Zustand 5** for state; auth store uses `persist` middleware writing to `localStorage` key `centra-auth-storage`.
 - **Axios** instance at `src/api/api.config.ts` reads `VITE_API_URL` from env. Request interceptor injects JWT from the persisted auth store; 401 responses clear storage.
-- **Role-based routing** in `src/router/router.tsx`. Two roles: `SUPER_ADMIN` (→ `/admin`), `STORE_ADMIN` (→ `/tienda`). `ProtectedRoute` gates by role. Role config lives in `src/router/roles.config.ts`.
+- **Role-based routing** in `src/router/router.tsx`. Four roles: `SUPER_ADMIN` + `BACKOFFICE_USER` (→ `/admin`), `STORE_ADMIN` + `STORE_USER` (→ `/tienda`). `ProtectedRoute` gates by role. Role config lives in `src/router/roles.config.ts`.
+- **Feature gates**: `FeatureRoute` checks `user.features` (plan-based, e.g. `pos`, `cash`). **Permission gates**: `PermissionRoute` checks `user.permissions` (role-based, e.g. `users.view`). Both render `<Outlet />` or redirect.
+- **Conditional rendering**: `CanDo` (from `@/components/auth/CanDo`) wraps elements by permission string for inline use. Use `usePermissions()` hook for programmatic checks.
 
 ## Path Aliases
-
-Configured in both `vite.config.ts` and `tsconfig.json`:
 
 | Alias | Maps to |
 |---|---|
@@ -33,6 +33,8 @@ Configured in both `vite.config.ts` and `tsconfig.json`:
 | `@features/` | `src/features/` |
 | `@components/` | `src/components/` |
 | `@shared/` | `src/shared/` |
+
+`@/`, `@features/`, and `@components/` are configured in both `vite.config.ts` and `tsconfig.json`. `@shared/` is only in `vite.config.ts` — `tsc --noEmit` will fail on `@shared/` imports.
 
 ## File Conventions
 
@@ -150,7 +152,7 @@ Integration: Modal lives in the parent component alongside the table. Parent man
 ## Prettier
 
 ```
-semi: true, tabWidth: 4, printWidth: 100, singleQuote: true, trailingComma: "es5"
+semi: true, tabWidth: 4, printWidth: 100, singleQuote: true, trailingComma: "es5", bracketSpacing: true
 ```
 
 ## Design System
@@ -174,8 +176,8 @@ semi: true, tabWidth: 4, printWidth: 100, singleQuote: true, trailingComma: "es5
 
 Location: `src/features/store/cash/`, page at `src/pages/store/cash/`.
 
-- **Entity**: `CashSession` in `src/entities/CashSession.ts` — fields: `id`, `status` (`'open'` | `'closed'`), `opening_amount`, `real_amount`, `closing_amount`, `notes`, `opened_at`, `closed_at`, `opened_by`, `closed_by`.
-- **Service**: `CashService` in `services/cash.service.ts` — `getCurrent()` (GET), `open(data)` (POST), `close(cashSessionId, data)` (PATCH). Endpoints in `src/constants/api/endpoints.ts` under `STORE.CASH`.
+- **Entity**: `CashSession` in `src/entities/CashSession.ts` — fields: `id`, `status` (`'open'` | `'closed'`), `opening_amount`, `expected_amount`, `notes`, `opened_at`, `closed_at`.
+- **Service**: `CashService` in `services/cash.service.ts` — `getCurrent()` (GET), `open(data)` (POST), `close(cashSessionId, data)` (POST). Endpoints in `src/constants/api/endpoints.ts` under `STORE.CASH`.
 - **Hook**: `useCashSessionForm` in `hooks/useCashSessionForm.ts` — wraps API calls, updates Zustand store via `setCashSession`, and directly writes to `localStorage` key `centra-auth-storage` for immediate persistence (Zustand v5 persist middleware may not flush synchronously).
 - **CashSession lives inside `user` object** in the Zustand auth store (not as a separate store property). Updated via `setCashSession(session)` which does `set(state => ({ user: { ...state.user, cash_session: session } }))`.
 - **Page pattern**: Orchestrator `CashPage.tsx` fetches `CashService.getCurrent()` on mount via `useCallback` + `useEffect`, manages modal open/close state, checks `cash.view`/`cash.open`/`cash.close` permissions. Passes props to presentational `CashPageView.tsx`.
@@ -197,6 +199,33 @@ const session = await CashService.close(cashSessionId, data);
 setCashSession(session);
 persistCashSession(session);
 ```
+
+## Products Module — Context + Provider Pattern
+
+Products uses a shared state pattern with Context + Provider:
+- `ProductsContext.tsx` — creates context holding `UseProductsReturn`
+- `ProductsProvider.tsx` — provides the context to the component tree
+- `useProductsContext.ts` — hook to consume the context (throws if used outside provider)
+- `ProductsPage.tsx` — creates the hook value (`useProducts()`) and wraps children in `ProductsProvider`
+- `ProductsTable.tsx`, `ProductsSearchBar.tsx`, etc. — consume via `useProductsContext()`
+
+This pattern is used when multiple sibling components need the same state. For simpler cases, just use the hook directly.
+
+## Sales Module (In Development)
+
+Feature code: `sales`. Permissions: `sales.view`, `sales.create`, `sales.edit`, `sales.delete`.
+
+Backend:
+- `Sale` model + `SaleItem` model (pending creation)
+- `SaleController` in `app/Http/Controllers/Api/V1/Store/`
+- `SaleService` to handle transactional stock operations
+- `InventoryMovement` types to add: `sale`, `sale_return`, `reserve`, `reserve_release`
+- Stock flow: check `available_stock` before sale → `recordMovement(product, ..., 'sale', qty, ...)` to decrement
+- For reservations: increment `stock_reserved`, not `stock`
+
+Frontend:
+- `src/features/store/sales/` (to be created)
+- Pattern mirrors Products: `services/sales.service.ts`, `hooks/useSales.ts`, `hooks/useSaleForm.ts`, `components/SalesTable/`, `pages/SalesPage/`
 
 ## Environment
 

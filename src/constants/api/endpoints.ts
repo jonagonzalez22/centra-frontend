@@ -52,6 +52,9 @@ export const API_ENDPOINTS = {
         OPERATIONS: {
             URL: '/v1/store/operations',
         },
+        ORDERS: {
+            URL: '/v1/store/orders',
+        },
     },
     GEOCODING: {
         SEARCH: '/v1/geocoding/search',

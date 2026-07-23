@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { message, Spin } from 'antd';
-import { Shield, Store, User as UserIcon, Package, Tag, Key } from 'lucide-react';
+import { Shield, Store, User as UserIcon, Package, Tag, ShoppingCart, Truck, Wallet, ClipboardList, CreditCard, Globe, Settings, UsersRound } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
 import { Checkbox } from '@/components/Checkbox';
@@ -33,10 +33,16 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
     Categorías: <Tag size={16} />,
     Usuarios: <UserIcon size={16} />,
     Tiendas: <Store size={16} />,
-    'Punto de Venta': <Key size={16} />,
-    Ventas: <Key size={16} />,
+    'Punto de Venta': <ShoppingCart size={16} />,
+    Ventas: <ShoppingCart size={16} />,
+    Pedidos: <ClipboardList size={16} />,
     Clientes: <UserIcon size={16} />,
-    Deliveries: <Package size={16} />,
+    Deliveries: <Truck size={16} />,
+    Caja: <Wallet size={16} />,
+    'Medios de pago': <CreditCard size={16} />,
+    'Grupos Comerciales': <UsersRound size={16} />,
+    Geografía: <Globe size={16} />,
+    Configuraciones: <Settings size={16} />,
 };
 
 const getGroupIcon = (groupName: string): React.ReactNode => {
