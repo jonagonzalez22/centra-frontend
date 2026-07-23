@@ -70,4 +70,25 @@ export const OrdersService = {
 
         return data.data;
     },
+
+    reschedule: async (
+        id: string,
+        payload: { new_date: string; reason: string; observation?: string }
+    ): Promise<OrderDetail> => {
+        const { data } = await api.put<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.RESCHEDULE(id),
+            payload
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
 };
