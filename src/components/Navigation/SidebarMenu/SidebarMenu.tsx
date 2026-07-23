@@ -12,9 +12,7 @@ import {
     Package,
     ArrowLeftRight,
     UsersRound,
-    Wallet,
     ShoppingCart,
-    PlusCircle,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -124,7 +122,6 @@ const menuItems: MenuItem[] = [
             {
                 label: 'Caja',
                 key: '/tienda/caja',
-                icon: <Wallet size={ICON_SIZE} />,
                 context: 'store',
                 feature: 'cash',
                 permission: 'cash.view',
@@ -132,10 +129,16 @@ const menuItems: MenuItem[] = [
             {
                 label: 'Punto de Venta',
                 key: '/tienda/ventas/pos',
-                icon: <PlusCircle size={ICON_SIZE} />,
                 context: 'store',
                 feature: 'pos',
                 permission: 'pos.view',
+            },
+            {
+                label: 'Pedidos',
+                key: '/tienda/ventas/pedidos',
+                context: 'store',
+                feature: 'pos',
+                permission: 'orders.view',
             },
         ],
     },

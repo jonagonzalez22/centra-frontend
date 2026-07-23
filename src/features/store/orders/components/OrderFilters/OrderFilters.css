@@ -1,0 +1,19 @@
+.orderFilters {
+    @apply mb-6;
+}
+
+.orderFiltersRow {
+    @apply flex flex-wrap items-end gap-3;
+}
+
+.orderFiltersRow > .ant-form-item {
+    @apply mb-0 min-w-[180px];
+}
+
+.orderFiltersRow > .ant-picker {
+    @apply mb-0 min-w-[180px];
+}
+
+.orderFiltersActions {
+    @apply flex gap-2 items-end;
+}
