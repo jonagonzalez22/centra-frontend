@@ -84,4 +84,17 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
     closeDrawer: () => {
         set({ drawerOpen: false, selectedOrder: null });
     },
+
+    rescheduleOrder: async (id, payload) => {
+        try {
+            const updated = await OrdersService.reschedule(id, payload);
+            set({ selectedOrder: updated });
+            message.success('Pedido reprogramado exitosamente.');
+            get().fetchOrders();
+        } catch (err) {
+            const apiError = err as { message?: string };
+            message.error(apiError.message || 'Error al reprogramar el pedido.');
+            throw err;
+        }
+    },
 }));

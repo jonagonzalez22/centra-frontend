@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { Descriptions, Dropdown, Spin, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import Drawer from '@/components/Drawer/Drawer';
 import Tabs from '@/components/Tabs/Tabs';
 import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import { OrderStatusBadge } from '../OrderStatusBadge';
+import { RescheduleModal } from '../RescheduleModal';
+import { useOrdersStore } from '../../stores/useOrdersStore';
 import OrderDrawerItems from './OrderDrawerItems';
 import OrderDrawerPayments from './OrderDrawerPayments';
 import OrderDrawerHistory from './OrderDrawerHistory';
@@ -20,16 +24,55 @@ interface OrderDrawerProps {
 
 const TAB_CONTENT_MAX_HEIGHT = 'calc(100vh - 180px)';
 
+const isReschedulable = (status: string): boolean =>
+    status === 'open' || status === 'confirmed';
+
 const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose }) => {
+    const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
+    const [rescheduleOpen, setRescheduleOpen] = useState(false);
+    const [rescheduling, setRescheduling] = useState(false);
+
+    const handleReschedule = async (values: {
+        new_date: string;
+        reason: string;
+        observation?: string;
+    }) => {
+        if (!order) return;
+        setRescheduling(true);
+        try {
+            await rescheduleOrder(order.id, values);
+            setRescheduleOpen(false);
+        } catch {
+            // Error ya manejado en el store
+        } finally {
+            setRescheduling(false);
+        }
+    };
+
+    const canReschedule = order && isReschedulable(order.status);
+
     const actionMenuItems: MenuProps['items'] = [
         {
             key: 'reschedule',
-            label: (
-                <Tooltip title="Próximamente">
+            label: canReschedule ? (
+                <CanDo permission="orders.edit" fallback={
+                    <Tooltip title="No tenés permisos para reprogramar">
+                        <span className="text-gray-400">Reprogramar fecha</span>
+                    </Tooltip>
+                }>
+                    <span>Reprogramar fecha</span>
+                </CanDo>
+            ) : (
+                <Tooltip title="Solo pedidos activos">
                     <span className="text-gray-400">Reprogramar fecha</span>
                 </Tooltip>
             ),
-            disabled: true,
+            disabled: !canReschedule,
+            onClick: () => {
+                if (canReschedule) {
+                    setRescheduleOpen(true);
+                }
+            },
         },
         {
             key: 'cancel',
@@ -180,23 +223,33 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
     ];
 
     return (
-        <Drawer
-            open={open}
-            onClose={onClose}
-            title={order ? order.operation_number : 'Pedido'}
-            width={520}
-            loading={loading}
-            footer={footer}
-            extra={order ? <OrderStatusBadge status={order.status} /> : null}
-        >
-            {loading && !order ? (
-                <div className="flex justify-center py-16">
-                    <Spin size="large" />
-                </div>
-            ) : !order ? null : (
-                <Tabs items={buildTabItems(order)} defaultActiveKey="detail" />
-            )}
-        </Drawer>
+        <>
+            <Drawer
+                open={open}
+                onClose={onClose}
+                title={order ? order.operation_number : 'Pedido'}
+                width={520}
+                loading={loading}
+                footer={footer}
+                extra={order ? <OrderStatusBadge status={order.status} /> : null}
+            >
+                {loading && !order ? (
+                    <div className="flex justify-center py-16">
+                        <Spin size="large" />
+                    </div>
+                ) : !order ? null : (
+                    <Tabs items={buildTabItems(order)} defaultActiveKey="detail" />
+                )}
+            </Drawer>
+
+            <RescheduleModal
+                open={rescheduleOpen}
+                currentDate={order?.requested_delivery_date ?? null}
+                loading={rescheduling}
+                onConfirm={handleReschedule}
+                onClose={() => setRescheduleOpen(false)}
+            />
+        </>
     );
 };
 
