@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
         ORDERS: {
             URL: '/v1/store/orders',
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
+            CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
         },
     },
     GEOCODING: {
