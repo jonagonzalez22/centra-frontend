@@ -28,6 +28,7 @@ import { CashPage } from '@/pages/store/cash';
 import { POSPage } from '@/pages/store/sales';
 import { OrdersPage } from '@/pages/store/orders';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
+import { StoreDashboardPage } from '@/pages/store/dashboard';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -106,14 +107,29 @@ export const router = createBrowserRouter([
                 element: <AppLayout title="Mi Tienda" />,
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
-                    { path: 'dashboard', element: <div>Admin</div> },
+                    { path: 'dashboard', element: <StoreDashboardPage /> },
 
                     {
                         element: <FeatureRoute feature="inventory" />,
                         children: [
-                            { path: 'productos', element: <ProductsPage /> },
-                            { path: 'inventario/movimientos', element: <InventoryMovementsPage /> },
-                            { path: 'categorias', element: <CategoriesPage /> },
+                            {
+                                element: <PermissionRoute permission="inventory.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'productos', element: <ProductsPage /> },
+                                ],
+                            },
+                            {
+                                element: <PermissionRoute permission="inventory.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'inventario/movimientos', element: <InventoryMovementsPage /> },
+                                ],
+                            },
+                            {
+                                element: <PermissionRoute permission="categories.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'categorias', element: <CategoriesPage /> },
+                                ],
+                            },
                         ],
                     },
 

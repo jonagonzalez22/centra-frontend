@@ -148,6 +148,7 @@ const menuItems: MenuItem[] = [
         icon: <FolderTree size={ICON_SIZE} />,
         context: 'store',
         feature: 'categories',
+        permission: 'categories.view',
     },
     {
         label: 'Inventario',
@@ -155,6 +156,7 @@ const menuItems: MenuItem[] = [
         icon: <Package size={ICON_SIZE} />,
         context: 'store',
         feature: 'inventory',
+        permission: 'inventory.view',
     },
     {
         label: 'Movimientos',
@@ -175,6 +177,7 @@ const menuItems: MenuItem[] = [
                 label: 'Listado',
                 key: '/tienda/clientes',
                 context: 'store',
+                permission: 'customers.view',
             },
             {
                 label: 'Grupos Comerciales',
