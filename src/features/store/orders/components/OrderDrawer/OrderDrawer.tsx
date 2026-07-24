@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Descriptions, Dropdown, Spin, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import Drawer from '@/components/Drawer/Drawer';
 import Tabs from '@/components/Tabs/Tabs';
 import { Button } from '@/components/Button';
-import { CanDo } from '@/components/auth/CanDo';
+import { usePermissions } from '@/hooks/usePermissions';
 import { OrderStatusBadge } from '../OrderStatusBadge';
 import { RescheduleModal } from '../RescheduleModal';
+import { OrderCancellationModal } from '../OrderCancellationModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import OrderDrawerItems from './OrderDrawerItems';
 import OrderDrawerPayments from './OrderDrawerPayments';
@@ -27,10 +28,18 @@ const TAB_CONTENT_MAX_HEIGHT = 'calc(100vh - 180px)';
 const isReschedulable = (status: string): boolean =>
     status === 'open' || status === 'confirmed';
 
+const isCancellable = (status: string): boolean => status === 'open';
+
 const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose }) => {
+    const { can } = usePermissions();
+    const canEdit = can('orders.edit');
+
     const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
+    const cancelOrder = useOrdersStore((s) => s.cancelOrder);
     const [rescheduleOpen, setRescheduleOpen] = useState(false);
+    const [cancelOpen, setCancelOpen] = useState(false);
     const [rescheduling, setRescheduling] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     const handleReschedule = async (values: {
         new_date: string;
@@ -49,41 +58,68 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
     };
 
-    const canReschedule = order && isReschedulable(order.status);
+    const handleCancel = async (values: {
+        reason_code: string;
+        reason_note?: string;
+    }) => {
+        if (!order) return;
+        setCancelling(true);
+        try {
+            await cancelOrder(order.id, values);
+            setCancelOpen(false);
+        } catch {
+            // Error ya manejado en el store
+        } finally {
+            setCancelling(false);
+        }
+    };
 
-    const actionMenuItems: MenuProps['items'] = [
-        {
-            key: 'reschedule',
-            label: canReschedule ? (
-                <CanDo permission="orders.edit" fallback={
-                    <Tooltip title="No tenés permisos para reprogramar">
+    const canReschedule = order && isReschedulable(order.status);
+    const canCancel = order && isCancellable(order.status);
+
+    const actionMenuItems: MenuProps['items'] = useMemo(() => {
+        const items: MenuProps['items'] = [];
+
+        if (canEdit) {
+            items.push({
+                key: 'reschedule',
+                label: canReschedule ? (
+                    <span>Reprogramar fecha</span>
+                ) : (
+                    <Tooltip title="Solo pedidos activos">
                         <span className="text-gray-400">Reprogramar fecha</span>
                     </Tooltip>
-                }>
-                    <span>Reprogramar fecha</span>
-                </CanDo>
-            ) : (
-                <Tooltip title="Solo pedidos activos">
-                    <span className="text-gray-400">Reprogramar fecha</span>
-                </Tooltip>
-            ),
-            disabled: !canReschedule,
-            onClick: () => {
-                if (canReschedule) {
-                    setRescheduleOpen(true);
-                }
-            },
-        },
-        {
-            key: 'cancel',
-            label: (
-                <Tooltip title="Próximamente">
-                    <span className="text-gray-400">Cancelar pedido</span>
-                </Tooltip>
-            ),
-            disabled: true,
-        },
-    ];
+                ),
+                disabled: !canReschedule,
+                onClick: () => {
+                    if (canReschedule) {
+                        setRescheduleOpen(true);
+                    }
+                },
+            });
+        }
+
+        if (canEdit) {
+            items.push({
+                key: 'cancel',
+                label: canCancel ? (
+                    <span className="text-red-600">Cancelar pedido</span>
+                ) : (
+                    <Tooltip title="Solo pedidos abiertos">
+                        <span className="text-gray-400">Cancelar pedido</span>
+                    </Tooltip>
+                ),
+                disabled: !canCancel,
+                onClick: () => {
+                    if (canCancel) {
+                        setCancelOpen(true);
+                    }
+                },
+            });
+        }
+
+        return items;
+    }, [canEdit, canReschedule, canCancel]);
 
     const footer = (
         <div className="flex justify-between">
@@ -248,6 +284,14 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 loading={rescheduling}
                 onConfirm={handleReschedule}
                 onClose={() => setRescheduleOpen(false)}
+            />
+
+            <OrderCancellationModal
+                open={cancelOpen}
+                order={order}
+                loading={cancelling}
+                onConfirm={handleCancel}
+                onClose={() => setCancelOpen(false)}
             />
         </>
     );

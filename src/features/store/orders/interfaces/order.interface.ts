@@ -133,4 +133,5 @@ export interface OrdersState {
     openDrawer: (id: string) => Promise<void>;
     closeDrawer: () => void;
     rescheduleOrder: (id: string, payload: { new_date: string; reason: string; observation?: string }) => Promise<void>;
+    cancelOrder: (id: string, payload: { reason_code: string; reason_note?: string }) => Promise<void>;
 }

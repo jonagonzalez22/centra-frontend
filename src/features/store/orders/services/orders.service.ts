@@ -91,4 +91,25 @@ export const OrdersService = {
 
         return data.data;
     },
+
+    cancel: async (
+        id: string,
+        payload: { reason_code: string; reason_note?: string }
+    ): Promise<OrderDetail> => {
+        const { data } = await api.put<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.CANCEL(id),
+            payload
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
 };

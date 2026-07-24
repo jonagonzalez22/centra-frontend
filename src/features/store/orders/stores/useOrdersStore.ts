@@ -97,4 +97,17 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
             throw err;
         }
     },
+
+    cancelOrder: async (id, payload) => {
+        try {
+            const updated = await OrdersService.cancel(id, payload);
+            set({ selectedOrder: updated });
+            message.success('Pedido cancelado exitosamente.');
+            get().fetchOrders();
+        } catch (err) {
+            const apiError = err as { message?: string };
+            message.error(apiError.message || 'Error al cancelar el pedido.');
+            throw err;
+        }
+    },
 }));
