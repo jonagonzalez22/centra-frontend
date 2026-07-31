@@ -5,7 +5,7 @@ import type { OrderFilters, OrdersState } from '../interfaces/order.interface';
 
 const INITIAL_FILTERS: OrderFilters = {
     date: null,
-    status: 'open,confirmed',
+    status: 'open',
     operation_number: undefined,
     customer_name: undefined,
     locality: undefined,

@@ -23,8 +23,11 @@ interface OrderFiltersProps {
 }
 
 const STATUS_OPTIONS = [
-    { label: 'Abiertos', value: 'open,confirmed' },
-    { label: 'Entregados', value: 'closed' },
+    { label: 'Abierto', value: 'open' },
+    { label: 'Confirmado', value: 'confirmed' },
+    { label: 'Cerrados', value: 'closed' },
+    { label: 'Entregados', value: 'delivered' },
+    { label: 'Parcialmente entregados', value: 'partially_delivered' },
     { label: 'Cancelados', value: 'cancelled' },
     { label: 'Todos', value: '' },
 ];
@@ -76,7 +79,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 operation_number: '',
                 customer_name: '',
                 locality: '',
-                status: 'open,confirmed',
+                status: 'open',
             }}
         >
             <div className="orderFiltersRow">
