@@ -8,7 +8,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     open: { label: 'Abierto', color: '#1677ff' },
     confirmed: { label: 'Abierto', color: '#1677ff' },
     cancelled: { label: 'Cancelado', color: '#ff4d4f' },
-    closed: { label: 'Entregado', color: '#52c41a' },
+    closed: { label: 'Cerrado', color: '#52c41a' },
+    delivered: { label: 'Entregado', color: '#52c41a' },
+    partially_delivered: { label: 'Parcial', color: '#faad14' },
 };
 
 const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({ status }) => {

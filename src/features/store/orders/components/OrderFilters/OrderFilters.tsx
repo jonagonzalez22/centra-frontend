@@ -42,7 +42,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 operation_number: values.operation_number || undefined,
                 customer_name: values.customer_name || undefined,
                 locality: values.locality || undefined,
-                status: values.status || undefined,
+                status: values.status !== undefined ? values.status : undefined,
             };
         },
         []
