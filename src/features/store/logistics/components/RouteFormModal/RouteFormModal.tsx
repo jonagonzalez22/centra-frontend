@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Form, DatePicker, Input, message } from 'antd';
+import type { FormInstance } from 'antd';
 import dayjs from 'dayjs';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
@@ -49,7 +50,7 @@ export const RouteFormModal = ({ open, onClose, onSuccess }: RouteFormModalProps
                     name: [field],
                     errors: messages,
                 }));
-                form.setFields(fieldErrors as any);
+                form.setFields(fieldErrors as Parameters<FormInstance['setFields']>[0]);
             }
         }
     };
