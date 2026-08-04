@@ -1,5 +1,8 @@
 import { Alert, Breadcrumb, Tag } from 'antd';
 import { Link } from 'react-router-dom';
+import { PlusOutlined } from '@ant-design/icons';
+import { Button } from '@/components/Button';
+import { CanDo } from '@/components/auth/CanDo';
 import Table from '@/components/Table/Table';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
 import type { DeliveryRoute } from '@/features/store/logistics/interfaces/route.interface';
@@ -42,18 +45,21 @@ interface RoutesPageViewProps {
     };
     setPage: (page: number) => void;
     setPerPage: (perPage: number) => void;
+    onCreate: () => void;
 }
 
 export const RoutesPageView = ({
     title,
     description,
     breadcrumbs,
+    canManageRoutes,
     error,
     items,
     loading,
     pagination,
     setPage,
     setPerPage,
+    onCreate,
 }: RoutesPageViewProps) => {
     const routeNumber = (id: string) => `#${id.substring(0, 8).toUpperCase()}`;
 
@@ -135,6 +141,17 @@ export const RoutesPageView = ({
                         </h1>
                         <p className="routesPageDescription">{description}</p>
                     </div>
+
+                    {canManageRoutes && (
+                        <CanDo permission="logistics.routes.manage">
+                            <Button
+                                variant="primary"
+                                label="Nueva Ruta"
+                                icon={<PlusOutlined />}
+                                action={onCreate}
+                            />
+                        </CanDo>
+                    )}
                 </div>
             </div>
 
