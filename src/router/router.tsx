@@ -29,6 +29,7 @@ import { POSPage } from '@/pages/store/sales';
 import { OrdersPage } from '@/pages/store/orders';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 import { StoreDashboardPage } from '@/pages/store/dashboard';
+import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -195,6 +196,18 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="orders.view" redirectTo="/tienda/dashboard" />,
                                 children: [
                                     { path: 'ventas/pedidos', element: <OrdersPage /> },
+                                ],
+                            },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="deliveries" />,
+                        children: [
+                            {
+                                element: <PermissionRoute permission="logistics.routes.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'logistica/rutas', element: <RoutesPage /> },
                                 ],
                             },
                         ],

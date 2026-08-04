@@ -57,6 +57,17 @@ export const API_ENDPOINTS = {
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
         },
+        LOGISTICS: {
+            ROUTES: {
+                URL: '/v1/store/routes',
+            },
+            VEHICLES: {
+                URL: '/v1/store/vehicles',
+            },
+            DRIVERS: {
+                URL: '/v1/store/drivers',
+            },
+        },
     },
     GEOCODING: {
         SEARCH: '/v1/geocoding/search',
