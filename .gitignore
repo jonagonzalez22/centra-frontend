@@ -49,3 +49,6 @@ storybook-static
 # Vite / test caches
 .vite/
 vitest.workspace.ts.timestamp-*
+
+# Docs tmp
+doc_tmp

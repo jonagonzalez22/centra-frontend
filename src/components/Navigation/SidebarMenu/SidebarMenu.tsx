@@ -13,6 +13,7 @@ import {
     ArrowLeftRight,
     UsersRound,
     ShoppingCart,
+    MapPin,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -165,6 +166,21 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'inventory',
         permission: 'inventory.view',
+    },
+    {
+        label: 'Logística',
+        key: '/tienda/logistica/parent',
+        icon: <MapPin size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'deliveries',
+        children: [
+            {
+                label: 'Rutas',
+                key: '/tienda/logistica/rutas',
+                context: 'store',
+                permission: 'logistics.routes.view',
+            },
+        ],
     },
     {
         label: 'Clientes',
