@@ -85,6 +85,13 @@ export interface RoutesListResponse {
     last_page: number;
 }
 
+export interface CreateRouteDto {
+    operational_date: string;
+    vehicle_id: string;
+    driver_id: string;
+    observations?: string;
+}
+
 export interface RoutesFilters {
     page?: number;
     per_page?: number;
