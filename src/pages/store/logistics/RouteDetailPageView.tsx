@@ -69,7 +69,7 @@ export const RouteDetailPageView = ({
 
     const isDraft = route.status === 'draft';
     const routeNum = `#${route.id.substring(0, 8).toUpperCase()}`;
-    const activeStops = route.stops.filter((s) => s.status !== 'cancelled');
+    const activeStops = (route.stops ?? []).filter((s) => s.status !== 'cancelled');
 
     const stopsColumns = [
         { title: 'Sec.', dataIndex: 'sequence', key: 'sequence', width: 60 },
@@ -97,8 +97,9 @@ export const RouteDetailPageView = ({
             responsive: ['lg'] as ('lg')[],
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const stop = record as unknown as RouteStop;
-                const customer = stop.order?.customer as { address: string | null } | null | undefined;
-                return customer?.address || '—';
+                const addr = stop.order?.address;
+                if (!addr) return '—';
+                return `${addr.street} ${addr.number}${addr.locality ? `, ${addr.locality}` : ''}`;
             },
         },
         {

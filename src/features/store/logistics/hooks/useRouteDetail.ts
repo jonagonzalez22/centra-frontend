@@ -39,11 +39,12 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
     const addStop = useCallback(
         async (orderId: string) => {
             try {
-                const updatedRoute = await RoutesService.addStops(routeId, orderId);
-                setRoute(updatedRoute);
+                await RoutesService.addStops(routeId, orderId);
                 message.success('Pedido agregado a la ruta correctamente.');
-                if (updatedRoute?.operational_date) {
-                    await refreshOrders(updatedRoute.operational_date);
+                const routeData = await RoutesService.getById(routeId);
+                setRoute(routeData);
+                if (routeData?.operational_date) {
+                    await refreshOrders(routeData.operational_date);
                 }
             } catch (err) {
                 const apiError = err as ApiError;
@@ -56,11 +57,12 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
     const addExceptionalStop = useCallback(
         async (orderId: string, reason: string) => {
             try {
-                const updatedRoute = await RoutesService.addStops(routeId, orderId, reason);
-                setRoute(updatedRoute);
+                await RoutesService.addStops(routeId, orderId, reason);
                 message.success('Pedido excepcional agregado a la ruta correctamente.');
-                if (updatedRoute?.operational_date) {
-                    await refreshOrders(updatedRoute.operational_date);
+                const routeData = await RoutesService.getById(routeId);
+                setRoute(routeData);
+                if (routeData?.operational_date) {
+                    await refreshOrders(routeData.operational_date);
                 }
             } catch (err) {
                 const apiError = err as ApiError;

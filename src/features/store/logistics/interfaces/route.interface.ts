@@ -31,7 +31,17 @@ export interface RouteStopOrder {
     id: string;
     operation_number: string;
     requested_delivery_date: string;
-    customer: null;
+    customer: {
+        name: string;
+        document: string;
+    } | null;
+    address: {
+        street: string;
+        number: string;
+        latitude: number;
+        longitude: number;
+        locality: string | null;
+    } | null;
 }
 
 export interface RouteStop {
