@@ -1,8 +1,9 @@
 import { Alert, Breadcrumb, Tag } from 'antd';
 import { Link } from 'react-router-dom';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
+import ActionButton from '@/components/ActionButton/ActionButton';
 import Table from '@/components/Table/Table';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
 import type { DeliveryRoute } from '@/features/store/logistics/interfaces/route.interface';
@@ -46,6 +47,7 @@ interface RoutesPageViewProps {
     setPage: (page: number) => void;
     setPerPage: (perPage: number) => void;
     onCreate: () => void;
+    onView: (route: DeliveryRoute) => void;
 }
 
 export const RoutesPageView = ({
@@ -60,6 +62,7 @@ export const RoutesPageView = ({
     setPage,
     setPerPage,
     onCreate,
+    onView,
 }: RoutesPageViewProps) => {
     const routeNumber = (id: string) => `#${id.substring(0, 8).toUpperCase()}`;
 
@@ -67,8 +70,14 @@ export const RoutesPageView = ({
         {
             title: 'Número de Ruta',
             key: 'route_number',
-            render: (_: unknown, record?: Record<string, unknown>) =>
-                routeNumber((record?.id as string) || ''),
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const routeRecord = record as unknown as DeliveryRoute;
+                return (
+                    <a onClick={() => onView(routeRecord)} style={{ cursor: 'pointer' }}>
+                        {routeNumber(routeRecord.id)}
+                    </a>
+                );
+            },
         },
         {
             title: 'Fecha',
@@ -119,7 +128,19 @@ export const RoutesPageView = ({
         {
             title: 'Acciones',
             key: 'acciones',
-            render: () => null,
+            width: 80,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const route = record as unknown as DeliveryRoute;
+                return (
+                    <CanDo permission="logistics.routes.view">
+                        <ActionButton
+                            icon={<EyeOutlined />}
+                            label="Ver detalle"
+                            action={() => onView(route)}
+                        />
+                    </CanDo>
+                );
+            },
         },
     ];
 
