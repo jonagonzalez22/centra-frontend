@@ -101,3 +101,19 @@ export interface RoutesFilters {
     sort_by?: string;
     sort_dir?: 'asc' | 'desc';
 }
+
+export interface EligibleOrdersFilters {
+    requested_delivery_date?: string;
+    exclude_route_id?: string;
+}
+
+export interface EligibleOrder {
+    id: string;
+    operation_number: string;
+    requested_delivery_date: string;
+    customer: {
+        id: string;
+        name: string;
+        address: string | null;
+    } | null;
+}

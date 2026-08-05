@@ -7,6 +7,8 @@ import type {
     RoutesListResponse,
     CreateRouteDto,
     DeliveryRoute,
+    EligibleOrder,
+    EligibleOrdersFilters,
 } from '../interfaces/route.interface';
 
 export const RoutesService = {
@@ -28,6 +30,41 @@ export const RoutesService = {
         return data.data;
     },
 
+    getById: async (id: string): Promise<DeliveryRoute> => {
+        const { data } = await api.get<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.DETAIL(id)
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    getEligibleOrders: async (filters?: EligibleOrdersFilters): Promise<EligibleOrder[]> => {
+        const { data } = await api.get<ApiListResponse<{ items: EligibleOrder[] }>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.ELIGIBLE_ORDERS.URL,
+            { params: filters }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data.items;
+    },
+
     create: async (dto: CreateRouteDto): Promise<DeliveryRoute> => {
         const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.URL,
@@ -44,5 +81,41 @@ export const RoutesService = {
         }
 
         return data.data;
+    },
+
+    addStops: async (routeId: string, orderId: string, reason?: string): Promise<DeliveryRoute> => {
+        const payload: { order_id: string; reason?: string } = { order_id: orderId };
+        if (reason) payload.reason = reason;
+
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.STOPS(routeId),
+            payload
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    removeStop: async (routeId: string, stopId: string): Promise<void> => {
+        const { data } = await api.delete<ApiListResponse<null>>(
+            API_ENDPOINTS.STORE.LOGISTICS.STOPS.DELETE(routeId, stopId)
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
     },
 };

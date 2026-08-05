@@ -60,6 +60,12 @@ export const API_ENDPOINTS = {
         LOGISTICS: {
             ROUTES: {
                 URL: '/v1/store/routes',
+                DETAIL: (id: string) => `/v1/store/routes/${id}`,
+                STOPS: (routeId: string) => `/v1/store/routes/${routeId}/stops`,
+                ELIGIBLE_ORDERS: { URL: '/v1/store/routes/eligible-orders' },
+            },
+            STOPS: {
+                DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,
             },
             VEHICLES: {
                 URL: '/v1/store/vehicles',

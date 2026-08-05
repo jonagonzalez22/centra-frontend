@@ -30,6 +30,7 @@ import { OrdersPage } from '@/pages/store/orders';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
+import { RouteDetailPage } from '@/pages/store/logistics/RouteDetailPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -208,6 +209,7 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="logistics.routes.view" redirectTo="/tienda/dashboard" />,
                                 children: [
                                     { path: 'logistica/rutas', element: <RoutesPage /> },
+                                    { path: 'logistica/rutas/:id', element: <RouteDetailPage /> },
                                 ],
                             },
                         ],
