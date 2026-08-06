@@ -155,4 +155,39 @@ export const RoutesService = {
 
         return data.data;
     },
+
+    reorderStops: async (routeId: string, stopIds: string[]): Promise<DeliveryRoute> => {
+        const { data } = await api.put<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.REORDER(routeId),
+            { stop_ids: stopIds }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    recalculate: async (routeId: string): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.RECALCULATE(routeId)
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
 };

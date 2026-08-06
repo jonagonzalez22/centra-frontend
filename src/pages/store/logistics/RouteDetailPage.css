@@ -63,3 +63,8 @@
 .routeDetailHeader .ant-picker-time-panel-column > li:last-child::after {
     display: none;
 }
+
+/* Drag and drop row transition */
+.routeDetailPage .ant-table-tbody > tr {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
