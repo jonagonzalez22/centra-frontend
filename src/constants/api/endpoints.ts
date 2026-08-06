@@ -63,6 +63,7 @@ export const API_ENDPOINTS = {
                 DETAIL: (id: string) => `/v1/store/routes/${id}`,
                 STOPS: (routeId: string) => `/v1/store/routes/${routeId}/stops`,
                 ELIGIBLE_ORDERS: { URL: '/v1/store/routes/eligible-orders' },
+                PLAN: (routeId: string) => `/v1/store/routes/${routeId}/plan`,
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,

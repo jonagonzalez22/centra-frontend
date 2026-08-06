@@ -49,3 +49,17 @@
     margin-bottom: 1rem;
     font-size: 0.875rem;
 }
+
+/* TimePicker alignment inside Descriptions */
+.routeDetailHeader .ant-picker {
+    vertical-align: middle;
+    margin-top: -3px;
+}
+
+/* Remove blank padding at end of time picker scroll columns */
+.routeDetailHeader .ant-picker-time-panel-column::after {
+    display: none;
+}
+.routeDetailHeader .ant-picker-time-panel-column > li:last-child::after {
+    display: none;
+}

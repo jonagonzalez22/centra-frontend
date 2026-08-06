@@ -6,6 +6,7 @@ import type {
     RoutesFilters,
     RoutesListResponse,
     CreateRouteDto,
+    UpdateRouteDto,
     DeliveryRoute,
     EligibleOrder,
     EligibleOrdersFilters,
@@ -117,5 +118,41 @@ export const RoutesService = {
             };
             throw error;
         }
+    },
+
+    update: async (id: string, dto: UpdateRouteDto): Promise<DeliveryRoute> => {
+        const { data } = await api.put<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.DETAIL(id),
+            dto
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    plan: async (routeId: string, departureTime: string): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.PLAN(routeId),
+            { departure_time: departureTime }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
     },
 };
