@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import type { CSSProperties } from 'react';
 import {
     Alert,
     Spin,
@@ -9,10 +10,26 @@ import {
     TimePicker,
     Tooltip,
     Modal as AntModal,
+    Table as AntTable,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import dayjs from 'dayjs';
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import Table from '@/components/Table/Table';
 import Tabs from '@/components/Tabs/Tabs';
 import { Button } from '@/components/Button';
@@ -60,6 +77,8 @@ interface RouteDetailPageViewProps {
     onRemoveStop: (stopId: string) => Promise<void>;
     onUpdateDepartureTime: (departureTime: string) => Promise<void>;
     onPlanRoute: () => Promise<void>;
+    onReorderStops: (stopIds: string[]) => Promise<void>;
+    onRecalculate: () => Promise<void>;
 }
 
 export const RouteDetailPageView = ({
@@ -75,6 +94,8 @@ export const RouteDetailPageView = ({
     onRemoveStop,
     onUpdateDepartureTime,
     onPlanRoute,
+    onReorderStops,
+    onRecalculate,
 }: RouteDetailPageViewProps) => {
     const [selectedDailyIds, setSelectedDailyIds] = useState<string[]>([]);
     const [addingDaily, setAddingDaily] = useState(false);
@@ -86,6 +107,37 @@ export const RouteDetailPageView = ({
     const [exceptionalAdding, setExceptionalAdding] = useState(false);
     const [mapModalOpen, setMapModalOpen] = useState(false);
     const [planning, setPlanning] = useState(false);
+    const [reordering, setReordering] = useState(false);
+    const [recalculating, setRecalculating] = useState(false);
+
+    // Compute before early returns so hooks stay in consistent order
+    const activeStops = (route?.stops ?? []).filter((s) => s.status !== 'cancelled');
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 5 },
+        })
+    );
+
+    const handleDragEnd = useCallback(
+        async (event: DragEndEvent) => {
+            const { active, over } = event;
+            if (!over || active.id === over.id) return;
+
+            const oldIndex = activeStops.findIndex((s) => s.id === active.id);
+            const newIndex = activeStops.findIndex((s) => s.id === over.id);
+            if (oldIndex === -1 || newIndex === -1) return;
+
+            const reordered = arrayMove(activeStops, oldIndex, newIndex);
+            setReordering(true);
+            try {
+                await onReorderStops(reordered.map((s) => s.id));
+            } finally {
+                setReordering(false);
+            }
+        },
+        [activeStops, onReorderStops]
+    );
 
     if (loading) return <Spin size="large" />;
     if (error) return <Alert type="error" message={error} showIcon />;
@@ -94,14 +146,29 @@ export const RouteDetailPageView = ({
     const isDraft = route.status === 'draft';
     const isPlanned = route.status !== 'draft';
     const routeNum = `#${route.id.substring(0, 8).toUpperCase()}`;
-    const activeStops = (route.stops ?? []).filter((s) => s.status !== 'cancelled');
     const hasActiveStops = activeStops.length > 0;
     const hasDepartureTime = !!route.departure_time;
     const canPlan = isDraft && hasActiveStops && hasDepartureTime;
     const hasPolyline = !!route.encoded_polyline;
+    const allowReorder =
+        (isDraft || route.status === 'planned') && activeStops.length > 1;
 
     const stopsColumns = [
-        { title: 'Sec.', dataIndex: 'sequence', key: 'sequence', width: 60 },
+        {
+            title: allowReorder ? '↕ Sec.' : 'Sec.',
+            key: 'sequence',
+            width: allowReorder ? 70 : 60,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const stop = record as unknown as RouteStop;
+                if (!allowReorder) return stop.sequence;
+                return (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, userSelect: 'none' }}>
+                        <HolderOutlined style={{ fontSize: 14, color: '#999' }} />
+                        {stop.sequence}
+                    </span>
+                );
+            },
+        },
         {
             title: 'Pedido',
             key: 'order',
@@ -139,7 +206,9 @@ export const RouteDetailPageView = ({
                       width: 100,
                       render: (_: unknown, record?: Record<string, unknown>) => {
                           const stop = record as unknown as RouteStop;
-                          if (!stop.estimated_arrival_at) return '--:--';
+                          if (!stop.estimated_arrival_at) {
+                              return <span style={{ color: '#999' }}>--:--</span>;
+                          }
                           return dayjs(stop.estimated_arrival_at).format('HH:mm');
                       },
                   },
@@ -199,6 +268,40 @@ export const RouteDetailPageView = ({
               ]
             : []),
     ];
+
+    const SortableRow = ({
+        id,
+        className,
+        style,
+        ...restProps
+    }: {
+        id: string;
+        className?: string;
+        style?: CSSProperties;
+        [key: string]: unknown;
+    }) => {
+        const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+            useSortable({ id, disabled: !allowReorder });
+
+        const sortableStyle: CSSProperties = {
+            ...style,
+            transform: CSS.Transform.toString(transform),
+            transition,
+            opacity: isDragging ? 0.5 : 1,
+            touchAction: 'none',
+        };
+
+        return (
+            <tr
+                ref={setNodeRef}
+                {...restProps}
+                {...attributes}
+                {...listeners}
+                className={className}
+                style={sortableStyle}
+            />
+        );
+    };
 
     const dailyColumns = [
         { title: 'Pedido', dataIndex: 'operation_number', key: 'operation_number' },
@@ -409,14 +512,77 @@ export const RouteDetailPageView = ({
 
             <div className="routeDetailSection">
                 <h2 className="routeDetailSectionTitle">Paradas de la Ruta</h2>
-                <Table
-                    columns={stopsColumns}
-                    dataSource={activeStops as unknown as Record<string, unknown>[]}
-                    pagination={false}
-                    scroll={{ x: 'max-content' }}
-                    size="small"
-                />
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={activeStops.map((s) => s.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <AntTable
+                            columns={stopsColumns}
+                            dataSource={activeStops as unknown as Record<string, unknown>[]}
+                            pagination={false}
+                            scroll={{ x: 'max-content' }}
+                            size="small"
+                            loading={reordering}
+                            rowKey="id"
+                            components={{
+                                body: {
+                                    row: SortableRow,
+                                },
+                            }}
+                            onRow={(record) =>
+                                ({
+                                    id: (record as Record<string, unknown>).id as string,
+                                } as Record<string, unknown>)
+                            }
+                        />
+                    </SortableContext>
+                </DndContext>
             </div>
+
+            {route.requires_recalculation && (
+                <div
+                    className="routeDetailSection"
+                    style={{ borderColor: '#faad14', background: '#fffbe6' }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <div>
+                            <strong style={{ color: '#d48806' }}>
+                                ⚠️ Orden modificado
+                            </strong>
+                            <p style={{ margin: '4px 0 0', color: '#666' }}>
+                                El orden de las paradas ha cambiado. Es necesario recalcular
+                                los tiempos de llegada.
+                            </p>
+                        </div>
+                        <CanDo permission="logistics.routes.manage">
+                            <Button
+                                variant="primary"
+                                label="Recalcular Tiempos"
+                                loading={recalculating}
+                                action={async () => {
+                                    setRecalculating(true);
+                                    try {
+                                        await onRecalculate();
+                                    } finally {
+                                        setRecalculating(false);
+                                    }
+                                }}
+                            />
+                        </CanDo>
+                    </div>
+                </div>
+            )}
 
             {isDraft && (
                 <div className="routeDetailSection">

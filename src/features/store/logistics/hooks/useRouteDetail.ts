@@ -18,6 +18,8 @@ export interface UseRouteDetailReturn {
     removeStop: (stopId: string) => Promise<void>;
     updateDepartureTime: (departureTime: string) => Promise<void>;
     planRoute: () => Promise<void>;
+    reorderStops: (stopIds: string[]) => Promise<void>;
+    recalculate: () => Promise<void>;
 }
 
 export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
@@ -123,6 +125,32 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         }
     }, [routeId, route?.departure_time]);
 
+    const reorderStops = useCallback(
+        async (stopIds: string[]) => {
+            try {
+                await RoutesService.reorderStops(routeId, stopIds);
+                const routeData = await RoutesService.getById(routeId);
+                setRoute(routeData);
+                message.success('Paradas reordenadas correctamente.');
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'Error al reordenar las paradas.');
+            }
+        },
+        [routeId]
+    );
+
+    const recalculate = useCallback(async () => {
+        try {
+            const updatedRoute = await RoutesService.recalculate(routeId);
+            setRoute(updatedRoute);
+            message.success('Tiempos recalculados exitosamente.');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al recalcular la ruta.');
+        }
+    }, [routeId]);
+
     const refresh = useCallback(async () => {
         try {
             setLoading(true);
@@ -196,5 +224,7 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         removeStop,
         updateDepartureTime,
         planRoute,
+        reorderStops,
+        recalculate,
     };
 };

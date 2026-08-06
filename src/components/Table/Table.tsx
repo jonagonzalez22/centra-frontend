@@ -23,6 +23,8 @@ interface TableProps {
     scroll?: { x?: number | string };
     size?: 'small' | 'middle' | 'large';
     rowSelection?: TableRowSelection<Record<string, unknown>>;
+    components?: AntTableProp['components'];
+    onRow?: AntTableProp['onRow'];
 }
 
 const Table: React.FC<TableProps> = ({
@@ -35,6 +37,8 @@ const Table: React.FC<TableProps> = ({
     scroll,
     size = 'middle',
     rowSelection,
+    components,
+    onRow,
 }) => {
     return (
         <AntTable
@@ -48,6 +52,8 @@ const Table: React.FC<TableProps> = ({
             scroll={scroll}
             size={size}
             rowSelection={rowSelection}
+            components={components}
+            onRow={onRow}
         />
     );
 };

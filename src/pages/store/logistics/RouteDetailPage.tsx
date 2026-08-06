@@ -20,6 +20,8 @@ export const RouteDetailPage = () => {
         removeStop,
         updateDepartureTime,
         planRoute,
+        reorderStops,
+        recalculate,
     } = useRouteDetail(id!);
 
     const handleBack = () => navigate('/tienda/logistica/rutas');
@@ -45,6 +47,8 @@ export const RouteDetailPage = () => {
                 onRemoveStop={removeStop}
                 onUpdateDepartureTime={updateDepartureTime}
                 onPlanRoute={planRoute}
+                onReorderStops={reorderStops}
+                onRecalculate={recalculate}
             />
         </div>
     );
