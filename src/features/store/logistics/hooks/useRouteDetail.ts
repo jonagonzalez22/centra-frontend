@@ -16,6 +16,8 @@ export interface UseRouteDetailReturn {
     addStop: (orderId: string) => Promise<void>;
     addExceptionalStop: (orderId: string, reason: string) => Promise<void>;
     removeStop: (stopId: string) => Promise<void>;
+    updateDepartureTime: (departureTime: string) => Promise<void>;
+    planRoute: () => Promise<void>;
 }
 
 export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
@@ -90,6 +92,37 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         [routeId, refreshOrders]
     );
 
+    const updateDepartureTime = useCallback(
+        async (departureTime: string) => {
+            try {
+                await RoutesService.update(routeId, { departure_time: departureTime });
+                const routeData = await RoutesService.getById(routeId);
+                setRoute(routeData);
+                message.success('Hora de salida actualizada.');
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'Error al actualizar la hora de salida.');
+            }
+        },
+        [routeId]
+    );
+
+    const planRoute = useCallback(async () => {
+        if (!route?.departure_time) return;
+        // Normalize to HH:mm (backend stores time as HH:mm:ss)
+        const normalized = route.departure_time.substring(0, 5);
+        try {
+            await RoutesService.plan(routeId, normalized);
+            const routeData = await RoutesService.getById(routeId);
+            setRoute(routeData);
+            message.success('Ruta planificada exitosamente.');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al planificar la ruta.');
+            throw err;
+        }
+    }, [routeId, route?.departure_time]);
+
     const refresh = useCallback(async () => {
         try {
             setLoading(true);
@@ -161,5 +194,7 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         addStop,
         addExceptionalStop,
         removeStop,
+        updateDepartureTime,
+        planRoute,
     };
 };

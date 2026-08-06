@@ -117,6 +117,14 @@ export interface EligibleOrdersFilters {
     exclude_route_id?: string;
 }
 
+export interface UpdateRouteDto {
+    vehicle_id?: string;
+    driver_id?: string;
+    operational_date?: string;
+    departure_time?: string;
+    observations?: string;
+}
+
 export interface EligibleOrder {
     id: string;
     operation_number: string;
