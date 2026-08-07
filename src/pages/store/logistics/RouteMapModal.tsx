@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Modal from '@/components/Modal/Modal';
@@ -30,23 +30,22 @@ const createStoreIcon = () =>
 export const RouteMapModal = ({ open, route, onClose }: RouteMapModalProps) => {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
-    const readyRef = useRef(false);
+    const [ready, setReady] = useState(false);
 
-    // Track modal open/close — when closed (destroyOnClose), reset ready flag
+    // Wait for modal animation to finish before rendering the map
     useEffect(() => {
         if (!open) {
-            readyRef.current = false;
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setReady(false);
             return;
         }
-        const timer = setTimeout(() => {
-            readyRef.current = true;
-        }, 400);
+        const timer = setTimeout(() => setReady(true), 400);
         return () => clearTimeout(timer);
     }, [open]);
 
     // Build map once ready and route data is available
     useEffect(() => {
-        if (!readyRef.current || !route?.encoded_polyline || !mapContainerRef.current) return;
+        if (!ready || !route?.encoded_polyline || !mapContainerRef.current) return;
 
         if (mapInstanceRef.current) {
             mapInstanceRef.current.remove();
@@ -105,7 +104,7 @@ export const RouteMapModal = ({ open, route, onClose }: RouteMapModalProps) => {
                 mapInstanceRef.current = null;
             }
         };
-    }, [route]);
+    }, [ready, route]);
 
     return (
         <Modal
