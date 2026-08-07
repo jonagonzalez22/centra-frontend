@@ -30,74 +30,82 @@ const createStoreIcon = () =>
 export const RouteMapModal = ({ open, route, onClose }: RouteMapModalProps) => {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
+    const readyRef = useRef(false);
 
+    // Track modal open/close — when closed (destroyOnClose), reset ready flag
     useEffect(() => {
-        if (!open || !route?.encoded_polyline || !mapContainerRef.current) return;
-
-        // Wait for modal animation to finish before rendering the map
+        if (!open) {
+            readyRef.current = false;
+            return;
+        }
         const timer = setTimeout(() => {
-            if (!mapContainerRef.current) return;
-
-            if (mapInstanceRef.current) {
-                mapInstanceRef.current.remove();
-            }
-
-            const map = L.map(mapContainerRef.current, {
-                zoomControl: true,
-                attributionControl: true,
-            });
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-            }).addTo(map);
-
-            const decoded = decodePolyline(route.encoded_polyline!);
-            const polyline = L.polyline(decoded, {
-                color: '#1890ff',
-                weight: 4,
-                opacity: 0.8,
-            }).addTo(map);
-
-            map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
-
-            if (decoded.length > 0) {
-                L.marker(decoded[0], { icon: createStoreIcon() })
-                    .addTo(map)
-                    .bindPopup('Punto de salida (Tienda)');
-            }
-
-            const activeStops = (route.stops ?? []).filter((s) => s.status !== 'cancelled');
-            activeStops.forEach((stop) => {
-                const lat = stop.order?.address?.latitude;
-                const lng = stop.order?.address?.longitude;
-                if (lat != null && lng != null) {
-                    const popupContent = [
-                        `#${stop.sequence} — ${stop.order?.operation_number || '—'}`,
-                        stop.order?.customer?.name ? `Cliente: ${stop.order.customer.name}` : null,
-                        stop.estimated_arrival_at
-                            ? `Llegada est.: ${new Date(stop.estimated_arrival_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
-                            : null,
-                    ].filter(Boolean).join('<br>');
-
-                    L.marker([lat, lng], { icon: createStopIcon(stop.sequence) })
-                        .addTo(map)
-                        .bindPopup(popupContent);
-                }
-            });
-
-            mapInstanceRef.current = map;
-
-            setTimeout(() => map.invalidateSize(), 100);
+            readyRef.current = true;
         }, 400);
+        return () => clearTimeout(timer);
+    }, [open]);
+
+    // Build map once ready and route data is available
+    useEffect(() => {
+        if (!readyRef.current || !route?.encoded_polyline || !mapContainerRef.current) return;
+
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove();
+        }
+
+        const map = L.map(mapContainerRef.current, {
+            zoomControl: true,
+            attributionControl: true,
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+
+        const decoded = decodePolyline(route.encoded_polyline);
+        const polyline = L.polyline(decoded, {
+            color: '#1890ff',
+            weight: 4,
+            opacity: 0.8,
+        }).addTo(map);
+
+        map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+
+        if (decoded.length > 0) {
+            L.marker(decoded[0], { icon: createStoreIcon() })
+                .addTo(map)
+                .bindPopup('Punto de salida (Tienda)');
+        }
+
+        const activeStops = (route.stops ?? []).filter((s) => s.status !== 'cancelled');
+        activeStops.forEach((stop) => {
+            const lat = stop.order?.address?.latitude;
+            const lng = stop.order?.address?.longitude;
+            if (lat != null && lng != null) {
+                const popupContent = [
+                    `#${stop.sequence} — ${stop.order?.operation_number || '—'}`,
+                    stop.order?.customer?.name ? `Cliente: ${stop.order.customer.name}` : null,
+                    stop.estimated_arrival_at
+                        ? `Llegada est.: ${new Date(stop.estimated_arrival_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
+                        : null,
+                ].filter(Boolean).join('<br>');
+
+                L.marker([lat, lng], { icon: createStopIcon(stop.sequence) })
+                    .addTo(map)
+                    .bindPopup(popupContent);
+            }
+        });
+
+        mapInstanceRef.current = map;
+
+        setTimeout(() => map.invalidateSize(), 100);
 
         return () => {
-            clearTimeout(timer);
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
             }
         };
-    }, [open, route]);
+    }, [route]);
 
     return (
         <Modal
