@@ -66,6 +66,7 @@ export const API_ENDPOINTS = {
                 PLAN: (routeId: string) => `/v1/store/routes/${routeId}/plan`,
                 REORDER: (routeId: string) => `/v1/store/routes/${routeId}/stops/reorder`,
                 RECALCULATE: (routeId: string) => `/v1/store/routes/${routeId}/recalculate`,
+                OPTIMIZE: (routeId: string) => `/v1/store/routes/${routeId}/optimize`,
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,

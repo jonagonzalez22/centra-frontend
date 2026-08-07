@@ -12,7 +12,7 @@ import {
     Modal as AntModal,
     Table as AntTable,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import dayjs from 'dayjs';
 import {
@@ -79,6 +79,7 @@ interface RouteDetailPageViewProps {
     onPlanRoute: () => Promise<void>;
     onReorderStops: (stopIds: string[]) => Promise<void>;
     onRecalculate: () => Promise<void>;
+    onOptimizeRoute: () => Promise<void>;
 }
 
 export const RouteDetailPageView = ({
@@ -96,6 +97,7 @@ export const RouteDetailPageView = ({
     onPlanRoute,
     onReorderStops,
     onRecalculate,
+    onOptimizeRoute,
 }: RouteDetailPageViewProps) => {
     const [selectedDailyIds, setSelectedDailyIds] = useState<string[]>([]);
     const [addingDaily, setAddingDaily] = useState(false);
@@ -443,6 +445,27 @@ export const RouteDetailPageView = ({
                             icon={<EnvironmentOutlined />}
                             action={() => setMapModalOpen(true)}
                         />
+                    )}
+                    {isPlanned && (
+                        <CanDo permission="logistics.routes.plan">
+                            <Button
+                                variant="default"
+                                label="Reoptimizar Ruta"
+                                icon={<ReloadOutlined />}
+                                action={() => {
+                                    AntModal.confirm({
+                                        title: 'Reoptimizar Ruta',
+                                        content:
+                                            'Se descartará el orden manual actual y se calculará nuevamente el orden óptimo automático de las paradas. ¿Continuar?',
+                                        okText: 'Reoptimizar',
+                                        cancelText: 'Cancelar',
+                                        onOk: async () => {
+                                            await onOptimizeRoute();
+                                        },
+                                    });
+                                }}
+                            />
+                        </CanDo>
                     )}
                 </div>
             </div>
