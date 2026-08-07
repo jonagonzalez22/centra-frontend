@@ -22,6 +22,7 @@ export const RouteDetailPage = () => {
         planRoute,
         reorderStops,
         recalculate,
+        optimizeRoute,
     } = useRouteDetail(id!);
 
     const handleBack = () => navigate('/tienda/logistica/rutas');
@@ -49,6 +50,7 @@ export const RouteDetailPage = () => {
                 onPlanRoute={planRoute}
                 onReorderStops={reorderStops}
                 onRecalculate={recalculate}
+                onOptimizeRoute={optimizeRoute}
             />
         </div>
     );

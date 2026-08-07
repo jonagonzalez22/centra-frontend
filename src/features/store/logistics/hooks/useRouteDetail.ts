@@ -20,6 +20,7 @@ export interface UseRouteDetailReturn {
     planRoute: () => Promise<void>;
     reorderStops: (stopIds: string[]) => Promise<void>;
     recalculate: () => Promise<void>;
+    optimizeRoute: () => Promise<void>;
 }
 
 export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
@@ -151,6 +152,17 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         }
     }, [routeId]);
 
+    const optimizeRouteFn = useCallback(async () => {
+        try {
+            const updatedRoute = await RoutesService.optimizeRoute(routeId);
+            setRoute(updatedRoute);
+            message.success('Ruta reoptimizada exitosamente.');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al reoptimizar la ruta.');
+        }
+    }, [routeId]);
+
     const refresh = useCallback(async () => {
         try {
             setLoading(true);
@@ -226,5 +238,6 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         planRoute,
         reorderStops,
         recalculate,
+        optimizeRoute: optimizeRouteFn,
     };
 };
