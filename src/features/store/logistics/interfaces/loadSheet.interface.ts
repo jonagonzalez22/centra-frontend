@@ -56,3 +56,15 @@ export interface BulkLoadProduct {
 export interface BulkLoadPayload {
     products: BulkLoadProduct[];
 }
+
+export interface AdjustItemEntry {
+    route_stop_item_id: string;
+    quantity_loaded: number;
+    reason?: string;
+    notes?: string;
+}
+
+export interface AdjustItemsPayload {
+    product_id: string;
+    items: AdjustItemEntry[];
+}

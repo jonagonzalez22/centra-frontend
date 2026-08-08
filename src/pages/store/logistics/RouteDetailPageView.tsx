@@ -12,8 +12,11 @@ import {
     Modal as AntModal,
     Table as AntTable,
     Typography,
+    Dropdown,
+    Row,
+    Col,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined, ReloadOutlined, ContainerOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -40,6 +43,7 @@ import { CanDo } from '@/components/auth/CanDo';
 import { ExceptionalAssignModal } from './components/ExceptionalAssignModal';
 import { RouteMapModal } from './RouteMapModal';
 import { RouteLoadDrawer } from '@/features/store/logistics/components/RouteLoadDrawer';
+import { RouteAdjustmentDrawer } from '@/features/store/logistics/components/RouteAdjustmentDrawer';
 import type {
     DeliveryRoute,
     EligibleOrder,
@@ -84,6 +88,7 @@ interface RouteDetailPageViewProps {
     onReorderStops: (stopIds: string[]) => Promise<void>;
     onRecalculate: () => Promise<void>;
     onOptimizeRoute: () => Promise<void>;
+    onRevertRoute: (reason: string) => Promise<void>;
     onLoadSuccess: () => void;
 }
 
@@ -103,6 +108,7 @@ export const RouteDetailPageView = ({
     onReorderStops,
     onRecalculate,
     onOptimizeRoute,
+    onRevertRoute,
     onLoadSuccess,
 }: RouteDetailPageViewProps) => {
     const [selectedDailyIds, setSelectedDailyIds] = useState<string[]>([]);
@@ -118,6 +124,7 @@ export const RouteDetailPageView = ({
     const [reordering, setReordering] = useState(false);
     const [recalculating, setRecalculating] = useState(false);
     const [loadModalOpen, setLoadModalOpen] = useState(false);
+    const [adjustmentOpen, setAdjustmentOpen] = useState(false);
 
     // Compute before early returns so hooks stay in consistent order
     const activeStops = (route?.stops ?? []).filter((s) => s.status !== 'cancelled');
@@ -403,7 +410,44 @@ export const RouteDetailPageView = ({
     return (
         <div className="routeDetailPage">
             <div className="routeDetailHeader">
-                <h1 className="routeDetailTitle">{routeNum}</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <h1 className="routeDetailTitle">{routeNum}</h1>
+                    {route.status === 'planned' && (
+                        <CanDo permission="logistics.routes.revert">
+                            <Dropdown
+                                menu={{
+                                    style: { minWidth: 200 },
+                                    items: [
+                                        {
+                                            key: 'revert',
+                                            icon: <UndoOutlined />,
+                                            label: 'Revertir a Borrador',
+                                            danger: true,
+                                        },
+                                    ],
+                                    onClick: ({ key }) => {
+                                        if (key === 'revert') {
+                                            AntModal.confirm({
+                                                title: '¿Revertir a borrador?',
+                                                content:
+                                                    'Se eliminará la planificación técnica actual. Esta acción no se puede deshacer.',
+                                                okText: 'Revertir',
+                                                cancelText: 'Cancelar',
+                                                okButtonProps: { danger: true },
+                                                onOk: async () => {
+                                                    await onRevertRoute('Reversión manual desde el panel.');
+                                                },
+                                            });
+                                        }
+                                    },
+                                }}
+                                trigger={['click']}
+                            >
+                                <AntButton icon={<EllipsisOutlined />} type="text" />
+                            </Dropdown>
+                        </CanDo>
+                    )}
+                </div>
                 <Descriptions size="small" column={{ xs: 1, sm: 2, md: 3 }}>
                     <Descriptions.Item label="Fecha">
                         <Text strong>{formatDateShort(route.operational_date)}</Text>
@@ -444,56 +488,84 @@ export const RouteDetailPageView = ({
                     </Descriptions.Item>
                     <Descriptions.Item label="Paradas"><Text strong>{activeStops.length}</Text></Descriptions.Item>
                 </Descriptions>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-                    {isPlanned && hasPolyline && (
-                        <Button
-                            variant="default"
-                            label="Ver recorrido"
-                            icon={<EnvironmentOutlined />}
-                            action={() => setMapModalOpen(true)}
-                        />
-                    )}
-                    {isPlanned && (
+
+                {/* ── Acciones: planned ── */}
+                {route.status === 'planned' && (
+                    <Row gutter={[8, 8]} style={{ marginTop: 12 }}>
+                        {hasPolyline && (
+                            <Col xs={12} md={7}>
+                                <Button
+                                    variant="default"
+                                    label="Ver recorrido"
+                                    icon={<EnvironmentOutlined />}
+                                    action={() => setMapModalOpen(true)}
+                                    block
+                                />
+                            </Col>
+                        )}
                         <CanDo permission="logistics.routes.plan">
-                            <Button
-                                variant="default"
-                                label="Reoptimizar Ruta"
-                                icon={<ReloadOutlined />}
-                                action={() => {
-                                    AntModal.confirm({
-                                        title: 'Reoptimizar Ruta',
-                                        content:
-                                            'Se descartará el orden manual actual y se calculará nuevamente el orden óptimo automático de las paradas. ¿Continuar?',
-                                        okText: 'Reoptimizar',
-                                        cancelText: 'Cancelar',
-                                        onOk: async () => {
-                                            await onOptimizeRoute();
-                                        },
-                                    });
-                                }}
-                            />
+                            <Col xs={hasPolyline ? 12 : 24} md={hasPolyline ? 7 : 8}>
+                                <Button
+                                    variant="default"
+                                    label="Reoptimizar"
+                                    icon={<ReloadOutlined />}
+                                    action={() => {
+                                        AntModal.confirm({
+                                            title: 'Reoptimizar Ruta',
+                                            content:
+                                                'Se descartará el orden manual actual y se calculará nuevamente el orden óptimo automático de las paradas. ¿Continuar?',
+                                            okText: 'Reoptimizar',
+                                            cancelText: 'Cancelar',
+                                            onOk: async () => {
+                                                await onOptimizeRoute();
+                                            },
+                                        });
+                                    }}
+                                    block
+                                />
+                            </Col>
                         </CanDo>
-                    )}
-                    {route.status === 'planned' && (
                         <CanDo permission="logistics.routes.manage">
-                            <Button
-                                variant="primary"
-                                label="Gestionar Carga"
-                                icon={<ContainerOutlined />}
-                                action={() => setLoadModalOpen(true)}
-                            />
+                            <Col xs={24} md={hasPolyline ? 10 : 16}>
+                                <Button
+                                    variant="primary"
+                                    label="Gestionar Carga"
+                                    icon={<CheckCircleOutlined />}
+                                    action={() => setLoadModalOpen(true)}
+                                    block
+                                />
+                            </Col>
                         </CanDo>
-                    )}
-                    {route.status === 'loaded' && (
+                    </Row>
+                )}
+
+                {/* ── Acciones: loaded ── */}
+                {route.status === 'loaded' && (
+                    <Row gutter={[8, 8]} style={{ marginTop: 12, maxWidth: 600 }}>
+                        <CanDo permission="logistics.routes.manage">
+                            <Col xs={24} md={14}>
+                                <Button
+                                    variant="primary"
+                                    label="Ajustar Productos por Parada"
+                                    icon={<EyeOutlined />}
+                                    action={() => setAdjustmentOpen(true)}
+                                    block
+                                />
+                            </Col>
+                        </CanDo>
                         <CanDo permission="logistics.routes.view">
-                            <Button
-                                variant="default"
-                                label="Ver Hoja de Carga"
-                                action={() => setLoadModalOpen(true)}
-                            />
+                            <Col xs={24} md={10}>
+                                <Button
+                                    variant="default"
+                                    label="Ver Hoja de Carga"
+                                    icon={<FileTextOutlined />}
+                                    action={() => setLoadModalOpen(true)}
+                                    block
+                                />
+                            </Col>
                         </CanDo>
-                    )}
-                </div>
+                    </Row>
+                )}
             </div>
 
             {isDraft && (
@@ -738,6 +810,16 @@ export const RouteDetailPageView = ({
                 onClose={() => setLoadModalOpen(false)}
                 onSuccess={() => {
                     setLoadModalOpen(false);
+                    onLoadSuccess();
+                }}
+            />
+
+            <RouteAdjustmentDrawer
+                open={adjustmentOpen}
+                routeId={route.id}
+                onClose={() => setAdjustmentOpen(false)}
+                onSuccess={() => {
+                    setAdjustmentOpen(false);
                     onLoadSuccess();
                 }}
             />

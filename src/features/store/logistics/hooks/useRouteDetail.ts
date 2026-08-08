@@ -21,6 +21,7 @@ export interface UseRouteDetailReturn {
     reorderStops: (stopIds: string[]) => Promise<void>;
     recalculate: () => Promise<void>;
     optimizeRoute: () => Promise<void>;
+    revertRoute: (reason: string) => Promise<void>;
 }
 
 export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
@@ -163,6 +164,17 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         }
     }, [routeId]);
 
+    const revertRoute = useCallback(async (reason: string) => {
+        try {
+            const updatedRoute = await RoutesService.revert(routeId, reason);
+            setRoute(updatedRoute);
+            message.success('Ruta revertida a borrador exitosamente.');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al revertir la ruta.');
+        }
+    }, [routeId]);
+
     const refresh = useCallback(async () => {
         try {
             setLoading(true);
@@ -239,5 +251,6 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         reorderStops,
         recalculate,
         optimizeRoute: optimizeRouteFn,
+        revertRoute,
     };
 };
