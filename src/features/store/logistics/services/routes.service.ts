@@ -11,6 +11,7 @@ import type {
     EligibleOrder,
     EligibleOrdersFilters,
 } from '../interfaces/route.interface';
+import type { LoadSheetData, ConfirmLoadPayload, ConfirmLoadResponse, BulkLoadPayload } from '../interfaces/loadSheet.interface';
 
 export const RoutesService = {
     getAll: async (filters: RoutesFilters = {}): Promise<RoutesListResponse> => {
@@ -205,6 +206,41 @@ export const RoutesService = {
             throw error;
         }
 
+        return data.data;
+    },
+
+    getLoadSheet: async (routeId: string): Promise<LoadSheetData> => {
+        const { data } = await api.get<ApiListResponse<LoadSheetData>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.LOAD_SHEET(routeId)
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+        return data.data;
+    },
+
+    confirmLoad: async (routeId: string, payload: ConfirmLoadPayload): Promise<ConfirmLoadResponse> => {
+        const { data } = await api.post<ApiListResponse<ConfirmLoadResponse>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.CONFIRM_LOAD(routeId),
+            payload
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+        return data.data;
+    },
+
+    bulkLoad: async (routeId: string, payload: BulkLoadPayload): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.BULK_LOAD(routeId),
+            payload
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
         return data.data;
     },
 };

@@ -11,8 +11,11 @@ import {
     Tooltip,
     Modal as AntModal,
     Table as AntTable,
+    Typography,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined, ReloadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, HolderOutlined, ReloadOutlined, ContainerOutlined } from '@ant-design/icons';
+
+const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
 import dayjs from 'dayjs';
 import {
@@ -36,6 +39,7 @@ import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
 import { ExceptionalAssignModal } from './components/ExceptionalAssignModal';
 import { RouteMapModal } from './RouteMapModal';
+import { RouteLoadDrawer } from '@/features/store/logistics/components/RouteLoadDrawer';
 import type {
     DeliveryRoute,
     EligibleOrder,
@@ -80,6 +84,7 @@ interface RouteDetailPageViewProps {
     onReorderStops: (stopIds: string[]) => Promise<void>;
     onRecalculate: () => Promise<void>;
     onOptimizeRoute: () => Promise<void>;
+    onLoadSuccess: () => void;
 }
 
 export const RouteDetailPageView = ({
@@ -98,6 +103,7 @@ export const RouteDetailPageView = ({
     onReorderStops,
     onRecalculate,
     onOptimizeRoute,
+    onLoadSuccess,
 }: RouteDetailPageViewProps) => {
     const [selectedDailyIds, setSelectedDailyIds] = useState<string[]>([]);
     const [addingDaily, setAddingDaily] = useState(false);
@@ -111,6 +117,7 @@ export const RouteDetailPageView = ({
     const [planning, setPlanning] = useState(false);
     const [reordering, setReordering] = useState(false);
     const [recalculating, setRecalculating] = useState(false);
+    const [loadModalOpen, setLoadModalOpen] = useState(false);
 
     // Compute before early returns so hooks stay in consistent order
     const activeStops = (route?.stops ?? []).filter((s) => s.status !== 'cancelled');
@@ -399,7 +406,7 @@ export const RouteDetailPageView = ({
                 <h1 className="routeDetailTitle">{routeNum}</h1>
                 <Descriptions size="small" column={{ xs: 1, sm: 2, md: 3 }}>
                     <Descriptions.Item label="Fecha">
-                        {formatDateShort(route.operational_date)}
+                        <Text strong>{formatDateShort(route.operational_date)}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Hora de salida">
                         {isDraft ? (
@@ -421,23 +428,23 @@ export const RouteDetailPageView = ({
                                 showNow={false}
                             />
                         ) : (
-                            route.departure_time || '—'
+                            route.departure_time ? <Text strong>{route.departure_time}</Text> : '—'
                         )}
                     </Descriptions.Item>
                     <Descriptions.Item label="Conductor">
-                        {route.driver?.name || '—'}
+                        <Text strong>{route.driver?.name || '—'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Vehículo">
-                        {route.vehicle?.name || '—'}
+                        <Text strong>{route.vehicle?.name || '—'}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Estado">
                         <Tag color={statusColors[route.status] || 'default'}>
                             {statusLabels[route.status] || route.status}
                         </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Paradas">{activeStops.length}</Descriptions.Item>
+                    <Descriptions.Item label="Paradas"><Text strong>{activeStops.length}</Text></Descriptions.Item>
                 </Descriptions>
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                     {isPlanned && hasPolyline && (
                         <Button
                             variant="default"
@@ -464,6 +471,25 @@ export const RouteDetailPageView = ({
                                         },
                                     });
                                 }}
+                            />
+                        </CanDo>
+                    )}
+                    {route.status === 'planned' && (
+                        <CanDo permission="logistics.routes.manage">
+                            <Button
+                                variant="primary"
+                                label="Gestionar Carga"
+                                icon={<ContainerOutlined />}
+                                action={() => setLoadModalOpen(true)}
+                            />
+                        </CanDo>
+                    )}
+                    {route.status === 'loaded' && (
+                        <CanDo permission="logistics.routes.view">
+                            <Button
+                                variant="default"
+                                label="Ver Hoja de Carga"
+                                action={() => setLoadModalOpen(true)}
                             />
                         </CanDo>
                     )}
@@ -703,6 +729,17 @@ export const RouteDetailPageView = ({
                 open={mapModalOpen}
                 route={route}
                 onClose={() => setMapModalOpen(false)}
+            />
+
+            <RouteLoadDrawer
+                open={loadModalOpen}
+                routeId={route.id}
+                isLoaded={route.status === 'loaded'}
+                onClose={() => setLoadModalOpen(false)}
+                onSuccess={() => {
+                    setLoadModalOpen(false);
+                    onLoadSuccess();
+                }}
             />
         </div>
     );
