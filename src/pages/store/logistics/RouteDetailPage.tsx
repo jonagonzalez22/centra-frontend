@@ -24,6 +24,7 @@ export const RouteDetailPage = () => {
         reorderStops,
         recalculate,
         optimizeRoute,
+        revertRoute,
     } = useRouteDetail(id!);
 
     const handleBack = () => navigate('/tienda/logistica/rutas');
@@ -52,6 +53,7 @@ export const RouteDetailPage = () => {
                 onReorderStops={reorderStops}
                 onRecalculate={recalculate}
                 onOptimizeRoute={optimizeRoute}
+                onRevertRoute={revertRoute}
                 onLoadSuccess={refresh}
             />
         </div>

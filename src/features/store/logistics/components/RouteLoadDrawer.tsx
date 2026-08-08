@@ -264,7 +264,7 @@ export const RouteLoadDrawer = ({
                     </div>
                         );
                     })()
-                ) : (
+                ) : isLoaded ? null : (
                     <div style={{ display: 'flex', gap: 8 }}>
                         <Button
                             size="small"
@@ -273,7 +273,6 @@ export const RouteLoadDrawer = ({
                             action={() =>
                                 handleConfirmAll(productId, product.total_planned)
                             }
-                            disabled={isLoaded}
                             style={{
                                 background: '#52c41a',
                                 borderColor: '#52c41a',
@@ -286,7 +285,6 @@ export const RouteLoadDrawer = ({
                             label="Editar"
                             icon={<EditOutlined />}
                             action={() => setEditingProduct(productId)}
-                            disabled={isLoaded}
                         />
                     </div>
                 )}

@@ -11,7 +11,7 @@ import type {
     EligibleOrder,
     EligibleOrdersFilters,
 } from '../interfaces/route.interface';
-import type { LoadSheetData, ConfirmLoadPayload, ConfirmLoadResponse, BulkLoadPayload } from '../interfaces/loadSheet.interface';
+import type { LoadSheetData, ConfirmLoadPayload, ConfirmLoadResponse, BulkLoadPayload, AdjustItemsPayload } from '../interfaces/loadSheet.interface';
 
 export const RoutesService = {
     getAll: async (filters: RoutesFilters = {}): Promise<RoutesListResponse> => {
@@ -236,6 +236,30 @@ export const RoutesService = {
         const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.BULK_LOAD(routeId),
             payload
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+        return data.data;
+    },
+
+    adjustItems: async (routeId: string, payload: AdjustItemsPayload): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.ADJUST_ITEMS(routeId),
+            payload
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+        return data.data;
+    },
+
+    revert: async (routeId: string, reason: string): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.REVERT(routeId),
+            { reason }
         );
         if (data.status === 'error') {
             const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };

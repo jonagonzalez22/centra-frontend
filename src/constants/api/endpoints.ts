@@ -70,6 +70,8 @@ export const API_ENDPOINTS = {
                 LOAD_SHEET: (routeId: string) => `/v1/store/routes/${routeId}/load-sheet`,
                 CONFIRM_LOAD: (routeId: string) => `/v1/store/routes/${routeId}/confirm-load`,
                 BULK_LOAD: (routeId: string) => `/v1/store/routes/${routeId}/bulk-load`,
+                ADJUST_ITEMS: (routeId: string) => `/v1/store/routes/${routeId}/adjust-items`,
+                REVERT: (routeId: string) => `/v1/store/routes/${routeId}/revert`,
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,
