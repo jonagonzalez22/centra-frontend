@@ -15,6 +15,7 @@ export const RouteDetailPage = () => {
         dailyOrdersLoading,
         exceptionalOrdersLoading,
         error,
+        refresh,
         addStop,
         addExceptionalStop,
         removeStop,
@@ -51,6 +52,7 @@ export const RouteDetailPage = () => {
                 onReorderStops={reorderStops}
                 onRecalculate={recalculate}
                 onOptimizeRoute={optimizeRoute}
+                onLoadSuccess={refresh}
             />
         </div>
     );
