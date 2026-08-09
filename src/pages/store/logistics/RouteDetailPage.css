@@ -68,3 +68,10 @@
 .routeDetailPage .ant-table-tbody > tr {
     transition: opacity 0.15s ease, transform 0.15s ease;
 }
+
+/* Truncate button text on narrow screens */
+.routeDetailHeader .ant-btn span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

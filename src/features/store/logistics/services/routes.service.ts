@@ -267,4 +267,15 @@ export const RoutesService = {
         }
         return data.data;
     },
+
+    dispatch: async (routeId: string): Promise<DeliveryRoute> => {
+        const { data } = await api.post<ApiListResponse<DeliveryRoute>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.DISPATCH(routeId)
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+        return data.data;
+    },
 };
