@@ -72,6 +72,7 @@ export const API_ENDPOINTS = {
                 BULK_LOAD: (routeId: string) => `/v1/store/routes/${routeId}/bulk-load`,
                 ADJUST_ITEMS: (routeId: string) => `/v1/store/routes/${routeId}/adjust-items`,
                 REVERT: (routeId: string) => `/v1/store/routes/${routeId}/revert`,
+                DISPATCH: (routeId: string) => `/v1/store/routes/${routeId}/dispatch`,
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,

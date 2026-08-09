@@ -22,6 +22,7 @@ export interface UseRouteDetailReturn {
     recalculate: () => Promise<void>;
     optimizeRoute: () => Promise<void>;
     revertRoute: (reason: string) => Promise<void>;
+    dispatchRoute: () => Promise<void>;
 }
 
 export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
@@ -175,6 +176,17 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         }
     }, [routeId]);
 
+    const dispatchRoute = useCallback(async () => {
+        try {
+            const updatedRoute = await RoutesService.dispatch(routeId);
+            setRoute(updatedRoute);
+            message.success('Ruta despachada exitosamente.');
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al despachar la ruta.');
+        }
+    }, [routeId]);
+
     const refresh = useCallback(async () => {
         try {
             setLoading(true);
@@ -252,5 +264,6 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         recalculate,
         optimizeRoute: optimizeRouteFn,
         revertRoute,
+        dispatchRoute,
     };
 };

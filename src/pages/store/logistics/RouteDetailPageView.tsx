@@ -16,7 +16,7 @@ import {
     Row,
     Col,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -89,6 +89,7 @@ interface RouteDetailPageViewProps {
     onRecalculate: () => Promise<void>;
     onOptimizeRoute: () => Promise<void>;
     onRevertRoute: (reason: string) => Promise<void>;
+    onDispatchRoute: () => Promise<void>;
     onLoadSuccess: () => void;
 }
 
@@ -109,6 +110,7 @@ export const RouteDetailPageView = ({
     onRecalculate,
     onOptimizeRoute,
     onRevertRoute,
+    onDispatchRoute,
     onLoadSuccess,
 }: RouteDetailPageViewProps) => {
     const [selectedDailyIds, setSelectedDailyIds] = useState<string[]>([]);
@@ -541,29 +543,86 @@ export const RouteDetailPageView = ({
 
                 {/* ── Acciones: loaded ── */}
                 {route.status === 'loaded' && (
-                    <Row gutter={[8, 8]} style={{ marginTop: 12, maxWidth: 600 }}>
-                        <CanDo permission="logistics.routes.manage">
-                            <Col xs={24} md={14}>
+                    <Row gutter={[8, 8]} align="middle" style={{ marginTop: 12 }}>
+                        {hasPolyline && (
+                            <Col xs={12} md={6}>
+                                <Button
+                                    variant="default"
+                                    size="middle"
+                                    label="Ver recorrido"
+                                    icon={<EnvironmentOutlined />}
+                                    action={() => setMapModalOpen(true)}
+                                    block
+                                    style={{ overflow: 'hidden' }}
+                                />
+                            </Col>
+                        )}
+                        <Col xs={hasPolyline ? 12 : 24} md={6}>
+                            <CanDo permission="logistics.routes.view">
+                                <Button
+                                    variant="default"
+                                    size="middle"
+                                    label="Hoja de Carga"
+                                    icon={<FileTextOutlined />}
+                                    action={() => setLoadModalOpen(true)}
+                                    block
+                                    style={{ overflow: 'hidden' }}
+                                />
+                            </CanDo>
+                        </Col>
+                        <Col xs={24} md={6}>
+                            <CanDo permission="logistics.routes.manage">
                                 <Button
                                     variant="primary"
+                                    size="middle"
                                     label="Ajustar Productos por Parada"
                                     icon={<EyeOutlined />}
                                     action={() => setAdjustmentOpen(true)}
                                     block
                                 />
-                            </Col>
-                        </CanDo>
-                        <CanDo permission="logistics.routes.view">
-                            <Col xs={24} md={10}>
-                                <Button
-                                    variant="default"
-                                    label="Ver Hoja de Carga"
-                                    icon={<FileTextOutlined />}
-                                    action={() => setLoadModalOpen(true)}
-                                    block
-                                />
-                            </Col>
-                        </CanDo>
+                            </CanDo>
+                        </Col>
+                        <Col xs={24} md={6}>
+                            <CanDo permission="logistics.routes.dispatch">
+                                <Popconfirm
+                                    title="¿Confirmar despacho?"
+                                    description="El chofer iniciará el recorrido y ya no se podrán realizar ajustes de carga."
+                                    onConfirm={() => onDispatchRoute()}
+                                    okText="Despachar"
+                                    cancelText="Cancelar"
+                                    okButtonProps={{ style: { background: '#52c41a', borderColor: '#52c41a' } }}
+                                >
+                                    <Button
+                                        variant="primary"
+                                        size="middle"
+                                        label="Despachar Ruta"
+                                        icon={<TruckOutlined />}
+                                        block
+                                        style={{
+                                            background: '#52c41a',
+                                            borderColor: '#52c41a',
+                                            color: '#fff',
+                                        }}
+                                    />
+                                </Popconfirm>
+                            </CanDo>
+                        </Col>
+                    </Row>
+                )}
+
+                {/* ── Acciones: dispatched ── */}
+                {route.status === 'dispatched' && hasPolyline && (
+                    <Row gutter={[8, 8]} style={{ marginTop: 12 }}>
+                        <Col xs={24} md={6}>
+                            <Button
+                                variant="default"
+                                size="middle"
+                                label="Ver recorrido"
+                                icon={<EnvironmentOutlined />}
+                                action={() => setMapModalOpen(true)}
+                                block
+                            />
+                        </Col>
                     </Row>
                 )}
             </div>
