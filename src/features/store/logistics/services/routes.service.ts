@@ -278,4 +278,14 @@ export const RoutesService = {
         }
         return data.data;
     },
+
+    markStopNotified: async (stopId: string): Promise<void> => {
+        const { data } = await api.patch<ApiListResponse<null>>(
+            API_ENDPOINTS.STORE.LOGISTICS.STOPS.NOTIFY(stopId)
+        );
+        if (data.status === 'error') {
+            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            throw error;
+        }
+    },
 };

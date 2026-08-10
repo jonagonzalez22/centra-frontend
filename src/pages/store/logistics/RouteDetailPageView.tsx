@@ -15,8 +15,9 @@ import {
     Dropdown,
     Row,
     Col,
+    message,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined, WhatsAppOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -50,6 +51,9 @@ import type {
     RouteStop,
 } from '@/features/store/logistics/interfaces/route.interface';
 import { formatDateShort } from '@/utils/formatters';
+import { RoutesService } from '@/features/store/logistics/services/routes.service';
+import { buildWhatsAppMessage } from '@/features/store/logistics/utils/whatsappMessage';
+import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import './RouteDetailPage.css';
 
 const statusColors: Record<string, string> = {
@@ -127,6 +131,7 @@ export const RouteDetailPageView = ({
     const [recalculating, setRecalculating] = useState(false);
     const [loadModalOpen, setLoadModalOpen] = useState(false);
     const [adjustmentOpen, setAdjustmentOpen] = useState(false);
+    const [notifiedStops, setNotifiedStops] = useState<Set<string>>(new Set());
 
     // Compute before early returns so hooks stay in consistent order
     const activeStops = (route?.stops ?? []).filter((s) => s.status !== 'cancelled');
@@ -227,7 +232,9 @@ export const RouteDetailPageView = ({
                           if (!stop.estimated_arrival_at) {
                               return <span style={{ color: '#999' }}>--:--</span>;
                           }
-                          return dayjs(stop.estimated_arrival_at).format('HH:mm');
+                           const eta = dayjs(stop.estimated_arrival_at);
+                           const roundedMinute = Math.floor(eta.minute() / 5) * 5;
+                           return eta.minute(roundedMinute).second(0).format('HH:mm');
                       },
                   },
                   {
@@ -251,6 +258,50 @@ export const RouteDetailPageView = ({
                 const label = statusLabels[stop.status] || stop.status;
                 const color = statusColors[stop.status] || 'default';
                 return <Tag color={color}>{label}</Tag>;
+            },
+        },
+        {
+            title: (
+                <Tooltip title="Notificar siguiente pendiente">
+                    <Button
+                        variant="link"
+                        size="small"
+                        icon={<WhatsAppOutlined style={{ color: '#25D366' }} />}
+                        label="Notif."
+                        action={() => {
+                            const next = activeStops.find(
+                                (s) => !s.notified_at && !notifiedStops.has(s.id)
+                            );
+                            if (next) handleWhatsApp(next);
+                        }}
+                    />
+                </Tooltip>
+            ),
+            key: 'whatsapp',
+            width: 60,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const stop = record as unknown as RouteStop;
+                const isNotified = stop.notified_at || notifiedStops.has(stop.id);
+                return (
+                    <Tooltip
+                        title={
+                            isNotified && stop.notified_at
+                                ? `Notificado el ${formatDateShort(stop.notified_at)}`
+                                : 'Notificar por WhatsApp'
+                        }
+                    >
+                        <AntButton
+                            type="text"
+                            icon={
+                                <WhatsAppOutlined
+                                    style={{ color: isNotified ? '#b7eb8f' : '#25D366', fontSize: 18 }}
+                                />
+                            }
+                            onClick={() => handleWhatsApp(stop)}
+                            aria-label="Notificar WhatsApp"
+                        />
+                    </Tooltip>
+                );
             },
         },
         ...(isDraft
@@ -406,6 +457,38 @@ export const RouteDetailPageView = ({
             await onRemoveStop(stopId);
         } finally {
             setRemovingStopId(null);
+        }
+    };
+
+    const handleWhatsApp = async (stop: RouteStop) => {
+        const phone = stop.order?.customer?.phone;
+        const msg = buildWhatsAppMessage({
+            customerName: stop.order?.customer?.name || 'Cliente',
+            estimatedArrivalAt: stop.estimated_arrival_at,
+            sequence: stop.sequence,
+        });
+
+        // Optimistic update
+        setNotifiedStops((prev) => new Set(prev).add(stop.id));
+
+        try {
+            await RoutesService.markStopNotified(stop.id);
+        } catch (err) {
+            setNotifiedStops((prev) => {
+                const next = new Set(prev);
+                next.delete(stop.id);
+                return next;
+            });
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al marcar como notificado.');
+            return;
+        }
+
+        if (phone) {
+            window.open(
+                `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`,
+                '_blank'
+            );
         }
     };
 

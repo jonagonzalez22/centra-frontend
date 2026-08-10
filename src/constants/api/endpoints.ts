@@ -76,6 +76,7 @@ export const API_ENDPOINTS = {
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,
+                NOTIFY: (stopId: string) => `/v1/store/route-stops/${stopId}/notified`,
             },
             VEHICLES: {
                 URL: '/v1/store/vehicles',
