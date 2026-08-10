@@ -34,6 +34,7 @@ export interface RouteStopOrder {
     customer: {
         name: string;
         document: string;
+        phone: string | null;
     } | null;
     address: {
         street: string;
@@ -60,6 +61,7 @@ export interface RouteStop {
     gps_lon: string | null;
     signature_uri: string | null;
     evidence_uris: null;
+    notified_at: string | null;
 }
 
 export interface DeliveryRoute {
