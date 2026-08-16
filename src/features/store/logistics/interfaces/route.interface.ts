@@ -62,11 +62,18 @@ export interface RouteStop {
     signature_uri: string | null;
     evidence_uris: null;
     notified_at: string | null;
+    notification_window_start: string | null;
+    notification_window_end: string | null;
+    notification_window_day: string | null;
+    notification_window_raw_eta: string | null;
+    notification_window_start_raw_iso: string | null;
+    notification_window_end_raw_iso: string | null;
 }
 
 export interface DeliveryRoute {
     id: string;
     store_id: string;
+    timezone?: string;
     operational_date: string;
     status: RouteStatus;
     observations: string | null;
