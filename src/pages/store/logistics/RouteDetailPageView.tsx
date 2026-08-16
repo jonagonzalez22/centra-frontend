@@ -226,15 +226,25 @@ export const RouteDetailPageView = ({
                   {
                       title: 'Llegada est.',
                       key: 'eta',
-                      width: 100,
+                      width: 130,
                       render: (_: unknown, record?: Record<string, unknown>) => {
                           const stop = record as unknown as RouteStop;
-                          if (!stop.estimated_arrival_at) {
-                              return <span style={{ color: '#999' }}>--:--</span>;
+                          if (stop.notification_window_start && stop.notification_window_end) {
+                              return (
+                                  <Tooltip
+                                      title={
+                                          stop.notification_window_raw_eta
+                                              ? `ETA: ${dayjs(stop.notification_window_raw_eta).format('HH:mm')}`
+                                              : undefined
+                                      }
+                                  >
+                                      <span>
+                                          {stop.notification_window_start} – {stop.notification_window_end}
+                                      </span>
+                                  </Tooltip>
+                              );
                           }
-                           const eta = dayjs(stop.estimated_arrival_at);
-                           const roundedMinute = Math.floor(eta.minute() / 5) * 5;
-                           return eta.minute(roundedMinute).second(0).format('HH:mm');
+                          return <span style={{ color: '#999' }}>Sin ETA</span>;
                       },
                   },
                   {
