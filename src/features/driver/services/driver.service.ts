@@ -1,7 +1,40 @@
 import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
-import type { ActiveRouteResponse, RouteStopsResponse, StopDetailResponse } from '../interfaces/driver.interface';
+import type {
+    ActiveRouteResponse,
+    RouteStopsResponse,
+    StopDetailResponse,
+} from '../interfaces/driver.interface';
+import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+
+export interface CompleteStopPayload {
+    status: 'completed' | 'failed';
+    items: Array<{
+        route_stop_item_id: string;
+        quantity_delivered: number;
+    }>;
+    gps?: {
+        lat: number;
+        lon: number;
+    };
+    evidence_uris?: string[];
+    payments?: Array<{
+        store_payment_method_id: string;
+        amount: number;
+        reference?: string;
+    }>;
+}
+
+export interface CompleteStopResponse {
+    status: 'success';
+    message: string | null;
+    data: {
+        stop_id: string;
+        completed_at: string;
+    };
+    errors: null;
+}
 
 export const DriverService = {
     /**
@@ -27,7 +60,12 @@ export const DriverService = {
             };
             throw error;
         } catch (err) {
-            if (err && typeof err === 'object' && 'response' in err && (err as { response?: { status?: number } }).response?.status === 404) {
+            if (
+                err &&
+                typeof err === 'object' &&
+                'response' in err &&
+                (err as { response?: { status?: number } }).response?.status === 404
+            ) {
                 return null;
             }
             throw err;
@@ -74,5 +112,54 @@ export const DriverService = {
             errors: data.errors ?? undefined,
         };
         throw error;
+    },
+
+    /**
+     * POST /v1/driver/stops/{stopId}/complete
+     * Completes a stop with optional payment registration.
+     */
+    completeStop: async (
+        stopId: string,
+        payload: CompleteStopPayload
+    ): Promise<CompleteStopResponse['data']> => {
+        const { data } = await api.post<CompleteStopResponse>(
+            API_ENDPOINTS.DRIVER.STOP_COMPLETE(stopId),
+            payload
+        );
+
+        if (data.status === 'success') {
+            return data.data;
+        }
+
+        const apiError: ApiError = {
+            status: 0,
+            message: data.message ?? 'Error al completar la parada.',
+            errors: data.errors ?? undefined,
+        };
+        throw apiError;
+    },
+
+    /**
+     * GET /api/v1/store/payment-methods
+     * Returns enabled payment methods for the store.
+     */
+    getPaymentMethods: async (): Promise<StorePaymentMethod[]> => {
+        const { data } = await api.get<{
+            status: string;
+            data: { items: StorePaymentMethod[] };
+            message?: string;
+            errors?: unknown;
+        }>(API_ENDPOINTS.DRIVER.STOP_PAYMENT_METHODS.URL);
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message ?? 'Error al cargar métodos de pago.',
+                errors: data.errors as ApiError['errors'],
+            };
+            throw error;
+        }
+
+        return data.data.items.filter((pm) => pm.is_enabled);
     },
 };

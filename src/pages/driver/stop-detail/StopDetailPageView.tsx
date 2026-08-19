@@ -1,11 +1,28 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Alert, Spin, Tag, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ReloadOutlined, FileTextOutlined, CheckOutlined } from '@ant-design/icons';
 import type { StopDetail, RouteStopStatus } from '@/features/driver/interfaces/driver.interface';
 import { OrderBalanceSummary } from '@/components/driver';
+import { DeliveryDecisionModal } from '@/features/driver/components/DeliveryDecisionModal';
+import { StopPaymentModal } from '@/features/driver/components/StopPaymentModal';
 import { formatCurrency } from '@/utils/formatters';
 import './StopDetailPage.css';
+
+interface StopDetailPageViewProps {
+    stop: StopDetail | null;
+    loading: boolean;
+    error: string | null;
+    onRefresh: () => void;
+    onComplete: (payload: {
+        status: 'completed';
+        items: Array<{ route_stop_item_id: string; quantity_delivered: number }>;
+        gps?: { lat: number; lon: number };
+        evidence_uris?: string[];
+        payments?: Array<{ store_payment_method_id: string; amount: number; reference?: string }>;
+    }) => Promise<void>;
+    completing?: boolean;
+}
 
 const STOP_STATUS_COLORS: Record<RouteStopStatus, string> = {
     pending: 'warning',
@@ -23,21 +40,83 @@ const STOP_STATUS_LABELS: Record<RouteStopStatus, string> = {
     cancelled: 'Cancelado',
 };
 
-interface StopDetailPageViewProps {
-    stop: StopDetail | null;
-    loading: boolean;
-    error: string | null;
-    onRefresh: () => void;
-}
-
 export const StopDetailPageView = ({
     stop,
     loading,
     error,
     onRefresh,
+    onComplete,
+    completing = false,
 }: StopDetailPageViewProps) => {
     const navigate = useNavigate();
     const [checkedItemIds, setCheckedItemIds] = useState<Set<string>>(new Set());
+
+    // Decision modal: shown when pending_amount > 0 before delivering
+    const [decisionModalOpen, setDecisionModalOpen] = useState(false);
+    // Payment modal: shown when user clicks "Cobrar" in decision modal
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+
+    const pendingAmount = stop?.order?.pending_amount ?? 0;
+    const hasPendingBalance = pendingAmount > 0;
+
+    const getGps = useCallback((): Promise<{ lat: number; lon: number } | undefined> => {
+        if (!navigator.geolocation) return Promise.resolve(undefined);
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+                () => resolve(undefined),
+                { timeout: 5000 }
+            );
+        });
+    }, []);
+
+    const buildCompletePayload = useCallback(
+        (gps: { lat: number; lon: number } | undefined, payments?: Array<{ store_payment_method_id: string; amount: number; reference?: string }>) => ({
+            status: 'completed' as const,
+            items: (stop?.items ?? []).map((item) => ({
+                route_stop_item_id: item.route_stop_item_id,
+                quantity_delivered: item.quantity_loaded > 0 ? item.quantity_loaded : item.quantity_planned,
+            })),
+            gps,
+            payments,
+        }),
+        [stop?.items]
+    );
+
+    const handleDeliverClick = useCallback(() => {
+        if (hasPendingBalance) {
+            setDecisionModalOpen(true);
+        } else {
+            // No pending balance — deliver directly
+            getGps().then((gps) => {
+                onComplete(buildCompletePayload(gps));
+            });
+        }
+    }, [hasPendingBalance, getGps, onComplete, buildCompletePayload]);
+
+    const handleDecisionDeliver = useCallback(() => {
+        // User chose "Entregar" (leave balance pending)
+        setDecisionModalOpen(false);
+        getGps().then((gps) => {
+            onComplete(buildCompletePayload(gps));
+        });
+    }, [getGps, onComplete, buildCompletePayload]);
+
+    const handleDecisionCollect = useCallback(() => {
+        // User chose "Cobrar" — open payment modal
+        setDecisionModalOpen(false);
+        setPaymentModalOpen(true);
+    }, []);
+
+    const handlePaymentConfirm = useCallback(
+        async (payments: Array<{ store_payment_method_id: string; amount: number; reference?: string }>) => {
+            const gps = await getGps();
+            await onComplete(buildCompletePayload(gps, payments));
+            setPaymentModalOpen(false);
+            setDecisionModalOpen(false);
+        },
+        [getGps, onComplete, buildCompletePayload]
+    );
 
     const toggleItem = (itemId: string) => {
         setCheckedItemIds((prev) => {
@@ -85,6 +164,8 @@ export const StopDetailPageView = ({
     }
 
     const hasPendingCollections = stop.collections.some((c) => c.status !== 'completed');
+    const isCompleted = stop.status === 'completed' || stop.status === 'failed' || stop.status === 'cancelled';
+    const canDeliver = !isCompleted && !completing;
 
     return (
         <div className="stopDetailPage">
@@ -229,7 +310,15 @@ export const StopDetailPageView = ({
 
                 {/* Sticky Bottom Bar */}
                 <div className="stopDetailBottomBar">
-                    <Button block size="large" disabled style={{ flex: 1 }}>
+                    <Button
+                        block
+                        size="large"
+                        disabled={!canDeliver}
+                        loading={completing}
+                        onClick={handleDeliverClick}
+                        style={{ flex: 1 }}
+                        className="stopDetailDeliverBtn"
+                    >
                         Entregar Pedido
                     </Button>
                     <Button block size="large" disabled style={{ flex: 1 }}>
@@ -237,6 +326,24 @@ export const StopDetailPageView = ({
                     </Button>
                 </div>
             </div>
+
+            {/* Decision Modal */}
+            <DeliveryDecisionModal
+                open={decisionModalOpen}
+                pendingAmount={pendingAmount}
+                onDeliver={handleDecisionDeliver}
+                onCollect={handleDecisionCollect}
+                onCancel={() => setDecisionModalOpen(false)}
+                loading={completing}
+            />
+
+            {/* Payment Modal */}
+            <StopPaymentModal
+                open={paymentModalOpen}
+                pendingAmount={pendingAmount}
+                onClose={() => setPaymentModalOpen(false)}
+                onConfirm={handlePaymentConfirm}
+            />
         </div>
     );
 };

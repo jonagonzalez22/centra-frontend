@@ -116,17 +116,27 @@ export interface OrderAmounts {
     pending_amount: number;
 }
 
+export interface RouteStopsCustomer {
+    name: string | null;
+    phone: string | null;
+}
+
+export interface RouteStopsAddress {
+    street: string | null;
+    locality: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    notes: string | null;
+}
+
 export interface RouteStopsItem {
     id: string;
     sequence: number;
     status: RouteStopStatus;
-    address: string;
-    contact_name: string | null;
-    contact_phone: string | null;
+    customer: RouteStopsCustomer;
+    address: RouteStopsAddress | null;
     notification_window_start: string | null;
     notification_window_end: string | null;
-    items_count: number;
-    total_planned_items: number;
     order: OrderAmounts | null; // null = sin datos del pedido
 }
 
@@ -139,6 +149,7 @@ export interface RouteStopsResponse {
 
 export interface StopDetailItem {
     id: string;
+    route_stop_item_id: string;
     product_id: string;
     product_name: string;
     sku: string;

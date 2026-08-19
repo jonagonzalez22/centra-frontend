@@ -1,0 +1,103 @@
+.deliveryDecisionModal .ant-modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.deliveryDecisionModal .ant-modal-header {
+    padding: 20px 24px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.deliveryDecisionModal .ant-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.deliveryDecisionModal .ant-modal-body {
+    padding: 20px 24px 24px;
+    background: #ffffff;
+}
+
+.deliveryDecisionModalContent {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+}
+
+.deliveryDecisionModalIcon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.deliveryDecisionModalText {
+    font-size: 15px;
+    color: #333333;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.deliveryDecisionModalText strong {
+    color: #d46b00;
+    font-weight: 700;
+}
+
+.deliveryDecisionModalSubtext {
+    font-size: 14px;
+    color: #595959;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.deliveryDecisionModalActions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.deliveryDecisionBtn {
+    height: 48px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.deliveryDecisionBtn--deliver {
+    background: #f5f5f5;
+    border-color: #d9d9d9;
+    color: #333333;
+}
+
+.deliveryDecisionBtn--deliver:hover {
+    background: #e8e8e8;
+    border-color: #b3b3b3;
+    color: #333333;
+}
+
+.deliveryDecisionBtn--collect {
+    background: #093764;
+    border-color: #093764;
+    color: #ffffff;
+}
+
+.deliveryDecisionBtn--collect:hover {
+    background: #0a4488;
+    border-color: #0a4488;
+    color: #ffffff;
+}
+
+.deliveryDecisionBtn--cancel {
+    background: #ffffff;
+    border-color: #d9d9d9;
+    color: #595959;
+}
+
+.deliveryDecisionBtn--cancel:hover {
+    background: #f5f5f5;
+    border-color: #b3b3b3;
+    color: #333333;
+}

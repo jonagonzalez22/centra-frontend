@@ -289,6 +289,24 @@
     z-index: 100;
 }
 
+.stopDetailDeliverBtn.ant-btn-primary {
+    background: #093764;
+    border-color: #093764;
+    color: white;
+}
+
+.stopDetailDeliverBtn.ant-btn-primary:hover {
+    background: #0a4488 !important;
+    border-color: #0a4488 !important;
+    color: white !important;
+}
+
+.stopDetailDeliverBtn.ant-btn-primary:disabled {
+    background: #d9d9d9;
+    border-color: #d9d9d9;
+    color: #999;
+}
+
 /* ── Responsive ─────────────────────────────────────── */
 @media (min-width: 768px) {
     .stopDetailPage {

@@ -1,4 +1,4 @@
-import { Alert, Spin, Card, Button, Empty } from 'antd';
+import { Alert, Spin, Card, Button, Empty, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
     EnvironmentOutlined,
@@ -43,15 +43,27 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
             ? `${formatTime(stop.notification_window_start)} – ${formatTime(stop.notification_window_end)}`
             : null;
 
-    const mapsUrl = stop.address
-        ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(stop.address)}`
+    // Preferir coordenadas si están disponibles, si no dirección
+    const mapsUrl = (stop.address?.latitude && stop.address?.longitude)
+        ? `https://www.google.com/maps/dir/?api=1&destination=${stop.address.latitude},${stop.address.longitude}`
+        : stop.address?.street
+            ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(stop.address.street)}`
+            : null;
+
+    // Dirección completa con localidad
+    const localityName = typeof stop.address?.locality === 'object'
+        ? (stop.address?.locality as { name?: string } | null)?.name
+        : (stop.address?.locality as string | null);
+    const street = typeof stop.address === 'object' ? stop.address?.street : stop.address;
+    const fullAddress = street
+        ? [street, localityName].filter(Boolean).join(', ')
         : null;
 
-    const whatsappUrl = stop.contact_phone
-        ? `https://wa.me/${stop.contact_phone.replace(/\D/g, '')}`
+    const whatsappUrl = stop.customer?.phone
+        ? `https://wa.me/${stop.customer.phone.replace(/\D/g, '')}`
         : null;
 
-    const phoneUrl = stop.contact_phone ? `tel:${stop.contact_phone}` : null;
+    const phoneUrl = stop.customer?.phone ? `tel:${stop.customer.phone}` : null;
 
     return (
         <Card
@@ -75,14 +87,21 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                 <div className="flex-1 min-w-0">
                     {/* Customer name — priority #1 */}
                     <div className="routeSheetStopCustomer">
-                        {stop.contact_name ?? 'Cliente'}
+                        {stop.customer?.name ?? 'Cliente'}
                     </div>
 
                     {/* Address — priority #2 */}
-                    {stop.address && (
+                    {fullAddress && (
                         <div className="routeSheetStopAddress">
                             <EnvironmentOutlined className="routeSheetStopIcon" />
-                            <span>{stop.address}</span>
+                            <span>{fullAddress}</span>
+                        </div>
+                    )}
+
+                    {/* Logistics notes */}
+                    {stop.address?.notes && (
+                        <div className="routeSheetStopNotes">
+                            <span className="routeSheetStopNotesText">{stop.address.notes}</span>
                         </div>
                     )}
 
@@ -180,11 +199,28 @@ export const RouteSheetPageView = ({
         );
     }
 
+    const pendingStops = stops.filter(
+        (s) => s.status === 'pending' || s.status === 'arrived'
+    );
     const completedStops = stops.filter(
         (s) => s.status === 'completed' || s.status === 'failed'
-    ).length;
+    );
     const totalStops = stops.length;
-    const progressPct = totalStops > 0 ? Math.round((completedStops / totalStops) * 100) : 0;
+    const completedCount = completedStops.length;
+    const progressPct = totalStops > 0 ? Math.round((completedCount / totalStops) * 100) : 0;
+
+    const renderStopsList = (stopsList: RouteStopsItem[]) => {
+        if (stopsList.length === 0) {
+            return <Empty description="No hay paradas en esta categoría." />;
+        }
+        return stopsList.map((stop) => (
+            <StopCard
+                key={stop.id}
+                stop={stop}
+                onPress={() => onStopPress(stop.id)}
+            />
+        ));
+    };
 
     return (
         <div className="routeSheetPage">
@@ -205,11 +241,11 @@ export const RouteSheetPageView = ({
             </div>
 
             <div className="p-4">
-                {/* Progress bar — clean, no percentage */}
+                {/* Progress bar */}
                 <div className="mb-4">
                     <div className="flex justify-between text-sm text-gray-600 mb-1">
                         <span>
-                            {completedStops} de {totalStops} paradas completadas
+                            {completedCount} de {totalStops} paradas completadas
                         </span>
                     </div>
                     <div className="routeSheetProgressBar">
@@ -220,18 +256,22 @@ export const RouteSheetPageView = ({
                     </div>
                 </div>
 
-                {/* Stops list */}
-                {stops.length === 0 ? (
-                    <Empty description="Esta ruta no tiene paradas asignadas." />
-                ) : (
-                    stops.map((stop) => (
-                        <StopCard
-                            key={stop.id}
-                            stop={stop}
-                            onPress={() => onStopPress(stop.id)}
-                        />
-                    ))
-                )}
+                {/* Tabs */}
+                <Tabs
+                    defaultActiveKey="pending"
+                    items={[
+                        {
+                            key: 'pending',
+                            label: `Pendientes (${pendingStops.length})`,
+                            children: renderStopsList(pendingStops),
+                        },
+                        {
+                            key: 'completed',
+                            label: `Completados (${completedStops.length})`,
+                            children: renderStopsList(completedStops),
+                        },
+                    ]}
+                />
             </div>
         </div>
     );

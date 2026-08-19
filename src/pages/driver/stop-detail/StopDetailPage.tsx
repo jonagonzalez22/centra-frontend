@@ -12,6 +12,8 @@ export const StopDetailPage = () => {
             loading={stopDetailState.loading}
             error={stopDetailState.error}
             onRefresh={stopDetailState.refresh}
+            onComplete={stopDetailState.completeStop}
+            completing={stopDetailState.completing}
         />
     );
 };
