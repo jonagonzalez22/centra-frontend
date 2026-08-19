@@ -1,0 +1,196 @@
+.stopPaymentModal .ant-modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.stopPaymentModal .ant-modal-header {
+    padding: 20px 24px 12px;
+    border-bottom: none;
+}
+
+.stopPaymentModal .ant-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+}
+
+.stopPaymentModal .ant-modal-body {
+    padding: 0 24px 16px;
+}
+
+.stopPaymentModal .ant-modal-footer {
+    padding: 12px 24px 20px;
+    border-top: 1px solid #f0f0f0;
+    background: #ffffff;
+}
+
+/* ── Body ─────────────────────────────── */
+.stopPaymentModalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stopPaymentModalError {
+    margin-bottom: 4px;
+}
+
+.stopPaymentModalHint {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.stopPaymentModalHint--partial {
+    color: #d46b00;
+    font-weight: 500;
+}
+
+/* ── Rows ─────────────────────────────── */
+.stopPaymentModalRows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.stopPaymentModalRow {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    padding: 12px;
+    padding-right: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.stopPaymentModalRowFields {
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+}
+
+.stopPaymentModalRowFields .ant-input-number {
+    flex: 1;
+    width: 100%;
+}
+
+.stopPaymentModalRowFields .ant-input {
+    width: 100% !important;
+    flex-shrink: 0;
+}
+
+/* Desktop: side by side */
+@media (min-width: 480px) {
+    .stopPaymentModalRowFields {
+        flex-direction: row;
+    }
+
+    .stopPaymentModalRowFields .ant-input-number {
+        width: auto;
+    }
+
+    .stopPaymentModalRowFields .ant-input {
+        width: 140px !important;
+    }
+}
+
+.stopPaymentModalRowFields .ant-input {
+    width: 140px;
+    flex-shrink: 0;
+}
+
+.stopPaymentModalRowError {
+    font-size: 12px;
+    color: #ff4d4f;
+    margin-top: -4px;
+}
+
+.stopPaymentModalRowRemove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+/* ── Add button ──────────────────────── */
+.stopPaymentModalAddBtn {
+    margin-top: 4px;
+}
+
+/* ── Footer ──────────────────────────── */
+.stopPaymentModalFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stopPaymentModalSummary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.stopPaymentModalSummaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stopPaymentModalSummaryLabel {
+    font-size: 13px;
+    color: #666;
+}
+
+.stopPaymentModalSummaryValue {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+}
+
+.stopPaymentModalSummaryValue--paid {
+    color: #389e0d;
+}
+
+.stopPaymentModalSummaryValue--pending {
+    color: #d46b00;
+}
+
+.stopPaymentModalSummaryValue--error {
+    color: #ff4d4f;
+}
+
+.stopPaymentModalSummaryValue--covered {
+    color: #52c41a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.stopPaymentModalFooterActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.stopPaymentModalFooterActions .ant-btn-primary {
+    background: #093764 !important;
+    border-color: #093764 !important;
+    color: #ffffff !important;
+}
+
+.stopPaymentModalFooterActions .ant-btn-primary:hover:not(:disabled) {
+    background: #0a4488 !important;
+    border-color: #0a4488 !important;
+    color: #ffffff !important;
+}
+
+.stopPaymentModalFooterActions .ant-btn-primary:disabled {
+    background: #d9d9d9 !important;
+    border-color: #d9d9d9 !important;
+    color: #999999 !important;
+}

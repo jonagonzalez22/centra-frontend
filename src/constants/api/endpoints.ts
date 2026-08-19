@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
         STOP_ARRIVE: (stopId: string) => `/v1/driver/stops/${stopId}/arrive`,
         STOP_COMPLETE: (stopId: string) => `/v1/driver/stops/${stopId}/complete`,
         STOP_NOTIFY: (stopId: string) => `/v1/driver/route-stops/${stopId}/notified`,
+        STOP_PAYMENT_METHODS: { URL: `/v1/driver/payment-methods` },
     },
     STORE: {
         CATEGORIES: {
@@ -83,7 +84,8 @@ export const API_ENDPOINTS = {
                 DISPATCH: (routeId: string) => `/v1/store/routes/${routeId}/dispatch`,
             },
             STOPS: {
-                DELETE: (routeId: string, stopId: string) => `/v1/store/routes/${routeId}/stops/${stopId}`,
+                DELETE: (routeId: string, stopId: string) =>
+                    `/v1/store/routes/${routeId}/stops/${stopId}`,
                 NOTIFY: (stopId: string) => `/v1/store/route-stops/${stopId}/notified`,
             },
             VEHICLES: {
