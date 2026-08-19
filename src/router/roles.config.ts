@@ -27,4 +27,9 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
         allowedPaths: ['/tienda'],
         priority: 4,
     },
+    STORE_DRIVER: {
+        homePath: '/tienda/conductor/rutas',
+        allowedPaths: ['/tienda'],
+        priority: 5,
+    },
 };

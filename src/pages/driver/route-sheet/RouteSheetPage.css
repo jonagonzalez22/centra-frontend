@@ -1,0 +1,195 @@
+.routeSheetPage {
+    @apply w-full p-6;
+}
+
+.routeSheetPageHeader {
+    @apply mb-6;
+}
+
+.routeSheetPageHeaderTop {
+    @apply flex flex-col gap-3;
+}
+
+.routeSheetPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.routeSheetPageTitle {
+    @apply text-2xl font-bold text-[#093764] m-0;
+}
+
+.routeSheetPageDescription {
+    @apply text-sm text-gray-500 m-0;
+}
+
+.routeSheetBackBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 8px 0;
+    cursor: pointer;
+    color: #093764;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: opacity 0.15s;
+    min-height: 44px;
+    width: fit-content;
+}
+
+.routeSheetBackBtn:hover {
+    opacity: 0.75;
+}
+
+.routeSheetBackBtnIcon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.routeSheetProgressBar {
+    height: 6px;
+    background: #e8e8e8;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.routeSheetProgressFill {
+    height: 100%;
+    background: #52c41a;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.routeSheetStopCard {
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.routeSheetStopCustomer {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.35;
+    margin-bottom: 3px;
+    word-break: break-word;
+}
+
+.routeSheetStopAddress {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+    line-height: 1.4;
+    margin-bottom: 4px;
+    word-break: break-word;
+}
+
+.routeSheetStopMeta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #888;
+    line-height: 1.4;
+}
+
+.routeSheetStopIcon {
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #999;
+}
+
+.routeSheetStopCardFooter {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #f0f0f0;
+}
+
+.routeSheetContactBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #093764;
+    text-decoration: none;
+    transition: background 0.15s;
+    min-height: 48px;
+    cursor: pointer;
+}
+
+.routeSheetContactBtn:not(:last-child) {
+    border-right: 1px solid #f0f0f0;
+}
+
+.routeSheetContactBtn:hover {
+    background: #f5f7ff;
+}
+
+.routeSheetContactBtn:active {
+    background: #e8eef9;
+}
+
+.routeSheetStopSequence {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sequencePending {
+    background: #f0f0f0;
+    color: #595959;
+    border: 2px solid #d9d9d9;
+}
+
+.sequenceArrived {
+    background: #e6f7ff;
+    color: #1890ff;
+    border: 2px solid #91d5ff;
+}
+
+.sequenceCompleted {
+    background: #f6ffed;
+    color: #52c41a;
+    border: 2px solid #b7eb8f;
+}
+
+.sequenceFailed {
+    background: #fff2f0;
+    color: #ff4d4f;
+    border: 2px solid #ffccc7;
+}
+
+.routeSheetActionBtn {
+    min-height: 36px;
+    min-width: 70px;
+}
+
+@media (max-width: 768px) {
+    .routeSheetPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .routeSheetPageHeader {
+        @apply mb-4;
+    }
+
+    .routeSheetPageTitle {
+        @apply text-xl;
+    }
+}

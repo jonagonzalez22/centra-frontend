@@ -4,9 +4,11 @@ import { useAuthStore } from '@/store/useAuthStore.store';
 const StoreDashboardPage: React.FC = () => {
     const user = useAuthStore((s) => s.user);
 
+    const isStoreAdmin = user?.roles.includes('STORE_ADMIN') ?? false;
     const hasAny = (user?.permissions?.length ?? 0) > 0;
 
-    if (!hasAny) {
+    // STORE_ADMIN siempre ve el dashboard; define permisos, no los recibe
+    if (!isStoreAdmin && !hasAny) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <Result
