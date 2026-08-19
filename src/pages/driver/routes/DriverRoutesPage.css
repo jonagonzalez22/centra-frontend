@@ -1,0 +1,55 @@
+.driverRoutesPage {
+    @apply w-full p-6;
+}
+
+.driverRoutesPageHeader {
+    @apply mb-4;
+}
+
+.driverRoutesPageBreadcrumb {
+    @apply mb-1;
+}
+
+.driverRoutesPageTitle {
+    @apply text-2xl font-bold text-[#093764] m-0;
+}
+
+.driverRouteProgressBar {
+    height: 6px;
+    background: #e8e8e8;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.driverRouteProgressFill {
+    height: 100%;
+    background: #52c41a;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.driverRouteCtaFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #093764;
+    color: white;
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .driverRoutesPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .driverRoutesPageHeader {
+        @apply mb-3;
+    }
+
+    .driverRoutesPageTitle {
+        @apply text-xl;
+    }
+}

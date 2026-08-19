@@ -19,7 +19,6 @@ export function PermissionRoute({
     const hasPermission = user.permissions.includes(permission);
 
     if (!hasPermission) {
-        console.warn(`Acceso denegado: Se requiere el permiso [${permission}]`);
         return <Navigate to={redirectTo} replace />;
     }
 

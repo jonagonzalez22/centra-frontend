@@ -1,4 +1,12 @@
 export const API_ENDPOINTS = {
+    DRIVER: {
+        ACTIVE_ROUTE: { URL: '/v1/driver/active-route' },
+        ROUTE_STOPS: (routeId: string) => `/v1/driver/routes/${routeId}/stops`,
+        STOP_DETAIL: (stopId: string) => `/v1/driver/stops/${stopId}`,
+        STOP_ARRIVE: (stopId: string) => `/v1/driver/stops/${stopId}/arrive`,
+        STOP_COMPLETE: (stopId: string) => `/v1/driver/stops/${stopId}/complete`,
+        STOP_NOTIFY: (stopId: string) => `/v1/driver/route-stops/${stopId}/notified`,
+    },
     STORE: {
         CATEGORIES: {
             URL: '/v1/store/categories',

@@ -31,6 +31,9 @@ import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaym
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
 import { RouteDetailPage } from '@/pages/store/logistics/RouteDetailPage';
+import { DriverRoutesPage } from '@/pages/driver/routes/DriverRoutesPage';
+import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
+import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -103,7 +106,7 @@ export const router = createBrowserRouter([
     // ── Tienda ────────────────────────────────────────
     {
         path: 'tienda',
-        element: <ProtectedRoute allowedRoles={['STORE_ADMIN', 'STORE_USER']} />,
+        element: <ProtectedRoute allowedRoles={['STORE_ADMIN', 'STORE_USER', 'STORE_DRIVER']} />,
         children: [
             {
                 element: <AppLayout title="Mi Tienda" />,
@@ -227,6 +230,16 @@ export const router = createBrowserRouter([
                                     },
                                 ],
                             },
+                        ],
+                    },
+
+                    // ── Conductor (Driver App) ─────────────
+                    {
+                        element: <PermissionRoute permission="drivers.view" redirectTo="/tienda/dashboard" />,
+                        children: [
+                            { path: 'conductor/rutas', element: <DriverRoutesPage /> },
+                            { path: 'conductor/ruta/:routeId', element: <RouteSheetPage /> },
+                            { path: 'conductor/parada/:routeId/:stopId', element: <StopDetailPage /> },
                         ],
                     },
                 ],

@@ -10,5 +10,6 @@ export function RootRedirect() {
     }
 
     const roles = Array.isArray(user.roles) ? user.roles : [];
-    return <Navigate to={getHomePath(roles)} replace />;
+    const home = getHomePath(roles);
+    return <Navigate to={home} replace />;
 }

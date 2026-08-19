@@ -18,7 +18,7 @@ import {
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
-import type { FeatureCode, User } from '@/entities/User';
+import type { FeatureCode, User, UserRole } from '@/entities/User';
 
 const { Sider } = Layout;
 
@@ -30,6 +30,7 @@ type MenuItem = {
     icon?: React.ReactNode;
     feature?: FeatureCode;
     permission?: string;
+    role?: string;
     context: MenuContext;
     children?: MenuItem[];
 };
@@ -113,12 +114,14 @@ const menuItems: MenuItem[] = [
         context: 'store',
         permission: 'store_users.view',
         feature: 'multi_user',
+        role: 'STORE_USER',
     },
     {
         label: 'Ventas',
         key: '/tienda/ventas/parent',
         icon: <ShoppingCart size={ICON_SIZE} />,
         context: 'store',
+        role: 'STORE_USER',
         children: [
             {
                 label: 'Caja',
@@ -126,6 +129,7 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'cash',
                 permission: 'cash.view',
+                role: 'STORE_USER',
             },
             {
                 label: 'Punto de Venta',
@@ -133,6 +137,7 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'pos',
                 permission: 'pos.view',
+                role: 'STORE_USER',
             },
             {
                 label: 'Pedidos',
@@ -140,6 +145,7 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'pos',
                 permission: 'orders.view',
+                role: 'STORE_USER',
             },
         ],
     },
@@ -150,6 +156,7 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'categories',
         permission: 'categories.view',
+        role: 'STORE_USER',
     },
     {
         label: 'Inventario',
@@ -158,6 +165,7 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'inventory',
         permission: 'inventory.view',
+        role: 'STORE_USER',
     },
     {
         label: 'Movimientos',
@@ -166,6 +174,7 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'inventory',
         permission: 'inventory.view',
+        role: 'STORE_USER',
     },
     {
         label: 'Logística',
@@ -173,12 +182,14 @@ const menuItems: MenuItem[] = [
         icon: <MapPin size={ICON_SIZE} />,
         context: 'store',
         feature: 'deliveries',
+        role: 'STORE_USER',
         children: [
             {
                 label: 'Rutas',
                 key: '/tienda/logistica/rutas',
                 context: 'store',
                 permission: 'logistics.routes.view',
+                role: 'STORE_USER',
             },
         ],
     },
@@ -188,18 +199,21 @@ const menuItems: MenuItem[] = [
         icon: <UsersRound size={ICON_SIZE} />,
         context: 'store',
         feature: 'customers',
+        role: 'STORE_USER',
         children: [
             {
                 label: 'Listado',
                 key: '/tienda/clientes',
                 context: 'store',
                 permission: 'customers.view',
+                role: 'STORE_USER',
             },
             {
                 label: 'Grupos Comerciales',
                 key: '/tienda/clientes/grupos',
                 context: 'store',
                 permission: 'commercial_groups.view',
+                role: 'STORE_USER',
             },
         ],
     },
@@ -209,6 +223,7 @@ const menuItems: MenuItem[] = [
         icon: <Settings size={ICON_SIZE} />,
         context: 'store',
         feature: 'store_settings',
+        role: 'STORE_USER',
         children: [
             {
                 label: 'Medios de pago',
@@ -216,6 +231,23 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'store_settings',
                 permission: 'store_payment_methods.view',
+                role: 'STORE_USER',
+            },
+        ],
+    },
+    {
+        label: 'Conductor',
+        key: '/tienda/conductor/parent',
+        icon: <MapPin size={ICON_SIZE} />,
+        context: 'store',
+        role: 'STORE_DRIVER',
+        children: [
+            {
+                label: 'Mis Rutas',
+                key: '/tienda/conductor/rutas',
+                context: 'store',
+                permission: 'drivers.view',
+                role: 'STORE_DRIVER',
             },
         ],
     },
@@ -228,10 +260,15 @@ function filterMenuItems(
 ): MenuItem[] {
     if (!user) return [];
 
+    const isStoreAdmin = user.roles.includes('STORE_ADMIN');
+
     return items.reduce<MenuItem[]>((acc, item) => {
         if (item.context !== 'both' && item.context !== currentContext) return acc;
         if (item.permission && !user.permissions.includes(item.permission)) return acc;
         if (item.feature && !hasFeature(user, item.feature)) return acc;
+        // STORE_ADMIN no necesita match de role (define permisos), salvo para STORE_DRIVER
+        if (item.role === 'STORE_DRIVER' && !user.roles.includes('STORE_DRIVER')) return acc;
+        if (item.role && !isStoreAdmin && !user.roles.includes(item.role as UserRole)) return acc;
 
         const filtered: MenuItem = { ...item };
 

@@ -1,0 +1,64 @@
+/* ── Compact badge (for stop cards) ─────────────────── */
+.orderBalanceBadge {
+    margin-top: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.orderBalanceBadge--paid {
+    background: #f6ffed;
+    color: #52c41a;
+    border-color: #b7eb8f;
+}
+
+.orderBalanceBadge--pending {
+    background: #fff7e6;
+    color: #d46b00;
+    border-color: #ffd591;
+}
+
+/* ── Full summary (for stop detail) ────────────────── */
+.orderBalanceFull {
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+.orderBalanceFullRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.orderBalanceFullLabel {
+    font-size: 13px;
+    color: #595959;
+}
+
+.orderBalanceFullValue {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.orderBalanceFullValue--paid {
+    color: #389e0d;
+}
+
+.orderBalanceFullValue--pending {
+    color: #d46b00;
+}
+
+.orderBalanceFullValue--zero {
+    color: #52c41a;
+}
+
+.orderBalanceFullDivider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 6px 0;
+}
