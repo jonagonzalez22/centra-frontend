@@ -9,6 +9,7 @@ export interface StopDetailFooterProps {
     buttonLabel: string;
     onPrimaryClick: () => void;
     onFailedDeliveryClick: () => void;
+    onExtraSaleClick: () => void;
 }
 
 export const StopDetailFooter = ({
@@ -19,6 +20,7 @@ export const StopDetailFooter = ({
     buttonLabel,
     onPrimaryClick,
     onFailedDeliveryClick,
+    onExtraSaleClick,
 }: StopDetailFooterProps) => {
     const isPrimaryDisabled = !canDeliver || !canConfirm;
 
@@ -27,7 +29,12 @@ export const StopDetailFooter = ({
             <div className="stopDetailButtonsRow">
                 {/* Secondary — "Venta Extra" */}
                 <div className="stopDetailSecondaryWrapper">
-                    <Button size="middle" disabled className="stopDetailVentaExtraBtn">
+                    <Button
+                        size="middle"
+                        disabled={isCompleted}
+                        onClick={onExtraSaleClick}
+                        className="stopDetailVentaExtraBtn"
+                    >
                         Venta Extra
                     </Button>
                 </div>
