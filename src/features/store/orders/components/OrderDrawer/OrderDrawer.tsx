@@ -30,6 +30,9 @@ const isReschedulable = (status: string): boolean =>
 
 const isCancellable = (status: string): boolean => status === 'open';
 
+const isAssignedToRoute = (routeIds?: string[]): boolean =>
+    (routeIds?.length ?? 0) > 0;
+
 const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose }) => {
     const { can } = usePermissions();
     const canEdit = can('orders.edit');
@@ -74,16 +77,21 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
     };
 
-    const canReschedule = order && isReschedulable(order.status);
-    const canCancel = order && isCancellable(order.status);
+    const canReschedule = order && isReschedulable(order.status) && !isAssignedToRoute(order.route_ids);
+    const canCancel = order && isCancellable(order.status) && !isAssignedToRoute(order.route_ids);
 
     const actionMenuItems: MenuProps['items'] = useMemo(() => {
         const items: MenuProps['items'] = [];
+        const assignedToRoute = order && isAssignedToRoute(order.route_ids);
 
         if (canEdit) {
             items.push({
                 key: 'reschedule',
-                label: canReschedule ? (
+                label: assignedToRoute ? (
+                    <Tooltip title="Pedido asignado a una ruta">
+                        <span className="text-gray-400">Reprogramar fecha</span>
+                    </Tooltip>
+                ) : canReschedule ? (
                     <span>Reprogramar fecha</span>
                 ) : (
                     <Tooltip title="Solo pedidos activos">
@@ -102,7 +110,11 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         if (canEdit) {
             items.push({
                 key: 'cancel',
-                label: canCancel ? (
+                label: assignedToRoute ? (
+                    <Tooltip title="Pedido asignado a una ruta">
+                        <span className="text-gray-400">Cancelar pedido</span>
+                    </Tooltip>
+                ) : canCancel ? (
                     <span className="text-red-600">Cancelar pedido</span>
                 ) : (
                     <Tooltip title="Solo pedidos abiertos">
@@ -119,7 +131,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
 
         return items;
-    }, [canEdit, canReschedule, canCancel]);
+    }, [canEdit, canReschedule, canCancel, order]);
 
     const footer = (
         <div className="flex justify-between">

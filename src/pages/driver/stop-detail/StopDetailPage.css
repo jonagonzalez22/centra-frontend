@@ -100,7 +100,7 @@
     @apply relative;
 }
 
-/* ── Section labels ─────────────────────────────── */
+/* ── Section labels + progress ─────────────────── */
 .stopDetailPaymentLabel {
     font-size: 11px;
     font-weight: 600;
@@ -110,14 +110,28 @@
     margin-bottom: 8px;
 }
 
+.stopDetailProductsHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 20px;
+    margin-bottom: 4px;
+}
+
 .stopDetailProductsLabel {
     font-size: 11px;
     font-weight: 600;
     color: #8c8c8c;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
-    margin-top: 20px;
+}
+
+.stopDetailProgress {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 /* ── Collections notice ────────────────────────────── */
@@ -146,95 +160,252 @@
     margin-bottom: 14px;
 }
 
-/* ── Products ───────────────────────────────────────── */
+/* ── Products wrapper with fade ────────────────────── */
+.stopDetailProductsWrapper {
+    position: relative;
+}
+
 .stopDetailProductsList {
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
-.stopDetailProductRow {
+.stopDetailProductsFade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(transparent, rgba(255, 255, 255, 0.9));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.stopDetailProductsFade--visible {
+    opacity: 1;
+}
+
+/* ── Product Card (vertical layout) ───────────────── */
+.stopDetailCard {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e8e8e8;
+    padding: 16px;
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 12px 10px;
-    border-bottom: 1px solid #f5f5f5;
-    border-radius: 8px;
-    margin-bottom: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+    /* Fixed max-width equal to mobile card width */
+    width: 100%;
+    max-width: 420px;
+    box-sizing: border-box;
 }
 
-.stopDetailProductRow:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
+/* Card state: Confirmed — complete + check confirmed */
+.stopDetailCard--confirmed {
+    border-color: #22c55e;
+    background-color: #f0fdf4;
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15);
 }
 
-.stopDetailProductRow:first-child {
-    padding-top: 0;
+/* Card state: Reduced — qty delivered < qty loaded */
+.stopDetailCard--reduced {
+    border-color: #ef4444;
+    background-color: #fef9f9;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1);
 }
 
-.stopDetailProductRow:hover {
-    background-color: #f9fafb;
+/* Card state: Pending — complete but NOT yet confirmed with check */
+.stopDetailCard--pending {
+    border-color: #d9d9d9;
+    background-color: #fafafa;
 }
 
-.stopDetailProductRow--checked {
-    background-color: #f0fff4 !important;
-    border-color: #bbf7d0;
-}
-
-.stopDetailProductCheck {
-    font-size: 18px;
-    color: #22c55e;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-/* Light quantity badge */
-.stopDetailProductQty {
+/* ── Check / Warning indicator — top right corner ─── */
+.stopDetailCardCheck {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    background: #f0f5ff;
-    color: #093764;
-    border-radius: 20px;
-    font-size: 17px;
-    font-weight: 700;
-    flex-shrink: 0;
-    padding: 0 10px;
+    width: 32px;
+    height: 32px;
 }
 
-/* Product info */
-.stopDetailProductInfo {
-    flex: 1;
-    min-width: 0;
-}
-
-.stopDetailProductName {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a1a1a;
-    line-height: 1.4;
-    word-break: break-word;
-}
-
-.stopDetailProductMeta {
+/* Base check button — the icon IS the circle (no extra border from button) */
+.stopDetailCheckBtn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: #d9d9d9;
+    font-size: 22px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-    flex-wrap: wrap;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.15s, transform 0.1s;
+    padding: 0;
+    line-height: 1;
 }
 
-.stopDetailProductSku {
+.stopDetailCheckBtn:hover:not(:disabled) {
+    color: #22c55e;
+}
+
+.stopDetailCheckBtn:active:not(:disabled) {
+    transform: scale(0.88);
+}
+
+/* Confirmed state — solid green circle with checkmark */
+.stopDetailCheckBtn--confirmed {
+    color: #22c55e;
+}
+
+.stopDetailCheckBtn--confirmed:hover:not(:disabled) {
+    color: #16a34a;
+}
+
+/* Disabled check button */
+.stopDetailCheckBtn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+/* Warning icon for reduced items — NOT tappable */
+.stopDetailCheckWarning {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    color: #dc2626;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Section 1: Stepper centered ── */
+.stopDetailCardStepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.stopDetailStepperBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #e0e0e0;
+    background: white;
+    color: #093764;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+    font-weight: 400;
+}
+
+.stopDetailStepperBtn:hover:not(:disabled) {
+    border-color: #093764;
+    background: #f0f7ff;
+    color: #093764;
+}
+
+.stopDetailStepperBtn:active:not(:disabled) {
+    background: #e0ebff;
+    transform: scale(0.96);
+}
+
+.stopDetailStepperBtn--disabled {
+    border-color: #ebebeb !important;
+    background: #fafafa !important;
+    color: #d9d9d9 !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+}
+
+.stopDetailStepperValue {
+    min-width: 52px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #093764;
+    padding: 0 8px;
+}
+
+/* ── Section 2: Product detail ── */
+.stopDetailCardDetail {
+    width: 100%;
+    text-align: center;
+}
+
+.stopDetailCardProductName {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.stopDetailCardProductMeta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
     font-size: 12px;
     color: #999;
 }
 
 .stopDetailExtraTag {
-    font-size: 11px !important;
+    font-size: 10px !important;
     line-height: 1.2 !important;
+    padding: 0 4px !important;
+}
+
+/* ── Section 3: Rejection reason ── */
+.stopDetailCardReason {
+    width: 100%;
+}
+
+.stopDetailReasonSelect {
+    width: 100%;
+}
+
+.stopDetailReasonSelect .ant-select-selector {
+    height: 40px !important;
+    font-size: 14px !important;
+}
+
+.stopDetailReasonSelect .ant-select-selection-placeholder {
+    font-size: 14px !important;
+    color: #bfbfbf !important;
+}
+
+.stopDetailReasonSelect--error .ant-select-selector {
+    border-color: #ef4444 !important;
+}
+
+.stopDetailReasonSelect--error:focus-within .ant-select-selector {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+.stopDetailReasonError {
+    font-size: 11px;
+    color: #dc2626;
+    margin-top: 4px;
+    text-align: left;
 }
 
 /* ── Collections ────────────────────────────────────── */
@@ -273,7 +444,12 @@
     color: #093764;
 }
 
-/* ── Bottom Bar (mobile: fixed) ──────────────────────── */
+/* ══════════════════════════════════════════════════════
+   FOOTER / BOTTOM BAR
+   Mobile: fixed at bottom, stacked vertically (3 equal-width items)
+   Desktop: static, all 3 in one row, equal width
+   ══════════════════════════════════════════════════════ */
+
 .stopDetailBottomBar {
     position: fixed;
     bottom: 0;
@@ -281,49 +457,183 @@
     right: 0;
     background: white;
     border-top: 1px solid #e8e8e8;
-    padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    display: flex;
-    gap: 10px;
+    padding: 10px 16px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ── All 3 actions in one row ── */
+/* Mobile: stacked column; Desktop: side by side (see media query) */
+.stopDetailButtonsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ── Each action wrapper: equal width on both mobile and desktop ── */
+.stopDetailSecondaryWrapper,
+.stopDetailPrimaryWrapper,
+.stopDetailTertiaryWrapper {
+    flex: 1;
+    width: 100%;
+}
+
+/* ── Secondary — "Venta Extra" ── */
+.stopDetailSecondaryWrapper {
+    display: flex;
+}
+
+.stopDetailVentaExtraBtn {
+    width: 100%;
+    height: 48px !important;
+    background: transparent !important;
+    border: 1.5px solid #8c8c8c !important;
+    color: #595959 !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+}
+
+.stopDetailVentaExtraBtn:hover:not(:disabled) {
+    border-color: #595959 !important;
+    color: #262626 !important;
+}
+
+.stopDetailVentaExtraBtn:disabled {
+    border-color: #d9d9d9 !important;
+    color: #d9d9d9 !important;
+    background: transparent !important;
+}
+
+/* ── Primary — "Entregar todo" / "Confirmar entrega parcial" ── */
+.stopDetailPrimaryWrapper {
+    display: flex;
+}
+
+.stopDetailPrimaryWrapper--disabled .stopDetailDeliverBtn.ant-btn-primary {
+    /* AntD disabled handles the look */
 }
 
 .stopDetailDeliverBtn.ant-btn-primary {
-    background: #093764;
-    border-color: #093764;
-    color: white;
+    width: 100%;
+    height: 48px !important;
+    background: #093764 !important;
+    border-color: #093764 !important;
+    color: white !important;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 8px !important;
+    box-shadow: none !important;
 }
 
-.stopDetailDeliverBtn.ant-btn-primary:hover {
+.stopDetailDeliverBtn.ant-btn-primary:hover:not(:disabled) {
     background: #0a4488 !important;
     border-color: #0a4488 !important;
     color: white !important;
+    box-shadow: none !important;
 }
 
+/* Primary disabled — gray bg, darker gray text, no shadow */
 .stopDetailDeliverBtn.ant-btn-primary:disabled {
-    background: #d9d9d9;
-    border-color: #d9d9d9;
-    color: #999;
+    background: #d9d9d9 !important;
+    border-color: #d9d9d9 !important;
+    color: #a6a6a6 !important;
+    box-shadow: none !important;
 }
 
-/* ── Responsive ─────────────────────────────────────── */
+/* ── Tertiary — "No se pudo entregar" ── */
+/* Plain text link — no border, no background, smallest font */
+.stopDetailTertiaryWrapper {
+    display: flex;
+}
+
+.stopDetailFailedLink {
+    width: 100%;
+    height: 48px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #8c8c8c;
+    font-size: 13px;
+    text-align: center;
+    transition: color 0.15s;
+    white-space: nowrap;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: underline;
+}
+
+.stopDetailFailedLink:hover:not(:disabled) {
+    color: #595959;
+}
+
+.stopDetailFailedLink:disabled {
+    color: #d9d9d9;
+    cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — DESKTOP
+   Bottom bar: static, full container width
+   All 3 actions: equal width, same row
+   Cards: left-aligned, max-width capped
+   ══════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
     .stopDetailPage {
         padding: 24px;
-        padding-bottom: 100px; /* space for non-fixed bottom bar */
+        padding-bottom: 200px;
     }
 
-    .stopDetailProductName {
-        font-size: 16px;
-    }
-
-    /* Desktop: bottom bar matches card width, at bottom of content */
+    /* Desktop: footer static, full width */
     .stopDetailBottomBar {
         position: static;
         border-top: 1px solid #e8e8e8;
         border-radius: 0 0 10px 10px;
-        padding: 16px 16px;
+        padding: 16px;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+        max-width: none;
+    }
+
+    /* Desktop: all 3 items side by side, equal width */
+    .stopDetailButtonsRow {
+        flex-direction: row;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .stopDetailSecondaryWrapper,
+    .stopDetailPrimaryWrapper,
+    .stopDetailTertiaryWrapper {
+        flex: 1;
+    }
+
+    /* Cards capped at mobile width, left-aligned */
+    .stopDetailProductsList {
+        align-items: flex-start;
+    }
+
+    .stopDetailCard {
+        max-width: 420px;
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .stopDetailCardProductName {
+        font-size: 17px;
+    }
+
+    .stopDetailStepperBtn {
+        width: 42px;
+        height: 42px;
+    }
+
+    .stopDetailStepperValue {
+        font-size: 22px;
     }
 }

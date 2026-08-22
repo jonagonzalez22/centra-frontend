@@ -1,0 +1,1 @@
+export { StopDetailFooter } from './StopDetailFooter';

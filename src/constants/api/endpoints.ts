@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
         STOP_COMPLETE: (stopId: string) => `/v1/driver/stops/${stopId}/complete`,
         STOP_NOTIFY: (stopId: string) => `/v1/driver/route-stops/${stopId}/notified`,
         STOP_PAYMENT_METHODS: { URL: `/v1/driver/payment-methods` },
+        STOP_REJECTION_REASONS: { URL: `/v1/driver/rejection-reasons` },
     },
     STORE: {
         CATEGORIES: {
@@ -93,6 +94,9 @@ export const API_ENDPOINTS = {
             },
             DRIVERS: {
                 URL: '/v1/store/drivers',
+            },
+            REJECTION_REASONS: {
+                URL: '/v1/store/logistics/rejection-reasons',
             },
         },
     },

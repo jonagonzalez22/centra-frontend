@@ -156,6 +156,7 @@ export interface StopDetailItem {
     quantity_planned: number;
     quantity_loaded: number;
     quantity_delivered: number;
+    unit_price: number;
     is_extra: boolean;
     notes: string | null;
 }
