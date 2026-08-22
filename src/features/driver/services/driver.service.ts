@@ -13,6 +13,7 @@ export interface CompleteStopPayload {
     items: Array<{
         route_stop_item_id: string;
         quantity_delivered: number;
+        rejection_reason_id?: string | null;
     }>;
     gps?: {
         lat: number;
@@ -24,6 +25,12 @@ export interface CompleteStopPayload {
         amount: number;
         reference?: string;
     }>;
+    rejection_reason_id?: string;
+}
+
+export interface RejectionReason {
+    id: string;
+    label: string;
 }
 
 export interface CompleteStopResponse {
@@ -161,5 +168,29 @@ export const DriverService = {
         }
 
         return data.data.items.filter((pm) => pm.is_enabled);
+    },
+
+    /**
+     * GET /v1/store/logistics/rejection-reasons
+     * Returns the catalog of rejection reasons for failed/partial deliveries.
+     */
+    getRejectionReasons: async (): Promise<RejectionReason[]> => {
+        const { data } = await api.get<{
+            status: string;
+            data: RejectionReason[];
+            message?: string;
+            errors?: unknown;
+        }>(API_ENDPOINTS.DRIVER.STOP_REJECTION_REASONS.URL);
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message ?? 'Error al cargar motivos de rechazo.',
+                errors: data.errors as ApiError['errors'],
+            };
+            throw error;
+        }
+
+        return data.data;
     },
 };

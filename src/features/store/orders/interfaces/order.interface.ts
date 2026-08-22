@@ -30,6 +30,7 @@ export interface OrderListItem {
     customer: OrderCustomer;
     delivery_address: Pick<OrderDeliveryAddress, 'locality' | 'street' | 'full_address'> | null;
     branch_id: string | null;
+    route_ids: string[];
 }
 
 export interface OrderItem {
@@ -96,6 +97,7 @@ export interface OrderDetail {
     items: OrderItem[];
     payments: OrderPayment[];
     events: OrderEvent[];
+    route_ids: string[];
 }
 
 export interface OrderFilters {

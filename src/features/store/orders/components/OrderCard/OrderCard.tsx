@@ -20,6 +20,9 @@ const isReschedulable = (status: string): boolean =>
 
 const isCancellable = (status: string): boolean => status === 'open';
 
+const isAssignedToRoute = (routeIds?: string[]): boolean =>
+    (routeIds?.length ?? 0) > 0;
+
 const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
     const { can } = usePermissions();
     const canEdit = can('orders.edit');
@@ -77,17 +80,21 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         if (canEdit) {
             items.push({
                 key: 'reschedule',
-                label: isReschedulable(order.status) ? (
+                label: isAssignedToRoute(order.route_ids) ? (
+                    <Tooltip title="Pedido asignado a una ruta">
+                        <span className="text-gray-400">Reprogramar fecha</span>
+                    </Tooltip>
+                ) : isReschedulable(order.status) ? (
                     <span>Reprogramar fecha</span>
                 ) : (
                     <Tooltip title="Solo pedidos activos">
                         <span className="text-gray-400">Reprogramar fecha</span>
                     </Tooltip>
                 ),
-                disabled: !isReschedulable(order.status),
+                disabled: !isReschedulable(order.status) || isAssignedToRoute(order.route_ids),
                 onClick: (e) => {
                     e.domEvent.stopPropagation();
-                    if (isReschedulable(order.status)) {
+                    if (isReschedulable(order.status) && !isAssignedToRoute(order.route_ids)) {
                         setRescheduleOpen(true);
                     }
                 },
@@ -97,17 +104,21 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         if (canEdit) {
             items.push({
                 key: 'cancel',
-                label: isCancellable(order.status) ? (
+                label: isAssignedToRoute(order.route_ids) ? (
+                    <Tooltip title="Pedido asignado a una ruta">
+                        <span className="text-gray-400">Cancelar pedido</span>
+                    </Tooltip>
+                ) : isCancellable(order.status) ? (
                     <span className="text-red-600">Cancelar pedido</span>
                 ) : (
                     <Tooltip title="Solo pedidos abiertos">
                         <span className="text-gray-400">Cancelar pedido</span>
                     </Tooltip>
                 ),
-                disabled: !isCancellable(order.status),
+                disabled: !isCancellable(order.status) || isAssignedToRoute(order.route_ids),
                 onClick: (e) => {
                     e.domEvent.stopPropagation();
-                    if (isCancellable(order.status)) {
+                    if (isCancellable(order.status) && !isAssignedToRoute(order.route_ids)) {
                         setCancelOpen(true);
                     }
                 },
@@ -115,7 +126,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         }
 
         return items;
-    }, [canEdit, order.status, onClick]);
+    }, [canEdit, order.status, order.route_ids, onClick]);
 
     return (
         <>
