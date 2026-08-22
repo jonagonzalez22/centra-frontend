@@ -193,3 +193,39 @@ export interface StopDetailResponse {
     data: StopDetail;
     errors: null;
 }
+
+// ── Extra Sale ──────────────────────────────────────────────────────────────────
+
+export interface SurplusProduct {
+    product_id: string;
+    product_name: string;
+    sku: string;
+    unit_price: number;
+    available_quantity: number;
+}
+
+export interface SurplusProductsResponse {
+    status: 'success';
+    message: string | null;
+    data: {
+        route_id: string;
+        surplus: SurplusProduct[];
+    };
+    errors: null;
+}
+
+export interface ExtraSaleItemPayload {
+    product_id: string;
+    quantity: number;
+}
+
+export interface AddExtraSalePayload {
+    items: ExtraSaleItemPayload[];
+}
+
+export interface AddExtraSaleResponse {
+    status: 'success';
+    message: string | null;
+    data: StopDetail;
+    errors: null;
+}

@@ -2,9 +2,11 @@ export const API_ENDPOINTS = {
     DRIVER: {
         ACTIVE_ROUTE: { URL: '/v1/driver/active-route' },
         ROUTE_STOPS: (routeId: string) => `/v1/driver/routes/${routeId}/stops`,
+        ROUTE_SURPLUS: (routeId: string) => `/v1/driver/routes/${routeId}/available-surplus`,
         STOP_DETAIL: (stopId: string) => `/v1/driver/stops/${stopId}`,
         STOP_ARRIVE: (stopId: string) => `/v1/driver/stops/${stopId}/arrive`,
         STOP_COMPLETE: (stopId: string) => `/v1/driver/stops/${stopId}/complete`,
+        STOP_EXTRA_SALES: (stopId: string) => `/v1/driver/stops/${stopId}/extra-sales`,
         STOP_NOTIFY: (stopId: string) => `/v1/driver/route-stops/${stopId}/notified`,
         STOP_PAYMENT_METHODS: { URL: `/v1/driver/payment-methods` },
         STOP_REJECTION_REASONS: { URL: `/v1/driver/rejection-reasons` },

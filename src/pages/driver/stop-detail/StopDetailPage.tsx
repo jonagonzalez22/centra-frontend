@@ -7,6 +7,7 @@ import { StopDetailPageView } from './StopDetailPageView';
 import { DeliveryDecisionModal } from '@/features/driver/components/DeliveryDecisionModal';
 import { StopPaymentModal } from '@/features/driver/components/StopPaymentModal';
 import { FailedDeliveryModal } from '@/features/driver/components/FailedDeliveryModal';
+import { ExtraSaleWrapper } from '@/features/driver/components/ExtraSaleWrapper';
 
 export const StopDetailPage = () => {
     const { stopId } = useParams<{ routeId: string; stopId: string }>();
@@ -17,6 +18,7 @@ export const StopDetailPage = () => {
     const [decisionModalOpen, setDecisionModalOpen] = useState(false);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [failedDeliveryModalOpen, setFailedDeliveryModalOpen] = useState(false);
+    const [extraSaleOpen, setExtraSaleOpen] = useState(false);
 
     // Pending delivery payload (constructed in view, stored here for modal handlers)
     const [pendingPayload, setPendingPayload] = useState<CompleteStopPayload | null>(null);
@@ -126,7 +128,20 @@ export const StopDetailPage = () => {
                 completing={stopDetail.completing}
                 onDeliver={handleDeliver}
                 onFailedDelivery={() => setFailedDeliveryModalOpen(true)}
+                onExtraSaleClick={() => setExtraSaleOpen(true)}
             />
+
+            {stopDetail.stop && (
+                <ExtraSaleWrapper
+                    open={extraSaleOpen}
+                    routeId={stopDetail.stop.route_id}
+                    stopId={stopDetail.stop.id}
+                    onClose={() => setExtraSaleOpen(false)}
+                    onSuccess={() => {
+                        stopDetail.refresh();
+                    }}
+                />
+            )}
 
             <DeliveryDecisionModal
                 open={decisionModalOpen}

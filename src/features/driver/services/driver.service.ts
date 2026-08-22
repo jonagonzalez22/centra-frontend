@@ -5,6 +5,10 @@ import type {
     ActiveRouteResponse,
     RouteStopsResponse,
     StopDetailResponse,
+    SurplusProduct,
+    SurplusProductsResponse,
+    AddExtraSalePayload,
+    AddExtraSaleResponse,
 } from '../interfaces/driver.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 
@@ -55,9 +59,9 @@ export const DriverService = {
                 API_ENDPOINTS.DRIVER.ACTIVE_ROUTE.URL
             );
 
-            if (data.status === 'success') {
-                return data.data;
-            }
+        if (data.status === 'success') {
+            return data.data;
+        }
 
             // status === 'error'
             const error: ApiError = {
@@ -192,5 +196,51 @@ export const DriverService = {
         }
 
         return data.data;
+    },
+
+    /**
+     * GET /v1/driver/routes/{routeId}/available-surplus
+     * Returns products with available surplus stock in the vehicle.
+     */
+    getAvailableSurplus: async (routeId: string): Promise<SurplusProduct[]> => {
+        const { data } = await api.get<SurplusProductsResponse>(
+            API_ENDPOINTS.DRIVER.ROUTE_SURPLUS(routeId)
+        );
+
+        if (data.status === 'success') {
+            return data.data.surplus;
+        }
+
+        const error: ApiError = {
+            status: 0,
+            message: data.message ?? 'Error al cargar excedentes disponibles.',
+            errors: data.errors ?? undefined,
+        };
+        throw error;
+    },
+
+    /**
+     * POST /v1/driver/stops/{stopId}/extra-sales
+     * Registers extra sale items for a stop.
+     */
+    addExtraSale: async (
+        stopId: string,
+        payload: AddExtraSalePayload
+    ): Promise<AddExtraSaleResponse['data']> => {
+        const { data } = await api.post<AddExtraSaleResponse>(
+            API_ENDPOINTS.DRIVER.STOP_EXTRA_SALES(stopId),
+            payload
+        );
+
+        if (data.status === 'success') {
+            return data.data;
+        }
+
+        const apiError: ApiError = {
+            status: 0,
+            message: data.message ?? 'Error al registrar la venta extra.',
+            errors: data.errors ?? undefined,
+        };
+        throw apiError;
     },
 };
