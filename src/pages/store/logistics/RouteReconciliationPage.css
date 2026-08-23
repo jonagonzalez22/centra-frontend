@@ -1,0 +1,138 @@
+.routeReconciliationPage {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.routeReconciliationHeader {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #f0f0f0;
+}
+
+.routeReconciliationBreadcrumb {
+    margin-bottom: 1rem;
+}
+
+.routeReconciliationHeaderTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.routeReconciliationTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.routeReconciliationTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.routeReconciliationMetrics {
+    margin-top: 0;
+}
+
+.metricCard {
+    background: #fff;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #f0f0f0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+    .metricCard {
+        padding: 1.25rem;
+        gap: 0.5rem;
+    }
+}
+
+.metricCardVerified {
+    border-left: 3px solid #52c41a;
+}
+
+.metricCardRejected {
+    border-left: 3px solid #ff4d4f;
+}
+
+.metricCardPending {
+    border-left: 3px solid #faad14;
+}
+
+.metricValue {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.metricValueSuccess {
+    color: #52c41a;
+}
+
+.metricValueError {
+    color: #ff4d4f;
+}
+
+.routeReconciliationSection {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #f0f0f0;
+}
+
+.routeReconciliationSectionTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+}
+
+@media (max-width: 768px) {
+    .routeReconciliationHeaderTop {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .routeReconciliationMetrics {
+        gap: 0.75rem;
+    }
+
+    .metricCard {
+        padding: 1rem;
+    }
+
+    .metricValue {
+        font-size: 1.25rem;
+    }
+
+    .routeReconciliationSection {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .routeReconciliationPage {
+        gap: 1rem;
+    }
+
+    .routeReconciliationHeader {
+        padding: 1rem;
+    }
+
+    .metricCard {
+        padding: 0.875rem;
+    }
+
+    .metricValue {
+        font-size: 1.1rem;
+        margin-top: 0.25rem;
+    }
+}

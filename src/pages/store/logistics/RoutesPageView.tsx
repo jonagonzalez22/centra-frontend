@@ -1,6 +1,6 @@
-import { Alert, Breadcrumb, Tag } from 'antd';
+import { Alert, Breadcrumb, Tag, Tooltip } from 'antd';
 import { Link } from 'react-router-dom';
-import { PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, EyeOutlined, DollarOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
 import ActionButton from '@/components/ActionButton/ActionButton';
@@ -48,6 +48,7 @@ interface RoutesPageViewProps {
     setPerPage: (perPage: number) => void;
     onCreate: () => void;
     onView: (route: DeliveryRoute) => void;
+    navigate: (path: string) => void;
 }
 
 export const RoutesPageView = ({
@@ -63,6 +64,7 @@ export const RoutesPageView = ({
     setPerPage,
     onCreate,
     onView,
+    navigate,
 }: RoutesPageViewProps) => {
     const routeNumber = (id: string) => `#${id.substring(0, 8).toUpperCase()}`;
 
@@ -128,17 +130,29 @@ export const RoutesPageView = ({
         {
             title: 'Acciones',
             key: 'acciones',
-            width: 80,
+            width: 120,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
                 return (
-                    <CanDo permission="logistics.routes.view">
-                        <ActionButton
-                            icon={<EyeOutlined />}
-                            label="Ver detalle"
-                            action={() => onView(route)}
-                        />
-                    </CanDo>
+                    <>
+                        {route.status === 'awaiting_reconciliation' && (
+                            <Tooltip title="Rendir Ruta">
+                                <Button
+                                    variant="link"
+                                    size="small"
+                                    icon={<DollarOutlined />}
+                                    action={() => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)}
+                                />
+                            </Tooltip>
+                        )}
+                        <CanDo permission="logistics.routes.view">
+                            <ActionButton
+                                icon={<EyeOutlined />}
+                                label="Ver detalle"
+                                action={() => onView(route)}
+                            />
+                        </CanDo>
+                    </>
                 );
             },
         },

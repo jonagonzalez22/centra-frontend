@@ -47,6 +47,7 @@ export const RoutesPage = () => {
                 setPerPage={routesState.setPerPage}
                 onCreate={handleCreate}
                 onView={handleView}
+                navigate={navigate}
             />
             <RouteFormModal
                 open={modalOpen}

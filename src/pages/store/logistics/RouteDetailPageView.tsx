@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { CSSProperties } from 'react';
 import {
     Alert,
@@ -17,7 +18,7 @@ import {
     Col,
     message,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined, WhatsAppOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined, WhatsAppOutlined, DollarOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -132,6 +133,8 @@ export const RouteDetailPageView = ({
     const [loadModalOpen, setLoadModalOpen] = useState(false);
     const [adjustmentOpen, setAdjustmentOpen] = useState(false);
     const [notifiedStops, setNotifiedStops] = useState<Set<string>>(new Set());
+
+    const navigate = useNavigate();
 
     // Compute before early returns so hooks stay in consistent order
     const activeStops = (route?.stops ?? []).filter((s) => s.status !== 'cancelled');
@@ -505,43 +508,53 @@ export const RouteDetailPageView = ({
     return (
         <div className="routeDetailPage">
             <div className="routeDetailHeader">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <h1 className="routeDetailTitle">{routeNum}</h1>
-                    {route.status === 'planned' && (
-                        <CanDo permission="logistics.routes.revert">
-                            <Dropdown
-                                menu={{
-                                    style: { minWidth: 200 },
-                                    items: [
-                                        {
-                                            key: 'revert',
-                                            icon: <UndoOutlined />,
-                                            label: 'Revertir a Borrador',
-                                            danger: true,
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {(route.status === 'awaiting_reconciliation' || route.status === 'completed') && (
+                            <Button
+                                variant="primary"
+                                icon={<DollarOutlined />}
+                                label={route.status === 'completed' ? 'Ver Reconciliación' : 'Rendir Ruta'}
+                                action={() => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)}
+                            />
+                        )}
+                        {route.status === 'planned' && (
+                            <CanDo permission="logistics.routes.revert">
+                                <Dropdown
+                                    menu={{
+                                        style: { minWidth: 200 },
+                                        items: [
+                                            {
+                                                key: 'revert',
+                                                icon: <UndoOutlined />,
+                                                label: 'Revertir a Borrador',
+                                                danger: true,
+                                            },
+                                        ],
+                                        onClick: ({ key }) => {
+                                            if (key === 'revert') {
+                                                AntModal.confirm({
+                                                    title: '¿Revertir a borrador?',
+                                                    content:
+                                                        'Se eliminará la planificación técnica actual. Esta acción no se puede deshacer.',
+                                                    okText: 'Revertir',
+                                                    cancelText: 'Cancelar',
+                                                    okButtonProps: { danger: true },
+                                                    onOk: async () => {
+                                                        await onRevertRoute('Reversión manual desde el panel.');
+                                                    },
+                                                });
+                                            }
                                         },
-                                    ],
-                                    onClick: ({ key }) => {
-                                        if (key === 'revert') {
-                                            AntModal.confirm({
-                                                title: '¿Revertir a borrador?',
-                                                content:
-                                                    'Se eliminará la planificación técnica actual. Esta acción no se puede deshacer.',
-                                                okText: 'Revertir',
-                                                cancelText: 'Cancelar',
-                                                okButtonProps: { danger: true },
-                                                onOk: async () => {
-                                                    await onRevertRoute('Reversión manual desde el panel.');
-                                                },
-                                            });
-                                        }
-                                    },
-                                }}
-                                trigger={['click']}
-                            >
-                                <AntButton icon={<EllipsisOutlined />} type="text" />
-                            </Dropdown>
-                        </CanDo>
-                    )}
+                                    }}
+                                    trigger={['click']}
+                                >
+                                    <AntButton icon={<EllipsisOutlined />} type="text" />
+                                </Dropdown>
+                            </CanDo>
+                        )}
+                    </div>
                 </div>
                 <Descriptions size="small" column={{ xs: 1, sm: 2, md: 3 }}>
                     <Descriptions.Item label="Fecha">

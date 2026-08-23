@@ -1,8 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { message } from 'antd';
 import { ReconciliationService } from '../services/reconciliation.service';
 import type {
     RouteReconciliationSummary,
+    RouteReconciliationCollection,
+    RouteReconciliationStop,
+    RouteReconciliationStopItem,
     RejectCollectionPayload,
     ResolveDiscrepanciesPayload,
 } from '../interfaces/reconciliation.interface';
@@ -10,6 +13,11 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
 export interface UseReconciliationReturn {
     summary: RouteReconciliationSummary | null;
+    collections: RouteReconciliationCollection[];
+    stops: RouteReconciliationStop[];
+    allItems: RouteReconciliationStopItem[];
+    discrepancies: RouteReconciliationStopItem[];
+    pendingCollectionsCount: number;
     loading: boolean;
     actionLoading: string | false;
     error: string | null;
@@ -25,6 +33,27 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | false>(false);
     const [error, setError] = useState<string | null>(null);
+
+    const collections = useMemo(() => {
+        if (!summary?.stops) return [];
+        return summary.stops.flatMap((stop: RouteReconciliationStop) => stop.collections || []);
+    }, [summary]);
+
+    const allItems = useMemo(() => {
+        if (!summary?.stops) return [];
+        return summary.stops.flatMap((stop: RouteReconciliationStop) => stop.items || []);
+    }, [summary]);
+
+    const discrepancies = useMemo(() => {
+        if (!summary?.stops) return [];
+        return summary.stops.flatMap((stop: RouteReconciliationStop) =>
+            (stop.items || []).filter((item: RouteReconciliationStopItem) => item.difference !== 0 || item.discrepancy !== null)
+        );
+    }, [summary]);
+
+    const pendingCollectionsCount = useMemo(() => {
+        return collections.filter((c: RouteReconciliationCollection) => c.status === 'declared').length;
+    }, [collections]);
 
     const fetchSummary = useCallback(async () => {
         try {
@@ -114,6 +143,11 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
 
     return {
         summary,
+        collections,
+        stops: summary?.stops ?? [],
+        allItems,
+        discrepancies,
+        pendingCollectionsCount,
         loading,
         actionLoading,
         error,
