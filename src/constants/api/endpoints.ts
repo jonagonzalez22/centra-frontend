@@ -85,6 +85,13 @@ export const API_ENDPOINTS = {
                 ADJUST_ITEMS: (routeId: string) => `/v1/store/routes/${routeId}/adjust-items`,
                 REVERT: (routeId: string) => `/v1/store/routes/${routeId}/revert`,
                 DISPATCH: (routeId: string) => `/v1/store/routes/${routeId}/dispatch`,
+                RECONCILIATION: {
+                    SUMMARY: (routeId: string) => `/v1/store/routes/${routeId}/reconciliation`,
+                    VERIFY_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/verify`,
+                    REJECT_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/reject`,
+                    RESOLVE_DISCREPANCIES: (routeId: string) => `/v1/store/routes/${routeId}/discrepancies`,
+                    FINALIZE: (routeId: string) => `/v1/store/routes/${routeId}/finalize-reconciliation`,
+                },
             },
             STOPS: {
                 DELETE: (routeId: string, stopId: string) =>
