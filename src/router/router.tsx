@@ -31,6 +31,7 @@ import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaym
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
 import { RouteDetailPage } from '@/pages/store/logistics/RouteDetailPage';
+import { RouteReconciliationPage } from '@/pages/store/logistics/RouteReconciliationPage';
 import { DriverRoutesPage } from '@/pages/driver/routes/DriverRoutesPage';
 import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
 import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
@@ -213,6 +214,7 @@ export const router = createBrowserRouter([
                                 children: [
                                     { path: 'logistica/rutas', element: <RoutesPage /> },
                                     { path: 'logistica/rutas/:id', element: <RouteDetailPage /> },
+                                    { path: 'logistica/rutas/:id/rendicion', element: <RouteReconciliationPage /> },
                                 ],
                             },
                         ],

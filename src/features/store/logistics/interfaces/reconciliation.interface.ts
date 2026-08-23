@@ -8,51 +8,62 @@ export type DiscrepancyResolutionType =
     | 'pending_redelivery'
     | 'other';
 
-export interface RouteReconciliationCollection {
+export interface RouteReconciliationOrder {
     id: string;
-    stop_id: string;
-    operation_number: string | null;
-    customer_name: string | null;
-    amount: number;
-    payment_method: {
-        id: string;
-        name: string;
-    } | null;
-    status: CollectionStatus;
-    rejection_reason: string | null;
-    verified_at: string | null;
-    verified_by: string | null;
-    created_at: string;
+    operation_number: string;
+    customer_name: string;
+    total_amount: number;
+    paid_amount: number;
+    pending_balance: number;
 }
 
-export interface RouteReconciliationDiscrepancy {
-    id: string;
-    route_stop_id: string;
+export interface RouteReconciliationStopItem {
+    route_stop_item_id: string;
     product_id: string;
     product_name: string;
-    sku: string | null;
     quantity_loaded: number;
     quantity_delivered: number;
-    difference_quantity: number;
-    resolution_type: DiscrepancyResolutionType | null;
+    difference: number;
+    extra_sale_allocated: number;
+    discrepancy: string | null;
+}
+
+export interface RouteReconciliationCollection {
+    id: string;
+    status: CollectionStatus;
+    amount: number;
+    reference: string | null;
     notes: string | null;
-    processed_at: string | null;
+    payment_method: string;
+    declared_by: string;
+    declared_at: string;
+    verified_at: string | null;
+}
+
+export interface RouteReconciliationStop {
+    stop_id: string;
+    sequence: number;
+    status: string;
+    order: RouteReconciliationOrder;
+    items: RouteReconciliationStopItem[];
+    collections: RouteReconciliationCollection[];
 }
 
 export interface RouteReconciliationTotals {
-    total_declared_amount: number;
-    total_verified_amount: number;
-    total_rejected_amount: number;
-    pending_collections_count: number;
-    pending_discrepancies_count: number;
+    declared_amount: number;
+    verified_amount: number;
+    rejected_amount: number;
 }
 
 export interface RouteReconciliationSummary {
     route_id: string;
     status: string;
+    operational_date: string;
+    vehicle: string;
+    driver: string;
+    stops: RouteReconciliationStop[];
     totals: RouteReconciliationTotals;
-    collections: RouteReconciliationCollection[];
-    discrepancies: RouteReconciliationDiscrepancy[];
+    can_close: boolean;
 }
 
 export interface RejectCollectionPayload {
