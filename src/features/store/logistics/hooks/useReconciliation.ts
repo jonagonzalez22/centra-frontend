@@ -7,7 +7,8 @@ import type {
     RouteReconciliationStop,
     RouteReconciliationStopItem,
     RejectCollectionPayload,
-    ResolveDiscrepanciesPayload,
+    ResolveDiscrepancyPayload,
+    DiscrepancyResolutionType,
 } from '../interfaces/reconciliation.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
@@ -18,13 +19,15 @@ export interface UseReconciliationReturn {
     allItems: RouteReconciliationStopItem[];
     discrepancies: RouteReconciliationStopItem[];
     pendingCollectionsCount: number;
+    pendingDiscrepanciesCount: number;
     loading: boolean;
     actionLoading: string | false;
     error: string | null;
     fetchSummary: () => Promise<void>;
     verifyCollection: (collectionId: string) => Promise<void>;
     rejectCollection: (collectionId: string, reason: string) => Promise<void>;
-    resolveDiscrepancies: (payload: ResolveDiscrepanciesPayload) => Promise<void>;
+    resolveDiscrepancies: (payload: ResolveDiscrepancyPayload) => Promise<void>;
+    resolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
     finalize: () => Promise<void>;
 }
 
@@ -54,6 +57,10 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     const pendingCollectionsCount = useMemo(() => {
         return collections.filter((c: RouteReconciliationCollection) => c.status === 'declared').length;
     }, [collections]);
+
+    const pendingDiscrepanciesCount = useMemo(() => {
+        return discrepancies.filter((item: RouteReconciliationStopItem) => !item.discrepancy?.resolution_type).length;
+    }, [discrepancies]);
 
     const fetchSummary = useCallback(async () => {
         try {
@@ -109,7 +116,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     );
 
     const resolveDiscrepancies = useCallback(
-        async (payload: ResolveDiscrepanciesPayload) => {
+        async (payload: ResolveDiscrepancyPayload) => {
             try {
                 setActionLoading('resolve-discrepancies');
                 await ReconciliationService.resolveDiscrepancies(routeId, payload);
@@ -118,6 +125,30 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
             } catch (err) {
                 const apiError = err as ApiError;
                 message.error(apiError.message || 'Error al resolver las discrepancias.');
+                throw err;
+            } finally {
+                setActionLoading(false);
+            }
+        },
+        [routeId, fetchSummary]
+    );
+
+    const resolveDiscrepancy = useCallback(
+        async (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => {
+            try {
+                setActionLoading(discrepancyId);
+                const payload: ResolveDiscrepancyPayload = {
+                    route_stop_item_id: discrepancyId,
+                    resolution_type: resolutionType,
+                    quantity_to_resolve: quantityToResolve,
+                    notes,
+                };
+                await ReconciliationService.resolveDiscrepancies(routeId, payload);
+                message.success('Discrepancia resuelta exitosamente.');
+                await fetchSummary();
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'Error al resolver la discrepancia.');
                 throw err;
             } finally {
                 setActionLoading(false);
@@ -148,6 +179,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         allItems,
         discrepancies,
         pendingCollectionsCount,
+        pendingDiscrepanciesCount,
         loading,
         actionLoading,
         error,
@@ -155,6 +187,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         verifyCollection,
         rejectCollection,
         resolveDiscrepancies,
+        resolveDiscrepancy,
         finalize,
     };
 };
