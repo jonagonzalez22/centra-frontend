@@ -17,6 +17,13 @@ export interface RouteReconciliationOrder {
     pending_balance: number;
 }
 
+export interface DeliveryDiscrepancy {
+    id: string;
+    resolution_type: DiscrepancyResolutionType;
+    notes: string | null;
+    resolved_at: string | null;
+}
+
 export interface RouteReconciliationStopItem {
     route_stop_item_id: string;
     product_id: string;
@@ -25,7 +32,7 @@ export interface RouteReconciliationStopItem {
     quantity_delivered: number;
     difference: number;
     extra_sale_allocated: number;
-    discrepancy: string | null;
+    discrepancy: DeliveryDiscrepancy | null;
 }
 
 export interface RouteReconciliationCollection {
@@ -70,12 +77,9 @@ export interface RejectCollectionPayload {
     rejection_reason: string;
 }
 
-export interface ResolveDiscrepancyItemPayload {
-    discrepancy_id: string;
+export interface ResolveDiscrepancyPayload {
+    route_stop_item_id: string;
     resolution_type: DiscrepancyResolutionType;
+    quantity_to_resolve: number;
     notes?: string;
-}
-
-export interface ResolveDiscrepanciesPayload {
-    discrepancies: ResolveDiscrepancyItemPayload[];
 }

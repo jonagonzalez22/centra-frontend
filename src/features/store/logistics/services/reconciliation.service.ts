@@ -6,7 +6,7 @@ import type {
     RouteReconciliationSummary,
     RouteReconciliationCollection,
     RejectCollectionPayload,
-    ResolveDiscrepanciesPayload,
+    ResolveDiscrepancyPayload,
 } from '../interfaces/reconciliation.interface';
 
 export const ReconciliationService = {
@@ -66,7 +66,7 @@ export const ReconciliationService = {
         return data.data;
     },
 
-    resolveDiscrepancies: async (routeId: string, payload: ResolveDiscrepanciesPayload): Promise<void> => {
+    resolveDiscrepancies: async (routeId: string, payload: ResolveDiscrepancyPayload): Promise<void> => {
         const { data } = await api.post<ApiListResponse<null>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.RECONCILIATION.RESOLVE_DISCREPANCIES(routeId),
             payload

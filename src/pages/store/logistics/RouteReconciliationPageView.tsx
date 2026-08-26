@@ -4,7 +4,8 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import Tabs from '@/components/Tabs/Tabs';
 import { CollectionsTable } from '@/features/store/logistics/components/CollectionsTable';
-import type { RouteReconciliationSummary, RouteReconciliationCollection, RouteReconciliationStopItem, RouteReconciliationStop } from '@/features/store/logistics/interfaces/reconciliation.interface';
+import { DiscrepanciesTable } from '@/features/store/logistics/components/DiscrepanciesTable';
+import type { RouteReconciliationSummary, RouteReconciliationCollection, RouteReconciliationStopItem, RouteReconciliationStop, DiscrepancyResolutionType } from '@/features/store/logistics/interfaces/reconciliation.interface';
 import './RouteReconciliationPage.css';
 
 const { Text } = Typography;
@@ -30,11 +31,13 @@ interface RouteReconciliationPageViewProps {
     stops: RouteReconciliationStop[];
     discrepancies: RouteReconciliationStopItem[];
     pendingCollectionsCount: number;
+    pendingDiscrepanciesCount: number;
     loading: boolean;
     actionLoading: string | false;
     routeId?: string;
     onVerify: (collectionId: string) => Promise<void>;
     onReject: (collectionId: string, reason: string) => Promise<void>;
+    onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
     onBack: () => void;
 }
 
@@ -44,11 +47,13 @@ export const RouteReconciliationPageView = ({
     stops,
     discrepancies,
     pendingCollectionsCount,
+    pendingDiscrepanciesCount,
     loading,
     actionLoading,
     routeId,
     onVerify,
     onReject,
+    onResolveDiscrepancy,
     onBack,
 }: RouteReconciliationPageViewProps) => {
     const isReadOnly = summary?.status === 'completed';
@@ -61,7 +66,7 @@ export const RouteReconciliationPageView = ({
         }).format(safeNumber(amount));
     };
 
-    const discrepanciesCount = discrepancies.length;
+
 
     return (
         <div className="routeReconciliationPage">
@@ -149,14 +154,18 @@ export const RouteReconciliationPageView = ({
                             },
                             {
                                 key: 'discrepancies',
-                                label: discrepanciesCount > 0
-                                    ? `Discrepancias de Stock (${discrepanciesCount})`
+                                label: pendingDiscrepanciesCount > 0
+                                    ? `Discrepancias de Stock (${pendingDiscrepanciesCount})`
                                     : 'Discrepancias de Stock',
                                 children: (
                                     <div className="routeReconciliationSection">
-                                        <Text type="secondary">
-                                            Resolución de discrepancias de stock — Próximamente
-                                        </Text>
+                                        <DiscrepanciesTable
+                                            discrepancies={discrepancies}
+                                            loading={loading}
+                                            actionLoading={actionLoading}
+                                            onResolve={onResolveDiscrepancy}
+                                            readOnly={isReadOnly}
+                                        />
                                     </div>
                                 ),
                             },
