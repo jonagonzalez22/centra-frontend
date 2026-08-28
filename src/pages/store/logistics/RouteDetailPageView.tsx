@@ -511,11 +511,11 @@ export const RouteDetailPageView = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <h1 className="routeDetailTitle">{routeNum}</h1>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        {(route.status === 'awaiting_reconciliation' || route.status === 'completed') && (
+                        {route.status === 'awaiting_reconciliation' && (
                             <Button
                                 variant="primary"
                                 icon={<DollarOutlined />}
-                                label={route.status === 'completed' ? 'Ver Reconciliación' : 'Rendir Ruta'}
+                                label="Rendir Ruta"
                                 action={() => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)}
                             />
                         )}

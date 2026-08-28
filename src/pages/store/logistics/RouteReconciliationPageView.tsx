@@ -1,6 +1,7 @@
-import { Breadcrumb, Tag, Typography } from 'antd';
+import { useState } from 'react';
+import { Breadcrumb, Tag, Typography, Modal, Tooltip, Button as AntButton } from 'antd';
 import { Link } from 'react-router-dom';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import Tabs from '@/components/Tabs/Tabs';
 import { CollectionsTable } from '@/features/store/logistics/components/CollectionsTable';
@@ -38,6 +39,7 @@ interface RouteReconciliationPageViewProps {
     onVerify: (collectionId: string) => Promise<void>;
     onReject: (collectionId: string, reason: string) => Promise<void>;
     onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    onFinalize: () => Promise<void>;
     onBack: () => void;
 }
 
@@ -54,9 +56,15 @@ export const RouteReconciliationPageView = ({
     onVerify,
     onReject,
     onResolveDiscrepancy,
+    onFinalize,
     onBack,
 }: RouteReconciliationPageViewProps) => {
+    const [finalizeModalOpen, setFinalizeModalOpen] = useState(false);
+
     const isReadOnly = summary?.status === 'completed';
+    const canFinalize = summary?.status === 'awaiting_reconciliation'
+        && pendingCollectionsCount === 0
+        && pendingDiscrepanciesCount === 0;
     const routeNumber = routeId ? `#${routeId.substring(0, 8).toUpperCase()}` : '';
 
     const formatCurrency = (amount: unknown) => {
@@ -64,6 +72,11 @@ export const RouteReconciliationPageView = ({
             style: 'currency',
             currency: 'ARS',
         }).format(safeNumber(amount));
+    };
+
+    const handleFinalize = async () => {
+        setFinalizeModalOpen(false);
+        await onFinalize();
     };
 
 
@@ -92,12 +105,40 @@ export const RouteReconciliationPageView = ({
                         )}
                     </div>
 
-                    <Button
-                        variant="default"
-                        label="Volver al Detalle"
-                        icon={<ArrowLeftOutlined />}
-                        action={onBack}
-                    />
+                    <div className="flex gap-2 items-center flex-wrap">
+                        {!isReadOnly && (
+                            canFinalize ? (
+                                <AntButton
+                                    type="primary"
+                                    size="large"
+                                    icon={<CheckCircleOutlined />}
+                                    onClick={() => setFinalizeModalOpen(true)}
+                                    loading={actionLoading === 'finalize'}
+                                >
+                                    Finalizar Rendición
+                                </AntButton>
+                            ) : (
+                                <Tooltip title="Debe auditar todas las cobranzas y resolver todas las discrepancias antes de finalizar la rendición.">
+                                    <div>
+                                        <AntButton
+                                            type="primary"
+                                            size="large"
+                                            icon={<CheckCircleOutlined />}
+                                            disabled
+                                        >
+                                            Finalizar Rendición
+                                        </AntButton>
+                                    </div>
+                                </Tooltip>
+                            )
+                        )}
+                        <Button
+                            variant="default"
+                            label="Volver al Detalle"
+                            icon={<ArrowLeftOutlined />}
+                            action={onBack}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -173,6 +214,22 @@ export const RouteReconciliationPageView = ({
                     />
                 </>
             )}
+
+            <Modal
+                title="¿Deseas finalizar la rendición de la ruta?"
+                open={finalizeModalOpen}
+                onCancel={() => setFinalizeModalOpen(false)}
+                onOk={handleFinalize}
+                okText="Confirmar y Cerrar Ruta"
+                cancelText="Cancelar"
+                okButtonProps={{ type: 'primary', loading: actionLoading === 'finalize' }}
+            >
+                <p>
+                    Esta acción cerrará la ruta de forma permanente, aplicará los movimientos
+                    de inventario correspondientes a las resoluciones de stock y actualizará
+                    el estado de los pedidos asociados.
+                </p>
+            </Modal>
         </div>
     );
 };
