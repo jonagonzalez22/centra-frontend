@@ -264,7 +264,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                     className="overflow-y-auto pr-1"
                     style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}
                 >
-                    <OrderDrawerHistory events={order.events} loading={false} />
+                    <OrderDrawerHistory history={order.history} loading={false} />
                 </div>
             ),
         },

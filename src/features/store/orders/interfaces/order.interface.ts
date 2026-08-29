@@ -19,7 +19,7 @@ export interface OrderListItem {
     id: string;
     operation_number: string;
     type: 'order';
-    status: 'open' | 'confirmed' | 'cancelled' | 'closed';
+    status: OrderStatus;
     requested_delivery_date: string | null;
     delivery_time_from: string | null;
     delivery_time_to: string | null;
@@ -73,11 +73,84 @@ export interface OrderEvent {
     created_at: string;
 }
 
+export type OrderStatus =
+    | 'open'
+    | 'confirmed'
+    | 'partially_delivered'
+    | 'delivered'
+    | 'cancelled'
+    | 'closed';
+
+export type OrderHistoryStatus = 'provisional' | 'confirmed';
+
+export interface OrderHistoryUser {
+    id: string;
+    name: string;
+}
+
+export interface OrderHistoryRoute {
+    id: string;
+    label: string;
+    status: string;
+    operational_date: string | null;
+}
+
+export interface OrderHistoryDiscrepancy {
+    id: string;
+    quantity: number;
+    resolution_type: string | null;
+    status: 'pending' | 'resolved';
+    notes: string | null;
+    resolved_by: OrderHistoryUser | null;
+    resolved_at: string | null;
+}
+
+export interface OrderHistoryItem {
+    id: string;
+    product_id: string;
+    product_name: string | null;
+    quantity_planned: number;
+    quantity_loaded: number;
+    quantity_delivered: number;
+    discrepancies: OrderHistoryDiscrepancy[];
+}
+
+export interface OrderHistoryDetails {
+    driver?: OrderHistoryUser | null;
+    reconciled_by?: OrderHistoryUser | null;
+    stop?: {
+        id: string;
+        status: string;
+        completed_at: string | null;
+    };
+    items?: OrderHistoryItem[];
+    previous_date?: string | null;
+    new_date?: string | null;
+    previous_status?: string | null;
+    new_status?: string | null;
+    reason?: string | null;
+    reason_code?: string | null;
+    reason_note?: string | null;
+    observation?: string | null;
+}
+
+export interface OrderHistoryEntry {
+    id: string;
+    type: string;
+    occurred_at: string;
+    title: string;
+    description: string | null;
+    status: OrderHistoryStatus;
+    user: OrderHistoryUser | null;
+    route: OrderHistoryRoute | null;
+    details: OrderHistoryDetails | null;
+}
+
 export interface OrderDetail {
     id: string;
     operation_number: string;
     type: 'order';
-    status: 'open' | 'confirmed' | 'cancelled' | 'closed';
+    status: OrderStatus;
     requested_delivery_date: string | null;
     delivery_time_from: string | null;
     delivery_time_to: string | null;
@@ -97,6 +170,7 @@ export interface OrderDetail {
     items: OrderItem[];
     payments: OrderPayment[];
     events: OrderEvent[];
+    history: OrderHistoryEntry[];
     route_ids: string[];
 }
 
@@ -134,6 +208,12 @@ export interface OrdersState {
     resetFilters: () => void;
     openDrawer: (id: string) => Promise<void>;
     closeDrawer: () => void;
-    rescheduleOrder: (id: string, payload: { new_date: string; reason: string; observation?: string }) => Promise<void>;
-    cancelOrder: (id: string, payload: { reason_code: string; reason_note?: string }) => Promise<void>;
+    rescheduleOrder: (
+        id: string,
+        payload: { new_date: string; reason: string; observation?: string }
+    ) => Promise<void>;
+    cancelOrder: (
+        id: string,
+        payload: { reason_code: string; reason_note?: string }
+    ) => Promise<void>;
 }
