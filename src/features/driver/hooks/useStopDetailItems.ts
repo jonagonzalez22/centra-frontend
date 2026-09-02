@@ -16,6 +16,8 @@ export interface StopItem {
     item: StopDetailItem;
     originalQty: number;
     deliveredQty: number;
+    remainingQty: number;
+    releasedQty: number;
     isComplete: boolean;
     isReduced: boolean;
     isNotLoaded: boolean;
@@ -25,11 +27,15 @@ export interface StopItem {
     cardState: 'confirmed' | 'reduced' | 'pending' | 'not_loaded';
     canDecrement: boolean;
     canIncrement: boolean;
+    canDecrementReleased: boolean;
+    canIncrementReleased: boolean;
+    selectedReasonSuggestsExtraSale: boolean;
 }
 
 export interface UseStopDetailItemsReturn {
     // State snapshots for view
     quantitiesDelivered: Record<string, number>;
+    quantitiesReleased: Record<string, number>;
     rejectionReasonsByItem: Record<string, string>;
     touchedItemIds: Set<string>;
     touchedReasonIds: Set<string>;
@@ -53,6 +59,7 @@ export interface UseStopDetailItemsReturn {
 
     // Actions
     setQuantity: (itemId: string, value: number) => void;
+    setReleasedQuantity: (itemId: string, value: number) => void;
     toggleConfirm: (itemId: string) => void;
     setRejectionReason: (itemId: string, reasonId: string | undefined) => void;
     markReasonTouched: (itemId: string) => void;
@@ -61,7 +68,9 @@ export interface UseStopDetailItemsReturn {
 
 // ── Hook ────────────────────────────────────────────────────────────────────────
 
-export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopDetailItemsReturn => {
+export const useStopDetailItems = (
+    options: UseStopDetailItemsOptions
+): UseStopDetailItemsReturn => {
     const { items, rejectionReasons, stopStatus, completing } = options;
 
     // ── State ──────────────────────────────────────────────────────────────
@@ -76,7 +85,10 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
         return initial;
     });
 
-    const [rejectionReasonsByItem, setRejectionReasonsByItem] = useState<Record<string, string>>({});
+    const [rejectionReasonsByItem, setRejectionReasonsByItem] = useState<Record<string, string>>(
+        {}
+    );
+    const [quantitiesReleased, setQuantitiesReleased] = useState<Record<string, number>>({});
     const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(new Set());
     const [touchedReasonIds, setTouchedReasonIds] = useState<Set<string>>(new Set());
     const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
@@ -118,6 +130,7 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
             if (prevItemIdsRef.current.size > 0) {
                 setConfirmedIds(new Set());
                 setRejectionReasonsByItem({});
+                setQuantitiesReleased({});
                 setTouchedItemIds(new Set());
                 setTouchedReasonIds(new Set());
                 setSubmitAttempted(false);
@@ -197,9 +210,15 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
         return true;
     }, [items, quantitiesDelivered, rejectionReasonsByItem, confirmedIds]);
 
-    const canDeliver = !(stopStatus === 'completed' || stopStatus === 'failed' || stopStatus === 'cancelled' || completing);
+    const canDeliver = !(
+        stopStatus === 'completed' ||
+        stopStatus === 'failed' ||
+        stopStatus === 'cancelled' ||
+        completing
+    );
 
-    const isAllReviewed = progressCount.completed === progressCount.total && progressCount.total > 0;
+    const isAllReviewed =
+        progressCount.completed === progressCount.total && progressCount.total > 0;
 
     // ── Per-item helpers ───────────────────────────────────────────────────
 
@@ -210,9 +229,12 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
             if (!item) return undefined;
 
             const isNotLoaded = item.quantity_loaded === 0;
-            const originalQty = item.quantity_loaded > 0 ? item.quantity_loaded : item.quantity_planned;
+            const originalQty =
+                item.quantity_loaded > 0 ? item.quantity_loaded : item.quantity_planned;
             const deliveredQty = isNotLoaded ? 0 : (quantitiesDelivered[itemId] ?? originalQty);
             const isReduced = !isNotLoaded && deliveredQty < originalQty;
+            const remainingQty = Math.max(0, originalQty - deliveredQty);
+            const releasedQty = Math.min(quantitiesReleased[itemId] ?? 0, remainingQty);
             const isComplete = !isNotLoaded && deliveredQty === originalQty;
             const isConfirmed = confirmedIds.has(itemId);
             const hasValidReason =
@@ -220,7 +242,9 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
                 !!rejectionReasonsByItem[itemId] &&
                 reasonOptions.some((r) => r.value === rejectionReasonsByItem[itemId]);
             const showReasonError =
-                isReduced && (submitAttempted || touchedReasonIds.has(itemId)) && !rejectionReasonsByItem[itemId];
+                isReduced &&
+                (submitAttempted || touchedReasonIds.has(itemId)) &&
+                !rejectionReasonsByItem[itemId];
 
             let cardState: 'confirmed' | 'reduced' | 'pending' | 'not_loaded' = 'pending';
             if (isNotLoaded) {
@@ -236,11 +260,18 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
             // quantity_loaded = 0 items are never editable
             const canDecrement = canDeliver && !isNotLoaded && deliveredQty > 0;
             const canIncrement = canDeliver && !isNotLoaded && deliveredQty < originalQty;
+            const canDecrementReleased = canDeliver && isReduced && releasedQty > 0;
+            const canIncrementReleased = canDeliver && isReduced && releasedQty < remainingQty;
+            const selectedReason = rejectionReasons.find(
+                (reason) => reason.id === rejectionReasonsByItem[itemId]
+            );
 
             return {
                 item,
                 originalQty,
                 deliveredQty,
+                remainingQty,
+                releasedQty,
                 isComplete,
                 isReduced,
                 isNotLoaded,
@@ -250,29 +281,68 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
                 cardState,
                 canDecrement,
                 canIncrement,
+                canDecrementReleased,
+                canIncrementReleased,
+                selectedReasonSuggestsExtraSale: selectedReason?.suggest_extra_sale ?? false,
             };
         },
-        [items, quantitiesDelivered, rejectionReasonsByItem, confirmedIds, reasonOptions, submitAttempted, touchedReasonIds, canDeliver]
+        [
+            items,
+            quantitiesDelivered,
+            quantitiesReleased,
+            rejectionReasonsByItem,
+            confirmedIds,
+            reasonOptions,
+            rejectionReasons,
+            submitAttempted,
+            touchedReasonIds,
+            canDeliver,
+        ]
     );
 
     // ── Actions ────────────────────────────────────────────────────────────
 
-    const setQuantity = useCallback((itemId: string, value: number) => {
-        // quantity_loaded = 0 items are never editable
-        if (items?.find((i) => i.id === itemId)?.quantity_loaded === 0) return;
+    const setQuantity = useCallback(
+        (itemId: string, value: number) => {
+            // quantity_loaded = 0 items are never editable
+            if (items?.find((i) => i.id === itemId)?.quantity_loaded === 0) return;
 
-        // Reset confirmation when quantity changes
-        setConfirmedIds((prev) => {
-            const next = new Set(prev);
-            next.delete(itemId);
-            return next;
-        });
-        setTouchedItemIds((prev) => new Set([...prev, itemId]));
-        setQuantitiesDelivered((prev) => ({
-            ...prev,
-            [itemId]: value,
-        }));
-    }, [items]);
+            // Reset confirmation when quantity changes
+            setConfirmedIds((prev) => {
+                const next = new Set(prev);
+                next.delete(itemId);
+                return next;
+            });
+            setTouchedItemIds((prev) => new Set([...prev, itemId]));
+            setQuantitiesDelivered((prev) => ({
+                ...prev,
+                [itemId]: value,
+            }));
+            const item = items?.find((candidate) => candidate.id === itemId);
+            if (item) {
+                const remaining = Math.max(0, item.quantity_loaded - value);
+                setQuantitiesReleased((prev) => ({
+                    ...prev,
+                    [itemId]: Math.min(prev[itemId] ?? 0, remaining),
+                }));
+            }
+        },
+        [items]
+    );
+
+    const setReleasedQuantity = useCallback(
+        (itemId: string, value: number) => {
+            const item = items?.find((candidate) => candidate.id === itemId);
+            if (!item) return;
+            const delivered = quantitiesDelivered[itemId] ?? item.quantity_loaded;
+            const remaining = Math.max(0, item.quantity_loaded - delivered);
+            setQuantitiesReleased((prev) => ({
+                ...prev,
+                [itemId]: Math.max(0, Math.min(value, remaining)),
+            }));
+        },
+        [items, quantitiesDelivered]
+    );
 
     const toggleConfirm = useCallback(
         (itemId: string) => {
@@ -297,18 +367,29 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
         [items, quantitiesDelivered]
     );
 
-    const setRejectionReason = useCallback((itemId: string, reasonId: string | undefined) => {
-        setTouchedReasonIds((prev) => new Set([...prev, itemId]));
-        setRejectionReasonsByItem((prev) => {
-            const next = { ...prev };
-            if (reasonId) {
-                next[itemId] = reasonId;
-            } else {
-                delete next[itemId];
-            }
-            return next;
-        });
-    }, []);
+    const setRejectionReason = useCallback(
+        (itemId: string, reasonId: string | undefined) => {
+            setTouchedReasonIds((prev) => new Set([...prev, itemId]));
+            setRejectionReasonsByItem((prev) => {
+                const next = { ...prev };
+                if (reasonId) {
+                    next[itemId] = reasonId;
+                } else {
+                    delete next[itemId];
+                }
+                return next;
+            });
+            const item = items?.find((candidate) => candidate.id === itemId);
+            const reason = rejectionReasons.find((candidate) => candidate.id === reasonId);
+            const delivered = item ? (quantitiesDelivered[itemId] ?? item.quantity_loaded) : 0;
+            const remaining = item ? Math.max(0, item.quantity_loaded - delivered) : 0;
+            setQuantitiesReleased((prev) => ({
+                ...prev,
+                [itemId]: reason?.suggest_extra_sale ? remaining : 0,
+            }));
+        },
+        [items, quantitiesDelivered, rejectionReasons]
+    );
 
     const markReasonTouched = useCallback((itemId: string) => {
         setTouchedReasonIds((prev) => new Set([...prev, itemId]));
@@ -317,6 +398,7 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
     const resetAllItemState = useCallback(() => {
         setConfirmedIds(new Set());
         setRejectionReasonsByItem({});
+        setQuantitiesReleased({});
         setTouchedItemIds(new Set());
         setTouchedReasonIds(new Set());
         setSubmitAttempted(false);
@@ -324,6 +406,7 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
 
     return {
         quantitiesDelivered,
+        quantitiesReleased,
         rejectionReasonsByItem,
         touchedItemIds,
         touchedReasonIds,
@@ -337,6 +420,7 @@ export const useStopDetailItems = (options: UseStopDetailItemsOptions): UseStopD
         reasonOptions,
         getItem,
         setQuantity,
+        setReleasedQuantity,
         toggleConfirm,
         setRejectionReason,
         markReasonTouched,

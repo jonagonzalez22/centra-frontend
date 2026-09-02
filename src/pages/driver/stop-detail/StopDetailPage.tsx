@@ -2,7 +2,11 @@ import { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { message } from 'antd';
 import { useStopDetail } from '@/features/driver/hooks/useStopDetail';
-import { DriverService, type CompleteStopPayload, type RejectionReason } from '@/features/driver/services/driver.service';
+import {
+    DriverService,
+    type CompleteStopPayload,
+    type RejectionReason,
+} from '@/features/driver/services/driver.service';
 import { StopDetailPageView } from './StopDetailPageView';
 import { DeliveryDecisionModal } from '@/features/driver/components/DeliveryDecisionModal';
 import { StopPaymentModal } from '@/features/driver/components/StopPaymentModal';
@@ -39,10 +43,15 @@ export const StopDetailPage = () => {
             items: Array<{
                 route_stop_item_id: string;
                 quantity_delivered: number;
+                quantity_released_for_extra_sale: number;
                 rejection_reason_id?: string | null;
             }>;
             gps?: { lat: number; lon: number };
-            payments?: Array<{ store_payment_method_id: string; amount: number; reference?: string }>;
+            payments?: Array<{
+                store_payment_method_id: string;
+                amount: number;
+                reference?: string;
+            }>;
         }) => {
             if (!stopDetail.stop) return;
 
@@ -83,7 +92,9 @@ export const StopDetailPage = () => {
     }, []);
 
     const handlePaymentConfirm = useCallback(
-        async (payments: Array<{ store_payment_method_id: string; amount: number; reference?: string }>) => {
+        async (
+            payments: Array<{ store_payment_method_id: string; amount: number; reference?: string }>
+        ) => {
             if (!pendingPayload) return;
             const completePayload: CompleteStopPayload = {
                 ...pendingPayload,
@@ -97,13 +108,14 @@ export const StopDetailPage = () => {
     );
 
     const handleFailedDelivery = useCallback(
-        async (rejectionReasonId: string) => {
+        async (rejectionReasonId: string, quantitiesReleased: Record<string, number>) => {
             if (!stopDetail.stop) return;
             const completePayload: CompleteStopPayload = {
                 status: 'failed',
                 items: stopDetail.stop.items.map((item) => ({
                     route_stop_item_id: item.route_stop_item_id,
                     quantity_delivered: 0,
+                    quantity_released_for_extra_sale: quantitiesReleased[item.id] ?? 0,
                 })),
                 rejection_reason_id: rejectionReasonId,
             };
@@ -168,6 +180,7 @@ export const StopDetailPage = () => {
             <FailedDeliveryModal
                 open={failedDeliveryModalOpen}
                 rejectionReasons={rejectionReasons}
+                items={stopDetail.stop?.items ?? []}
                 loading={stopDetail.completing}
                 onConfirm={handleFailedDelivery}
                 onClose={() => setFailedDeliveryModalOpen(false)}

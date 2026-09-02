@@ -9,7 +9,10 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+    transition:
+        border-color 0.15s,
+        box-shadow 0.15s,
+        background-color 0.15s;
     width: 100%;
     max-width: 420px;
     box-sizing: border-box;
@@ -97,7 +100,9 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: color 0.15s, transform 0.1s;
+    transition:
+        color 0.15s,
+        transform 0.1s;
     padding: 0;
     line-height: 1;
 }
@@ -227,6 +232,13 @@
     width: 100%;
 }
 
+.stopDetailRemaining {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #595959;
+}
+
 .stopDetailReasonSelect {
     width: 100%;
 }
@@ -254,4 +266,33 @@
     color: #dc2626;
     margin-top: 4px;
     text-align: left;
+}
+
+.stopDetailExtraSaleRelease {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.stopDetailExtraSaleReleaseLabel {
+    width: 100%;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.stopDetailExtraSaleReleaseHelp,
+.stopDetailExtraSaleReleaseSuggestion {
+    width: 100%;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #6b7280;
+}
+
+.stopDetailExtraSaleReleaseSuggestion {
+    color: #92400e;
 }

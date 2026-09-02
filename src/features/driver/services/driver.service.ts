@@ -17,6 +17,7 @@ export interface CompleteStopPayload {
     items: Array<{
         route_stop_item_id: string;
         quantity_delivered: number;
+        quantity_released_for_extra_sale: number;
         rejection_reason_id?: string | null;
     }>;
     gps?: {
@@ -34,7 +35,9 @@ export interface CompleteStopPayload {
 
 export interface RejectionReason {
     id: string;
+    code: string;
     label: string;
+    suggest_extra_sale: boolean;
 }
 
 export interface CompleteStopResponse {
@@ -59,9 +62,9 @@ export const DriverService = {
                 API_ENDPOINTS.DRIVER.ACTIVE_ROUTE.URL
             );
 
-        if (data.status === 'success') {
-            return data.data;
-        }
+            if (data.status === 'success') {
+                return data.data;
+            }
 
             // status === 'error'
             const error: ApiError = {

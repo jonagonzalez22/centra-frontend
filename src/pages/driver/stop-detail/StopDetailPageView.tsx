@@ -15,6 +15,7 @@ interface DeliverPayload {
     items: Array<{
         route_stop_item_id: string;
         quantity_delivered: number;
+        quantity_released_for_extra_sale: number;
         rejection_reason_id?: string | null;
     }>;
     gps?: { lat: number; lon: number };
@@ -109,7 +110,8 @@ export const StopDetailPageView = ({
     }
 
     // ── Derived ────────────────────────────────────────────────────────────
-    const isCompleted = stop.status === 'completed' || stop.status === 'failed' || stop.status === 'cancelled';
+    const isCompleted =
+        stop.status === 'completed' || stop.status === 'failed' || stop.status === 'cancelled';
     const hasPendingCollections = stop.collections.some((c) => c.status !== 'completed');
     const buttonLabel =
         itemsState.touchedItemIds.size === 0 && itemsState.deliveryState.allFull
@@ -133,14 +135,21 @@ export const StopDetailPageView = ({
             items: stop.items.map((item) => {
                 // quantity_loaded = 0 items: not loaded in depot, always 0, no reason
                 if (item.quantity_loaded === 0) {
-                    return { route_stop_item_id: item.route_stop_item_id, quantity_delivered: 0, rejection_reason_id: null };
+                    return {
+                        route_stop_item_id: item.route_stop_item_id,
+                        quantity_delivered: 0,
+                        quantity_released_for_extra_sale: 0,
+                        rejection_reason_id: null,
+                    };
                 }
                 return {
                     route_stop_item_id: item.route_stop_item_id,
-                    quantity_delivered: itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
+                    quantity_delivered:
+                        itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
+                    quantity_released_for_extra_sale: itemsState.quantitiesReleased[item.id] ?? 0,
                     rejection_reason_id:
                         itemsState.quantitiesDelivered[item.id] < item.quantity_loaded
-                            ? itemsState.rejectionReasonsByItem[item.id] ?? null
+                            ? (itemsState.rejectionReasonsByItem[item.id] ?? null)
                             : null,
                 };
             }),
@@ -165,7 +174,9 @@ export const StopDetailPageView = ({
                 <div className="stopDetailContextName">{stop.contact_name ?? 'Cliente'}</div>
                 <div className="stopDetailContextMeta">
                     <span className="stopDetailContextSequence">Parada #{stop.sequence}</span>
-                    <Tag color={STOP_STATUS_COLORS[stop.status]}>{STOP_STATUS_LABELS[stop.status]}</Tag>
+                    <Tag color={STOP_STATUS_COLORS[stop.status]}>
+                        {STOP_STATUS_LABELS[stop.status]}
+                    </Tag>
                 </div>
             </div>
 
@@ -192,7 +203,8 @@ export const StopDetailPageView = ({
                     </div>
                     {stop.items.length > 0 && (
                         <div className="stopDetailProgress">
-                            {itemsState.progressCount.completed} de {itemsState.progressCount.total} revisados
+                            {itemsState.progressCount.completed} de {itemsState.progressCount.total}{' '}
+                            revisados
                         </div>
                     )}
                 </div>
@@ -200,7 +212,9 @@ export const StopDetailPageView = ({
                 {/* Products list */}
                 <div className="stopDetailSection">
                     {stop.items.length === 0 ? (
-                        <div className="text-sm text-gray-400 py-4 text-center">Sin productos cargados</div>
+                        <div className="text-sm text-gray-400 py-4 text-center">
+                            Sin productos cargados
+                        </div>
                     ) : (
                         <div className="stopDetailProductsWrapper" ref={productsListRef}>
                             <div className="stopDetailProductsList">
@@ -209,10 +223,13 @@ export const StopDetailPageView = ({
                                         key={item.id}
                                         item={item}
                                         data={itemsState.getItem(item.id)!}
-                                        rejectionReasonId={itemsState.rejectionReasonsByItem[item.id]}
+                                        rejectionReasonId={
+                                            itemsState.rejectionReasonsByItem[item.id]
+                                        }
                                         reasonOptions={rejectionReasons}
                                         canDeliver={itemsState.canDeliver}
                                         onSetQuantity={itemsState.setQuantity}
+                                        onSetReleasedQuantity={itemsState.setReleasedQuantity}
                                         onToggleConfirm={itemsState.toggleConfirm}
                                         onSetRejectionReason={itemsState.setRejectionReason}
                                         onMarkReasonTouched={itemsState.markReasonTouched}
@@ -241,10 +258,16 @@ export const StopDetailPageView = ({
                             {stop.collections.map((col) => (
                                 <div key={col.id} className="stopDetailCollectionRow">
                                     <div>
-                                        <div className="stopDetailCollectionMethod">{col.method}</div>
-                                        <div className="stopDetailCollectionStatus">{col.status}</div>
+                                        <div className="stopDetailCollectionMethod">
+                                            {col.method}
+                                        </div>
+                                        <div className="stopDetailCollectionStatus">
+                                            {col.status}
+                                        </div>
                                     </div>
-                                    <div className="stopDetailCollectionAmount">{formatCurrency(col.amount)}</div>
+                                    <div className="stopDetailCollectionAmount">
+                                        {formatCurrency(col.amount)}
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -46,6 +46,7 @@ export interface RouteStopItem {
     quantity_planned: number;
     quantity_loaded: number;
     quantity_delivered: number;
+    quantity_released_for_extra_sale: number;
 }
 
 export interface RouteStop {
@@ -156,6 +157,7 @@ export interface StopDetailItem {
     quantity_planned: number;
     quantity_loaded: number;
     quantity_delivered: number;
+    quantity_released_for_extra_sale: number;
     unit_price: number;
     is_extra: boolean;
     notes: string | null;
