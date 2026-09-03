@@ -73,7 +73,7 @@
     flex-direction: column;
 }
 
-.stopPaymentModalRowFields .ant-input-number {
+.stopPaymentModalRowFields .ant-input-affix-wrapper {
     flex: 1;
     width: 100%;
 }
@@ -89,7 +89,7 @@
         flex-direction: row;
     }
 
-    .stopPaymentModalRowFields .ant-input-number {
+    .stopPaymentModalRowFields .ant-input-affix-wrapper {
         width: auto;
     }
 
@@ -124,22 +124,32 @@
 .stopPaymentModalFooter {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .stopPaymentModalSummary {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px;
+    gap: 2px;
+    padding: 9px 10px;
     background: #f9f9f9;
     border-radius: 8px;
+}
+
+.stopPaymentModalSummaryTitle {
+    margin-bottom: 3px;
+    color: #262626;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .stopPaymentModalSummaryRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 22px;
 }
 
 .stopPaymentModalSummaryLabel {
@@ -148,9 +158,13 @@
 }
 
 .stopPaymentModalSummaryValue {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #111;
+}
+
+.stopPaymentModalSummaryCovered {
+    text-align: right;
 }
 
 .stopPaymentModalSummaryValue--paid {

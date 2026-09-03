@@ -12,6 +12,7 @@ import { DeliveryDecisionModal } from '@/features/driver/components/DeliveryDeci
 import { StopPaymentModal } from '@/features/driver/components/StopPaymentModal';
 import { FailedDeliveryModal } from '@/features/driver/components/FailedDeliveryModal';
 import { ExtraSaleWrapper } from '@/features/driver/components/ExtraSaleWrapper';
+import type { CollectionPreview } from '@/features/driver/interfaces/driver.interface';
 
 export const StopDetailPage = () => {
     const { stopId } = useParams<{ routeId: string; stopId: string }>();
@@ -26,6 +27,7 @@ export const StopDetailPage = () => {
 
     // Pending delivery payload (constructed in view, stored here for modal handlers)
     const [pendingPayload, setPendingPayload] = useState<CompleteStopPayload | null>(null);
+    const [pendingPreview, setPendingPreview] = useState<CollectionPreview | null>(null);
 
     // Fetch rejection reasons
     useEffect(() => {
@@ -39,25 +41,26 @@ export const StopDetailPage = () => {
     // ── Orchestrator actions ─────────────────────────────────────────────────
 
     const handleDeliver = useCallback(
-        async (payload: {
-            items: Array<{
-                route_stop_item_id: string;
-                quantity_delivered: number;
-                quantity_released_for_extra_sale: number;
-                rejection_reason_id?: string | null;
-            }>;
-            gps?: { lat: number; lon: number };
-            payments?: Array<{
-                store_payment_method_id: string;
-                amount: number;
-                reference?: string;
-            }>;
-        }) => {
+        async (
+            payload: {
+                items: Array<{
+                    route_stop_item_id: string;
+                    quantity_delivered: number;
+                    quantity_released_for_extra_sale: number;
+                    rejection_reason_id?: string | null;
+                }>;
+                gps?: { lat: number; lon: number };
+                payments?: Array<{
+                    store_payment_method_id: string;
+                    amount: number;
+                    reference?: string;
+                }>;
+            },
+            preview: CollectionPreview | null
+        ) => {
             if (!stopDetail.stop) return;
 
-            const pendingAmount = stopDetail.stop.order?.pending_amount ?? 0;
-
-            if (pendingAmount > 0) {
+            if (preview && preview.amount_to_collect_now > 0) {
                 // Store payload and show decision modal
                 const completePayload: CompleteStopPayload = {
                     status: 'completed',
@@ -65,6 +68,7 @@ export const StopDetailPage = () => {
                     gps: payload.gps,
                 };
                 setPendingPayload(completePayload);
+                setPendingPreview(preview);
                 setDecisionModalOpen(true);
             } else {
                 // Direct delivery
@@ -84,6 +88,7 @@ export const StopDetailPage = () => {
         setDecisionModalOpen(false);
         await stopDetail.completeStop(pendingPayload);
         setPendingPayload(null);
+        setPendingPreview(null);
     }, [pendingPayload, stopDetail]);
 
     const handleDecisionCollect = useCallback(() => {
@@ -103,6 +108,7 @@ export const StopDetailPage = () => {
             setPaymentModalOpen(false);
             await stopDetail.completeStop(completePayload);
             setPendingPayload(null);
+            setPendingPreview(null);
         },
         [pendingPayload, stopDetail]
     );
@@ -126,7 +132,7 @@ export const StopDetailPage = () => {
         [stopDetail]
     );
 
-    const pendingAmount = stopDetail.stop?.order?.pending_amount ?? 0;
+    const amountToCollectNow = pendingPreview?.amount_to_collect_now ?? 0;
 
     return (
         <>
@@ -157,22 +163,24 @@ export const StopDetailPage = () => {
 
             <DeliveryDecisionModal
                 open={decisionModalOpen}
-                pendingAmount={pendingAmount}
+                amountToCollectNow={amountToCollectNow}
                 onDeliver={handleDecisionDeliver}
                 onCollect={handleDecisionCollect}
                 onCancel={() => {
                     setDecisionModalOpen(false);
                     setPendingPayload(null);
+                    setPendingPreview(null);
                 }}
                 loading={stopDetail.completing}
             />
 
             <StopPaymentModal
                 open={paymentModalOpen}
-                pendingAmount={pendingAmount}
+                amountToCollectNow={amountToCollectNow}
                 onClose={() => {
                     setPaymentModalOpen(false);
                     setPendingPayload(null);
+                    setPendingPreview(null);
                 }}
                 onConfirm={handlePaymentConfirm}
             />

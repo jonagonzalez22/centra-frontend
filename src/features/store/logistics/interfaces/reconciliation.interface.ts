@@ -74,7 +74,7 @@ export interface RouteReconciliationSummary {
 }
 
 export interface RejectCollectionPayload {
-    rejection_reason: string;
+    reason: string;
 }
 
 export interface ResolveDiscrepancyPayload {

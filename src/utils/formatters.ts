@@ -42,6 +42,15 @@ export const formatCurrency = (value: number): string => {
     }).format(value);
 };
 
+export const formatCurrencyWithCents = (value: number): string => {
+    return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value);
+};
+
 export const formatDateBrief = (dateString: string): string => {
     return new Intl.DateTimeFormat('es-ES', {
         day: 'numeric',

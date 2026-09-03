@@ -1,23 +1,25 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Modal, Select, InputNumber, Input, Button, message as antMessage, Alert } from 'antd';
+import { Modal, Select, Input, Button, message as antMessage, Alert } from 'antd';
 import { Plus, Trash2 } from 'lucide-react';
 import { DriverService } from '../../services/driver.service';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrencyWithCents } from '@/utils/formatters';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 import './StopPaymentModal.css';
 
 interface PaymentRow {
     id: string;
     store_payment_method_id: string | null;
-    amount: number | null;
+    amountInput: string;
     reference: string;
 }
 
 interface StopPaymentModalProps {
     open: boolean;
-    pendingAmount: number;
+    amountToCollectNow: number;
     onClose: () => void;
-    onConfirm: (payments: Array<{ store_payment_method_id: string; amount: number; reference?: string }>) => Promise<void>;
+    onConfirm: (
+        payments: Array<{ store_payment_method_id: string; amount: number; reference?: string }>
+    ) => Promise<void>;
 }
 
 let rowCounter = 0;
@@ -27,34 +29,38 @@ function createRow(): PaymentRow {
     return {
         id: `payment-row-${rowCounter}`,
         store_payment_method_id: null,
-        amount: null,
+        amountInput: '',
         reference: '',
     };
 }
 
-function formatInputNumber(value: number | string | undefined): string {
-    if (value == null) return '';
-    const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(num)) return '';
-    return `$ ${num.toLocaleString('es-AR')}`;
+function moneyInputToCents(value: string): number {
+    const normalized = value.trim().replace(',', '.');
+    if (!/^\d+(?:\.\d{0,2})?$/.test(normalized)) return 0;
+
+    const [whole, decimals = ''] = normalized.split('.');
+    return Number(whole) * 100 + Number(decimals.padEnd(2, '0'));
 }
 
-function parseInputNumber(value: string | undefined): number {
-    if (!value) return 0;
-    return Number(value.replace(/[^0-9]/g, ''));
+function isEditableMoneyInput(value: string): boolean {
+    return /^\d*(?:[.,]\d{0,2})?$/.test(value);
+}
+
+function centsToAmount(cents: number): number {
+    return cents / 100;
 }
 
 /**
  * Modal de pago para el conductor.
  * Adaptado de POSPaymentModal pero:
- * - Valida contra pending_amount (no contra total)
+ * - Valida contra amount_to_collect_now calculado por backend
  * - Permite confirmar con suma parcial (abono parcial)
- * - Bloquea solo si suma > pending_amount
+ * - Bloquea solo si la suma supera el máximo de esta entrega
  * - Label dinámico "Confirmar y Entregar $X"
  */
 export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
     open,
-    pendingAmount,
+    amountToCollectNow,
     onClose,
     onConfirm,
 }) => {
@@ -84,19 +90,21 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
         }
     }, [open, loadPaymentMethods]);
 
-    const sumPayments = useMemo(
+    const maximumCents = Math.round(amountToCollectNow * 100);
+    const sumPaymentsCents = useMemo(
         () =>
             rows.reduce(
-                (sum, row) => sum + (row.store_payment_method_id && row.amount ? row.amount : 0),
+                (sum, row) =>
+                    sum + (row.store_payment_method_id ? moneyInputToCents(row.amountInput) : 0),
                 0
             ),
         [rows]
     );
 
-    const remaining = pendingAmount - sumPayments;
-    const displayRemaining = Math.max(0, remaining);
-    const isPartial = sumPayments > 0 && sumPayments < pendingAmount;
-    const isExcess = sumPayments > pendingAmount;
+    const remainingCents = maximumCents - sumPaymentsCents;
+    const displayRemainingCents = Math.max(0, remainingCents);
+    const isPartial = sumPaymentsCents > 0 && sumPaymentsCents < maximumCents;
+    const isExcess = sumPaymentsCents > maximumCents;
 
     const findMethod = useCallback(
         (pid: string | null): StorePaymentMethod | undefined =>
@@ -107,24 +115,10 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
     );
 
     const hasValidRow = rows.some(
-        (r) => r.store_payment_method_id && r.amount && r.amount > 0
+        (row) => row.store_payment_method_id && moneyInputToCents(row.amountInput) > 0
     );
 
-    // Calcula el máximo permitido para una fila específica
-    const getMaxForRow = useCallback(
-        (rowId: string): number => {
-            const otherSum = rows
-                .filter((r) => r.id !== rowId)
-                .reduce(
-                    (sum, r) => sum + (r.store_payment_method_id && r.amount ? r.amount : 0),
-                    0
-                );
-            return Math.max(0, pendingAmount - otherSum);
-        },
-        [rows, pendingAmount]
-    );
-
-    // Bloquea si hay exceso (suma > pendingAmount) o si no hay fila válida
+    // Bloquea si hay exceso o si no hay fila válida
     const isValid = useMemo(() => {
         if (!hasValidRow) return false;
         if (isExcess) return false;
@@ -152,10 +146,12 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
 
         try {
             const payments = rows
-                .filter((r) => r.store_payment_method_id && r.amount && r.amount > 0)
+                .filter(
+                    (row) => row.store_payment_method_id && moneyInputToCents(row.amountInput) > 0
+                )
                 .map((r) => ({
                     store_payment_method_id: r.store_payment_method_id!,
-                    amount: r.amount!,
+                    amount: centsToAmount(moneyInputToCents(r.amountInput)),
                     ...(r.reference ? { reference: r.reference } : {}),
                 }));
 
@@ -170,41 +166,43 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
     const footer = (
         <div className="stopPaymentModalFooter">
             <div className="stopPaymentModalSummary">
+                <div className="stopPaymentModalSummaryTitle">Resumen</div>
                 <div className="stopPaymentModalSummaryRow">
-                    <span className="stopPaymentModalSummaryLabel">Saldo pendiente</span>
+                    <span className="stopPaymentModalSummaryLabel">Máximo disponible</span>
                     <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--pending">
-                        {formatCurrency(pendingAmount)}
+                        {formatCurrencyWithCents(amountToCollectNow)}
                     </span>
                 </div>
-                {sumPayments > 0 && (
-                    <div className="stopPaymentModalSummaryRow">
-                        <span className="stopPaymentModalSummaryLabel">Cobrado</span>
-                        <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--paid">
-                            {formatCurrency(sumPayments)}
-                        </span>
-                    </div>
-                )}
+                <div className="stopPaymentModalSummaryRow">
+                    <span className="stopPaymentModalSummaryLabel">Cobrado</span>
+                    <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--paid">
+                        {formatCurrencyWithCents(centsToAmount(sumPaymentsCents))}
+                    </span>
+                </div>
                 {isExcess ? (
                     <div className="stopPaymentModalSummaryRow">
                         <span className="stopPaymentModalSummaryLabel">Exceso</span>
                         <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--error">
-                            {formatCurrency(sumPayments - pendingAmount)}
+                            {formatCurrencyWithCents(
+                                centsToAmount(sumPaymentsCents - maximumCents)
+                            )}
                         </span>
                     </div>
-                ) : isPartial ? (
+                ) : (
                     <div className="stopPaymentModalSummaryRow">
-                        <span className="stopPaymentModalSummaryLabel">Queda pendiente</span>
+                        <span className="stopPaymentModalSummaryLabel">Pendiente</span>
                         <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--pending">
-                            {formatCurrency(displayRemaining)}
+                            {formatCurrencyWithCents(centsToAmount(displayRemainingCents))}
                         </span>
                     </div>
-                ) : sumPayments === pendingAmount && sumPayments > 0 ? (
-                    <div className="stopPaymentModalSummaryRow">
+                )}
+                {!isExcess && sumPaymentsCents === maximumCents && sumPaymentsCents > 0 && (
+                    <div className="stopPaymentModalSummaryCovered">
                         <span className="stopPaymentModalSummaryValue stopPaymentModalSummaryValue--covered">
                             Total cubierto
                         </span>
                     </div>
-                ) : null}
+                )}
             </div>
             <div className="stopPaymentModalFooterActions">
                 <Button onClick={onClose} disabled={submitting}>
@@ -262,11 +260,9 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                         let exceedMessage: string | null = null;
                         if (
                             row.store_payment_method_id &&
-                            row.amount &&
-                            row.amount > 0 &&
-                            row.amount > pendingAmount
+                            moneyInputToCents(row.amountInput) > maximumCents
                         ) {
-                            exceedMessage = 'El monto no puede superar el saldo pendiente.';
+                            exceedMessage = 'El monto no puede superar el máximo de esta entrega.';
                         }
 
                         return (
@@ -295,17 +291,18 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                                         }))}
                                 />
                                 <div className="stopPaymentModalRowFields">
-                                    <InputNumber<number>
+                                    <Input
+                                        aria-label={`Monto del cobro ${rows.indexOf(row) + 1}`}
                                         placeholder="Monto"
-                                        value={row.amount}
-                                        onChange={(val) =>
-                                            updateRow(row.id, 'amount', val)
-                                        }
-                                        min={0.01}
-                                        max={getMaxForRow(row.id)}
-                                        formatter={formatInputNumber}
-                                        parser={parseInputNumber}
-                                        style={{ width: '100%' }}
+                                        value={row.amountInput}
+                                        inputMode="decimal"
+                                        prefix="$"
+                                        onChange={(event) => {
+                                            const value = event.target.value;
+                                            if (isEditableMoneyInput(value)) {
+                                                updateRow(row.id, 'amountInput', value);
+                                            }
+                                        }}
                                         status={exceedMessage ? 'error' : undefined}
                                     />
                                     {method?.requires_reference && (
@@ -319,9 +316,7 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                                     )}
                                 </div>
                                 {exceedMessage && (
-                                    <div className="stopPaymentModalRowError">
-                                        {exceedMessage}
-                                    </div>
+                                    <div className="stopPaymentModalRowError">{exceedMessage}</div>
                                 )}
                                 {rows.length > 1 && row.id !== rows[0].id && (
                                     <Button
@@ -343,7 +338,7 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                     onClick={addRow}
                     icon={<Plus size={14} />}
                     block
-                    disabled={paymentMethods.length === 0 || remaining <= 0}
+                    disabled={paymentMethods.length === 0 || remainingCents <= 0}
                     className="stopPaymentModalAddBtn"
                 >
                     Agregar otro medio de pago

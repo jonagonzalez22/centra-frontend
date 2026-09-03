@@ -1,9 +1,14 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { Alert, Button, Spin, Tag } from 'antd';
 import { ReloadOutlined, FileTextOutlined } from '@ant-design/icons';
-import type { StopDetail, RouteStopStatus } from '@/features/driver/interfaces/driver.interface';
+import type {
+    CollectionPreview,
+    StopDetail,
+    RouteStopStatus,
+} from '@/features/driver/interfaces/driver.interface';
 import { OrderBalanceSummary } from '@/components/driver';
 import { useStopDetailItems } from '@/features/driver/hooks/useStopDetailItems';
+import { useCollectionPreview } from '@/features/driver/hooks/useCollectionPreview';
 import { StopDetailCard } from '@/features/driver/components/StopDetailCard';
 import { StopDetailFooter } from '@/features/driver/components/StopDetailFooter';
 import { formatCurrency } from '@/utils/formatters';
@@ -29,7 +34,7 @@ export interface StopDetailPageViewProps {
     onRefresh: () => void;
     rejectionReasons: import('@/features/driver/services/driver.service').RejectionReason[];
     completing: boolean;
-    onDeliver: (payload: DeliverPayload) => Promise<void>;
+    onDeliver: (payload: DeliverPayload, preview: CollectionPreview | null) => Promise<void>;
     onFailedDelivery: () => void;
     onExtraSaleClick: () => void;
 }
@@ -74,6 +79,21 @@ export const StopDetailPageView = ({
         stopStatus: stop?.status,
         completing,
     });
+    const previewItems = useMemo(
+        () =>
+            (stop?.items ?? []).map((item) => ({
+                route_stop_item_id: item.route_stop_item_id,
+                quantity_delivered: itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
+            })),
+        [itemsState.quantitiesDelivered, stop?.items]
+    );
+    const stopIsResolved =
+        stop?.status === 'completed' || stop?.status === 'failed' || stop?.status === 'cancelled';
+    const collectionPreview = useCollectionPreview({
+        stopId: stop?.id ?? '',
+        items: previewItems,
+        enabled: !!stop?.order && !stopIsResolved,
+    });
 
     // ── Guards ──────────────────────────────────────────────────────────────
     if (loading) {
@@ -112,7 +132,7 @@ export const StopDetailPageView = ({
     // ── Derived ────────────────────────────────────────────────────────────
     const isCompleted =
         stop.status === 'completed' || stop.status === 'failed' || stop.status === 'cancelled';
-    const hasPendingCollections = stop.collections.some((c) => c.status !== 'completed');
+    const hasPendingCollections = stop.collections.some((c) => c.status === 'declared');
     const buttonLabel =
         itemsState.touchedItemIds.size === 0 && itemsState.deliveryState.allFull
             ? 'Entregar todo'
@@ -156,7 +176,7 @@ export const StopDetailPageView = ({
             gps,
         };
 
-        await onDeliver(payload);
+        await onDeliver(payload, collectionPreview.preview);
     };
 
     // ── Render ──────────────────────────────────────────────────────────────
@@ -183,7 +203,14 @@ export const StopDetailPageView = ({
             <div className="stopDetailPageContent pb-40">
                 {/* Payment info */}
                 <div className="stopDetailPaymentLabel">Información de pago</div>
-                <OrderBalanceSummary order={stop.order} variant="full" />
+                <OrderBalanceSummary
+                    order={stop.order}
+                    variant="full"
+                    collectionPreview={collectionPreview.preview}
+                    previewLoading={collectionPreview.loading}
+                    previewError={collectionPreview.error}
+                    onRetryPreview={collectionPreview.retry}
+                />
 
                 {/* Notes */}
                 {stop.notes && (

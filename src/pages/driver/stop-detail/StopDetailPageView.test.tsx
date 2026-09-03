@@ -3,6 +3,24 @@ import userEvent from '@testing-library/user-event';
 import { StopDetailPageView } from './StopDetailPageView';
 import type { StopDetail } from '@/features/driver/interfaces/driver.interface';
 
+const preview = {
+    order_total: 500,
+    delivered_value_current_stop: 300,
+    delivered_value_cumulative: 300,
+    verified_paid_amount: 0,
+    pending_declared_amount: 0,
+    amount_to_collect_now: 300,
+};
+
+vi.mock('@/features/driver/hooks/useCollectionPreview', () => ({
+    useCollectionPreview: () => ({
+        preview,
+        loading: false,
+        error: null,
+        retry: vi.fn(),
+    }),
+}));
+
 const stop: StopDetail = {
     id: 'stop-1',
     route_id: 'route-1',
@@ -75,15 +93,18 @@ test('partial delivery payload contains the final released quantity', async () =
     await user.click(screen.getByLabelText('Reducir disponibilidad de Pintura Látex'));
     await user.click(screen.getByRole('button', { name: 'Confirmar entrega parcial' }));
 
-    expect(onDeliver).toHaveBeenCalledWith({
-        items: [
-            {
-                route_stop_item_id: 'item-1',
-                quantity_delivered: 3,
-                quantity_released_for_extra_sale: 1,
-                rejection_reason_id: 'safe',
-            },
-        ],
-        gps: undefined,
-    });
+    expect(onDeliver).toHaveBeenCalledWith(
+        {
+            items: [
+                {
+                    route_stop_item_id: 'item-1',
+                    quantity_delivered: 3,
+                    quantity_released_for_extra_sale: 1,
+                    rejection_reason_id: 'safe',
+                },
+            ],
+            gps: undefined,
+        },
+        preview
+    );
 });

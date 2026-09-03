@@ -117,6 +117,15 @@ export interface OrderAmounts {
     pending_amount: number;
 }
 
+export interface CollectionPreview {
+    order_total: number;
+    delivered_value_current_stop: number;
+    delivered_value_cumulative: number;
+    verified_paid_amount: number;
+    pending_declared_amount: number;
+    amount_to_collect_now: number;
+}
+
 export interface RouteStopsCustomer {
     name: string | null;
     phone: string | null;

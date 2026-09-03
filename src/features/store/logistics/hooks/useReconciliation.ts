@@ -100,7 +100,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         async (collectionId: string, reason: string) => {
             try {
                 setActionLoading(collectionId);
-                const payload: RejectCollectionPayload = { rejection_reason: reason };
+                const payload: RejectCollectionPayload = { reason };
                 await ReconciliationService.rejectCollection(routeId, collectionId, payload);
                 message.success('Cobro rechazado exitosamente.');
                 await fetchSummary();

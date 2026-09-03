@@ -9,6 +9,7 @@ import type {
     SurplusProductsResponse,
     AddExtraSalePayload,
     AddExtraSaleResponse,
+    CollectionPreview,
 } from '../interfaces/driver.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 
@@ -124,6 +125,28 @@ export const DriverService = {
             status: 0,
             message: data.message ?? 'Error inesperado',
             errors: data.errors ?? undefined,
+        };
+        throw error;
+    },
+
+    previewCollection: async (
+        stopId: string,
+        items: Array<{ route_stop_item_id: string; quantity_delivered: number }>,
+        signal?: AbortSignal
+    ): Promise<CollectionPreview> => {
+        const { data } = await api.post<{
+            status: 'success' | 'error';
+            data: CollectionPreview;
+            message?: string;
+            errors?: unknown;
+        }>(API_ENDPOINTS.DRIVER.STOP_COLLECTION_PREVIEW(stopId), { items }, { signal });
+
+        if (data.status === 'success') return data.data;
+
+        const error: ApiError = {
+            status: 0,
+            message: data.message ?? 'Error al calcular el monto a cobrar.',
+            errors: data.errors as ApiError['errors'],
         };
         throw error;
     },
