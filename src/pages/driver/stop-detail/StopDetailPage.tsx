@@ -12,11 +12,19 @@ import { DeliveryDecisionModal } from '@/features/driver/components/DeliveryDeci
 import { StopPaymentModal } from '@/features/driver/components/StopPaymentModal';
 import { FailedDeliveryModal } from '@/features/driver/components/FailedDeliveryModal';
 import { ExtraSaleWrapper } from '@/features/driver/components/ExtraSaleWrapper';
+import { useAvailableSurplus } from '@/features/driver/hooks/useAvailableSurplus';
 import type { CollectionPreview } from '@/features/driver/interfaces/driver.interface';
 
 export const StopDetailPage = () => {
     const { stopId } = useParams<{ routeId: string; stopId: string }>();
     const stopDetail = useStopDetail(stopId ?? '');
+    const stopIsActionable =
+        stopDetail.stop?.status === 'pending' || stopDetail.stop?.status === 'arrived';
+    const availableSurplus = useAvailableSurplus({
+        routeId: stopDetail.stop?.route_id ?? '',
+        stopId: stopDetail.stop?.id ?? stopId ?? '',
+        enabled: stopIsActionable,
+    });
     const [rejectionReasons, setRejectionReasons] = useState<RejectionReason[]>([]);
 
     // Modal state
@@ -147,6 +155,7 @@ export const StopDetailPage = () => {
                 onDeliver={handleDeliver}
                 onFailedDelivery={() => setFailedDeliveryModalOpen(true)}
                 onExtraSaleClick={() => setExtraSaleOpen(true)}
+                hasAvailableSurplus={availableSurplus.hasAvailableSurplus}
             />
 
             {stopDetail.stop && (
@@ -157,6 +166,7 @@ export const StopDetailPage = () => {
                     onClose={() => setExtraSaleOpen(false)}
                     onSuccess={() => {
                         stopDetail.refresh();
+                        availableSurplus.refresh();
                     }}
                 />
             )}

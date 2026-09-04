@@ -37,6 +37,7 @@ export interface StopDetailPageViewProps {
     onDeliver: (payload: DeliverPayload, preview: CollectionPreview | null) => Promise<void>;
     onFailedDelivery: () => void;
     onExtraSaleClick: () => void;
+    hasAvailableSurplus: boolean;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────────
@@ -69,6 +70,7 @@ export const StopDetailPageView = ({
     onDeliver,
     onFailedDelivery,
     onExtraSaleClick,
+    hasAvailableSurplus,
 }: StopDetailPageViewProps) => {
     const productsListRef = useRef<HTMLDivElement>(null);
 
@@ -312,6 +314,7 @@ export const StopDetailPageView = ({
                 onPrimaryClick={handlePrimaryClick}
                 onFailedDeliveryClick={onFailedDelivery}
                 onExtraSaleClick={onExtraSaleClick}
+                showExtraSale={hasAvailableSurplus && !isCompleted}
             />
         </div>
     );

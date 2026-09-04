@@ -83,6 +83,7 @@ test('partial delivery payload contains the final released quantity', async () =
             onDeliver={onDeliver}
             onFailedDelivery={vi.fn()}
             onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
         />
     );
 
@@ -108,3 +109,47 @@ test('partial delivery payload contains the final released quantity', async () =
         preview
     );
 });
+
+test.each(['pending', 'arrived'] as const)(
+    'shows Venta Extra for an actionable %s stop with surplus',
+    (status) => {
+        render(
+            <StopDetailPageView
+                stop={{ ...stop, status }}
+                loading={false}
+                error={null}
+                onRefresh={vi.fn()}
+                rejectionReasons={[]}
+                completing={false}
+                onDeliver={vi.fn()}
+                onFailedDelivery={vi.fn()}
+                onExtraSaleClick={vi.fn()}
+                hasAvailableSurplus
+            />
+        );
+
+        expect(screen.getByRole('button', { name: 'Venta Extra' })).toBeInTheDocument();
+    }
+);
+
+test.each(['completed', 'failed', 'cancelled'] as const)(
+    'hides Venta Extra for a resolved %s stop even with surplus',
+    (status) => {
+        render(
+            <StopDetailPageView
+                stop={{ ...stop, status }}
+                loading={false}
+                error={null}
+                onRefresh={vi.fn()}
+                rejectionReasons={[]}
+                completing={false}
+                onDeliver={vi.fn()}
+                onFailedDelivery={vi.fn()}
+                onExtraSaleClick={vi.fn()}
+                hasAvailableSurplus
+            />
+        );
+
+        expect(screen.queryByRole('button', { name: 'Venta Extra' })).not.toBeInTheDocument();
+    }
+);
