@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ApiError } from '@/interfaces/ApiErrors.interface';
 import './LoginForm.css';
+import { canAccessReturnPath, getHomePath } from '@/router/router.utils';
 
 interface LoginFormValues {
     email: string;
@@ -24,7 +25,7 @@ const LoginForm = () => {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || '/';
+    const from = location.state?.from?.pathname;
 
     const emailValidation = emailRules();
     const passwordValidation = passwordRules();
@@ -34,7 +35,12 @@ const LoginForm = () => {
 
         try {
             await logIn(values.email, values.password);
-            navigate(from, { replace: true });
+            const authenticatedUser = useAuthStore.getState().user;
+            const destination =
+                authenticatedUser && from && canAccessReturnPath(authenticatedUser, from)
+                    ? from
+                    : getHomePath(authenticatedUser?.roles ?? []);
+            navigate(destination, { replace: true, state: null });
         } catch (error: unknown) {
             const apiError = error as ApiError;
             setErrorMessage(apiError?.message || 'Credenciales incorrectas');

@@ -3,8 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import LoginForm from './LoginForm';
+import { useAuthStore } from '@/store/useAuthStore.store';
 
 const mockNavigate = vi.fn();
+const mockLocationState: { value: { from?: { pathname?: string } } | null } = { value: null };
+const mockAuthenticatedUser = {
+    id: 1,
+    is_active: true,
+    name: 'Test User',
+    email: 'test@example.com',
+    store_id: 1,
+    store: null,
+    roles: ['STORE_ADMIN'],
+    permissions: ['drivers.view'],
+    features: [{ code: 'deliveries', limit: null }],
+};
+const mockGetState = vi.fn(() => ({ user: mockAuthenticatedUser }));
 
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
@@ -12,9 +26,7 @@ vi.mock('react-router-dom', async () => {
     return {
         ...actual,
         useNavigate: () => mockNavigate,
-        useLocation: () => ({
-            state: null,
-        }),
+        useLocation: () => ({ state: mockLocationState.value }),
     };
 });
 
@@ -27,6 +39,9 @@ vi.mock('@/store/useAuthStore.store', () => ({
     }),
 }));
 
+// LoginForm reads the latest authenticated user from the bound Zustand store.
+(useAuthStore as unknown as { getState: typeof mockGetState }).getState = mockGetState;
+
 describe('LoginForm', () => {
     const renderLoginForm = () => {
         return render(
@@ -35,6 +50,13 @@ describe('LoginForm', () => {
             </MemoryRouter>
         );
     };
+
+    beforeEach(() => {
+        mockLocationState.value = null;
+        mockNavigate.mockClear();
+        mockLogIn.mockReset();
+        mockLogIn.mockResolvedValue(undefined);
+    });
 
     test('renders login form correctly', () => {
         renderLoginForm();
@@ -111,5 +133,17 @@ describe('LoginForm', () => {
             'href',
             '/'
         );
+    });
+
+    test('falls back to the authenticated role home for an unauthorized return URL', async () => {
+        mockLocationState.value = { from: { pathname: '/tienda/conductor/rutas' } };
+        const user = userEvent.setup();
+        renderLoginForm();
+
+        await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com');
+        await user.type(screen.getByPlaceholderText(/contraseña/i), '12345678');
+        await user.click(screen.getByRole('button', { name: /ingresar/i }));
+
+        expect(mockNavigate).toHaveBeenCalledWith('/tienda', { replace: true, state: null });
     });
 });

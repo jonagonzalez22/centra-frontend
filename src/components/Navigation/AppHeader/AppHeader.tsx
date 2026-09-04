@@ -4,6 +4,7 @@ import type { MenuProps } from 'antd';
 import React from 'react';
 import { UserAvatar } from '../UserAvatar';
 import { useAuthStore } from '@/store/useAuthStore.store';
+import { useNavigate } from 'react-router-dom';
 import './AppHeader.css';
 
 const { Header } = Layout;
@@ -16,6 +17,7 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleMenu }) => {
     const { logout, user } = useAuthStore();
+    const navigate = useNavigate();
 
     const items = [
         { key: 'profile', label: 'Mi Perfil', icon: <UserOutlined /> },
@@ -24,6 +26,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleM
 
     const handleMenuClick: MenuProps['onClick'] = async ({ key }) => {
         if (key === 'logout' && logout) {
+            // Leave the protected location before auth state is cleared so the
+            // guard cannot turn the previous session URL into a login return URL.
+            navigate('/login', { replace: true, state: null });
             await logout();
         }
     };

@@ -237,11 +237,16 @@ export const router = createBrowserRouter([
 
                     // ── Conductor (Driver App) ─────────────
                     {
-                        element: <PermissionRoute permission="drivers.view" redirectTo="/tienda/dashboard" />,
+                        element: <ProtectedRoute allowedRoles={['STORE_DRIVER']} />,
                         children: [
-                            { path: 'conductor/rutas', element: <DriverRoutesPage /> },
-                            { path: 'conductor/ruta/:routeId', element: <RouteSheetPage /> },
-                            { path: 'conductor/parada/:routeId/:stopId', element: <StopDetailPage /> },
+                            {
+                                element: <PermissionRoute permission="drivers.view" redirectTo="/tienda/dashboard" />,
+                                children: [
+                                    { path: 'conductor/rutas', element: <DriverRoutesPage /> },
+                                    { path: 'conductor/ruta/:routeId', element: <RouteSheetPage /> },
+                                    { path: 'conductor/parada/:routeId/:stopId', element: <StopDetailPage /> },
+                                ],
+                            },
                         ],
                     },
                 ],
