@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Descriptions, Dropdown, Spin, Tooltip } from 'antd';
+import { useState, useMemo, useEffect } from 'react';
+import { Descriptions, Dropdown, Spin, Table, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import Drawer from '@/components/Drawer/Drawer';
 import Tabs from '@/components/Tabs/Tabs';
@@ -43,6 +43,12 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
     const [cancelOpen, setCancelOpen] = useState(false);
     const [rescheduling, setRescheduling] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const [activeTab, setActiveTab] = useState('detail');
+    const hasPendingDelivery = order?.delivery_summary?.has_pending_delivery ?? false;
+
+    useEffect(() => {
+        if (!hasPendingDelivery && activeTab === 'pending') setActiveTab('detail');
+    }, [hasPendingDelivery, activeTab]);
 
     const handleReschedule = async (values: {
         new_date: string;
@@ -167,6 +173,22 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                         )}
                     </Descriptions>
 
+                    {hasPendingDelivery && (
+                        <div className="border border-blue-100 bg-blue-50 rounded-lg p-3 flex items-center justify-between gap-3">
+                            <div>
+                                <h4 className="font-semibold text-sm">Entrega pendiente</h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {order.delivery_summary.items.filter((item) => item.pending_quantity > 0).length}{' '}
+                                    {order.delivery_summary.items.filter((item) => item.pending_quantity > 0).length === 1
+                                        ? 'producto tiene'
+                                        : 'productos tienen'}{' '}
+                                    mercadería pendiente
+                                </p>
+                            </div>
+                            <Button variant="default" label="Ver pendientes →" action={() => setActiveTab('pending')} />
+                        </div>
+                    )}
+
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Cliente y entrega</h4>
                         <Descriptions column={1} size="small" bordered>
@@ -236,6 +258,31 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 </div>
             ),
         },
+        ...(hasPendingDelivery ? [{
+            key: 'pending',
+            label: 'Pendientes',
+            children: (
+                <div
+                    className="overflow-y-auto pr-1"
+                    style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}
+                >
+                    <h4 className="font-semibold text-sm mb-3">Entrega pendiente</h4>
+                    <Table
+                        size="small"
+                        pagination={false}
+                        scroll={{ x: 420, y: 'calc(100vh - 280px)' }}
+                        rowKey="product_id"
+                        dataSource={order.delivery_summary.items.filter((item) => item.pending_quantity > 0)}
+                        columns={[
+                            { title: 'Producto', dataIndex: 'product_name', key: 'product_name', render: (value: string | null) => value || 'Producto' },
+                            { title: 'Pedido', dataIndex: 'ordered_quantity', key: 'ordered_quantity', align: 'right' as const },
+                            { title: 'Entregado', dataIndex: 'delivered_quantity', key: 'delivered_quantity', align: 'right' as const },
+                            { title: 'Pendiente', dataIndex: 'pending_quantity', key: 'pending_quantity', align: 'right' as const },
+                        ]}
+                    />
+                </div>
+            ),
+        }] : []),
         {
             key: 'items',
             label: 'Ítems y pagos',
@@ -260,10 +307,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
             key: 'history',
             label: 'Historial',
             children: (
-                <div
-                    className="overflow-y-auto pr-1"
-                    style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}
-                >
+                <div className="overflow-y-auto pr-1" style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}>
                     <OrderDrawerHistory history={order.history} loading={false} />
                 </div>
             ),
@@ -286,7 +330,11 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                         <Spin size="large" />
                     </div>
                 ) : !order ? null : (
-                    <Tabs items={buildTabItems(order)} defaultActiveKey="detail" />
+                    <Tabs
+                        items={buildTabItems(order)}
+                        activeKey={activeTab}
+                        onChange={setActiveTab}
+                    />
                 )}
             </Drawer>
 

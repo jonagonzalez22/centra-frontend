@@ -31,6 +31,25 @@ export interface OrderListItem {
     delivery_address: Pick<OrderDeliveryAddress, 'locality' | 'street' | 'full_address'> | null;
     branch_id: string | null;
     route_ids: string[];
+    has_pending_delivery: boolean;
+    pending_delivery_quantity: number;
+}
+
+export interface DeliverySummaryItem {
+    product_id: string;
+    product_name: string | null;
+    sku?: string | null;
+    ordered_quantity: number;
+    delivered_quantity: number;
+    pending_quantity: number;
+    planned_active_quantity: number;
+    unassigned_pending_quantity: number;
+}
+
+export interface DeliverySummary {
+    has_pending_delivery: boolean;
+    pending_delivery_quantity: number;
+    items: DeliverySummaryItem[];
 }
 
 export interface OrderItem {
@@ -172,6 +191,7 @@ export interface OrderDetail {
     events: OrderEvent[];
     history: OrderHistoryEntry[];
     route_ids: string[];
+    delivery_summary: DeliverySummary;
 }
 
 export interface OrderFilters {

@@ -178,8 +178,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                             order.pending_amount > 0 ? 'text-amber-600' : ''
                         }`}
                     >
-                        Pendiente: {formatCurrency(order.pending_amount)}
+                        Saldo pendiente: {formatCurrency(order.pending_amount)}
                     </span>
+                    {order.has_pending_delivery && (
+                        <span className="text-sm font-semibold text-blue-600">
+                            Entrega pendiente: {order.pending_delivery_quantity}{' '}
+                            {order.pending_delivery_quantity === 1 ? 'unidad' : 'unidades'}
+                        </span>
+                    )}
                 </div>
             </div>
 
