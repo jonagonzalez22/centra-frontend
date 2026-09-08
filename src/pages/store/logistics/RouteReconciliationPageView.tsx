@@ -6,7 +6,8 @@ import { Button } from '@/components/Button';
 import Tabs from '@/components/Tabs/Tabs';
 import { CollectionsTable } from '@/features/store/logistics/components/CollectionsTable';
 import { DiscrepanciesTable } from '@/features/store/logistics/components/DiscrepanciesTable';
-import type { RouteReconciliationSummary, RouteReconciliationCollection, RouteReconciliationStopItem, RouteReconciliationStop, DiscrepancyResolutionType } from '@/features/store/logistics/interfaces/reconciliation.interface';
+import type { RouteReconciliationSummary, RouteReconciliationCollectionGroup, RouteReconciliationStopItem, DiscrepancyResolutionType } from '@/features/store/logistics/interfaces/reconciliation.interface';
+import { formatDateShort } from '@/utils/formatters';
 import './RouteReconciliationPage.css';
 
 const { Text } = Typography;
@@ -28,8 +29,7 @@ const statusLabels: Record<string, string> = {
 
 interface RouteReconciliationPageViewProps {
     summary: RouteReconciliationSummary | null;
-    collections: RouteReconciliationCollection[];
-    stops: RouteReconciliationStop[];
+    collectionGroups: RouteReconciliationCollectionGroup[];
     discrepancies: RouteReconciliationStopItem[];
     pendingCollectionsCount: number;
     pendingDiscrepanciesCount: number;
@@ -37,6 +37,7 @@ interface RouteReconciliationPageViewProps {
     actionLoading: string | false;
     routeId?: string;
     onVerify: (collectionId: string) => Promise<void>;
+    onVerifyGroup: (paymentMethodId: string) => Promise<void>;
     onReject: (collectionId: string, reason: string) => Promise<void>;
     onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
     onFinalize: () => Promise<void>;
@@ -45,8 +46,7 @@ interface RouteReconciliationPageViewProps {
 
 export const RouteReconciliationPageView = ({
     summary,
-    collections,
-    stops,
+    collectionGroups,
     discrepancies,
     pendingCollectionsCount,
     pendingDiscrepanciesCount,
@@ -54,6 +54,7 @@ export const RouteReconciliationPageView = ({
     actionLoading,
     routeId,
     onVerify,
+    onVerifyGroup,
     onReject,
     onResolveDiscrepancy,
     onFinalize,
@@ -96,12 +97,19 @@ export const RouteReconciliationPageView = ({
                 />
 
                 <div className="routeReconciliationHeaderTop">
-                    <div className="routeReconciliationTitleRow">
-                        <h1 className="routeReconciliationTitle">{routeNumber}</h1>
-                        {summary?.status && (
-                            <Tag color={statusColors[summary.status] || 'default'}>
-                                {statusLabels[summary.status] || summary.status}
-                            </Tag>
+                    <div>
+                        <div className="routeReconciliationTitleRow">
+                            <h1 className="routeReconciliationTitle">{routeNumber}</h1>
+                            {summary?.status && (
+                                <Tag color={statusColors[summary.status] || 'default'}>
+                                    {statusLabels[summary.status] || summary.status}
+                                </Tag>
+                            )}
+                        </div>
+                        {summary?.operational_date && (
+                            <Text type="secondary" className="text-sm">
+                                Fecha: {formatDateShort(summary.operational_date)}
+                            </Text>
                         )}
                     </div>
 
@@ -164,10 +172,11 @@ export const RouteReconciliationPageView = ({
                             </div>
                         </div>
                         <div className="metricCard metricCardPending">
-                            <Text type="secondary" className="text-xs md:text-sm">Pendientes</Text>
+                            <Text type="secondary" className="text-xs md:text-sm">Pendiente de verificar</Text>
                             <div className="metricValue">
-                                {pendingCollectionsCount}
+                                {formatCurrency(summary.totals.pending_amount)}
                             </div>
+                            <Text type="secondary" className="text-xs">{pendingCollectionsCount} cobranzas</Text>
                         </div>
                     </div>
 
@@ -182,11 +191,11 @@ export const RouteReconciliationPageView = ({
                                 children: (
                                     <div className="routeReconciliationSection">
                                         <CollectionsTable
-                                            collections={collections}
-                                            stops={stops}
+                                            groups={collectionGroups}
                                             loading={loading}
                                             actionLoading={actionLoading}
                                             onVerify={onVerify}
+                                            onVerifyGroup={onVerifyGroup}
                                             onReject={onReject}
                                             readOnly={isReadOnly}
                                         />

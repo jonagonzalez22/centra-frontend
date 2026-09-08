@@ -7,7 +7,7 @@ import { RouteReconciliationPageView } from './RouteReconciliationPageView';
 export const RouteReconciliationPage = () => {
     const { id: routeId } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { summary, collections, stops, discrepancies, pendingCollectionsCount, pendingDiscrepanciesCount, loading, actionLoading, error, fetchSummary, verifyCollection, rejectCollection, resolveDiscrepancy, finalize } =
+    const { summary, collectionGroups, discrepancies, pendingCollectionsCount, pendingDiscrepanciesCount, loading, actionLoading, error, fetchSummary, verifyCollection, verifyCollectionGroup, rejectCollection, resolveDiscrepancy, finalize } =
         useReconciliation(routeId!);
 
     const handleBack = useCallback(() => {
@@ -39,8 +39,7 @@ export const RouteReconciliationPage = () => {
             ) : (
                 <RouteReconciliationPageView
                     summary={summary}
-                    collections={collections}
-                    stops={stops ?? []}
+                    collectionGroups={collectionGroups}
                     discrepancies={discrepancies}
                     pendingCollectionsCount={pendingCollectionsCount}
                     pendingDiscrepanciesCount={pendingDiscrepanciesCount}
@@ -48,6 +47,7 @@ export const RouteReconciliationPage = () => {
                     actionLoading={actionLoading}
                     routeId={routeId}
                     onVerify={verifyCollection}
+                    onVerifyGroup={verifyCollectionGroup}
                     onReject={rejectCollection}
                     onResolveDiscrepancy={resolveDiscrepancy}
                     onFinalize={finalize}

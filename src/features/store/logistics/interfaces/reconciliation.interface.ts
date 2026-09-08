@@ -37,6 +37,8 @@ export interface RouteReconciliationStopItem {
 
 export interface RouteReconciliationCollection {
     id: string;
+    commercial_operation_id: string;
+    store_payment_method_id: string;
     status: CollectionStatus;
     amount: number;
     reference: string | null;
@@ -45,6 +47,30 @@ export interface RouteReconciliationCollection {
     declared_by: string;
     declared_at: string;
     verified_at: string | null;
+    verified_by: string | null;
+    rejection_reason: string | null;
+    operation_payment_id: string | null;
+    order_number: string;
+    customer_name: string;
+    stop_id: string;
+}
+
+export type CollectionGroupStatus = 'pending' | 'verified' | 'rejected' | 'partial';
+
+export interface RouteReconciliationCollectionGroup {
+    store_payment_method_id: string;
+    payment_method_name: string;
+    collection_count: number;
+    total_amount: number;
+    declared_count: number;
+    declared_amount: number;
+    verified_count: number;
+    verified_amount: number;
+    rejected_count: number;
+    rejected_amount: number;
+    status: CollectionGroupStatus;
+    has_pending_collections: boolean;
+    collections: RouteReconciliationCollection[];
 }
 
 export interface RouteReconciliationStop {
@@ -58,6 +84,7 @@ export interface RouteReconciliationStop {
 
 export interface RouteReconciliationTotals {
     declared_amount: number;
+    pending_amount: number;
     verified_amount: number;
     rejected_amount: number;
 }
@@ -69,6 +96,7 @@ export interface RouteReconciliationSummary {
     vehicle: string;
     driver: string;
     stops: RouteReconciliationStop[];
+    collection_groups: RouteReconciliationCollectionGroup[];
     totals: RouteReconciliationTotals;
     can_close: boolean;
 }

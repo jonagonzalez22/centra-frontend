@@ -1,216 +1,85 @@
-import { useState, useMemo } from 'react';
-import { Tag, Popconfirm, Empty, Space } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button as AntButton } from 'antd';
+import { useMemo, useState } from 'react';
+import { Button, Drawer, Empty, Popconfirm, Space, Tag, Tooltip, Typography } from 'antd';
+import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import Table from '@/components/Table/Table';
 import { RejectCollectionModal } from './RejectCollectionModal';
-import type { RouteReconciliationCollection, RouteReconciliationStop } from '../interfaces/reconciliation.interface';
+import type { RouteReconciliationCollection, RouteReconciliationCollectionGroup } from '../interfaces/reconciliation.interface';
 import { formatDateShort } from '@/utils/formatters';
 
-const statusColors: Record<string, string> = {
-    declared: 'warning',
-    verified: 'success',
-    rejected: 'error',
-};
+const labels = { declared: 'Pendiente', pending: 'Pendiente', verified: 'Verificado', rejected: 'Rechazado', partial: 'Parcial' };
+const colors = { declared: 'warning', pending: 'warning', verified: 'success', rejected: 'error', partial: 'blue' };
+const money = (amount: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
 
-const statusLabels: Record<string, string> = {
-    declared: 'Declarado',
-    verified: 'Verificado',
-    rejected: 'Rechazado',
-};
-
-interface CollectionsTableProps {
-    collections: RouteReconciliationCollection[];
-    stops: RouteReconciliationStop[];
+interface Props {
+    groups: RouteReconciliationCollectionGroup[];
     loading: boolean;
     actionLoading: string | false;
-    onVerify: (collectionId: string) => Promise<void>;
-    onReject: (collectionId: string, reason: string) => Promise<void>;
+    onVerify: (id: string) => Promise<void>;
+    onVerifyGroup: (methodId: string) => Promise<void>;
+    onReject: (id: string, reason: string) => Promise<void>;
     readOnly: boolean;
 }
 
-export const CollectionsTable = ({
-    collections,
-    stops,
-    loading,
-    actionLoading,
-    onVerify,
-    onReject,
-    readOnly,
-}: CollectionsTableProps) => {
-    const [rejectModalOpen, setRejectModalOpen] = useState(false);
-    const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
-
-    const stopMap = useMemo(() => {
-        const map = new Map<string, RouteReconciliationStop>();
-        stops.forEach((stop) => {
-            stop.collections.forEach((col) => {
-                map.set(col.id, stop);
-            });
-        });
-        return map;
-    }, [stops]);
-
-    const handleVerify = async (collectionId: string) => {
-        await onVerify(collectionId);
-    };
-
-    const handleReject = async (reason: string) => {
-        if (selectedCollectionId) {
-            await onReject(selectedCollectionId, reason);
-            setRejectModalOpen(false);
-            setSelectedCollectionId(null);
-        }
-    };
-
-    const openRejectModal = (collectionId: string) => {
-        setSelectedCollectionId(collectionId);
-        setRejectModalOpen(true);
-    };
-
-    const closeRejectModal = () => {
-        setRejectModalOpen(false);
-        setSelectedCollectionId(null);
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('es-AR', {
-            style: 'currency',
-            currency: 'ARS',
-        }).format(amount);
-    };
-
-    const columns = [
-        {
-            title: 'N° Pedido',
-            key: 'operation_number',
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                const stop = stopMap.get(collection.id);
-                return stop?.order?.operation_number || '—';
-            },
-        },
-        {
-            title: 'Cliente',
-            key: 'customer_name',
-            responsive: ['md'] as ('md')[],
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                const stop = stopMap.get(collection.id);
-                return stop?.order?.customer_name || '—';
-            },
-        },
-        {
-            title: 'Monto Declarado',
-            key: 'amount',
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                return formatCurrency(collection.amount);
-            },
-        },
-        {
-            title: 'Medio de Pago',
-            key: 'payment_method',
-            responsive: ['lg'] as ('lg')[],
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                return collection.payment_method || '—';
-            },
-        },
-        {
-            title: 'Estado',
-            key: 'status',
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                return (
-                    <Tag color={statusColors[collection.status] || 'default'}>
-                        {statusLabels[collection.status] || collection.status}
-                    </Tag>
-                );
-            },
-        },
-        {
-            title: 'Fecha',
-            key: 'declared_at',
-            responsive: ['lg'] as ('lg')[],
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const collection = record as unknown as RouteReconciliationCollection;
-                return formatDateShort(collection.declared_at);
-            },
-        },
-        ...(readOnly
-            ? []
-            : [
-                  {
-                      title: 'Acciones',
-                      key: 'actions',
-                      width: 120,
-                      render: (_: unknown, record?: Record<string, unknown>) => {
-                          const collection = record as unknown as RouteReconciliationCollection;
-                          if (collection.status !== 'declared') {
-                              return null;
-                          }
-                          const isLoading = actionLoading === collection.id;
-                          return (
-                              <Space size="small">
-                                  <Popconfirm
-                                      title="¿Confirmar verificación del cobro?"
-                                      description="El monto declarado se marcará como verificado."
-                                      onConfirm={() => handleVerify(collection.id)}
-                                      okText="Verificar"
-                                      cancelText="Cancelar"
-                                      okButtonProps={{ style: { background: '#10b981', borderColor: '#10b981' } }}
-                                  >
-                                      <AntButton
-                                          type="primary"
-                                          size="small"
-                                          icon={<CheckOutlined />}
-                                          loading={isLoading}
-                                          style={{ backgroundColor: '#10b981', borderColor: '#10b981' }}
-                                          aria-label="Verificar cobro"
-                                      />
-                                  </Popconfirm>
-                                  <AntButton
-                                      danger
-                                      size="small"
-                                      icon={<CloseOutlined />}
-                                      loading={isLoading}
-                                      onClick={() => openRejectModal(collection.id)}
-                                      aria-label="Rechazar cobro"
-                                  />
-                              </Space>
-                          );
-                      },
-                  },
-              ]),
+export const CollectionsTable = ({ groups, loading, actionLoading, onVerify, onVerifyGroup, onReject, readOnly }: Props) => {
+    const [methodId, setMethodId] = useState<string | null>(null);
+    const [rejectId, setRejectId] = useState<string | null>(null);
+    const group = useMemo(() => groups.find((item) => item.store_payment_method_id === methodId) ?? null, [groups, methodId]);
+    const groupDeclarant = useMemo(() => {
+        if (!group) return null;
+        const declarants = [...new Set(group.collections.map((item) => item.declared_by?.trim()).filter(Boolean))];
+        if (declarants.length === 1) return declarants[0];
+        return declarants.length > 1 ? 'Múltiples declarantes' : null;
+    }, [group]);
+    const groupDate = useMemo(() => {
+        if (!group) return null;
+        const dates = [...new Set(group.collections.map((item) => formatDateShort(item.declared_at)).filter((date) => date !== '—'))];
+        if (dates.length === 1) return dates[0];
+        return dates.length > 1 ? 'Múltiples fechas' : null;
+    }, [group]);
+    const groupColumns = [
+        { title: 'Medio de pago', dataIndex: 'payment_method_name', key: 'payment_method_name' },
+        { title: 'Cobranzas', dataIndex: 'collection_count', key: 'collection_count', align: 'right' as const },
+        { title: 'Total declarado', key: 'total', align: 'right' as const, render: (_: unknown, row?: Record<string, unknown>) => money((row as unknown as RouteReconciliationCollectionGroup).total_amount) },
+        { title: 'Pendiente', key: 'pending', align: 'right' as const, render: (_: unknown, row?: Record<string, unknown>) => money((row as unknown as RouteReconciliationCollectionGroup).declared_amount) },
+        { title: 'Estado', key: 'status', render: (_: unknown, row?: Record<string, unknown>) => { const item = row as unknown as RouteReconciliationCollectionGroup; return <Tag color={colors[item.status]}>{labels[item.status]}</Tag>; } },
+        { title: 'Acciones', key: 'actions', render: (_: unknown, row?: Record<string, unknown>) => {
+            const item = row as unknown as RouteReconciliationCollectionGroup;
+            return <Space>
+                <Button size="small" icon={<EyeOutlined />} aria-label={`Ver detalle de ${item.payment_method_name}`} onClick={() => setMethodId(item.store_payment_method_id)} />
+                {!readOnly && item.has_pending_collections && <Popconfirm title={`Verificar cobranzas de ${item.payment_method_name}`} description={`Se verificarán ${item.declared_count} cobranzas pendientes por ${money(item.declared_amount)}.`} okText="Verificar" cancelText="Cancelar" onConfirm={() => onVerifyGroup(item.store_payment_method_id)}>
+                    <Button type="primary" size="small" icon={<CheckOutlined />} loading={actionLoading === `group-${item.store_payment_method_id}`} aria-label={`Verificar ${item.payment_method_name}`} />
+                </Popconfirm>}
+            </Space>;
+        } },
+    ];
+    const detailColumns = [
+        { title: 'Pedido', dataIndex: 'order_number', key: 'order_number', width: 82 },
+        { title: 'Cliente', dataIndex: 'customer_name', key: 'customer_name', width: 126, responsive: ['md'] as ('md')[], render: (value: unknown) => { const text = String(value || '—'); return <Tooltip title={text}><span className="block max-w-[118px] truncate">{text}</span></Tooltip>; } },
+        { title: 'Importe', key: 'amount', width: 102, align: 'right' as const, render: (_: unknown, row?: Record<string, unknown>) => money((row as unknown as RouteReconciliationCollection).amount) },
+        { title: 'Estado', key: 'status', width: 92, render: (_: unknown, row?: Record<string, unknown>) => { const item = row as unknown as RouteReconciliationCollection; return <Tag color={colors[item.status]}>{labels[item.status]}</Tag>; } },
+        { title: 'Referencia', dataIndex: 'reference', key: 'reference', width: 105, render: (value: unknown) => { const text = String(value || '—'); return <Tooltip title={text === '—' ? undefined : text}><span className="block max-w-[96px] truncate">{text}</span></Tooltip>; } },
+        { title: 'Fecha', key: 'date', width: 92, render: (_: unknown, row?: Record<string, unknown>) => formatDateShort((row as unknown as RouteReconciliationCollection).declared_at) },
+        ...(!readOnly ? [{ title: 'Acciones', key: 'actions', width: 82, render: (_: unknown, row?: Record<string, unknown>) => {
+            const item = row as unknown as RouteReconciliationCollection;
+            if (item.status !== 'declared') return null;
+            return <Space>
+                <Popconfirm title="¿Confirmar verificación del cobro?" okText="Verificar" cancelText="Cancelar" onConfirm={() => onVerify(item.id)}><Button size="small" type="primary" icon={<CheckOutlined />} loading={actionLoading === item.id} aria-label="Verificar cobro" /></Popconfirm>
+                <Button size="small" danger icon={<CloseOutlined />} loading={actionLoading === item.id} onClick={() => setRejectId(item.id)} aria-label="Rechazar cobro" />
+            </Space>;
+        } }] : []),
     ];
 
-    if ((!collections || collections.length === 0) && !loading) {
-        return (
-            <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="No hay cobranzas declaradas para esta ruta."
-            />
-        );
-    }
-
-    return (
-        <>
-            <Table
-                columns={columns}
-                dataSource={collections as unknown as Record<string, unknown>[]}
-                loading={loading}
-                pagination={false}
-                scroll={{ x: 'max-content' }}
-                size="small"
-            />
-
-            <RejectCollectionModal
-                open={rejectModalOpen}
-                loading={actionLoading === selectedCollectionId}
-                onClose={closeRejectModal}
-                onConfirm={handleReject}
-            />
-        </>
-    );
+    if (!groups.length && !loading) return <Empty description="No hay cobranzas declaradas para esta ruta." />;
+    return <>
+        <Table columns={groupColumns} dataSource={groups.map((item) => ({ ...item, id: item.store_payment_method_id })) as unknown as Record<string, unknown>[]} loading={loading} pagination={false} scroll={{ x: 'max-content' }} size="small" />
+        <Drawer title={group?.payment_method_name} open={!!group} onClose={() => setMethodId(null)} width="min(720px, 100vw)">
+            {group && <><div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                <Typography.Text>Total declarado: {money(group.total_amount)}</Typography.Text><Typography.Text>Verificado: {money(group.verified_amount)}</Typography.Text>
+                <Typography.Text>Rechazado: {money(group.rejected_amount)}</Typography.Text><Typography.Text>Pendiente: {money(group.declared_amount)}</Typography.Text>
+                {groupDeclarant && <Typography.Text>Declarado por: {groupDeclarant}</Typography.Text>}
+                {groupDate && <Typography.Text>Fecha: {groupDate}</Typography.Text>}
+            </div><Table columns={detailColumns} dataSource={group.collections as unknown as Record<string, unknown>[]} pagination={false} scroll={{ x: 635 }} size="small" /></>}
+        </Drawer>
+        <RejectCollectionModal open={!!rejectId} loading={actionLoading === rejectId} onClose={() => setRejectId(null)} onConfirm={async (reason) => { if (!rejectId) return; await onReject(rejectId, reason); setRejectId(null); }} />
+    </>;
 };

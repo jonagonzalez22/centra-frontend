@@ -4,6 +4,7 @@ import { ReconciliationService } from '../services/reconciliation.service';
 import type {
     RouteReconciliationSummary,
     RouteReconciliationCollection,
+    RouteReconciliationCollectionGroup,
     RouteReconciliationStop,
     RouteReconciliationStopItem,
     RejectCollectionPayload,
@@ -15,6 +16,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 export interface UseReconciliationReturn {
     summary: RouteReconciliationSummary | null;
     collections: RouteReconciliationCollection[];
+    collectionGroups: RouteReconciliationCollectionGroup[];
     stops: RouteReconciliationStop[];
     allItems: RouteReconciliationStopItem[];
     discrepancies: RouteReconciliationStopItem[];
@@ -25,6 +27,7 @@ export interface UseReconciliationReturn {
     error: string | null;
     fetchSummary: () => Promise<void>;
     verifyCollection: (collectionId: string) => Promise<void>;
+    verifyCollectionGroup: (paymentMethodId: string) => Promise<void>;
     rejectCollection: (collectionId: string, reason: string) => Promise<void>;
     resolveDiscrepancies: (payload: ResolveDiscrepancyPayload) => Promise<void>;
     resolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
@@ -41,6 +44,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         if (!summary?.stops) return [];
         return summary.stops.flatMap((stop: RouteReconciliationStop) => stop.collections || []);
     }, [summary]);
+    const collectionGroups = summary?.collection_groups ?? [];
 
     const allItems = useMemo(() => {
         if (!summary?.stops) return [];
@@ -115,6 +119,21 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         [routeId, fetchSummary]
     );
 
+    const verifyCollectionGroup = useCallback(async (paymentMethodId: string) => {
+        try {
+            setActionLoading(`group-${paymentMethodId}`);
+            await ReconciliationService.verifyCollectionGroup(routeId, paymentMethodId);
+            message.success('Cobranzas verificadas exitosamente.');
+            await fetchSummary();
+        } catch (err) {
+            const apiError = err as ApiError;
+            message.error(apiError.message || 'Error al verificar las cobranzas.');
+            throw err;
+        } finally {
+            setActionLoading(false);
+        }
+    }, [routeId, fetchSummary]);
+
     const resolveDiscrepancies = useCallback(
         async (payload: ResolveDiscrepancyPayload) => {
             try {
@@ -175,6 +194,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     return {
         summary,
         collections,
+        collectionGroups,
         stops: summary?.stops ?? [],
         allItems,
         discrepancies,
@@ -185,6 +205,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         error,
         fetchSummary,
         verifyCollection,
+        verifyCollectionGroup,
         rejectCollection,
         resolveDiscrepancies,
         resolveDiscrepancy,

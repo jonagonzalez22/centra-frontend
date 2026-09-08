@@ -44,6 +44,15 @@ export const ReconciliationService = {
         return data.data;
     },
 
+    verifyCollectionGroup: async (routeId: string, paymentMethodId: string): Promise<void> => {
+        const { data } = await api.post<ApiListResponse<unknown>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.RECONCILIATION.VERIFY_COLLECTION_GROUP(routeId, paymentMethodId)
+        );
+        if (data.status === 'error') {
+            throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        }
+    },
+
     rejectCollection: async (
         routeId: string,
         collectionId: string,
