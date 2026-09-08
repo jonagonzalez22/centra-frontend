@@ -8,6 +8,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { OrderStatusBadge } from '../OrderStatusBadge';
 import { RescheduleModal } from '../RescheduleModal';
 import { OrderCancellationModal } from '../OrderCancellationModal';
+import { CancelPendingDeliveryModal } from '../CancelPendingDeliveryModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import OrderDrawerItems from './OrderDrawerItems';
 import OrderDrawerPayments from './OrderDrawerPayments';
@@ -39,12 +40,18 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
 
     const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
     const cancelOrder = useOrdersStore((s) => s.cancelOrder);
+    const cancelPendingDelivery = useOrdersStore((s) => s.cancelPendingDelivery);
     const [rescheduleOpen, setRescheduleOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
     const [rescheduling, setRescheduling] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const [cancelPendingOpen, setCancelPendingOpen] = useState(false);
+    const [cancellingPending, setCancellingPending] = useState(false);
     const [activeTab, setActiveTab] = useState('detail');
     const hasPendingDelivery = order?.delivery_summary?.has_pending_delivery ?? false;
+    const hasActivePendingAssignment = order?.delivery_summary?.items.some(
+        (item) => item.pending_quantity > 0 && item.planned_active_quantity > 0
+    ) ?? false;
 
     useEffect(() => {
         if (!hasPendingDelivery && activeTab === 'pending') setActiveTab('detail');
@@ -80,6 +87,20 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
             // Error ya manejado en el store
         } finally {
             setCancelling(false);
+        }
+    };
+
+    const handleCancelPending = async (reason: string) => {
+        if (!order) return;
+        setCancellingPending(true);
+        try {
+            await cancelPendingDelivery(order.id, { reason });
+            setCancelPendingOpen(false);
+            setActiveTab('detail');
+        } catch {
+            // El store muestra el mensaje autoritativo del backend.
+        } finally {
+            setCancellingPending(false);
         }
     };
 
@@ -280,6 +301,29 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                             { title: 'Pendiente', dataIndex: 'pending_quantity', key: 'pending_quantity', align: 'right' as const },
                         ]}
                     />
+                    {canEdit && order.status === 'partially_delivered' && (
+                        <div className="mt-4 flex flex-col items-end gap-2">
+                            {hasActivePendingAssignment && (
+                                <p className="text-sm text-amber-700 text-right">
+                                    Primero retirala o replanificá la asignación desde Logística.
+                                </p>
+                            )}
+                            <Tooltip
+                                title={hasActivePendingAssignment
+                                    ? 'Parte de la mercadería está asignada a una ruta activa.'
+                                    : undefined}
+                            >
+                                <span>
+                                    <Button
+                                        variant="danger"
+                                        label="Cancelar pendiente"
+                                        disabled={hasActivePendingAssignment}
+                                        action={() => setCancelPendingOpen(true)}
+                                    />
+                                </span>
+                            </Tooltip>
+                        </div>
+                    )}
                 </div>
             ),
         }] : []),
@@ -352,6 +396,14 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 loading={cancelling}
                 onConfirm={handleCancel}
                 onClose={() => setCancelOpen(false)}
+            />
+
+            <CancelPendingDeliveryModal
+                open={cancelPendingOpen}
+                items={order?.delivery_summary?.items ?? []}
+                loading={cancellingPending}
+                onConfirm={handleCancelPending}
+                onClose={() => setCancelPendingOpen(false)}
             />
         </>
     );

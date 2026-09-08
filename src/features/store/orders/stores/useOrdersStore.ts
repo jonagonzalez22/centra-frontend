@@ -110,4 +110,17 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
             throw err;
         }
     },
+
+    cancelPendingDelivery: async (id, payload) => {
+        try {
+            const updated = await OrdersService.cancelPendingDelivery(id, payload);
+            set({ selectedOrder: updated });
+            message.success('Mercadería pendiente cancelada exitosamente.');
+            await get().fetchOrders();
+        } catch (err) {
+            const apiError = err as { message?: string };
+            message.error(apiError.message || 'Error al cancelar la mercadería pendiente.');
+            throw err;
+        }
+    },
 }));

@@ -132,6 +132,7 @@ export interface OrderHistoryItem {
     quantity_loaded: number;
     quantity_delivered: number;
     discrepancies: OrderHistoryDiscrepancy[];
+    pending_quantity?: number;
 }
 
 export interface OrderHistoryDetails {
@@ -236,4 +237,5 @@ export interface OrdersState {
         id: string,
         payload: { reason_code: string; reason_note?: string }
     ) => Promise<void>;
+    cancelPendingDelivery: (id: string, payload: { reason: string }) => Promise<void>;
 }

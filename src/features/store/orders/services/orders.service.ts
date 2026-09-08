@@ -112,4 +112,17 @@ export const OrdersService = {
 
         return data.data;
     },
+
+    cancelPendingDelivery: async (id: string, payload: { reason: string }): Promise<OrderDetail> => {
+        const { data } = await api.post<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.CANCEL_PENDING_DELIVERY(id),
+            payload
+        );
+
+        if (data.status === 'error') {
+            throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        }
+
+        return data.data;
+    },
 };

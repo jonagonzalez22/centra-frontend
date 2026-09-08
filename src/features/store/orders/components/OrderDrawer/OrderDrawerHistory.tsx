@@ -143,6 +143,7 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
     if (!event.details) return null;
 
     const isDelivery = (event.details.items?.length ?? 0) > 0;
+    const isRemainingCancellation = event.type === 'remaining_delivery_cancelled';
 
     return (
         <Collapse
@@ -153,7 +154,16 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
                 {
                     key: 'details',
                     label: 'Ver detalle',
-                    children: isDelivery ? (
+                    children: isRemainingCancellation ? (
+                        <div className="space-y-1 text-sm">
+                            {event.details.items?.map((item) => (
+                                <div key={item.product_id} className="flex justify-between gap-3">
+                                    <span>{item.product_name || 'Producto'}</span>
+                                    <span>{item.pending_quantity} canceladas</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : isDelivery ? (
                         <DeliveryDetails details={event.details} />
                     ) : (
                         <CommercialDetails details={event.details} />

@@ -70,6 +70,7 @@ export const API_ENDPOINTS = {
             URL: '/v1/store/orders',
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
+            CANCEL_PENDING_DELIVERY: (id: string) => `/v1/store/operations/${id}/cancel-pending-delivery`,
         },
         LOGISTICS: {
             ROUTES: {
