@@ -91,6 +91,7 @@ export const API_ENDPOINTS = {
                 RECONCILIATION: {
                     SUMMARY: (routeId: string) => `/v1/store/routes/${routeId}/reconciliation`,
                     VERIFY_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/verify`,
+                    VERIFY_COLLECTION_GROUP: (routeId: string, paymentMethodId: string) => `/v1/store/routes/${routeId}/collection-groups/${paymentMethodId}/verify`,
                     REJECT_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/reject`,
                     RESOLVE_DISCREPANCIES: (routeId: string) => `/v1/store/routes/${routeId}/discrepancies`,
                     FINALIZE: (routeId: string) => `/v1/store/routes/${routeId}/finalize-reconciliation`,
