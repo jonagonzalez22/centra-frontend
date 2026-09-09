@@ -17,6 +17,32 @@ const entry = (overrides: Partial<OrderHistoryEntry> = {}): OrderHistoryEntry =>
 });
 
 describe('OrderDrawerHistory', () => {
+    test('shows payment registration details', () => {
+        render(
+            <OrderDrawerHistory
+                loading={false}
+                history={[
+                    entry({
+                        type: 'payment_registered',
+                        title: 'Pago registrado',
+                        details: {
+                            payment: {
+                                payment_id: 'payment-1',
+                                amount: 10000,
+                                payment_method_name: 'Efectivo',
+                                reference: null,
+                                origin: 'manual_collection',
+                            },
+                        },
+                    }),
+                ]}
+            />
+        );
+
+        expect(screen.getByText('Pago registrado')).toBeInTheDocument();
+        expect(screen.getByText(/\$ 10\.000.*Efectivo/)).toBeInTheDocument();
+    });
+
     test('renders creation and route assignment as a compact timeline', () => {
         render(
             <OrderDrawerHistory

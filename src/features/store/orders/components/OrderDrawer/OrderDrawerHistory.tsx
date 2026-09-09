@@ -1,7 +1,7 @@
 import { Collapse, Descriptions, Empty, Spin, Timeline } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
-import { formatDate, formatDateShort } from '@/utils/formatters';
+import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
 import type {
     OrderHistoryDetails,
     OrderHistoryDiscrepancy,
@@ -144,6 +144,16 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
 
     const isDelivery = (event.details.items?.length ?? 0) > 0;
     const isRemainingCancellation = event.type === 'remaining_delivery_cancelled';
+
+    if (event.type === 'payment_registered' && event.details.payment) {
+        const payment = event.details.payment;
+        return (
+            <div className="mt-1 text-xs text-gray-600">
+                {formatCurrency(payment.amount)} · {payment.payment_method_name}
+                {payment.reference && ` · Ref. ${payment.reference}`}
+            </div>
+        );
+    }
 
     return (
         <Collapse

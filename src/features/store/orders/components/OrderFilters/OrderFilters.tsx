@@ -14,6 +14,7 @@ interface OrderFiltersFormValues {
     customer_name: string;
     locality: string;
     status: string;
+    collection_status: string;
 }
 
 interface OrderFiltersProps {
@@ -43,6 +44,12 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 customer_name: values.customer_name || undefined,
                 locality: values.locality || undefined,
                 status: values.status !== undefined ? values.status : undefined,
+                has_pending_balance:
+                    values.collection_status === 'pending'
+                        ? true
+                        : values.collection_status === 'paid'
+                          ? false
+                          : undefined,
             };
         },
         []
@@ -80,6 +87,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 customer_name: '',
                 locality: '',
                 status: 'open',
+                collection_status: '',
             }}
         >
             <div className="orderFiltersRow">
@@ -122,6 +130,19 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                     label="Estado"
                     placeholder="Seleccionar"
                     options={STATUS_OPTIONS}
+                    allowClear
+                    disabled={loading}
+                />
+
+                <SelectField
+                    name="collection_status"
+                    label="Cobranza"
+                    placeholder="Todos"
+                    options={[
+                        { label: 'Todos', value: '' },
+                        { label: 'Con saldo pendiente', value: 'pending' },
+                        { label: 'Sin saldo pendiente', value: 'paid' },
+                    ]}
                     allowClear
                     disabled={loading}
                 />

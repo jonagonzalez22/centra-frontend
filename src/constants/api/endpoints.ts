@@ -68,9 +68,11 @@ export const API_ENDPOINTS = {
         },
         ORDERS: {
             URL: '/v1/store/orders',
+            PAYMENTS: (id: string) => `/v1/store/orders/${id}/payments`,
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
-            CANCEL_PENDING_DELIVERY: (id: string) => `/v1/store/operations/${id}/cancel-pending-delivery`,
+            CANCEL_PENDING_DELIVERY: (id: string) =>
+                `/v1/store/operations/${id}/cancel-pending-delivery`,
         },
         LOGISTICS: {
             ROUTES: {
@@ -90,11 +92,16 @@ export const API_ENDPOINTS = {
                 DISPATCH: (routeId: string) => `/v1/store/routes/${routeId}/dispatch`,
                 RECONCILIATION: {
                     SUMMARY: (routeId: string) => `/v1/store/routes/${routeId}/reconciliation`,
-                    VERIFY_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/verify`,
-                    VERIFY_COLLECTION_GROUP: (routeId: string, paymentMethodId: string) => `/v1/store/routes/${routeId}/collection-groups/${paymentMethodId}/verify`,
-                    REJECT_COLLECTION: (routeId: string, collectionId: string) => `/v1/store/routes/${routeId}/collections/${collectionId}/reject`,
-                    RESOLVE_DISCREPANCIES: (routeId: string) => `/v1/store/routes/${routeId}/discrepancies`,
-                    FINALIZE: (routeId: string) => `/v1/store/routes/${routeId}/finalize-reconciliation`,
+                    VERIFY_COLLECTION: (routeId: string, collectionId: string) =>
+                        `/v1/store/routes/${routeId}/collections/${collectionId}/verify`,
+                    VERIFY_COLLECTION_GROUP: (routeId: string, paymentMethodId: string) =>
+                        `/v1/store/routes/${routeId}/collection-groups/${paymentMethodId}/verify`,
+                    REJECT_COLLECTION: (routeId: string, collectionId: string) =>
+                        `/v1/store/routes/${routeId}/collections/${collectionId}/reject`,
+                    RESOLVE_DISCREPANCIES: (routeId: string) =>
+                        `/v1/store/routes/${routeId}/discrepancies`,
+                    FINALIZE: (routeId: string) =>
+                        `/v1/store/routes/${routeId}/finalize-reconciliation`,
                 },
             },
             STOPS: {

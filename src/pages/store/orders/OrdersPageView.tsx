@@ -86,13 +86,13 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
                     loading={loading}
                 />
                 <MetricCard
-                    title="Pendientes de cobro"
+                    title="Pendientes en esta página"
                     value={loading ? 0 : pendingCount}
                     icon={AlertCircle}
                     loading={loading}
                 />
                 <MetricCard
-                    title="Monto pendiente total"
+                    title="Monto pendiente en esta página"
                     value={loading ? formatCurrency(0) : formatCurrency(totalPending)}
                     icon={DollarSign}
                     loading={loading}
@@ -108,22 +108,18 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
             {loading ? (
                 <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <div
-                            key={i}
-                            className="bg-white border border-gray-200 rounded-lg p-4"
-                        >
+                        <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
                             <Skeleton active paragraph={{ rows: 3 }} />
                         </div>
                     ))}
                 </div>
             ) : orders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                    <Empty description="No se encontraron pedidos" image={Empty.PRESENTED_IMAGE_SIMPLE}>
-                        <Button
-                            variant="primary"
-                            label="Limpiar filtros"
-                            action={onResetFilters}
-                        />
+                    <Empty
+                        description="No se encontraron pedidos"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    >
+                        <Button variant="primary" label="Limpiar filtros" action={onResetFilters} />
                     </Empty>
                 </div>
             ) : dateGroups ? (
@@ -131,9 +127,7 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
                     {Array.from(dateGroups.entries()).map(([date, dateOrders]) => (
                         <div key={date}>
                             <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">
-                                {date === 'Sin fecha'
-                                    ? 'Sin fecha'
-                                    : formatDateLong(date)}
+                                {date === 'Sin fecha' ? 'Sin fecha' : formatDateLong(date)}
                             </h3>
                             <div className="space-y-2">
                                 {dateOrders.map((order) => (

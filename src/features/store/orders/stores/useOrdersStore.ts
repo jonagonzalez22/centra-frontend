@@ -9,6 +9,7 @@ const INITIAL_FILTERS: OrderFilters = {
     operation_number: undefined,
     customer_name: undefined,
     locality: undefined,
+    has_pending_balance: undefined,
     page: 1,
     per_page: 20,
 };
@@ -120,6 +121,26 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
         } catch (err) {
             const apiError = err as { message?: string };
             message.error(apiError.message || 'Error al cancelar la mercadería pendiente.');
+            throw err;
+        }
+    },
+
+    registerPayment: async (id, payload) => {
+        try {
+            const updated = await OrdersService.registerPayment(id, payload);
+            set({ selectedOrder: updated });
+            message.success('Pago registrado exitosamente.');
+            await get().fetchOrders();
+        } catch (err) {
+            const apiError = err as {
+                response?: { data?: { message?: string } };
+                message?: string;
+            };
+            message.error(
+                apiError.response?.data?.message ||
+                    apiError.message ||
+                    'Error al registrar el pago.'
+            );
             throw err;
         }
     },

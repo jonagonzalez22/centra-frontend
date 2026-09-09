@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Descriptions, Dropdown, Spin, Table, Tooltip } from 'antd';
+import { Descriptions, Dropdown, message, Spin, Table, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import Drawer from '@/components/Drawer/Drawer';
 import Tabs from '@/components/Tabs/Tabs';
@@ -9,6 +9,9 @@ import { OrderStatusBadge } from '../OrderStatusBadge';
 import { RescheduleModal } from '../RescheduleModal';
 import { OrderCancellationModal } from '../OrderCancellationModal';
 import { CancelPendingDeliveryModal } from '../CancelPendingDeliveryModal';
+import { RegisterOrderPaymentModal } from '../RegisterOrderPaymentModal';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import { CashService } from '@/features/store/cash/services/cash.service';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import OrderDrawerItems from './OrderDrawerItems';
 import OrderDrawerPayments from './OrderDrawerPayments';
@@ -26,17 +29,18 @@ interface OrderDrawerProps {
 
 const TAB_CONTENT_MAX_HEIGHT = 'calc(100vh - 180px)';
 
-const isReschedulable = (status: string): boolean =>
-    status === 'open' || status === 'confirmed';
+const isReschedulable = (status: string): boolean => status === 'open' || status === 'confirmed';
 
 const isCancellable = (status: string): boolean => status === 'open';
 
-const isAssignedToRoute = (routeIds?: string[]): boolean =>
-    (routeIds?.length ?? 0) > 0;
+const isAssignedToRoute = (routeIds?: string[]): boolean => (routeIds?.length ?? 0) > 0;
 
 const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose }) => {
     const { can } = usePermissions();
     const canEdit = can('orders.edit');
+    const canCollect = can('orders.collect');
+    const cashSession = useAuthStore((state) => state.user?.cash_session ?? null);
+    const setCashSession = useAuthStore((state) => state.setCashSession);
 
     const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
     const cancelOrder = useOrdersStore((s) => s.cancelOrder);
@@ -47,11 +51,13 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
     const [cancelling, setCancelling] = useState(false);
     const [cancelPendingOpen, setCancelPendingOpen] = useState(false);
     const [cancellingPending, setCancellingPending] = useState(false);
+    const [paymentOpen, setPaymentOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('detail');
     const hasPendingDelivery = order?.delivery_summary?.has_pending_delivery ?? false;
-    const hasActivePendingAssignment = order?.delivery_summary?.items.some(
-        (item) => item.pending_quantity > 0 && item.planned_active_quantity > 0
-    ) ?? false;
+    const hasActivePendingAssignment =
+        order?.delivery_summary?.items.some(
+            (item) => item.pending_quantity > 0 && item.planned_active_quantity > 0
+        ) ?? false;
 
     useEffect(() => {
         if (!hasPendingDelivery && activeTab === 'pending') setActiveTab('detail');
@@ -74,10 +80,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
     };
 
-    const handleCancel = async (values: {
-        reason_code: string;
-        reason_note?: string;
-    }) => {
+    const handleCancel = async (values: { reason_code: string; reason_note?: string }) => {
         if (!order) return;
         setCancelling(true);
         try {
@@ -104,8 +107,27 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
     };
 
-    const canReschedule = order && isReschedulable(order.status) && !isAssignedToRoute(order.route_ids);
+    const canReschedule =
+        order && isReschedulable(order.status) && !isAssignedToRoute(order.route_ids);
     const canCancel = order && isCancellable(order.status) && !isAssignedToRoute(order.route_ids);
+
+    const openPayment = () => {
+        if (!cashSession || cashSession.status !== 'open') {
+            message.warning('Debes abrir una caja antes de registrar cobros.');
+            return;
+        }
+        setPaymentOpen(true);
+    };
+
+    const registerPayment = async (payload: {
+        store_payment_method_id: string;
+        amount: number;
+        reference?: string;
+    }) => {
+        if (!order) return;
+        await useOrdersStore.getState().registerPayment(order.id, payload);
+        setCashSession(await CashService.getCurrent());
+    };
 
     const actionMenuItems: MenuProps['items'] = useMemo(() => {
         const items: MenuProps['items'] = [];
@@ -167,7 +189,9 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                     <Button variant="default" label="Acciones" />
                 </Dropdown>
             </div>
-            <Button variant="default" label="Cerrar" action={onClose} />
+            <div className="flex gap-2">
+                <Button variant="default" label="Cerrar" action={onClose} />
+            </div>
         </div>
     );
 
@@ -199,14 +223,24 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                             <div>
                                 <h4 className="font-semibold text-sm">Entrega pendiente</h4>
                                 <p className="text-sm text-gray-600 mt-1">
-                                    {order.delivery_summary.items.filter((item) => item.pending_quantity > 0).length}{' '}
-                                    {order.delivery_summary.items.filter((item) => item.pending_quantity > 0).length === 1
+                                    {
+                                        order.delivery_summary.items.filter(
+                                            (item) => item.pending_quantity > 0
+                                        ).length
+                                    }{' '}
+                                    {order.delivery_summary.items.filter(
+                                        (item) => item.pending_quantity > 0
+                                    ).length === 1
                                         ? 'producto tiene'
                                         : 'productos tienen'}{' '}
                                     mercadería pendiente
                                 </p>
                             </div>
-                            <Button variant="default" label="Ver pendientes →" action={() => setActiveTab('pending')} />
+                            <Button
+                                variant="default"
+                                label="Ver pendientes →"
+                                action={() => setActiveTab('pending')}
+                            />
                         </div>
                     )}
 
@@ -235,10 +269,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                     : '—'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Franja horaria">
-                                {formatTimeSlot(
-                                    order.delivery_time_from,
-                                    order.delivery_time_to
-                                )}
+                                {formatTimeSlot(order.delivery_time_from, order.delivery_time_to)}
                             </Descriptions.Item>
                         </Descriptions>
                     </div>
@@ -256,9 +287,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                 {formatCurrency(order.tax)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Total">
-                                <span className="font-semibold">
-                                    {formatCurrency(order.total)}
-                                </span>
+                                <span className="font-semibold">{formatCurrency(order.total)}</span>
                             </Descriptions.Item>
                             <Descriptions.Item label="Pagado">
                                 {formatCurrency(order.paid_amount)}
@@ -279,54 +308,83 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 </div>
             ),
         },
-        ...(hasPendingDelivery ? [{
-            key: 'pending',
-            label: 'Pendientes',
-            children: (
-                <div
-                    className="overflow-y-auto pr-1"
-                    style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}
-                >
-                    <h4 className="font-semibold text-sm mb-3">Entrega pendiente</h4>
-                    <Table
-                        size="small"
-                        pagination={false}
-                        scroll={{ x: 420, y: 'calc(100vh - 280px)' }}
-                        rowKey="product_id"
-                        dataSource={order.delivery_summary.items.filter((item) => item.pending_quantity > 0)}
-                        columns={[
-                            { title: 'Producto', dataIndex: 'product_name', key: 'product_name', render: (value: string | null) => value || 'Producto' },
-                            { title: 'Pedido', dataIndex: 'ordered_quantity', key: 'ordered_quantity', align: 'right' as const },
-                            { title: 'Entregado', dataIndex: 'delivered_quantity', key: 'delivered_quantity', align: 'right' as const },
-                            { title: 'Pendiente', dataIndex: 'pending_quantity', key: 'pending_quantity', align: 'right' as const },
-                        ]}
-                    />
-                    {canEdit && order.status === 'partially_delivered' && (
-                        <div className="mt-4 flex flex-col items-end gap-2">
-                            {hasActivePendingAssignment && (
-                                <p className="text-sm text-amber-700 text-right">
-                                    Primero retirala o replanificá la asignación desde Logística.
-                                </p>
-                            )}
-                            <Tooltip
-                                title={hasActivePendingAssignment
-                                    ? 'Parte de la mercadería está asignada a una ruta activa.'
-                                    : undefined}
-                            >
-                                <span>
-                                    <Button
-                                        variant="danger"
-                                        label="Cancelar pendiente"
-                                        disabled={hasActivePendingAssignment}
-                                        action={() => setCancelPendingOpen(true)}
-                                    />
-                                </span>
-                            </Tooltip>
-                        </div>
-                    )}
-                </div>
-            ),
-        }] : []),
+        ...(hasPendingDelivery
+            ? [
+                  {
+                      key: 'pending',
+                      label: 'Pendientes',
+                      children: (
+                          <div
+                              className="overflow-y-auto pr-1"
+                              style={{ maxHeight: TAB_CONTENT_MAX_HEIGHT }}
+                          >
+                              <h4 className="font-semibold text-sm mb-3">Entrega pendiente</h4>
+                              <Table
+                                  size="small"
+                                  pagination={false}
+                                  scroll={{ x: 420, y: 'calc(100vh - 280px)' }}
+                                  rowKey="product_id"
+                                  dataSource={order.delivery_summary.items.filter(
+                                      (item) => item.pending_quantity > 0
+                                  )}
+                                  columns={[
+                                      {
+                                          title: 'Producto',
+                                          dataIndex: 'product_name',
+                                          key: 'product_name',
+                                          render: (value: string | null) => value || 'Producto',
+                                      },
+                                      {
+                                          title: 'Pedido',
+                                          dataIndex: 'ordered_quantity',
+                                          key: 'ordered_quantity',
+                                          align: 'right' as const,
+                                      },
+                                      {
+                                          title: 'Entregado',
+                                          dataIndex: 'delivered_quantity',
+                                          key: 'delivered_quantity',
+                                          align: 'right' as const,
+                                      },
+                                      {
+                                          title: 'Pendiente',
+                                          dataIndex: 'pending_quantity',
+                                          key: 'pending_quantity',
+                                          align: 'right' as const,
+                                      },
+                                  ]}
+                              />
+                              {canEdit && order.status === 'partially_delivered' && (
+                                  <div className="mt-4 flex flex-col items-end gap-2">
+                                      {hasActivePendingAssignment && (
+                                          <p className="text-sm text-amber-700 text-right">
+                                              Primero retirala o replanificá la asignación desde
+                                              Logística.
+                                          </p>
+                                      )}
+                                      <Tooltip
+                                          title={
+                                              hasActivePendingAssignment
+                                                  ? 'Parte de la mercadería está asignada a una ruta activa.'
+                                                  : undefined
+                                          }
+                                      >
+                                          <span>
+                                              <Button
+                                                  variant="danger"
+                                                  label="Cancelar pendiente"
+                                                  disabled={hasActivePendingAssignment}
+                                                  action={() => setCancelPendingOpen(true)}
+                                              />
+                                          </span>
+                                      </Tooltip>
+                                  </div>
+                              )}
+                          </div>
+                      ),
+                  },
+              ]
+            : []),
         {
             key: 'items',
             label: 'Ítems y pagos',
@@ -342,7 +400,14 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
 
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Pagos</h4>
-                        <OrderDrawerPayments payments={order.payments} loading={false} />
+                        <OrderDrawerPayments
+                            payments={order.payments}
+                            paidAmount={order.paid_amount}
+                            pendingAmount={order.pending_amount}
+                            loading={false}
+                            canCollect={canCollect}
+                            onRegisterPayment={openPayment}
+                        />
                     </div>
                 </div>
             ),
@@ -405,6 +470,14 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 onConfirm={handleCancelPending}
                 onClose={() => setCancelPendingOpen(false)}
             />
+            {order && (
+                <RegisterOrderPaymentModal
+                    open={paymentOpen}
+                    pendingAmount={order.pending_amount}
+                    onClose={() => setPaymentOpen(false)}
+                    onSubmit={registerPayment}
+                />
+            )}
         </>
     );
 };

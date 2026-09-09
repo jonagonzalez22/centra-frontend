@@ -68,6 +68,10 @@ export interface OrderPayment {
     amount: number;
     reference: string | null;
     payment_details: unknown | null;
+    created_at: string | null;
+    origin: string | null;
+    registered_by: { id: string; name: string } | null;
+    cash_session: { id: string; status: 'open' | 'closed' } | null;
     store_payment_method: {
         id: string;
         name: string;
@@ -152,6 +156,13 @@ export interface OrderHistoryDetails {
     reason_code?: string | null;
     reason_note?: string | null;
     observation?: string | null;
+    payment?: {
+        payment_id: string;
+        amount: number;
+        payment_method_name: string;
+        reference?: string | null;
+        origin: string;
+    } | null;
 }
 
 export interface OrderHistoryEntry {
@@ -203,6 +214,7 @@ export interface OrderFilters {
     customer_name?: string;
     locality?: string;
     status?: string;
+    has_pending_balance?: boolean;
     page?: number;
     per_page?: number;
 }
@@ -238,4 +250,8 @@ export interface OrdersState {
         payload: { reason_code: string; reason_note?: string }
     ) => Promise<void>;
     cancelPendingDelivery: (id: string, payload: { reason: string }) => Promise<void>;
+    registerPayment: (
+        id: string,
+        payload: { store_payment_method_id: string; amount: number; reference?: string }
+    ) => Promise<void>;
 }

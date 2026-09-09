@@ -1,0 +1,1 @@
+export { RegisterOrderPaymentModal } from './RegisterOrderPaymentModal';

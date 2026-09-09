@@ -27,6 +27,12 @@ export const OrdersService = {
             customer_name: filters.customer_name,
             locality: filters.locality,
             status: effectiveStatus,
+            has_pending_balance:
+                filters.has_pending_balance === undefined
+                    ? undefined
+                    : filters.has_pending_balance
+                      ? 1
+                      : 0,
             per_page: filters.per_page ?? 20,
             page: filters.page ?? 1,
         };
@@ -113,16 +119,34 @@ export const OrdersService = {
         return data.data;
     },
 
-    cancelPendingDelivery: async (id: string, payload: { reason: string }): Promise<OrderDetail> => {
+    cancelPendingDelivery: async (
+        id: string,
+        payload: { reason: string }
+    ): Promise<OrderDetail> => {
         const { data } = await api.post<ApiListResponse<OrderDetail>>(
             API_ENDPOINTS.STORE.ORDERS.CANCEL_PENDING_DELIVERY(id),
             payload
         );
 
         if (data.status === 'error') {
-            throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+            throw {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            } as ApiError;
         }
 
+        return data.data;
+    },
+
+    registerPayment: async (
+        id: string,
+        payload: { store_payment_method_id: string; amount: number; reference?: string }
+    ): Promise<OrderDetail> => {
+        const { data } = await api.post<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.PAYMENTS(id),
+            payload
+        );
         return data.data;
     },
 };
