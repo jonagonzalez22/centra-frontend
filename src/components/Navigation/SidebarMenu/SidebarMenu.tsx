@@ -8,9 +8,7 @@ import {
     User as LucideUser,
     CreditCard,
     Settings,
-    FolderTree,
     Package,
-    ArrowLeftRight,
     UsersRound,
     ShoppingCart,
     MapPin,
@@ -124,7 +122,7 @@ const menuItems: MenuItem[] = [
         role: 'STORE_USER',
         children: [
             {
-                label: 'Caja',
+                label: 'Gestión de caja',
                 key: '/tienda/caja',
                 context: 'store',
                 feature: 'cash',
@@ -132,7 +130,7 @@ const menuItems: MenuItem[] = [
                 role: 'STORE_USER',
             },
             {
-                label: 'Punto de Venta',
+                label: 'Caja',
                 key: '/tienda/ventas/pos',
                 context: 'store',
                 feature: 'pos',
@@ -150,31 +148,37 @@ const menuItems: MenuItem[] = [
         ],
     },
     {
-        label: 'Categorías',
-        key: '/tienda/categorias',
-        icon: <FolderTree size={ICON_SIZE} />,
-        context: 'store',
-        feature: 'categories',
-        permission: 'categories.view',
-        role: 'STORE_USER',
-    },
-    {
         label: 'Inventario',
-        key: '/tienda/productos',
+        key: '/tienda/inventario/parent',
         icon: <Package size={ICON_SIZE} />,
         context: 'store',
-        feature: 'inventory',
-        permission: 'inventory.view',
         role: 'STORE_USER',
-    },
-    {
-        label: 'Movimientos',
-        key: '/tienda/inventario/movimientos',
-        icon: <ArrowLeftRight size={ICON_SIZE} />,
-        context: 'store',
-        feature: 'inventory',
-        permission: 'inventory.view',
-        role: 'STORE_USER',
+        children: [
+            {
+                label: 'Productos',
+                key: '/tienda/productos',
+                context: 'store',
+                feature: 'inventory',
+                permission: 'inventory.view',
+                role: 'STORE_USER',
+            },
+            {
+                label: 'Categorías',
+                key: '/tienda/categorias',
+                context: 'store',
+                feature: 'categories',
+                permission: 'categories.view',
+                role: 'STORE_USER',
+            },
+            {
+                label: 'Movimientos',
+                key: '/tienda/inventario/movimientos',
+                context: 'store',
+                feature: 'inventory',
+                permission: 'inventory.view',
+                role: 'STORE_USER',
+            },
+        ],
     },
     {
         label: 'Logística',
@@ -291,12 +295,17 @@ function isChildOf(parentKey: string, childKey: string): boolean {
     return false;
 }
 
-function collectSubMenuKeys(items: MenuItem[]): string[] {
+function collectMatchingSubMenuKeys(items: MenuItem[], selectedKey: string): string[] {
     const keys: string[] = [];
     for (const item of items) {
         if (item.children && item.children.length > 0) {
-            keys.push(item.key);
-            keys.push(...collectSubMenuKeys(item.children));
+            const nestedKeys = collectMatchingSubMenuKeys(item.children, selectedKey);
+            const hasMatchingChild = item.children.some((child) =>
+                isChildOf(child.key, selectedKey)
+            );
+            if (hasMatchingChild || nestedKeys.length > 0) {
+                keys.push(item.key, ...nestedKeys);
+            }
         }
     }
     return keys;
@@ -326,17 +335,12 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
         return filterMenuItems(menuItems, user, currentContext);
     }, [user]);
 
-    const submenuKeys = useMemo(
-        () => collectSubMenuKeys(menuItemPermissions),
-        [menuItemPermissions]
-    );
-
     const [openKeys, setOpenKeys] = useState<string[]>(() =>
-        submenuKeys.filter((key) => isChildOf(key, selectedKey))
+        collectMatchingSubMenuKeys(menuItemPermissions, selectedKey)
     );
 
     useLayoutEffect(() => {
-        const relevantParents = submenuKeys.filter((key) => isChildOf(key, selectedKey));
+        const relevantParents = collectMatchingSubMenuKeys(menuItemPermissions, selectedKey);
         if (relevantParents.length > 0) {
             import('react-dom').then(({ flushSync }) => {
                 flushSync(() => {
@@ -344,7 +348,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 });
             });
         }
-    }, [selectedKey, submenuKeys]);
+    }, [selectedKey, menuItemPermissions]);
 
     const handleOpenChange = (keys: string[]) => {
         setOpenKeys(keys);

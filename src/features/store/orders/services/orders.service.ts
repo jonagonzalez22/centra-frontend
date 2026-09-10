@@ -11,14 +11,6 @@ import type {
 
 export const OrdersService = {
     getAll: async (filters: OrderFilters): Promise<PaginatedResponse<OrderListItem>> => {
-        // El backend acepta UN solo valor de status (enum: open|confirmed|cancelled|closed).
-        // Si no se envía el parámetro, el backend aplica por defecto open+confirmed.
-        // 'open,confirmed' no es válido como valor → lo tratamos como "usar default".
-        const effectiveStatus =
-            filters.status && filters.status !== 'open,confirmed' && filters.status !== ''
-                ? filters.status
-                : undefined;
-
         const params: Record<string, string | number | undefined> = {
             date: filters.date ?? undefined,
             date_from: filters.date_from,
@@ -26,7 +18,7 @@ export const OrdersService = {
             operation_number: filters.operation_number,
             customer_name: filters.customer_name,
             locality: filters.locality,
-            status: effectiveStatus,
+            status: filters.status || undefined,
             has_pending_balance:
                 filters.has_pending_balance === undefined
                     ? undefined

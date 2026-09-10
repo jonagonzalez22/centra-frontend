@@ -3,7 +3,6 @@ import { useOrdersStore } from '@/features/store/orders/stores/useOrdersStore';
 import OrdersPageView from './OrdersPageView';
 
 const OrdersPage: React.FC = () => {
-    const fetchOrders = useOrdersStore((s) => s.fetchOrders);
     const orders = useOrdersStore((s) => s.orders);
     const loading = useOrdersStore((s) => s.loading);
     const loadingDetail = useOrdersStore((s) => s.loadingDetail);
@@ -17,8 +16,8 @@ const OrdersPage: React.FC = () => {
     const closeDrawer = useOrdersStore((s) => s.closeDrawer);
 
     useEffect(() => {
-        fetchOrders();
-    }, [fetchOrders]);
+        resetFilters();
+    }, [resetFilters]);
 
     return (
         <OrdersPageView

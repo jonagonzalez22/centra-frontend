@@ -3,22 +3,53 @@ import { OrdersService } from './orders.service';
 
 vi.mock('@/api/api.config');
 
-test('sends pending balance filter to backend', async () => {
-    vi.mocked(api.get).mockResolvedValue({
+const emptyResponse = {
+    data: {
+        status: 'success',
+        message: '',
+        errors: null,
         data: {
-            status: 'success',
-            message: '',
-            errors: null,
-            data: {
-                items: [],
-                total: 0,
-                per_page: 20,
-                current_page: 1,
-                last_page: 1,
-            },
+            items: [],
+            total: 0,
+            per_page: 20,
+            current_page: 1,
+            last_page: 1,
         },
-    });
+    },
+};
 
+beforeEach(() => {
+    vi.mocked(api.get).mockResolvedValue(emptyResponse);
+});
+
+test('omits status and collection filters by default', async () => {
+    await OrdersService.getAll({ page: 1, per_page: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/v1/store/orders', {
+        params: { per_page: 20, page: 1 },
+    });
+});
+
+test.each(['open', 'delivered', 'partially_delivered'])(
+    'sends an explicitly selected %s status',
+    async (status) => {
+        await OrdersService.getAll({ status });
+
+        expect(api.get).toHaveBeenCalledWith('/v1/store/orders', {
+            params: expect.objectContaining({ status, per_page: 20, page: 1 }),
+        });
+    }
+);
+
+test('omits status when all states are selected', async () => {
+    await OrdersService.getAll({ status: '' });
+
+    expect(api.get).toHaveBeenCalledWith('/v1/store/orders', {
+        params: { per_page: 20, page: 1 },
+    });
+});
+
+test('sends pending balance filter to backend', async () => {
     await OrdersService.getAll({ status: 'delivered', has_pending_balance: true });
 
     expect(api.get).toHaveBeenCalledWith('/v1/store/orders', {

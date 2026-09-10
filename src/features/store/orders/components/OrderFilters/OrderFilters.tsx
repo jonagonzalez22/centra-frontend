@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { DatePicker, Form } from 'antd';
 import { debounce } from 'lodash';
 import { Button } from '@/components/Button';
@@ -18,22 +18,28 @@ interface OrderFiltersFormValues {
 }
 
 interface OrderFiltersProps {
+    filters: OrderFiltersType;
     loading: boolean;
     onFilterChange: (filters: Partial<OrderFiltersType>) => void;
     onReset: () => void;
 }
 
 const STATUS_OPTIONS = [
+    { label: 'Todos', value: '' },
     { label: 'Abierto', value: 'open' },
     { label: 'Confirmado', value: 'confirmed' },
     { label: 'Cerrados', value: 'closed' },
     { label: 'Entregados', value: 'delivered' },
     { label: 'Parcialmente entregados', value: 'partially_delivered' },
     { label: 'Cancelados', value: 'cancelled' },
-    { label: 'Todos', value: '' },
 ];
 
-const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, onReset }) => {
+const OrderFilters: React.FC<OrderFiltersProps> = ({
+    filters,
+    loading,
+    onFilterChange,
+    onReset,
+}) => {
     const [form] = Form.useForm<OrderFiltersFormValues>();
 
     const buildFilters = useCallback(
@@ -43,7 +49,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 operation_number: values.operation_number || undefined,
                 customer_name: values.customer_name || undefined,
                 locality: values.locality || undefined,
-                status: values.status !== undefined ? values.status : undefined,
+                status: values.status || undefined,
                 has_pending_balance:
                     values.collection_status === 'pending'
                         ? true
@@ -70,10 +76,29 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
         [debouncedSetFilters]
     );
 
+    useEffect(() => () => debouncedSetFilters.cancel(), [debouncedSetFilters]);
+
+    useEffect(() => {
+        form.setFieldsValue({
+            date: filters.date ? dayjs(filters.date) : null,
+            operation_number: filters.operation_number ?? '',
+            customer_name: filters.customer_name ?? '',
+            locality: filters.locality ?? '',
+            status: filters.status ?? '',
+            collection_status:
+                filters.has_pending_balance === true
+                    ? 'pending'
+                    : filters.has_pending_balance === false
+                      ? 'paid'
+                      : '',
+        });
+    }, [filters, form]);
+
     const handleReset = useCallback(() => {
+        debouncedSetFilters.cancel();
         form.resetFields();
         onReset();
-    }, [form, onReset]);
+    }, [debouncedSetFilters, form, onReset]);
 
     return (
         <Form
@@ -86,7 +111,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({ loading, onFilterChange, on
                 operation_number: '',
                 customer_name: '',
                 locality: '',
-                status: 'open',
+                status: '',
                 collection_status: '',
             }}
         >

@@ -100,6 +100,7 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
             </div>
 
             <OrderFilters
+                filters={filters}
                 onFilterChange={onFilterChange}
                 onReset={onResetFilters}
                 loading={loading}
