@@ -22,7 +22,7 @@ test('shows the route operational date in the reconciliation header', () => {
             <RouteReconciliationPageView
                 summary={summary}
                 collectionGroups={[]}
-                discrepancies={[]}
+                discrepancyGroups={[]}
                 pendingCollectionsCount={0}
                 pendingDiscrepanciesCount={1}
                 loading={false}
@@ -32,6 +32,7 @@ test('shows the route operational date in the reconciliation header', () => {
                 onVerifyGroup={vi.fn()}
                 onReject={vi.fn()}
                 onResolveDiscrepancy={vi.fn()}
+                onResolveDiscrepanciesBatch={vi.fn()}
                 onFinalize={vi.fn()}
                 onBack={vi.fn()}
             />

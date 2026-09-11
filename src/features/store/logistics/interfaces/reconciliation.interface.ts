@@ -6,7 +6,13 @@ export type DiscrepancyResolutionType =
     | 'missing'
     | 'damaged'
     | 'pending_redelivery'
+    | 'extra_sale'
     | 'other';
+
+export type BatchDiscrepancyResolutionType = Exclude<
+    DiscrepancyResolutionType,
+    'extra_sale' | 'other'
+>;
 
 export interface RouteReconciliationOrder {
     id: string;
@@ -33,6 +39,28 @@ export interface RouteReconciliationStopItem {
     difference: number;
     extra_sale_allocated: number;
     discrepancy: DeliveryDiscrepancy | null;
+}
+
+export interface RouteReconciliationDetailItem extends RouteReconciliationStopItem {
+    stop_id: string;
+    sequence: number;
+    order_id: string | null;
+    order_number: string | null;
+    customer_name: string | null;
+}
+
+export type RouteReconciliationProductStatus = 'pending' | 'resolved' | 'partial' | 'mixed';
+
+export interface RouteReconciliationProductGroup {
+    product_id: string;
+    product_name: string;
+    total_difference: number;
+    affected_orders_count: number;
+    affected_stops_count: number;
+    status: RouteReconciliationProductStatus;
+    contains_extra_sale: boolean;
+    can_batch_resolve: boolean;
+    items: RouteReconciliationDetailItem[];
 }
 
 export interface RouteReconciliationCollection {
@@ -110,4 +138,13 @@ export interface ResolveDiscrepancyPayload {
     resolution_type: DiscrepancyResolutionType;
     quantity_to_resolve: number;
     notes?: string;
+}
+
+export interface ResolveDiscrepanciesBatchPayload {
+    items: Array<{
+        route_stop_item_id: string;
+        resolution_type: BatchDiscrepancyResolutionType;
+        quantity_to_resolve: number;
+        notes?: string;
+    }>;
 }

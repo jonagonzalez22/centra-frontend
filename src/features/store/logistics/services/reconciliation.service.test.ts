@@ -38,4 +38,26 @@ describe('ReconciliationService', () => {
             { reason: 'Monto incorrecto' }
         );
     });
+
+    test('sends explicit route stop item resolutions to the batch endpoint', async () => {
+        mockApi.post = vi.fn().mockResolvedValue({
+            data: { status: 'success', message: 'Discrepancias resueltas exitosamente.', data: null, errors: null },
+        });
+        const payload = {
+            items: [
+                {
+                    route_stop_item_id: 'item-1',
+                    resolution_type: 'returned' as const,
+                    quantity_to_resolve: 2,
+                },
+            ],
+        };
+
+        await ReconciliationService.resolveDiscrepanciesBatch('route-1', payload);
+
+        expect(mockApi.post).toHaveBeenCalledWith(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.RECONCILIATION.RESOLVE_DISCREPANCIES_BATCH('route-1'),
+            payload
+        );
+    });
 });

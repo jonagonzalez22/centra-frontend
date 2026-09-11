@@ -7,8 +7,11 @@ import type {
     RouteReconciliationCollectionGroup,
     RouteReconciliationStop,
     RouteReconciliationStopItem,
+    RouteReconciliationDetailItem,
+    RouteReconciliationProductGroup,
     RejectCollectionPayload,
     ResolveDiscrepancyPayload,
+    ResolveDiscrepanciesBatchPayload,
     DiscrepancyResolutionType,
 } from '../interfaces/reconciliation.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
@@ -20,6 +23,7 @@ export interface UseReconciliationReturn {
     stops: RouteReconciliationStop[];
     allItems: RouteReconciliationStopItem[];
     discrepancies: RouteReconciliationStopItem[];
+    discrepancyGroups: RouteReconciliationProductGroup[];
     pendingCollectionsCount: number;
     pendingDiscrepanciesCount: number;
     loading: boolean;
@@ -31,6 +35,7 @@ export interface UseReconciliationReturn {
     rejectCollection: (collectionId: string, reason: string) => Promise<void>;
     resolveDiscrepancies: (payload: ResolveDiscrepancyPayload) => Promise<void>;
     resolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    resolveDiscrepanciesBatch: (payload: ResolveDiscrepanciesBatchPayload) => Promise<void>;
     finalize: () => Promise<void>;
 }
 
@@ -54,8 +59,82 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     const discrepancies = useMemo(() => {
         if (!summary?.stops) return [];
         return summary.stops.flatMap((stop: RouteReconciliationStop) =>
-            (stop.items || []).filter((item: RouteReconciliationStopItem) => item.difference !== 0 || item.discrepancy !== null)
+            (stop.items || []).filter(
+                (item: RouteReconciliationStopItem) =>
+                    item.difference !== 0 ||
+                    (item.discrepancy !== null && item.discrepancy.resolution_type !== 'extra_sale')
+            )
         );
+    }, [summary]);
+
+    const discrepancyGroups = useMemo(() => {
+        if (!summary?.stops) return [];
+
+        const detailItems = summary.stops.flatMap((stop: RouteReconciliationStop) =>
+            (stop.items || [])
+                .filter(
+                    (item: RouteReconciliationStopItem) =>
+                        item.difference !== 0 ||
+                        (item.discrepancy !== null && item.discrepancy.resolution_type !== 'extra_sale')
+                )
+                .map((item: RouteReconciliationStopItem): RouteReconciliationDetailItem => ({
+                    ...item,
+                    stop_id: stop.stop_id,
+                    sequence: stop.sequence,
+                    order_id: stop.order?.id ?? null,
+                    order_number: stop.order?.operation_number ?? null,
+                    customer_name: stop.order?.customer_name ?? null,
+                }))
+        );
+
+        return Object.values(
+            detailItems.reduce<Record<string, RouteReconciliationDetailItem[]>>((groups, item) => {
+                groups[item.product_id] = [...(groups[item.product_id] ?? []), item];
+                return groups;
+            }, {})
+        )
+            .map((items): RouteReconciliationProductGroup => {
+                const pendingItems = items.filter(
+                    (item) => item.difference > 0 && !item.discrepancy?.resolution_type
+                );
+                const resolvedItems = items.filter(
+                    (item) => item.difference > 0 && Boolean(item.discrepancy?.resolution_type)
+                );
+                const resolutionTypes = new Set(
+                    resolvedItems.map((item) => item.discrepancy?.resolution_type).filter(Boolean)
+                );
+                const containsExtraSale = items.some(
+                    (item) =>
+                        item.extra_sale_allocated > 0 ||
+                        item.discrepancy?.resolution_type === 'extra_sale'
+                );
+                const hasUnsupportedDifference = items.some((item) => item.difference <= 0);
+                const status =
+                    resolutionTypes.size > 1
+                        ? 'mixed'
+                        : pendingItems.length > 0 && resolvedItems.length > 0
+                          ? 'partial'
+                          : pendingItems.length > 0
+                            ? 'pending'
+                            : 'resolved';
+
+                return {
+                    product_id: items[0].product_id,
+                    product_name: items[0].product_name,
+                    total_difference: items.reduce((total, item) => total + Math.max(0, item.difference), 0),
+                    affected_orders_count: new Set(items.map((item) => item.order_id).filter(Boolean)).size,
+                    affected_stops_count: new Set(items.map((item) => item.stop_id)).size,
+                    status,
+                    contains_extra_sale: containsExtraSale,
+                    can_batch_resolve:
+                        pendingItems.length > 0 &&
+                        resolvedItems.length === 0 &&
+                        !containsExtraSale &&
+                        !hasUnsupportedDifference,
+                    items,
+                };
+            })
+            .sort((left, right) => left.product_name.localeCompare(right.product_name));
     }, [summary]);
 
     const pendingCollectionsCount = useMemo(() => {
@@ -176,6 +255,25 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         [routeId, fetchSummary]
     );
 
+    const resolveDiscrepanciesBatch = useCallback(
+        async (payload: ResolveDiscrepanciesBatchPayload) => {
+            try {
+                setActionLoading('resolve-discrepancies-batch');
+                await ReconciliationService.resolveDiscrepanciesBatch(routeId, payload);
+                message.success('Discrepancias resueltas exitosamente.');
+                await fetchSummary();
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'No se pudieron resolver las discrepancias.');
+                await fetchSummary();
+                throw err;
+            } finally {
+                setActionLoading(false);
+            }
+        },
+        [routeId, fetchSummary]
+    );
+
     const finalize = useCallback(async () => {
         try {
             setActionLoading('finalize');
@@ -198,6 +296,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         stops: summary?.stops ?? [],
         allItems,
         discrepancies,
+        discrepancyGroups,
         pendingCollectionsCount,
         pendingDiscrepanciesCount,
         loading,
@@ -209,6 +308,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         rejectCollection,
         resolveDiscrepancies,
         resolveDiscrepancy,
+        resolveDiscrepanciesBatch,
         finalize,
     };
 };

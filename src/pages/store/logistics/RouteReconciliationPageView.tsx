@@ -5,8 +5,8 @@ import { ArrowLeftOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import Tabs from '@/components/Tabs/Tabs';
 import { CollectionsTable } from '@/features/store/logistics/components/CollectionsTable';
-import { DiscrepanciesTable } from '@/features/store/logistics/components/DiscrepanciesTable';
-import type { RouteReconciliationSummary, RouteReconciliationCollectionGroup, RouteReconciliationStopItem, DiscrepancyResolutionType } from '@/features/store/logistics/interfaces/reconciliation.interface';
+import { DiscrepancyGroupsTable } from '@/features/store/logistics/components/DiscrepancyGroupsTable';
+import type { RouteReconciliationSummary, RouteReconciliationCollectionGroup, RouteReconciliationProductGroup, DiscrepancyResolutionType, ResolveDiscrepanciesBatchPayload } from '@/features/store/logistics/interfaces/reconciliation.interface';
 import { formatDateShort } from '@/utils/formatters';
 import './RouteReconciliationPage.css';
 
@@ -30,7 +30,7 @@ const statusLabels: Record<string, string> = {
 interface RouteReconciliationPageViewProps {
     summary: RouteReconciliationSummary | null;
     collectionGroups: RouteReconciliationCollectionGroup[];
-    discrepancies: RouteReconciliationStopItem[];
+    discrepancyGroups: RouteReconciliationProductGroup[];
     pendingCollectionsCount: number;
     pendingDiscrepanciesCount: number;
     loading: boolean;
@@ -40,6 +40,7 @@ interface RouteReconciliationPageViewProps {
     onVerifyGroup: (paymentMethodId: string) => Promise<void>;
     onReject: (collectionId: string, reason: string) => Promise<void>;
     onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    onResolveDiscrepanciesBatch: (payload: ResolveDiscrepanciesBatchPayload) => Promise<void>;
     onFinalize: () => Promise<void>;
     onBack: () => void;
 }
@@ -47,7 +48,7 @@ interface RouteReconciliationPageViewProps {
 export const RouteReconciliationPageView = ({
     summary,
     collectionGroups,
-    discrepancies,
+    discrepancyGroups,
     pendingCollectionsCount,
     pendingDiscrepanciesCount,
     loading,
@@ -57,6 +58,7 @@ export const RouteReconciliationPageView = ({
     onVerifyGroup,
     onReject,
     onResolveDiscrepancy,
+    onResolveDiscrepanciesBatch,
     onFinalize,
     onBack,
 }: RouteReconciliationPageViewProps) => {
@@ -209,11 +211,12 @@ export const RouteReconciliationPageView = ({
                                     : 'Discrepancias de Stock',
                                 children: (
                                     <div className="routeReconciliationSection">
-                                        <DiscrepanciesTable
-                                            discrepancies={discrepancies}
+                                        <DiscrepancyGroupsTable
+                                            groups={discrepancyGroups}
                                             loading={loading}
                                             actionLoading={actionLoading}
                                             onResolve={onResolveDiscrepancy}
+                                            onResolveBatch={onResolveDiscrepanciesBatch}
                                             readOnly={isReadOnly}
                                         />
                                     </div>

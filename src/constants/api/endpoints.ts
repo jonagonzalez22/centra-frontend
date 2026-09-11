@@ -107,6 +107,8 @@ export const API_ENDPOINTS = {
                         `/v1/store/routes/${routeId}/collections/${collectionId}/reject`,
                     RESOLVE_DISCREPANCIES: (routeId: string) =>
                         `/v1/store/routes/${routeId}/discrepancies`,
+                    RESOLVE_DISCREPANCIES_BATCH: (routeId: string) =>
+                        `/v1/store/routes/${routeId}/reconciliation/batch`,
                     FINALIZE: (routeId: string) =>
                         `/v1/store/routes/${routeId}/finalize-reconciliation`,
                 },

@@ -7,6 +7,7 @@ import type {
     RouteReconciliationCollection,
     RejectCollectionPayload,
     ResolveDiscrepancyPayload,
+    ResolveDiscrepanciesBatchPayload,
 } from '../interfaces/reconciliation.interface';
 
 export const ReconciliationService = {
@@ -88,6 +89,20 @@ export const ReconciliationService = {
                 errors: data.errors ?? undefined,
             };
             throw error;
+        }
+    },
+
+    resolveDiscrepanciesBatch: async (
+        routeId: string,
+        payload: ResolveDiscrepanciesBatchPayload
+    ): Promise<void> => {
+        const { data } = await api.post<ApiListResponse<null>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.RECONCILIATION.RESOLVE_DISCREPANCIES_BATCH(routeId),
+            payload
+        );
+
+        if (data.status === 'error') {
+            throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
         }
     },
 

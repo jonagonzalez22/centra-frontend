@@ -4,7 +4,10 @@ import { CheckOutlined } from '@ant-design/icons';
 import { Button as AntButton } from 'antd';
 import Table from '@/components/Table/Table';
 import { ResolveDiscrepancyModal } from './ResolveDiscrepancyModal';
-import type { RouteReconciliationStopItem, DiscrepancyResolutionType } from '../../interfaces/reconciliation.interface';
+import type {
+    RouteReconciliationDetailItem,
+    DiscrepancyResolutionType,
+} from '../../interfaces/reconciliation.interface';
 
 const resolutionLabels: Record<string, { label: string; color: string }> = {
     returned: { label: 'Devuelto a depósito', color: 'success' },
@@ -16,7 +19,7 @@ const resolutionLabels: Record<string, { label: string; color: string }> = {
 };
 
 interface DiscrepanciesTableProps {
-    discrepancies: RouteReconciliationStopItem[];
+    discrepancies: RouteReconciliationDetailItem[];
     loading: boolean;
     actionLoading: string | false;
     onResolve: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
@@ -31,7 +34,7 @@ export const DiscrepanciesTable = ({
     readOnly,
 }: DiscrepanciesTableProps) => {
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<RouteReconciliationStopItem | null>(null);
+    const [selectedItem, setSelectedItem] = useState<RouteReconciliationDetailItem | null>(null);
 
     const handleResolve = async (resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => {
         if (selectedItem) {
@@ -41,7 +44,7 @@ export const DiscrepanciesTable = ({
         }
     };
 
-    const openResolveModal = (item: RouteReconciliationStopItem) => {
+    const openResolveModal = (item: RouteReconciliationDetailItem) => {
         setSelectedItem(item);
         setModalOpen(true);
     };
@@ -60,7 +63,7 @@ export const DiscrepanciesTable = ({
         return <Tag color="default">0</Tag>;
     };
 
-    const getResolutionTag = (item: RouteReconciliationStopItem) => {
+    const getResolutionTag = (item: RouteReconciliationDetailItem) => {
         if (!item.discrepancy?.resolution_type) {
             return <Tag color="warning">Sin resolver</Tag>;
         }
@@ -70,10 +73,27 @@ export const DiscrepanciesTable = ({
 
     const columns = [
         {
+            title: 'Pedido',
+            key: 'order',
+            width: 100,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const item = record as unknown as RouteReconciliationDetailItem;
+                return item.order_number ?? '—';
+            },
+        },
+        {
+            title: 'Cliente',
+            key: 'customer',
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const item = record as unknown as RouteReconciliationDetailItem;
+                return item.customer_name ?? '—';
+            },
+        },
+        {
             title: 'Producto',
             key: 'product',
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 return <div className="font-medium">{item.product_name}</div>;
             },
         },
@@ -83,7 +103,7 @@ export const DiscrepanciesTable = ({
             width: 90,
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 return item.quantity_loaded;
             },
         },
@@ -93,7 +113,7 @@ export const DiscrepanciesTable = ({
             width: 90,
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 return item.quantity_delivered;
             },
         },
@@ -103,7 +123,7 @@ export const DiscrepanciesTable = ({
             width: 100,
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 return getDifferenceTag(item.difference);
             },
         },
@@ -112,7 +132,7 @@ export const DiscrepanciesTable = ({
             key: 'resolution',
             responsive: ['md'] as ('md')[],
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 return getResolutionTag(item);
             },
         },
@@ -121,7 +141,7 @@ export const DiscrepanciesTable = ({
             key: 'resolution_notes',
             responsive: ['lg'] as ('lg')[],
             render: (_: unknown, record?: Record<string, unknown>) => {
-                const item = record as unknown as RouteReconciliationStopItem;
+                const item = record as unknown as RouteReconciliationDetailItem;
                 if (!item.discrepancy?.notes) {
                     return <span className="text-gray-400">—</span>;
                 }
@@ -142,7 +162,7 @@ export const DiscrepanciesTable = ({
                       key: 'actions',
                       width: 100,
                       render: (_: unknown, record?: Record<string, unknown>) => {
-                          const item = record as unknown as RouteReconciliationStopItem;
+                          const item = record as unknown as RouteReconciliationDetailItem;
                           const isLoading = actionLoading === item.route_stop_item_id;
 
                           if (item.discrepancy?.resolution_type) {
@@ -185,7 +205,7 @@ export const DiscrepanciesTable = ({
         <>
             <Table
                 columns={columns}
-                dataSource={discrepancies as unknown as Record<string, unknown>[]}
+                dataSource={discrepancies.map((item) => ({ ...item, id: item.route_stop_item_id })) as unknown as Record<string, unknown>[]}
                 loading={loading}
                 pagination={false}
                 scroll={{ x: 'max-content' }}
