@@ -1,11 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Popconfirm, Button as AntButton, Tag, Space } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Popconfirm, Button as AntButton, Tag, Space, Tooltip } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import { useCustomerAddresses } from '../../hooks/useCustomerAddresses';
 import { AddressFormDrawer } from '../AddressFormDrawer';
+import { AddressLocationModal } from '../AddressLocationModal';
 import type { CustomerAddress } from '../../types/customerAddress.types';
 
 interface AddressesTabProps {
@@ -30,6 +31,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
 
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState<CustomerAddress | undefined>(undefined);
+    const [locationAddress, setLocationAddress] = useState<CustomerAddress | null>(null);
 
     const handleCreate = () => {
         setSelectedAddress(undefined);
@@ -45,6 +47,10 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
         setDrawerOpen(false);
         setSelectedAddress(undefined);
     };
+
+    const handleViewLocation = useCallback((address: CustomerAddress) => {
+        setLocationAddress(address);
+    }, []);
 
     const handleSuccess = () => {
         setDrawerOpen(false);
@@ -105,6 +111,17 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
                 const addr = record as unknown as CustomerAddress;
                 return (
                     <Space size="small">
+                        {addr.latitude !== null && addr.longitude !== null && (
+                            <Tooltip title="Ver ubicación">
+                                <AntButton
+                                    type="text"
+                                    size="small"
+                                    icon={<EnvironmentOutlined />}
+                                    aria-label="Ver ubicación"
+                                    onClick={() => handleViewLocation(addr)}
+                                />
+                            </Tooltip>
+                        )}
                         <CanDo permission="customer_addresses.edit">
                             <Button
                                 variant="text"
@@ -129,7 +146,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
                 );
             },
         },
-    ], [handleEdit, deleteAddress]);
+    ], [handleEdit, handleViewLocation, deleteAddress]);
 
     return (
         <div className="p-4">
@@ -160,6 +177,12 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
                 address={selectedAddress}
                 onCreate={createAddress}
                 onUpdate={updateAddress}
+            />
+
+            <AddressLocationModal
+                open={locationAddress !== null}
+                address={locationAddress}
+                onClose={() => setLocationAddress(null)}
             />
         </div>
     );

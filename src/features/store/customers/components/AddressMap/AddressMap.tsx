@@ -11,8 +11,9 @@ export interface AddressMapRef {
 interface AddressMapProps {
     latitude: number | null;
     longitude: number | null;
-    onCoordinatesChange: (lat: number, lng: number) => void;
+    onCoordinatesChange?: (lat: number, lng: number) => void;
     isSearching?: boolean;
+    readOnly?: boolean;
 }
 
 const createIcon = () =>
@@ -27,7 +28,7 @@ const createIcon = () =>
     });
 
 export const AddressMap = forwardRef<AddressMapRef, AddressMapProps>(
-    ({ latitude, longitude, onCoordinatesChange, isSearching = false }, ref) => {
+    ({ latitude, longitude, onCoordinatesChange, isSearching = false, readOnly = false }, ref) => {
         const mapContainerRef = useRef<HTMLDivElement>(null);
         const mapInstanceRef = useRef<L.Map | null>(null);
         const markerRef = useRef<L.Marker | null>(null);
@@ -44,19 +45,28 @@ export const AddressMap = forwardRef<AddressMapRef, AddressMapProps>(
 
             if (markerRef.current) {
                 markerRef.current.setLatLng([lat, lng]);
+                if (readOnly) {
+                    markerRef.current.dragging?.disable();
+                } else {
+                    markerRef.current.dragging?.enable();
+                }
             } else {
                 markerRef.current = L.marker([lat, lng], {
                     icon: createIcon(),
-                    draggable: true,
+                    draggable: !readOnly,
                 })
-                    .addTo(mapInstanceRef.current)
-                    .on('dragend', (e) => {
+                    .addTo(mapInstanceRef.current);
+
+                if (!readOnly) {
+                    markerRef.current.on('dragend', (e) => {
                         const pos = e.target.getLatLng();
-                        onCoordinatesChangeRef.current(pos.lat, pos.lng);
+                        onCoordinatesChangeRef.current?.(pos.lat, pos.lng);
                     });
+                }
             }
             mapInstanceRef.current.setView([lat, lng], 16);
-        }, []);
+            window.setTimeout(() => mapInstanceRef.current?.invalidateSize(), 0);
+        }, [readOnly]);
 
         useEffect(() => {
             if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -89,17 +99,17 @@ export const AddressMap = forwardRef<AddressMapRef, AddressMapProps>(
         }, [latitude, longitude, placeMarker]);
 
         const search = useCallback(async (address: string): Promise<boolean> => {
-            if (!mapInstanceRef.current) return false;
+            if (readOnly || !mapInstanceRef.current) return false;
 
             try {
                 const result = await GeocodingService.searchAddress(address);
                 placeMarker(result.latitude, result.longitude);
-                onCoordinatesChangeRef.current(result.latitude, result.longitude);
+                onCoordinatesChangeRef.current?.(result.latitude, result.longitude);
                 return true;
             } catch {
                 return false;
             }
-        }, [placeMarker]);
+        }, [placeMarker, readOnly]);
 
         useImperativeHandle(ref, () => ({ search }), [search]);
 
