@@ -397,6 +397,14 @@ export const RouteDetailPageView = ({
             },
         },
         {
+            title: 'Localidad',
+            key: 'locality',
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const order = record as unknown as EligibleOrder;
+                return order.address?.locality ?? '—';
+            },
+        },
+        {
             title: 'Fecha Entrega',
             key: 'delivery_date',
             render: (_: unknown, record?: Record<string, unknown>) => {
@@ -415,6 +423,14 @@ export const RouteDetailPageView = ({
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const order = record as unknown as EligibleOrder;
                 return order.customer?.name || '—';
+            },
+        },
+        {
+            title: 'Localidad',
+            key: 'locality',
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const order = record as unknown as EligibleOrder;
+                return order.address?.locality ?? '—';
             },
         },
         {

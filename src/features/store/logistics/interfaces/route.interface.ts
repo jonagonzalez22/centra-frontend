@@ -139,8 +139,13 @@ export interface EligibleOrder {
     operation_number: string;
     requested_delivery_date: string;
     customer: {
-        id: string;
         name: string;
-        address: string | null;
+    } | null;
+    address: {
+        street: string;
+        number: string;
+        locality: string | null;
+        locality_id: string | null;
+        has_coordinates: boolean;
     } | null;
 }
