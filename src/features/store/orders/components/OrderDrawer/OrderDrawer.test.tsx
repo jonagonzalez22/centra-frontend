@@ -63,6 +63,15 @@ test('shows collect action in payments tab, not in the general footer', async ()
     expect(screen.getByText('Saldo pendiente')).toBeInTheDocument();
 });
 
+test('keeps the requested delivery date but does not show a delivery time slot', () => {
+    render(<OrderDrawer open order={order} loading={false} onClose={vi.fn()} />);
+
+    expect(screen.getByText('Fecha de entrega')).toBeInTheDocument();
+    expect(screen.getByText('08/09/2026')).toBeInTheDocument();
+    expect(screen.queryByText('Franja horaria')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sin franja asignada')).not.toBeInTheDocument();
+});
+
 test('hides collect action when there is no pending balance', async () => {
     const user = userEvent.setup();
     render(

@@ -68,6 +68,7 @@ export const POSOperationConfig: React.FC = () => {
             onChange={(date) =>
               setRequestedDeliveryDate(date ? date.format('YYYY-MM-DD') : null)
             }
+            format="DD/MM/YYYY"
             className="w-full"
             disabledDate={(current) => current && current.isBefore(dayjs(), 'day')}
           />

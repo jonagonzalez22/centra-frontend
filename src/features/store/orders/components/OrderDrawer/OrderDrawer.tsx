@@ -18,7 +18,7 @@ import OrderDrawerPayments from './OrderDrawerPayments';
 import OrderDrawerHistory from './OrderDrawerHistory';
 import type { OrderDetail } from '../../interfaces/order.interface';
 import type { TabsItem } from '@/components/Tabs/Tabs';
-import { formatCurrency, formatDate, formatDateShort, formatTimeSlot } from '@/utils/formatters';
+import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
 
 interface OrderDrawerProps {
     open: boolean;
@@ -267,9 +267,6 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                 {order.requested_delivery_date
                                     ? formatDateShort(order.requested_delivery_date)
                                     : '—'}
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Franja horaria">
-                                {formatTimeSlot(order.delivery_time_from, order.delivery_time_to)}
                             </Descriptions.Item>
                         </Descriptions>
                     </div>

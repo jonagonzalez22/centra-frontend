@@ -75,8 +75,3 @@ export const formatDateLong = (date: string | null): string => {
         year: 'numeric',
     }).format(toLocalDate(date));
 };
-
-export const formatTimeSlot = (from: string | null, to: string | null): string => {
-    if (!from || !to) return 'Sin franja asignada';
-    return `${from} - ${to}`;
-};

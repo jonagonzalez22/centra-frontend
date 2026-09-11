@@ -8,7 +8,7 @@ import { RescheduleModal } from '../RescheduleModal';
 import { OrderCancellationModal } from '../OrderCancellationModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import type { OrderListItem } from '../../interfaces/order.interface';
-import { formatCurrency, formatDateShort, formatTimeSlot } from '@/utils/formatters';
+import { formatCurrency, formatDateShort } from '@/utils/formatters';
 
 interface OrderCardProps {
     order: OrderListItem;
@@ -160,9 +160,6 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                         {order.requested_delivery_date
                             ? formatDateShort(order.requested_delivery_date)
                             : 'Sin fecha'}
-                    </span>
-                    <span>
-                        {formatTimeSlot(order.delivery_time_from, order.delivery_time_to)}
                     </span>
                 </div>
 
