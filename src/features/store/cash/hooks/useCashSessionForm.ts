@@ -8,7 +8,10 @@ import type { CashSession } from '@/entities/CashSession';
 interface UseCashSessionFormReturn {
     loading: boolean;
     openCashSession: (data: { opening_amount: number; notes?: string }) => Promise<void>;
-    closeCashSession: (data: { real_amount: number; notes?: string }) => Promise<void>;
+    submitCashSession: (
+        sessionId: string,
+        data: { declared_amount: number; declaration_notes?: string }
+    ) => Promise<void>;
 }
 
 interface UseCashSessionFormOptions {
@@ -35,8 +38,7 @@ export const useCashSessionForm = (
 ): UseCashSessionFormReturn => {
     const { onSuccess, onError } = options ?? {};
     const [loading, setLoading] = useState(false);
-    const { user, setCashSession } = useAuthStore();
-    const cashSession = user?.cash_session ?? null;
+    const { setCashSession } = useAuthStore();
 
     const openCashSession = useCallback(
         async (data: { opening_amount: number; notes?: string }) => {
@@ -63,18 +65,17 @@ export const useCashSessionForm = (
         [onSuccess, onError, setCashSession]
     );
 
-    const closeCashSession = useCallback(
-        async (data: { real_amount: number; notes?: string }) => {
-            if (!cashSession?.id) {
-                message.error('No hay una sesión de caja activa.');
-                return;
-            }
+    const submitCashSession = useCallback(
+        async (
+            sessionId: string,
+            data: { declared_amount: number; declaration_notes?: string }
+        ) => {
             setLoading(true);
             try {
-                const session = await CashService.close(cashSession.id, data);
-                setCashSession(session);
-                persistCashSession(session);
-                message.success('Caja cerrada correctamente.');
+                await CashService.submit(sessionId, data);
+                setCashSession(null);
+                persistCashSession(null);
+                message.success('Caja enviada a control correctamente.');
                 onSuccess?.();
             } catch (err) {
                 const apiError = err as ApiError;
@@ -83,14 +84,14 @@ export const useCashSessionForm = (
                     onError?.(apiError.errors);
                     throw err;
                 } else {
-                    message.error(apiError.message || 'Error al cerrar la caja.');
+                    message.error(apiError.message || 'Error al enviar la caja a control.');
                 }
             } finally {
                 setLoading(false);
             }
         },
-        [onSuccess, onError, setCashSession, cashSession]
+        [onSuccess, onError, setCashSession]
     );
 
-    return { loading, openCashSession, closeCashSession };
+    return { loading, openCashSession, submitCashSession };
 };

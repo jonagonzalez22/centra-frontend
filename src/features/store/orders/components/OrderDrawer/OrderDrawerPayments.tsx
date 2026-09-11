@@ -2,6 +2,7 @@ import { Empty, Spin } from 'antd';
 import { Button } from '@/components/Button';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import type { OrderPayment } from '../../interfaces/order.interface';
+import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
 
 interface OrderDrawerPaymentsProps {
     payments: OrderPayment[];
@@ -58,17 +59,7 @@ const OrderDrawerPayments: React.FC<OrderDrawerPaymentsProps> = ({
                         <div className="mt-1 text-xs text-gray-500 space-y-0.5">
                             {payment.created_at && <div>{formatDate(payment.created_at)}</div>}
                             {payment.reference && <div>Referencia: {payment.reference}</div>}
-                            <div>
-                                {payment.origin === 'manual_collection'
-                                    ? 'Pago posterior en tienda'
-                                    : payment.origin === 'pos_sale'
-                                      ? 'Venta POS'
-                                      : payment.origin === 'order_deposit'
-                                        ? 'Seña de pedido'
-                                        : payment.origin === 'route_collection'
-                                          ? 'Cobranza de ruta'
-                                          : 'Origen no informado'}
-                            </div>
+                            <div>{getPaymentOriginLabel(payment.origin)}</div>
                             {payment.registered_by && (
                                 <div>Registrado por {payment.registered_by.name}</div>
                             )}

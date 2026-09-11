@@ -2,7 +2,7 @@ import { User } from '@/entities/User';
 import { authService } from '@/features/auth/services/auth.service';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CashSession } from '@/entities/CashSession';
+import type { CurrentCashSession } from '@/entities/CashSession';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -11,7 +11,7 @@ interface AuthState {
     loading: boolean;
     logIn: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    setCashSession: (session: CashSession | null) => void;
+    setCashSession: (session: CurrentCashSession | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(

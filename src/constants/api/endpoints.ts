@@ -56,7 +56,14 @@ export const API_ENDPOINTS = {
         },
         CASH: {
             CURRENT: { URL: '/v1/store/cash/current' },
+            OVERVIEW: { URL: '/v1/store/cash/overview' },
+            PENDING_RECONCILIATION: { URL: '/v1/store/cash/pending-reconciliation' },
             OPEN: { URL: '/v1/store/cash/open' },
+            SUBMIT: (cashSessionId: string) => `/v1/store/cash/${cashSessionId}/submit`,
+            RECONCILIATION: (cashSessionId: string) =>
+                `/v1/store/cash/${cashSessionId}/reconciliation`,
+            RECONCILIATION_PAYMENTS: (cashSessionId: string, storePaymentMethodId: string) =>
+                `/v1/store/cash/${cashSessionId}/reconciliation/payment-methods/${storePaymentMethodId}/payments`,
             CLOSE: (cashSessionId: string) => `/v1/store/cash/${cashSessionId}/close`,
         },
         PAYMENT_METHODS: {

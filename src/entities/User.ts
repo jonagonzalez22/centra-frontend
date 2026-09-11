@@ -1,4 +1,9 @@
-export type UserRole = 'SUPER_ADMIN' | 'STORE_ADMIN' | 'BACKOFFICE_USER' | 'STORE_USER' | 'STORE_DRIVER';
+export type UserRole =
+    | 'SUPER_ADMIN'
+    | 'STORE_ADMIN'
+    | 'BACKOFFICE_USER'
+    | 'STORE_USER'
+    | 'STORE_DRIVER';
 export type FeatureCode =
     | 'pos'
     | 'inventory'
@@ -34,8 +39,8 @@ export interface User {
     is_active: boolean;
     permissions: string[];
     features: FeatureFlag[];
-    cash_session?: CashSession | null;
+    cash_session?: CurrentCashSession | null;
     created_at?: string;
 }
 
-import type { CashSession } from './CashSession';
+import type { CurrentCashSession } from './CashSession';

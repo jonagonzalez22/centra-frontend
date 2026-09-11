@@ -1,4 +1,5 @@
 import { Modal as AntModal } from 'antd';
+import type { ModalProps as AntModalProps } from 'antd';
 
 export interface ModalProps {
     open: boolean;
@@ -9,6 +10,8 @@ export interface ModalProps {
     footer?: React.ReactNode | null;
     loading?: boolean;
     destroyOnClose?: boolean;
+    className?: string;
+    styles?: AntModalProps['styles'];
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -20,6 +23,8 @@ const Modal: React.FC<ModalProps> = ({
     footer,
     loading = false,
     destroyOnClose = true,
+    className,
+    styles,
 }) => {
     return (
         <AntModal
@@ -33,6 +38,8 @@ const Modal: React.FC<ModalProps> = ({
             maskClosable={!loading}
             keyboard={!loading}
             centered
+            rootClassName={className}
+            styles={styles}
         >
             {children}
         </AntModal>

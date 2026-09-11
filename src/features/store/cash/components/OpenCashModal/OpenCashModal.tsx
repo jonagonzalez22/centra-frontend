@@ -12,11 +12,7 @@ interface OpenCashModalProps {
     onSuccess: () => void;
 }
 
-export const OpenCashModal: React.FC<OpenCashModalProps> = ({
-    open,
-    onClose,
-    onSuccess,
-}) => {
+export const OpenCashModal: React.FC<OpenCashModalProps> = ({ open, onClose, onSuccess }) => {
     const [form] = Form.useForm();
 
     const { loading, openCashSession } = useCashSessionForm({ onSuccess });
@@ -27,10 +23,7 @@ export const OpenCashModal: React.FC<OpenCashModalProps> = ({
         }
     }, [open, form]);
 
-    const handleSubmit = async (values: {
-        opening_amount: number;
-        notes?: string;
-    }) => {
+    const handleSubmit = async (values: { opening_amount: number; notes?: string }) => {
         await openCashSession(values);
     };
 
@@ -74,12 +67,7 @@ export const OpenCashModal: React.FC<OpenCashModalProps> = ({
             }
             destroyOnClose={false}
         >
-            <Form
-                id="openCashForm"
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-            >
+            <Form id="openCashForm" form={form} layout="vertical" onFinish={handleSubmit}>
                 <Form.Item
                     name="opening_amount"
                     label="Monto inicial"

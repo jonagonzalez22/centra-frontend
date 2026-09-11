@@ -71,7 +71,7 @@ export interface OrderPayment {
     created_at: string | null;
     origin: string | null;
     registered_by: { id: string; name: string } | null;
-    cash_session: { id: string; status: 'open' | 'closed' } | null;
+    cash_session: { id: string; status: 'open' | 'pending_reconciliation' | 'closed' } | null;
     store_payment_method: {
         id: string;
         name: string;
