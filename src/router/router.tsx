@@ -27,6 +27,7 @@ import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
 import { CashPage } from '@/pages/store/cash';
 import { POSPage } from '@/pages/store/sales';
 import { OrdersPage } from '@/pages/store/orders';
+import { OrderEditPage } from '@/pages/store/orders/OrderEditPage';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
@@ -201,6 +202,18 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="orders.view" redirectTo="/tienda/dashboard" />,
                                 children: [
                                     { path: 'ventas/pedidos', element: <OrdersPage /> },
+                                    {
+                                        element: <PermissionRoute
+                                            permission="orders.edit"
+                                            redirectTo="/tienda/ventas/pedidos"
+                                        />,
+                                        children: [
+                                            {
+                                                path: 'ventas/pedidos/:id/editar',
+                                                element: <OrderEditPage />,
+                                            },
+                                        ],
+                                    },
                                 ],
                             },
                         ],

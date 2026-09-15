@@ -1,11 +1,19 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import OrderCard from './OrderCard';
 import { formatDateShort } from '@/utils/formatters';
 import type { OrderListItem } from '../../interfaces/order.interface';
 
+const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }));
+let canEdit = false;
+
+vi.mock('react-router-dom', () => ({
+    useNavigate: () => navigate,
+}));
+
 vi.mock('@/hooks/usePermissions', () => ({
-    usePermissions: () => ({ can: () => false }),
+    usePermissions: () => ({ can: (permission: string) => permission === 'orders.edit' && canEdit }),
 }));
 vi.mock('../../stores/useOrdersStore', () => ({
     useOrdersStore: (selector: (state: unknown) => unknown) =>
@@ -44,4 +52,16 @@ test('shows the requested delivery date without a time-slot placeholder', () => 
     expect(screen.queryByText('Franja horaria')).not.toBeInTheDocument();
     expect(screen.queryByText('Sin franja asignada')).not.toBeInTheDocument();
     expect(screen.getByText('Dina Capuzello')).toBeInTheDocument();
+});
+
+test('offers edit navigation only with orders.edit permission', async () => {
+    canEdit = true;
+    const user = userEvent.setup();
+    render(<OrderCard order={order} onClick={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Acciones/ }));
+    await user.click(screen.getByText('Editar pedido'));
+
+    expect(navigate).toHaveBeenCalledWith('/tienda/ventas/pedidos/order-1/editar');
+    canEdit = false;
 });

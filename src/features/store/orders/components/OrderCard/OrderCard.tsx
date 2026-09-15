@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dropdown, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import { Button } from '@/components/Button';
@@ -25,6 +26,7 @@ const isAssignedToRoute = (routeIds?: string[]): boolean =>
 
 const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
     const { can } = usePermissions();
+    const navigate = useNavigate();
     const canEdit = can('orders.edit');
 
     const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
@@ -79,6 +81,15 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
 
         if (canEdit) {
             items.push({
+                key: 'edit',
+                label: 'Editar pedido',
+                onClick: (e) => {
+                    e.domEvent.stopPropagation();
+                    navigate(`/tienda/ventas/pedidos/${order.id}/editar`);
+                },
+            });
+
+            items.push({
                 key: 'reschedule',
                 label: isAssignedToRoute(order.route_ids) ? (
                     <Tooltip title="Pedido asignado a una ruta">
@@ -126,7 +137,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         }
 
         return items;
-    }, [canEdit, order.status, order.route_ids, onClick]);
+    }, [canEdit, navigate, order.id, order.status, order.route_ids, onClick]);
 
     return (
         <>

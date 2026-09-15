@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Descriptions, Dropdown, message, Spin, Table, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import Drawer from '@/components/Drawer/Drawer';
@@ -37,6 +38,7 @@ const isAssignedToRoute = (routeIds?: string[]): boolean => (routeIds?.length ??
 
 const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose }) => {
     const { can } = usePermissions();
+    const navigate = useNavigate();
     const canEdit = can('orders.edit');
     const canCollect = can('orders.collect');
     const cashSession = useAuthStore((state) => state.user?.cash_session ?? null);
@@ -135,6 +137,16 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
 
         if (canEdit) {
             items.push({
+                key: 'edit',
+                label: 'Editar pedido',
+                onClick: () => {
+                    if (!order) return;
+                    onClose();
+                    navigate(`/tienda/ventas/pedidos/${order.id}/editar`);
+                },
+            });
+
+            items.push({
                 key: 'reschedule',
                 label: assignedToRoute ? (
                     <Tooltip title="Pedido asignado a una ruta">
@@ -180,7 +192,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
 
         return items;
-    }, [canEdit, canReschedule, canCancel, order]);
+    }, [canEdit, canReschedule, canCancel, navigate, onClose, order]);
 
     const footer = (
         <div className="flex justify-between">

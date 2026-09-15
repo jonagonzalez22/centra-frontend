@@ -4,6 +4,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type {
     OrderDetail,
+    OrderEditability,
     OrderFilters,
     OrderListItem,
     PaginatedResponse,
@@ -55,6 +56,23 @@ export const OrdersService = {
     getById: async (id: string): Promise<OrderDetail> => {
         const { data } = await api.get<ApiListResponse<OrderDetail>>(
             `${API_ENDPOINTS.STORE.ORDERS.URL}/${id}`
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    getEditability: async (id: string): Promise<OrderEditability> => {
+        const { data } = await api.get<ApiListResponse<OrderEditability>>(
+            API_ENDPOINTS.STORE.ORDERS.EDITABILITY(id)
         );
 
         if (data.status === 'error') {

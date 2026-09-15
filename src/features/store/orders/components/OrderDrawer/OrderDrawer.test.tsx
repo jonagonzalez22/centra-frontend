@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import OrderDrawer from './OrderDrawer';
 import type { OrderDetail } from '../../interfaces/order.interface';
 
+vi.mock('react-router-dom', () => ({
+    useNavigate: () => vi.fn(),
+}));
+
 let canCollect = true;
 
 vi.mock('@/hooks/usePermissions', () => ({

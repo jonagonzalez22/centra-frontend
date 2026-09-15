@@ -75,6 +75,7 @@ export const API_ENDPOINTS = {
         },
         ORDERS: {
             URL: '/v1/store/orders',
+            EDITABILITY: (id: string) => `/v1/store/orders/${id}/editability`,
             PAYMENTS: (id: string) => `/v1/store/orders/${id}/payments`,
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,

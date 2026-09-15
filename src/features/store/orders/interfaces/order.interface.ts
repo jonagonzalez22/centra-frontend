@@ -206,6 +206,37 @@ export interface OrderDetail {
     delivery_summary: DeliverySummary;
 }
 
+export type OrderEditabilityBlockReason = 'terminal_status' | 'active_extra_sale' | null;
+
+export type DeliveryDateBlockReason =
+    | 'terminal_status'
+    | 'active_extra_sale'
+    | 'active_route_commitment'
+    | null;
+
+export interface OrderEditabilityItem {
+    product_id: string;
+    product_name: string | null;
+    current_quantity: number;
+    delivered_quantity: number;
+    active_committed_quantity: number;
+    minimum_quantity: number;
+    editable_quantity: number;
+}
+
+export interface OrderEditability {
+    order_id: string;
+    status: OrderStatus;
+    editable: boolean;
+    block_reason: OrderEditabilityBlockReason;
+    block_message: string | null;
+    paid_amount: number;
+    delivery_date_editable: boolean;
+    delivery_date_block_reason: DeliveryDateBlockReason;
+    delivery_date_block_message: string | null;
+    items: OrderEditabilityItem[];
+}
+
 export interface OrderFilters {
     date?: string | null;
     date_from?: string;
