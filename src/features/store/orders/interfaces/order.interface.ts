@@ -237,6 +237,24 @@ export interface OrderEditability {
     items: OrderEditabilityItem[];
 }
 
+export type DeliveryDateChangeReason =
+    | 'customer_requested_reschedule'
+    | 'customer_absent'
+    | 'address_closed'
+    | 'weather_conditions'
+    | 'operational_issue'
+    | 'other';
+
+export interface UpdateOrderPayload {
+    items?: Array<{
+        product_id: string;
+        quantity: number;
+    }>;
+    requested_delivery_date?: string;
+    reason?: DeliveryDateChangeReason;
+    observation?: string;
+}
+
 export interface OrderFilters {
     date?: string | null;
     date_from?: string;

@@ -88,3 +88,26 @@ test.each([2200, 1000])('accepts a valid amount of %s', async (amount) => {
 
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
 });
+
+test('keeps the modal open and shows the backend error when payment registration fails', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockRejectedValue({
+        message: 'Debes abrir una caja antes de registrar cobros.',
+    });
+    render(
+        <RegisterOrderPaymentModal
+            open
+            pendingAmount={2200}
+            onClose={vi.fn()}
+            onSubmit={onSubmit}
+        />
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.click(await screen.findByText('Efectivo'));
+    await user.type(screen.getByRole('spinbutton'), '1000');
+    await user.click(screen.getByRole('button', { name: 'Registrar pago' }));
+
+    expect(await screen.findByText('Debes abrir una caja antes de registrar cobros.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
+});

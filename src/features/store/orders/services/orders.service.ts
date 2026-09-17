@@ -8,6 +8,7 @@ import type {
     OrderFilters,
     OrderListItem,
     PaginatedResponse,
+    UpdateOrderPayload,
 } from '../interfaces/order.interface';
 
 export const OrdersService = {
@@ -73,6 +74,24 @@ export const OrdersService = {
     getEditability: async (id: string): Promise<OrderEditability> => {
         const { data } = await api.get<ApiListResponse<OrderEditability>>(
             API_ENDPOINTS.STORE.ORDERS.EDITABILITY(id)
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    update: async (id: string, payload: UpdateOrderPayload): Promise<OrderDetail> => {
+        const { data } = await api.put<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.URL + '/' + id,
+            payload
         );
 
         if (data.status === 'error') {
