@@ -1,15 +1,66 @@
 .sidebarMenuContent {
-    @apply flex h-full flex-col;
+    @apply flex h-full flex-col bg-centra-primary;
 }
 
 .sidebarMenuBrand {
-    @apply p-6 text-xl font-bold text-centra-primary;
+    @apply p-6 text-xl font-bold text-white;
 }
 
 .sidebarMenuNavigation {
-    @apply border-none [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start;
+    @apply border-none bg-centra-primary [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start;
 }
 
 .sidebarMenuDesktopContainer {
-    @apply sticky left-0 top-0 h-dvh shadow-sm;
+    @apply sticky left-0 top-0 h-dvh bg-centra-primary shadow-sm;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-title {
+    @apply text-white/80;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item .ant-menu-item-icon,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-title .ant-menu-item-icon,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-arrow {
+    @apply text-white/80;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item:hover,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-title:hover,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-open > .ant-menu-submenu-title {
+    @apply bg-white/10 text-white;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item:hover .ant-menu-item-icon,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-submenu-title:hover .ant-menu-item-icon,
+.sidebarMenuNavigation.ant-menu-dark
+    .ant-menu-submenu-open
+    > .ant-menu-submenu-title
+    .ant-menu-item-icon,
+.sidebarMenuNavigation.ant-menu-dark
+    .ant-menu-submenu-open
+    > .ant-menu-submenu-title
+    .ant-menu-submenu-arrow {
+    @apply text-white;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item-selected {
+    @apply bg-white/20 font-semibold text-white;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon {
+    @apply text-white;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-sub {
+    @apply !bg-centra-primary;
+}
+
+.sidebarMenuNavigation.ant-menu-dark.ant-menu-inline .ant-menu-item-selected::after {
+    @apply border-white;
+}
+
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item-disabled,
+.sidebarMenuNavigation.ant-menu-dark .ant-menu-item-disabled .ant-menu-item-icon {
+    @apply text-white/40;
 }

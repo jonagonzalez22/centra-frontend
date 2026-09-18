@@ -179,7 +179,6 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, user }: PermissionD
                 />
                 <div className="permissionDrawerItemInfo">
                     <span className="permissionDrawerItemName">{permission.name}</span>
-                    <span className="permissionDrawerItemCode">{permission.code}</span>
                 </div>
             </div>
         );

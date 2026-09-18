@@ -359,6 +359,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
             <div className="sidebarMenuBrand">CENTRA</div>
 
             <Menu
+                theme="dark"
                 mode="inline"
                 selectedKeys={[selectedKey]}
                 openKeys={openKeys}
@@ -386,7 +387,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     }
 
     return (
-        <Sider theme="light" breakpoint="lg" width={260} className="sidebarMenuDesktopContainer">
+        <Sider theme="dark" breakpoint="lg" width={260} className="sidebarMenuDesktopContainer">
             {menuContent}
         </Sider>
     );
