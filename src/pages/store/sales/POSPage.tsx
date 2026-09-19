@@ -41,12 +41,15 @@ export const POSPage: React.FC = () => {
 
     const handleDirectOrder = useCallback(async () => {
         const state = usePOSStore.getState();
-        const { type, customer, requested_delivery_date, items, resetPOS } = state;
+        const { type, customer, customer_display_name, requested_delivery_date, items, resetPOS } = state;
 
         try {
             await SalesService.createOperation({
                 type,
                 customer_id: customer?.id ?? null,
+                ...(type === 'sale' && customer_display_name?.trim()
+                    ? { customer_display_name: customer_display_name.trim() }
+                    : {}),
                 requested_delivery_date: type === 'order' ? requested_delivery_date : null,
                 items: items.map((i) => ({
                     product_id: i.product_id,

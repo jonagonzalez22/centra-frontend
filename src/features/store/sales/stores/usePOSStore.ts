@@ -8,6 +8,7 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
   items: initialItems,
   type: 'sale',
   customer: null,
+  customer_display_name: null,
   requested_delivery_date: null,
   payments: initialPayments,
 
@@ -75,11 +76,22 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
     set({
       type,
       customer: type === 'sale' ? get().customer : get().customer,
+      customer_display_name: type === 'sale' ? get().customer_display_name : null,
       requested_delivery_date: type === 'sale' ? null : get().requested_delivery_date,
     });
   },
 
-  setCustomer: (customer) => set({ customer }),
+  setCustomer: (customer) =>
+    set({
+      customer,
+      customer_display_name: customer ? null : get().customer_display_name,
+    }),
+
+  setCustomerDisplayName: (customer_display_name) =>
+    set({
+      customer_display_name,
+      customer: customer_display_name ? null : get().customer,
+    }),
 
   setRequestedDeliveryDate: (date) => set({ requested_delivery_date: date }),
 
@@ -90,6 +102,7 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
       items: [],
       type: 'sale',
       customer: null,
+      customer_display_name: null,
       requested_delivery_date: null,
       payments: [],
     }),

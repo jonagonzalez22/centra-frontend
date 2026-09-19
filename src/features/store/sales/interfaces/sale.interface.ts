@@ -19,6 +19,7 @@ export interface POSPayment {
 export interface CreateOperationDTO {
   type: 'sale' | 'order';
   customer_id?: string | null;
+  customer_display_name?: string | null;
   requested_delivery_date?: string | null;
   items: Array<{
     product_id: string;
@@ -43,6 +44,7 @@ export interface OperationResponse {
   type: 'sale' | 'order';
   status: string;
   total: number;
+  customer_display_name: string | null;
   created_at: string;
 }
 
@@ -50,6 +52,7 @@ export interface POSState {
   items: POSItem[];
   type: 'sale' | 'order';
   customer: Customer | null;
+  customer_display_name: string | null;
   requested_delivery_date: string | null;
   payments: POSPayment[];
 }
@@ -60,6 +63,7 @@ export interface POSActions {
   removeItem: (product_id: string) => void;
   setType: (type: 'sale' | 'order') => void;
   setCustomer: (customer: Customer | null) => void;
+  setCustomerDisplayName: (name: string | null) => void;
   setRequestedDeliveryDate: (date: string | null) => void;
   setPayments: (payments: POSPayment[]) => void;
   resetPOS: () => void;

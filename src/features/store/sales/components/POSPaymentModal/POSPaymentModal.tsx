@@ -49,6 +49,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
   const items = usePOSStore((s) => s.items);
   const type = usePOSStore((s) => s.type);
   const customer = usePOSStore((s) => s.customer);
+  const customer_display_name = usePOSStore((s) => s.customer_display_name);
   const requested_delivery_date = usePOSStore((s) => s.requested_delivery_date);
   const resetPOS = usePOSStore((s) => s.resetPOS);
 
@@ -160,6 +161,9 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
       await SalesService.createOperation({
         type,
         customer_id: customer?.id ?? null,
+        ...(type === 'sale' && customer_display_name?.trim()
+          ? { customer_display_name: customer_display_name.trim() }
+          : {}),
         requested_delivery_date: type === 'order' ? requested_delivery_date : null,
         items: items.map((i) => ({
           product_id: i.product_id,

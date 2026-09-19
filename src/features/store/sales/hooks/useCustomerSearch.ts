@@ -20,6 +20,7 @@ export function useCustomerSearch() {
       try {
         const response = await CustomersService.getAll({
           search: query,
+          search_mode: 'identity',
           status: 'active',
           per_page: 20,
         });
