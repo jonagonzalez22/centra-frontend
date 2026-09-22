@@ -1,0 +1,1 @@
+export { TicketReceipt } from './TicketReceipt';

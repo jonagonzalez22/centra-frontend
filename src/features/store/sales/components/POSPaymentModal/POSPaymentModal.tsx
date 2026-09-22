@@ -5,6 +5,7 @@ import { SalesService } from '../../services/sales.service';
 import { usePOSStore } from '../../stores/usePOSStore';
 import { formatCurrency } from '@/utils/formatters';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { OperationResponse } from '../../interfaces/sale.interface';
 
 const CASH_CODE = 'cash';
 
@@ -18,7 +19,7 @@ interface PaymentRow {
 interface POSPaymentModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (operation: OperationResponse) => void;
 }
 
 let rowCounter = 0;
@@ -158,7 +159,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
           ...(r.reference ? { reference: r.reference } : {}),
         }));
 
-      await SalesService.createOperation({
+      const operation = await SalesService.createOperation({
         type,
         customer_id: customer?.id ?? null,
         ...(type === 'sale' && customer_display_name?.trim()
@@ -187,7 +188,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
       }
 
       resetPOS();
-      onSuccess();
+      onSuccess(operation);
     } catch (err) {
       const apiError = err as { message?: string };
       setError(apiError.message || 'Error al crear la operación.');

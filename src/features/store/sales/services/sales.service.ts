@@ -4,7 +4,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 import type { Product } from '@features/store/products/interfaces/product.interface';
-import type { CreateOperationDTO, OperationResponse } from '../interfaces/sale.interface';
+import type { CreateOperationDTO, OperationResponse, ReceiptData } from '../interfaces/sale.interface';
 
 interface PaymentMethodsListData {
   items: StorePaymentMethod[];
@@ -75,6 +75,23 @@ export const SalesService = {
     const { data } = await api.post<ApiListResponse<OperationResponse>>(
       API_ENDPOINTS.STORE.OPERATIONS.URL,
       payload
+    );
+
+    if (data.status === 'error') {
+      const error: ApiError = {
+        status: 0,
+        message: data.message,
+        errors: data.errors ?? undefined,
+      };
+      throw error;
+    }
+
+    return data.data;
+  },
+
+  getReceipt: async (operationId: string): Promise<ReceiptData> => {
+    const { data } = await api.get<ApiListResponse<ReceiptData>>(
+      API_ENDPOINTS.STORE.OPERATIONS.RECEIPT(operationId)
     );
 
     if (data.status === 'error') {

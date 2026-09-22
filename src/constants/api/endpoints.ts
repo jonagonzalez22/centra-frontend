@@ -72,6 +72,7 @@ export const API_ENDPOINTS = {
         },
         OPERATIONS: {
             URL: '/v1/store/operations',
+            RECEIPT: (id: string) => `/v1/store/operations/${id}/receipt`,
             PRODUCTS: {
                 SEARCH: '/v1/store/operations/products/search',
                 DETAIL: (id: string) => '/v1/store/operations/products/' + id,

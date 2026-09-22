@@ -48,6 +48,65 @@ export interface OperationResponse {
   created_at: string;
 }
 
+export interface ReceiptStore {
+  name: string | null;
+  cuit: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  timezone: string;
+}
+
+export interface ReceiptCashier {
+  id: string;
+  name: string;
+}
+
+export interface ReceiptOperation {
+  id: string;
+  operation_number: string;
+  type: 'sale';
+  status: string;
+  occurred_at: string | null;
+  cashier: ReceiptCashier | null;
+}
+
+export interface ReceiptCustomer {
+  display_name: string;
+}
+
+export interface ReceiptItem {
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  discount_amount: number;
+  tax_amount: number;
+}
+
+export interface ReceiptTotals {
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  paid_amount: number;
+  pending_amount: number;
+}
+
+export interface ReceiptPayment {
+  method_name: string | null;
+  amount: number;
+}
+
+export interface ReceiptData {
+  store: ReceiptStore;
+  operation: ReceiptOperation;
+  customer: ReceiptCustomer | null;
+  items: ReceiptItem[];
+  totals: ReceiptTotals;
+  payments: ReceiptPayment[];
+}
+
 export interface POSState {
   items: POSItem[];
   type: 'sale' | 'order';

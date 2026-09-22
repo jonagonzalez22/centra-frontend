@@ -3,7 +3,9 @@ import { Result, Button, Spin, message as antMessage } from 'antd';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { POSPageView } from './POSPageView';
 import { POSPaymentModal } from '@features/store/sales/components/POSPaymentModal';
+import { SaleSuccessModal } from '@features/store/sales/components/SaleSuccessModal';
 import { SalesService } from '@features/store/sales/services/sales.service';
+import type { OperationResponse } from '@features/store/sales/interfaces/sale.interface';
 import { usePOSStore } from '@features/store/sales/stores/usePOSStore';
 import { formatCurrency } from '@/utils/formatters';
 import { CashService } from '@/features/store/cash/services/cash.service';
@@ -14,6 +16,7 @@ export const POSPage: React.FC = () => {
     const [checkingCash, setCheckingCash] = useState(true);
     const [cashError, setCashError] = useState<string | null>(null);
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [completedSale, setCompletedSale] = useState<Pick<OperationResponse, 'id' | 'operation_number'> | null>(null);
     const [registerDepositNow, setRegisterDepositNow] = useState(false);
 
     useEffect(() => {
@@ -68,8 +71,11 @@ export const POSPage: React.FC = () => {
         }
     }, []);
 
-    const handlePaymentSuccess = useCallback(() => {
+    const handlePaymentSuccess = useCallback((operation: OperationResponse) => {
         setPaymentModalOpen(false);
+        if (operation.type === 'sale') {
+            setCompletedSale({ id: operation.id, operation_number: operation.operation_number });
+        }
     }, []);
 
     const handlePaymentClose = useCallback(() => {
@@ -118,6 +124,9 @@ export const POSPage: React.FC = () => {
                 onClose={handlePaymentClose}
                 onSuccess={handlePaymentSuccess}
             />
+            {completedSale && (
+                <SaleSuccessModal sale={completedSale} onClose={() => setCompletedSale(null)} />
+            )}
         </>
     );
 };
