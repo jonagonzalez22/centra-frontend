@@ -4,7 +4,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 import type { Product } from '@features/store/products/interfaces/product.interface';
-import type { CreateOperationDTO, OperationResponse, ReceiptData } from '../interfaces/sale.interface';
+import type { CreateOperationDTO, OperationResponse, PaginatedSales, ReceiptData, SaleDetail, SalesFilters } from '../interfaces/sale.interface';
 
 interface PaymentMethodsListData {
   items: StorePaymentMethod[];
@@ -19,6 +19,25 @@ interface ProductsListData {
 }
 
 export const SalesService = {
+  getHistory: async (filters: SalesFilters): Promise<PaginatedSales> => {
+    const { data } = await api.get<ApiListResponse<PaginatedSales>>(API_ENDPOINTS.STORE.SALES.URL, {
+      params: { ...filters, per_page: filters.per_page ?? 15, page: filters.page ?? 1 },
+    });
+    if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+    return data.data;
+  },
+
+  getSaleById: async (id: string): Promise<SaleDetail> => {
+    const { data } = await api.get<ApiListResponse<SaleDetail>>(API_ENDPOINTS.STORE.SALES.DETAIL(id));
+    if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+    return data.data;
+  },
+
+  getSalesReceipt: async (id: string): Promise<ReceiptData> => {
+    const { data } = await api.get<ApiListResponse<ReceiptData>>(API_ENDPOINTS.STORE.SALES.RECEIPT(id));
+    if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+    return data.data;
+  },
   getPaymentMethods: async (): Promise<StorePaymentMethod[]> => {
     const { data } = await api.get<ApiListResponse<PaymentMethodsListData>>(
       API_ENDPOINTS.STORE.PAYMENT_METHODS.LIST.URL

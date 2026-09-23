@@ -72,6 +72,16 @@ const getErrorMessage = (err: unknown, fallback: string): string => {
 };
 
 const formatPermissionName = (code: string): string => {
+    const permissionNames: Record<string, string> = {
+        'sales_history.view': 'Ver historial de ventas',
+        'sales_history.print': 'Reimprimir comprobantes',
+        'sales.cancel': 'Cancelar ventas',
+    };
+
+    if (permissionNames[code]) {
+        return permissionNames[code];
+    }
+
     const parts = code.split('.');
     if (parts.length === 2) {
         const [, action] = parts;
@@ -104,6 +114,7 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         inventory: <Package size={16} />,
         pos: <ShoppingCart size={16} />,
         sales: <ShoppingCart size={16} />,
+        sales_history: <ClipboardList size={16} />,
         orders: <ClipboardList size={16} />,
         clients: <UsersRound size={16} />,
         deliveries: <Truck size={16} />,

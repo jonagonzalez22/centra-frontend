@@ -48,6 +48,39 @@ export interface OperationResponse {
   created_at: string;
 }
 
+export interface SaleListItem extends OperationResponse {
+  status: string;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  created_by?: { id: string; name: string | null };
+  customer?: { id: string; name: string | null } | null;
+}
+
+export interface SaleDetail extends SaleListItem {
+  items: Array<{ id: string; product_name: string; quantity: number; price: number; subtotal: number; tax_amount: number; discount_amount: number }>;
+  payments: Array<{ id: string; amount: number; store_payment_method?: { name: string | null } | null }>;
+}
+
+export interface SalesFilters {
+  operation_number?: string;
+  status?: 'confirmed' | 'cancelled';
+  date_from?: string;
+  date_to?: string;
+  sort_by?: 'created_at';
+  sort_direction?: 'asc' | 'desc';
+  page?: number;
+  per_page?: number;
+}
+
+export interface PaginatedSales {
+  items: SaleListItem[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+}
+
 export interface ReceiptStore {
   name: string | null;
   cuit: string | null;

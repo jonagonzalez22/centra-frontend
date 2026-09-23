@@ -1,0 +1,24 @@
+.sales-history-table .ant-table-thead > tr > th.ant-table-column-sort {
+  background: #fafafa;
+}
+
+.sales-history-table .ant-table-tbody > tr > td.ant-table-column-sort {
+  background: #fff;
+}
+
+.sales-history-table .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort {
+  background: #fafafa;
+}
+
+.sales-history-operation-link {
+  cursor: pointer !important;
+}
+
+.sales-history-operation-link:hover {
+  text-decoration: none;
+}
+
+.sales-history-operation-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

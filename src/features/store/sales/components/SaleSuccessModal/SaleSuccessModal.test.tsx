@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, vi } from 'vitest';
 import { createA4ReceiptPdf, printA4PdfBlob } from '../../documents/a4-pdf.service';
+import { printTicketReceipt } from '../../documents/ticket-print.service';
 import type { ReceiptData } from '../../interfaces/sale.interface';
 import { SalesService } from '../../services/sales.service';
 import { SaleSuccessModal } from './SaleSuccessModal';
@@ -13,6 +14,10 @@ vi.mock('../../services/sales.service', () => ({
 vi.mock('../../documents/a4-pdf.service', () => ({
     createA4ReceiptPdf: vi.fn(),
     printA4PdfBlob: vi.fn(),
+}));
+
+vi.mock('../../documents/ticket-print.service', () => ({
+    printTicketReceipt: vi.fn(),
 }));
 
 const receipt: ReceiptData = {
@@ -42,7 +47,7 @@ beforeEach(() => {
     vi.mocked(SalesService.getReceipt).mockReset();
     vi.mocked(createA4ReceiptPdf).mockReset();
     vi.mocked(printA4PdfBlob).mockReset();
-    vi.stubGlobal('print', vi.fn());
+    vi.mocked(printTicketReceipt).mockReset();
 });
 
 test('closes the completed sale modal without affecting the registered sale', async () => {
@@ -62,16 +67,10 @@ test('closes the completed sale modal without affecting the registered sale', as
     expect(SalesService.getReceipt).not.toHaveBeenCalled();
 });
 
-test('loads the persisted receipt and prints only after the ticket is rendered', async () => {
+test('loads the persisted receipt and delegates ticket printing to the isolated service', async () => {
     const user = userEvent.setup();
     vi.mocked(SalesService.getReceipt).mockResolvedValue(receipt);
-    const print = vi.fn(() => {
-        expect(screen.getByTestId('ticket-receipt')).toBeInTheDocument();
-        expect(screen.getByTestId('ticket-receipt').parentElement?.parentElement).toBe(
-            document.body
-        );
-    });
-    vi.stubGlobal('print', print);
+    vi.mocked(printTicketReceipt).mockResolvedValue(undefined);
 
     render(
         <SaleSuccessModal sale={{ id: 'sale-1', operation_number: 'V-000123' }} onClose={vi.fn()} />
@@ -79,7 +78,8 @@ test('loads the persisted receipt and prints only after the ticket is rendered',
     await user.click(screen.getByRole('button', { name: 'Imprimir ticket' }));
 
     await waitFor(() => expect(SalesService.getReceipt).toHaveBeenCalledWith('sale-1'));
-    await waitFor(() => expect(print).toHaveBeenCalledOnce());
+    expect(printTicketReceipt).toHaveBeenCalledWith(receipt);
+    expect(document.body).not.toHaveClass('receipt-print-mode-ticket');
 });
 
 test('generates the A4 PDF, then reuses the persisted receipt for ticket printing', async () => {
@@ -97,17 +97,14 @@ test('generates the A4 PDF, then reuses the persisted receipt for ticket printin
     await waitFor(() => expect(SalesService.getReceipt).toHaveBeenCalledWith('sale-1'));
     await waitFor(() => expect(createA4ReceiptPdf).toHaveBeenCalledWith(receipt));
     expect(printA4PdfBlob).toHaveBeenCalledWith(pdfBlob);
-    const ticketPrint = vi.fn(() => {
-        expect(screen.getByTestId('ticket-receipt')).toBeInTheDocument();
-    });
-    vi.stubGlobal('print', ticketPrint);
+    vi.mocked(printTicketReceipt).mockResolvedValue(undefined);
     const ticketButton = screen.getByText('Imprimir ticket').closest('button');
     expect(ticketButton).not.toBeNull();
     await waitFor(() => expect(ticketButton).toBeEnabled());
     await user.click(ticketButton!);
 
     await waitFor(() => expect(SalesService.getReceipt).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(ticketPrint).toHaveBeenCalledOnce());
+    expect(printTicketReceipt).toHaveBeenCalledWith(receipt);
 });
 
 test('keeps the sale successful and allows retrying when A4 PDF generation fails', async () => {
@@ -153,7 +150,7 @@ test('keeps the sale success state open and allows retrying when receipt loading
     await user.click(screen.getByRole('button', { name: 'Imprimir ticket' }));
 
     expect(
-        await screen.findByText('La venta fue registrada, pero no se pudo cargar el comprobante.')
+        await screen.findByText('La venta fue registrada, pero no se pudo imprimir el ticket.')
     ).toBeInTheDocument();
     expect(screen.getByText('Venta registrada')).toBeInTheDocument();
 

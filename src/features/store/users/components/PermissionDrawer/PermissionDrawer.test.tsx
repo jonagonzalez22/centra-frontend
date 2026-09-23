@@ -86,4 +86,23 @@ describe('PermissionDrawer', () => {
             expect(screen.getAllByRole('checkbox')[3]).toBeChecked();
         });
     }, 10000);
+
+    test('shows sales history permissions with user-facing labels', async () => {
+        mockStoreUsersService.getPermissionCatalog.mockResolvedValue({
+            'Historial de ventas': [
+                { name: 'sales_history.view', label: 'Ver historial de ventas' },
+                { name: 'sales_history.print', label: 'Reimprimir comprobantes' },
+            ],
+            Ventas: [{ name: 'sales.cancel', label: 'Cancelar ventas' }],
+        });
+        mockStoreUsersService.getUserPermissions.mockResolvedValue([]);
+
+        render(<PermissionDrawer open onClose={vi.fn()} onSuccess={vi.fn()} user={user} />);
+
+        expect(await screen.findByText('Ver historial de ventas')).toBeInTheDocument();
+        expect(screen.getByText('Reimprimir comprobantes')).toBeInTheDocument();
+        expect(screen.getByText('Cancelar ventas')).toBeInTheDocument();
+        expect(screen.queryByText('sales_history.view')).not.toBeInTheDocument();
+        expect(screen.queryByText('sales_history.print')).not.toBeInTheDocument();
+    });
 });

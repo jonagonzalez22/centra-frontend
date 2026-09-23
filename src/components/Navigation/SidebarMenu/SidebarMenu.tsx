@@ -145,6 +145,14 @@ const menuItems: MenuItem[] = [
                 permission: 'orders.view',
                 role: 'STORE_USER',
             },
+            {
+                label: 'Historial de ventas',
+                key: '/tienda/ventas/historial',
+                context: 'store',
+                feature: 'pos',
+                permission: 'sales_history.view',
+                role: 'STORE_USER',
+            },
         ],
     },
     {

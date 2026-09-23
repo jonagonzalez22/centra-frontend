@@ -34,6 +34,7 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
     Usuarios: <UserIcon size={16} />,
     Tiendas: <Store size={16} />,
     'Punto de Venta': <ShoppingCart size={16} />,
+    'Historial de ventas': <ClipboardList size={16} />,
     Ventas: <ShoppingCart size={16} />,
     Pedidos: <ClipboardList size={16} />,
     Clientes: <UserIcon size={16} />,

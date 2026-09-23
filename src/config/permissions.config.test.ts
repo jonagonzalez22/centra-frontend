@@ -12,7 +12,7 @@ describe('permissions.config', () => {
             expect(getPermissionContext('categories.create')).toBe('store');
             expect(getPermissionContext('products.list')).toBe('store');
             expect(getPermissionContext('pos.create')).toBe('store');
-            expect(getPermissionContext('sales.view')).toBe('store');
+            expect(getPermissionContext('sales_history.view')).toBe('store');
             expect(getPermissionContext('clients.edit')).toBe('store');
             expect(getPermissionContext('deliveries.delete')).toBe('store');
             expect(getPermissionContext('stock.view')).toBe('unknown');
@@ -89,6 +89,7 @@ describe('permissions.config', () => {
                 'products',
                 'pos',
                 'sales',
+                'sales_history',
                 'clients',
                 'deliveries',
             ];

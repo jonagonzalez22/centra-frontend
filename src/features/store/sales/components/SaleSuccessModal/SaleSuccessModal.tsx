@@ -1,12 +1,11 @@
 import { Alert } from 'antd';
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
 import type { OperationResponse, ReceiptData } from '../../interfaces/sale.interface';
 import { SalesService } from '../../services/sales.service';
 import { createA4ReceiptPdf, printA4PdfBlob } from '../../documents/a4-pdf.service';
-import { TicketReceipt } from '../TicketReceipt';
+import { printTicketReceipt } from '../../documents/ticket-print.service';
 
 interface SaleSuccessModalProps {
     sale: Pick<OperationResponse, 'id' | 'operation_number'>;
@@ -18,32 +17,12 @@ export const SaleSuccessModal: React.FC<SaleSuccessModalProps> = ({ sale, onClos
     const [loadingReceipt, setLoadingReceipt] = useState(false);
     const [receiptError, setReceiptError] = useState<string | null>(null);
     const [a4PdfBlob, setA4PdfBlob] = useState<Blob | null>(null);
-    const [isPreparingTicketPrint, setIsPreparingTicketPrint] = useState(false);
 
     useEffect(() => {
         setReceipt(null);
         setReceiptError(null);
         setA4PdfBlob(null);
-        setIsPreparingTicketPrint(false);
     }, [sale.id]);
-
-    useEffect(() => {
-        if (!receipt || !isPreparingTicketPrint) return;
-
-        const bodyClass = 'receipt-print-mode-ticket';
-        document.body.classList.add(bodyClass);
-
-        const frame = window.requestAnimationFrame(() => {
-            window.print();
-            document.body.classList.remove(bodyClass);
-            setIsPreparingTicketPrint(false);
-        });
-
-        return () => {
-            window.cancelAnimationFrame(frame);
-            document.body.classList.remove(bodyClass);
-        };
-    }, [isPreparingTicketPrint, receipt]);
 
     const loadReceipt = async (): Promise<ReceiptData> => {
         if (receipt) return receipt;
@@ -59,10 +38,9 @@ export const SaleSuccessModal: React.FC<SaleSuccessModalProps> = ({ sale, onClos
         setReceiptError(null);
 
         try {
-            await loadReceipt();
-            setIsPreparingTicketPrint(true);
+            await printTicketReceipt(await loadReceipt());
         } catch {
-            setReceiptError('La venta fue registrada, pero no se pudo cargar el comprobante.');
+            setReceiptError('La venta fue registrada, pero no se pudo imprimir el ticket.');
         } finally {
             setLoadingReceipt(false);
         }
@@ -98,21 +76,21 @@ export const SaleSuccessModal: React.FC<SaleSuccessModalProps> = ({ sale, onClos
                             variant="default"
                             label="Cerrar"
                             action={onClose}
-                            disabled={loadingReceipt || isPreparingTicketPrint}
+                            disabled={loadingReceipt}
                         />
                         <Button
                             variant="primary"
                             label="Imprimir ticket"
                             action={handleTicketPrint}
                             loading={loadingReceipt}
-                            disabled={loadingReceipt || isPreparingTicketPrint}
+                            disabled={loadingReceipt}
                         />
                         <Button
                             variant="primary"
                             label="Imprimir A4"
                             action={handleA4Print}
                             loading={loadingReceipt}
-                            disabled={loadingReceipt || isPreparingTicketPrint}
+                            disabled={loadingReceipt}
                         />
                     </div>
                 }
@@ -124,9 +102,6 @@ export const SaleSuccessModal: React.FC<SaleSuccessModalProps> = ({ sale, onClos
                     {receiptError && <Alert type="error" message={receiptError} showIcon />}
                 </div>
             </Modal>
-            {receipt &&
-                isPreparingTicketPrint &&
-                createPortal(<TicketReceipt receipt={receipt} />, document.body)}
         </>
     );
 };

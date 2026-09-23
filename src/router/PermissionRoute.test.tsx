@@ -22,7 +22,11 @@ const mockUser: User = {
 };
 
 describe('PermissionRoute', () => {
-    const renderWithAuth = (userMock: User | null, isAuth: boolean) => {
+    const renderWithAuth = (
+        userMock: User | null,
+        isAuth: boolean,
+        permission = 'stores.view'
+    ) => {
         vi.mocked(useAuthStore).mockReturnValue({
             user: userMock,
             isAuthenticated: isAuth,
@@ -37,7 +41,7 @@ describe('PermissionRoute', () => {
                     <Route
                         path="/protected"
                         element={
-                            <PermissionRoute permission="stores.view" redirectTo="/fallback" />
+                            <PermissionRoute permission={permission} redirectTo="/fallback" />
                         }
                     >
                         <Route index element={<div>Protected Content</div>} />
@@ -129,5 +133,16 @@ describe('PermissionRoute', () => {
         );
 
         expect(screen.getByText('Fallback')).toBeInTheDocument();
+    });
+
+    test('sales.cancel alone does not grant access to sales history', () => {
+        renderWithAuth(
+            { ...mockUser, id: 6, roles: ['STORE_ADMIN'], permissions: ['sales.cancel'] },
+            true,
+            'sales_history.view'
+        );
+
+        expect(screen.getByText('Fallback')).toBeInTheDocument();
+        expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
 });

@@ -296,6 +296,17 @@ export const buildA4Document = (receipt: ReceiptData): A4DocumentDefinition => {
                 ],
                 margin: [0, 20, 0, 17],
             },
+            ...(operation.status === 'cancelled'
+                ? [
+                      {
+                          text: 'VENTA CANCELADA',
+                          alignment: 'center',
+                          bold: true,
+                          fontSize: 12,
+                          margin: [0, 0, 0, 14],
+                      },
+                  ]
+                : []),
             ...(partyDetails.length > 0
                 ? [
                       {
