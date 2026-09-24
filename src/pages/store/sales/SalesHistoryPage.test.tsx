@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { SalesHistoryPage } from './SalesHistoryPage';
@@ -11,7 +11,12 @@ vi.mock('@/hooks/usePermissions', () => ({
     usePermissions: () => ({ can: (permission: string) => permissions.includes(permission) }),
 }));
 vi.mock('@/features/store/sales/services/sales.service', () => ({
-    SalesService: { getHistory: vi.fn(), getSaleById: vi.fn(), getSalesReceipt: vi.fn() },
+    SalesService: {
+        getHistory: vi.fn(),
+        getSaleById: vi.fn(),
+        getSalesReceipt: vi.fn(),
+        cancelSale: vi.fn(),
+    },
 }));
 vi.mock('@/features/store/sales/documents/ticket-print.service', () => ({
     printTicketReceipt: vi.fn(),
@@ -44,6 +49,7 @@ beforeEach(() => {
     permissions = ['sales_history.view', 'sales_history.print'];
     vi.mocked(SalesService.getHistory).mockResolvedValue(response);
     vi.mocked(printTicketReceipt).mockReset();
+    vi.mocked(SalesService.cancelSale).mockReset();
 });
 
 test('lists sales and exposes print actions in the overflow menu with sales_history.print', async () => {
@@ -117,6 +123,7 @@ test('uses the same 24-hour format in the sale detail drawer', async () => {
         ...response.items[0],
         items: [],
         payments: [],
+        history: [],
     });
     render(
         <MemoryRouter>
@@ -155,7 +162,7 @@ test('shows the standard drawer loader while the detail request is pending and c
     ).toBeInTheDocument();
     expect(screen.queryByText('PRODUCTOS')).not.toBeInTheDocument();
 
-    resolveDetail!({ ...response.items[0], items: [], payments: [] });
+    resolveDetail!({ ...response.items[0], items: [], payments: [], history: [] });
 
     expect(await screen.findByText('PRODUCTOS')).toBeInTheDocument();
     expect(screen.queryByTestId('sale-detail-loading')).not.toBeInTheDocument();
@@ -228,7 +235,7 @@ test('keeps consultation available and hides print actions without sales_history
     expect(screen.getByRole('button', { name: 'Ver detalle de V-000028' })).toBeInTheDocument();
 });
 
-test('sales.cancel does not enable reprint actions', async () => {
+test('sales.cancel enables only cancellation, not reprint actions', async () => {
     permissions = ['sales_history.view', 'sales.cancel'];
     render(
         <MemoryRouter>
@@ -237,7 +244,10 @@ test('sales.cancel does not enable reprint actions', async () => {
     );
 
     expect(await screen.findByText('V-000028')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Acciones de V-000028' })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Acciones de V-000028' }));
+    expect(screen.getByText('Cancelar venta')).toBeInTheDocument();
+    expect(screen.queryByText('Imprimir ticket')).not.toBeInTheDocument();
+    expect(screen.queryByText('Imprimir A4')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ver detalle de V-000028' })).toBeInTheDocument();
 });
 
@@ -268,3 +278,79 @@ test('renders cancelled sales with the Spanish status tag', async () => {
 
     expect(await screen.findByText('Cancelada')).toBeInTheDocument();
 });
+
+test('shows sale cancellation only for confirmed sales when sales.cancel is granted', async () => {
+    const user = userEvent.setup();
+    permissions = ['sales_history.view', 'sales_history.print', 'sales.cancel'];
+    render(
+        <MemoryRouter>
+            <SalesHistoryPage />
+        </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Acciones de V-000028' }));
+    expect(screen.getByText('Cancelar venta')).toBeInTheDocument();
+
+    await user.click(screen.getByText('Cancelar venta'));
+    expect(screen.getByText('Cancelar venta V-000028')).toBeInTheDocument();
+    expect(screen.getByText(/Esta acción restaurará el stock/i)).toBeInTheDocument();
+});
+
+test('hides sale cancellation without sales.cancel', async () => {
+    const user = userEvent.setup();
+    render(
+        <MemoryRouter>
+            <SalesHistoryPage />
+        </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Acciones de V-000028' }));
+    expect(screen.queryByText('Cancelar venta')).not.toBeInTheDocument();
+});
+
+test('hides sale cancellation for cancelled sales', async () => {
+    const user = userEvent.setup();
+    permissions = ['sales_history.view', 'sales_history.print', 'sales.cancel'];
+    vi.mocked(SalesService.getHistory).mockResolvedValue({
+        ...response,
+        items: [{ ...response.items[0], status: 'cancelled' }],
+    });
+    render(
+        <MemoryRouter>
+            <SalesHistoryPage />
+        </MemoryRouter>
+    );
+    await user.click(await screen.findByRole('button', { name: 'Acciones de V-000028' }));
+    expect(screen.queryByText('Cancelar venta')).not.toBeInTheDocument();
+});
+
+test('refreshes the list after the cancel modal succeeds', async () => {
+    const user = userEvent.setup();
+    permissions = ['sales_history.view', 'sales_history.print', 'sales.cancel'];
+    vi.mocked(SalesService.cancelSale).mockResolvedValue({
+        ...response.items[0],
+        status: 'cancelled',
+        items: [],
+        payments: [],
+        history: [],
+    });
+    render(
+        <MemoryRouter>
+            <SalesHistoryPage />
+        </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Acciones de V-000028' }));
+    await user.click(screen.getByText('Cancelar venta'));
+    const modal = screen.getByRole('dialog');
+    await user.click(within(modal).getByRole('combobox'));
+    await user.click(await screen.findByText('Error de precio'));
+    await user.click(screen.getByRole('button', { name: 'Cancelar venta' }));
+
+    await waitFor(() =>
+        expect(SalesService.cancelSale).toHaveBeenCalledWith('sale-1', {
+            reason_code: 'pricing_error',
+        })
+    );
+    await waitFor(() => expect(SalesService.getHistory).toHaveBeenCalledTimes(2));
+}, 15_000);

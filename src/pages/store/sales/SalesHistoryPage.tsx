@@ -23,6 +23,8 @@ import { CanDo } from '@/components/auth/CanDo';
 import Tag from '@/components/Tag/Tag';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrencyWithCents } from '@/utils/formatters';
+import { CancelSaleModal } from '@/features/store/sales/components/CancelSaleModal';
+import { SaleDetailHistory } from '@/features/store/sales/components/SaleDetailHistory';
 import { printTicketReceipt } from '@/features/store/sales/documents/ticket-print.service';
 import {
     createA4ReceiptPdf,
@@ -67,6 +69,7 @@ export const SalesHistoryPage = () => {
     const [detailLoading, setDetailLoading] = useState(false);
     const [receipt, setReceipt] = useState<ReceiptData | null>(null);
     const [printing, setPrinting] = useState(false);
+    const [saleToCancel, setSaleToCancel] = useState<SaleListItem | null>(null);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -121,6 +124,11 @@ export const SalesHistoryPage = () => {
             setDetailLoading(false);
         }
     };
+    const handleSaleCancelled = async (saleId: string) => {
+        setReceipt((current) => (current?.operation.id === saleId ? null : current));
+        await load();
+        if (detail?.id === saleId) await openDetail(saleId);
+    };
     const columns: ColumnsType<SaleListItem> = [
         {
             title: 'Venta',
@@ -170,7 +178,7 @@ export const SalesHistoryPage = () => {
             key: 'status',
             render: (v) => <Tag color={statusColor(v)}>{statusLabel(v)}</Tag>,
         },
-        ...(can('sales_history.print')
+        ...(can('sales_history.print') || can('sales.cancel')
             ? [
                   {
                       title: 'Acciones',
@@ -178,20 +186,38 @@ export const SalesHistoryPage = () => {
                       width: 72,
                       align: 'center' as const,
                       render: (_: unknown, sale: SaleListItem) => {
+                          const canPrint = can('sales_history.print');
+                          const canCancel = can('sales.cancel') && sale.status === 'confirmed';
                           const items: MenuProps['items'] = [
-                              {
-                                  key: 'ticket',
-                                  label: 'Imprimir ticket',
-                                  disabled: printing,
-                                  onClick: () => void printTicket(sale),
-                              },
-                              {
-                                  key: 'a4',
-                                  label: 'Imprimir A4',
-                                  disabled: printing,
-                                  onClick: () => void printA4(sale),
-                              },
+                              ...(canPrint
+                                  ? [
+                                        {
+                                            key: 'ticket',
+                                            label: 'Imprimir ticket',
+                                            disabled: printing,
+                                            onClick: () => void printTicket(sale),
+                                        },
+                                        {
+                                            key: 'a4',
+                                            label: 'Imprimir A4',
+                                            disabled: printing,
+                                            onClick: () => void printA4(sale),
+                                        },
+                                    ]
+                                  : []),
+                              ...(canPrint && canCancel ? [{ type: 'divider' as const }] : []),
+                              ...(canCancel
+                                  ? [
+                                        {
+                                            key: 'cancel',
+                                            label: 'Cancelar venta',
+                                            danger: true,
+                                            onClick: () => setSaleToCancel(sale),
+                                        },
+                                    ]
+                                  : []),
                           ];
+                          if (items.length === 0) return null;
                           return (
                               <Dropdown
                                   menu={{ items }}
@@ -421,10 +447,21 @@ export const SalesHistoryPage = () => {
                                     },
                                 ]}
                             />
+                            <SaleDetailHistory
+                                createdAt={detail.created_at}
+                                createdBy={detail.created_by}
+                                history={detail.history ?? []}
+                            />
                         </div>
                     )
                 )}
             </Drawer>
+            <CancelSaleModal
+                sale={saleToCancel}
+                open={!!saleToCancel}
+                onClose={() => setSaleToCancel(null)}
+                onSuccess={handleSaleCancelled}
+            />
         </>
     );
 };

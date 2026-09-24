@@ -4,7 +4,15 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
 import type { Product } from '@features/store/products/interfaces/product.interface';
-import type { CreateOperationDTO, OperationResponse, PaginatedSales, ReceiptData, SaleDetail, SalesFilters } from '../interfaces/sale.interface';
+import type {
+  CancelSaleDTO,
+  CreateOperationDTO,
+  OperationResponse,
+  PaginatedSales,
+  ReceiptData,
+  SaleDetail,
+  SalesFilters,
+} from '../interfaces/sale.interface';
 
 interface PaymentMethodsListData {
   items: StorePaymentMethod[];
@@ -36,6 +44,17 @@ export const SalesService = {
   getSalesReceipt: async (id: string): Promise<ReceiptData> => {
     const { data } = await api.get<ApiListResponse<ReceiptData>>(API_ENDPOINTS.STORE.SALES.RECEIPT(id));
     if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+    return data.data;
+  },
+
+  cancelSale: async (id: string, payload: CancelSaleDTO): Promise<SaleDetail> => {
+    const { data } = await api.put<ApiListResponse<SaleDetail>>(
+      API_ENDPOINTS.STORE.SALES.CANCEL(id),
+      payload
+    );
+    if (data.status === 'error') {
+      throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+    }
     return data.data;
   },
   getPaymentMethods: async (): Promise<StorePaymentMethod[]> => {

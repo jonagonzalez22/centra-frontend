@@ -60,6 +60,18 @@ export interface SaleListItem extends OperationResponse {
 export interface SaleDetail extends SaleListItem {
   items: Array<{ id: string; product_name: string; quantity: number; price: number; subtotal: number; tax_amount: number; discount_amount: number }>;
   payments: Array<{ id: string; amount: number; store_payment_method?: { name: string | null } | null }>;
+  history: SaleHistoryEvent[];
+}
+
+export interface SaleHistoryEvent {
+  id: string;
+  event_type: string;
+  previous_status: string | null;
+  new_status: string | null;
+  reason_code: string | null;
+  reason_note: string | null;
+  user?: { id: string; name: string | null } | null;
+  created_at: string;
 }
 
 export interface SalesFilters {
@@ -71,6 +83,11 @@ export interface SalesFilters {
   sort_direction?: 'asc' | 'desc';
   page?: number;
   per_page?: number;
+}
+
+export interface CancelSaleDTO {
+  reason_code: 'payment_failed' | 'pricing_error' | 'duplicate_order' | 'customer_cancelled' | 'other';
+  reason_note?: string;
 }
 
 export interface PaginatedSales {
