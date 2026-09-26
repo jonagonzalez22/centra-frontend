@@ -12,6 +12,8 @@ import type {
     RouteReconciliationDetailItem,
     RouteReconciliationProductGroup,
 } from '../../interfaces/reconciliation.interface';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 const statusConfig = {
     pending: { label: 'Pendiente', color: 'warning' },
@@ -35,7 +37,7 @@ interface Props {
     onResolve: (
         discrepancyId: string,
         resolutionType: DiscrepancyResolutionType,
-        quantityToResolve: number,
+        quantityToResolve: DecimalString,
         notes?: string
     ) => Promise<void>;
     onResolveBatch: (payload: ResolveDiscrepanciesBatchPayload) => Promise<void>;
@@ -73,7 +75,7 @@ export const DiscrepancyGroupsTable = ({
 
         await onResolveBatch({
             items: batchGroup.items
-                .filter((item) => item.difference > 0 && !item.discrepancy?.resolution_type)
+                .filter((item) => compareDecimalStrings(item.difference, '0.0000') > 0 && !item.discrepancy?.resolution_type)
                 .map((item) => ({
                     route_stop_item_id: item.route_stop_item_id,
                     resolution_type: values.resolution_type,
@@ -92,6 +94,7 @@ export const DiscrepancyGroupsTable = ({
             key: 'total_difference',
             align: 'center' as const,
             width: 110,
+            render: (value: unknown) => formatQuantityForDisplay(String(value)),
         },
         {
             title: 'Pedidos',

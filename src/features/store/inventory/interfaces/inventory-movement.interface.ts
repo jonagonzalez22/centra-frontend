@@ -1,4 +1,5 @@
 export type MovementType = 'input' | 'output' | 'adjustment';
+import type { DecimalString } from '@/types/decimal';
 
 export interface InventoryMovementProduct {
     id: string;
@@ -15,9 +16,9 @@ export interface InventoryMovement {
     id: string;
     product_id: string;
     type: MovementType;
-    quantity: number;
-    previous_stock: number;
-    current_stock: number;
+    quantity: DecimalString;
+    previous_stock: DecimalString;
+    current_stock: DecimalString;
     concept: string;
     user_id: string;
     created_at: string;
@@ -28,7 +29,7 @@ export interface InventoryMovement {
 export interface CreateStockMovementDto {
     product_id: string;
     type: MovementType;
-    quantity: number;
+    quantity: DecimalString;
     concept: string;
 }
 

@@ -22,7 +22,7 @@ test('debounces preview requests and requests backend values for delivered quant
     const { result } = renderHook(() =>
         useCollectionPreview({
             stopId: 'stop-1',
-            items: [{ route_stop_item_id: 'item-1', quantity_delivered: 3 }],
+            items: [{ route_stop_item_id: 'item-1', quantity_delivered: '3.0000' }],
             enabled: true,
         })
     );
@@ -35,7 +35,7 @@ test('debounces preview requests and requests backend values for delivered quant
     expect(result.current.preview).toEqual(firstPreview);
     expect(DriverService.previewCollection).toHaveBeenCalledWith(
         'stop-1',
-        [{ route_stop_item_id: 'item-1', quantity_delivered: 3 }],
+        [{ route_stop_item_id: 'item-1', quantity_delivered: '3.0000' }],
         expect.any(AbortSignal)
     );
     vi.useRealTimers();
@@ -60,11 +60,11 @@ test('aborts obsolete requests and only exposes the newest preview', async () =>
                 items: [{ route_stop_item_id: 'item-1', quantity_delivered: quantity }],
                 enabled: true,
             }),
-        { initialProps: { quantity: 5 } }
+        { initialProps: { quantity: '5.0000' } }
     );
 
     await act(async () => vi.advanceTimersByTimeAsync(300));
-    rerender({ quantity: 3 });
+    rerender({ quantity: '3.0000' });
     expect(result.current.preview).toBeNull();
     await act(async () => vi.advanceTimersByTimeAsync(300));
     expect(result.current.preview?.amount_to_collect_now).toBe(3000);

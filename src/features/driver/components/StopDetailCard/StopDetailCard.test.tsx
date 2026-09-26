@@ -9,20 +9,14 @@ const baseProps: StopDetailCardProps = {
         product_id: 'product-1',
         product_name: 'Pintura Látex',
         sku: 'P-1',
-        quantity_planned: 5,
-        quantity_loaded: 5,
-        quantity_delivered: 0,
-        quantity_released_for_extra_sale: 0,
+        quantity_planned: '5.0000', quantity_loaded: '5.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
         unit_price: 100,
         is_extra: false,
         notes: null,
     },
     data: {
         item: {} as never,
-        originalQty: 5,
-        deliveredQty: 5,
-        remainingQty: 0,
-        releasedQty: 0,
+        originalQty: '5.0000', deliveredQty: '5.0000', remainingQty: '0.0000', releasedQty: '0.0000',
         isComplete: true,
         isReduced: false,
         isNotLoaded: false,
@@ -59,8 +53,7 @@ test('shows the reason for a reduction but hides availability until a reason is 
             {...baseProps}
             data={{
                 ...baseProps.data,
-                deliveredQty: 3,
-                remainingQty: 2,
+                deliveredQty: '3.0000', remainingQty: '2.0000',
                 isComplete: false,
                 isReduced: true,
                 cardState: 'reduced',
@@ -80,9 +73,7 @@ test('shows the inline availability stepper after selecting a reason', () => {
             rejectionReasonId="safe"
             data={{
                 ...baseProps.data,
-                deliveredQty: 3,
-                remainingQty: 2,
-                releasedQty: 1,
+                deliveredQty: '3.0000', remainingQty: '2.0000', releasedQty: '1.0000',
                 isComplete: false,
                 isReduced: true,
                 cardState: 'reduced',

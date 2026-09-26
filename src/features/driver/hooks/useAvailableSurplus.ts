@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { SurplusProduct } from '../interfaces/driver.interface';
 import { DriverService } from '../services/driver.service';
+import { isPositiveDecimal } from '@/utils/quantity';
 
 interface UseAvailableSurplusOptions {
     routeId: string;
@@ -51,7 +52,7 @@ export const useAvailableSurplus = ({
     const loading = enabled && !!routeId && !!stopId && !hasCurrentResult;
 
     const hasAvailableSurplus =
-        !loading && !error && surplus.some((product) => product.available_quantity > 0);
+        !loading && !error && surplus.some((product) => isPositiveDecimal(product.available_quantity));
 
     return { surplus, loading, error, hasAvailableSurplus, refresh };
 };

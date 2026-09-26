@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CommercialProductDetail } from '../interfaces/commercial-product.interface';
 import type { OrderEditability } from '../interfaces/order.interface';
+import type { DecimalString } from '@/types/decimal';
+import { addDecimalStrings, compareDecimalStrings, minDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
 
 export interface OrderProductDraftItem {
     product_id: string;
     name: string;
     sku: string | null;
     barcode: string | null;
-    original_quantity: number;
-    quantity: number;
-    minimum_quantity: number;
-    delivered_quantity: number;
-    active_committed_quantity: number;
+    original_quantity: DecimalString;
+    quantity: DecimalString;
+    minimum_quantity: DecimalString;
+    delivered_quantity: DecimalString;
+    active_committed_quantity: DecimalString;
     price?: number;
-    available_stock?: number;
+    available_stock?: DecimalString;
     is_new: boolean;
 }
 
@@ -38,31 +40,33 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
         setDraft(initialDraft(editability));
     }, [editability]);
 
-    const updateQuantity = useCallback((productId: string, value: number | null) => {
+    const updateQuantity = useCallback((productId: string, value: DecimalString | null) => {
         // Ant Design emits null while the user temporarily clears the field.
         // That is an editing state, not an instruction to remove the product.
-        if (value === null || !Number.isFinite(value)) return;
+        if (value === null) return;
 
         setDraft((current) =>
             current.map((item) => {
                 if (item.product_id !== productId) return item;
 
-                const requestedQuantity = Math.floor(value);
+                const requestedQuantity = normalizeDecimalString(value);
                 // Reaching zero is intentionally reserved for the explicit
                 // remove action and its confirmation flow.
-                const minimum = Math.max(item.minimum_quantity, 1);
-                const stockMaximum = item.is_new ? (item.available_stock ?? 0) : Number.MAX_SAFE_INTEGER;
+                const minimum = compareDecimalStrings(item.minimum_quantity, '1.0000') > 0 ? item.minimum_quantity : '1.0000';
+                const stockMaximum = item.is_new ? (item.available_stock ?? requestedQuantity) : requestedQuantity;
 
                 return {
                     ...item,
-                    quantity: Math.max(minimum, Math.min(stockMaximum, requestedQuantity)),
+                    quantity: item.is_new
+                        ? (compareDecimalStrings(minDecimalStrings(stockMaximum, requestedQuantity), minimum) < 0 ? minimum : minDecimalStrings(stockMaximum, requestedQuantity))
+                        : (compareDecimalStrings(requestedQuantity, minimum) < 0 ? minimum : requestedQuantity),
                 };
             })
         );
     }, []);
 
     const addProduct = useCallback((product: CommercialProductDetail) => {
-        if (product.available_stock < 1) return false;
+        if (compareDecimalStrings(product.available_stock, '1.0000') < 0) return false;
 
         setDraft((current) => {
             const existing = current.find((item) => item.product_id === product.id);
@@ -73,8 +77,8 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                         ? {
                               ...item,
                               quantity: item.is_new
-                                  ? Math.min(item.quantity + 1, item.available_stock ?? item.quantity)
-                                  : item.quantity + 1,
+                                  ? minDecimalStrings(addDecimalStrings(item.quantity, '1'), item.available_stock ?? item.quantity)
+                                  : addDecimalStrings(item.quantity, '1'),
                           }
                         : item
                 );
@@ -87,11 +91,11 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                     name: product.name,
                     sku: product.sku,
                     barcode: product.barcode,
-                    original_quantity: 0,
-                    quantity: 1,
-                    minimum_quantity: 0,
-                    delivered_quantity: 0,
-                    active_committed_quantity: 0,
+                    original_quantity: '0.0000',
+                    quantity: '1.0000',
+                    minimum_quantity: '0.0000',
+                    delivered_quantity: '0.0000',
+                    active_committed_quantity: '0.0000',
                     price: product.price,
                     available_stock: product.available_stock,
                     is_new: true,
@@ -108,7 +112,7 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                 item.product_id === productId
                     ? {
                           ...item,
-                          quantity: 0,
+                          quantity: '0.0000',
                       }
                     : item
             )
@@ -118,7 +122,7 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
     const finalItems = useMemo(
         () =>
             draft
-                .filter((item) => item.quantity > 0)
+                .filter((item) => compareDecimalStrings(item.quantity, '0.0000') > 0)
                 .map((item) => ({ product_id: item.product_id, quantity: item.quantity })),
         [draft]
     );
@@ -126,7 +130,7 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
     const isDirty = useMemo(
         () =>
             draft.length !== (editability?.items.length ?? 0) ||
-            draft.some((item) => item.quantity !== item.original_quantity),
+            draft.some((item) => compareDecimalStrings(item.quantity, item.original_quantity) !== 0),
         [draft, editability?.items.length]
     );
 

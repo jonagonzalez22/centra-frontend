@@ -11,10 +11,10 @@ export interface Product {
     description: string | null;
     price: string | number;
     cost: string | number | null;
-    stock: number;
-    stock_reserved: number;
-    available_stock: number;
-    stock_min: number;
+    stock: DecimalString;
+    stock_reserved: DecimalString;
+    available_stock: DecimalString;
+    stock_min: DecimalString;
     is_active: boolean;
     category: ProductCategory;
     parent_product_id: string | null;
@@ -29,8 +29,8 @@ export interface CreateProductDto {
     description?: string;
     price: string | number;
     cost?: string | number | null;
-    stock?: number;
-    stock_min: number;
+    stock?: DecimalString;
+    stock_min: DecimalString;
     is_active?: boolean;
     category_id: string;
 }
@@ -62,3 +62,4 @@ export interface ProductsSearchValues {
     category_id?: string;
     is_active?: boolean;
 }
+import type { DecimalString } from '@/types/decimal';

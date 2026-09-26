@@ -48,7 +48,7 @@ const order = {
     events: [],
     history: [],
     route_ids: [],
-    delivery_summary: { has_pending_delivery: false, pending_delivery_quantity: 0, items: [] },
+    delivery_summary: { has_pending_delivery: false, pending_delivery_quantity: "0.0000", items: [] },
 } satisfies OrderDetail;
 
 beforeEach(() => {
@@ -65,6 +65,41 @@ test('shows collect action in payments tab, not in the general footer', async ()
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeInTheDocument();
     expect(screen.getByText('Total pagado')).toBeInTheDocument();
     expect(screen.getByText('Saldo pendiente')).toBeInTheDocument();
+});
+
+test.each([
+    ['3.0000', '3'],
+    ['3.5000', '3,5'],
+])('formats item quantity %s as %s in the items and payments tab', async (quantity, displayedQuantity) => {
+    const user = userEvent.setup();
+    render(
+        <OrderDrawer
+            open
+            order={{
+                ...order,
+                items: [
+                    {
+                        id: 'item-1',
+                        product_id: 'product-1',
+                        product_name: 'Silicona Transparente 280ml',
+                        quantity,
+                        price: 7930,
+                        subtotal: 23790,
+                        tax_amount: 0,
+                        discount_amount: 0,
+                    },
+                ],
+            }}
+            loading={false}
+            onClose={vi.fn()}
+        />
+    );
+
+    await user.click(screen.getByRole('tab', { name: 'Ítems y pagos' }));
+
+    const productRow = screen.getByText('Silicona Transparente 280ml').closest('tr');
+    expect(productRow).toHaveTextContent(displayedQuantity);
+    expect(productRow).not.toHaveTextContent(quantity);
 });
 
 test('keeps the requested delivery date but does not show a delivery time slot', () => {

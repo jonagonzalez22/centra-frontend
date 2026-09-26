@@ -2,6 +2,7 @@ import { Form, Input } from 'antd';
 import Modal from '@/components/Modal/Modal';
 import { Button } from '@/components/Button';
 import type { DeliverySummaryItem } from '../../interfaces/order.interface';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 interface Props {
     open: boolean;
@@ -26,11 +27,11 @@ const CancelPendingDeliveryModal: React.FC<Props> = ({ open, items, loading, onC
                     Se cancelará toda la mercadería que todavía falta entregar. Lo ya entregado se mantendrá intacto y el total del pedido será recalculado.
                 </p>
                 <div className="border border-gray-200 rounded-md divide-y divide-gray-100">
-                    {items.filter((item) => item.pending_quantity > 0).map((item) => (
+                    {items.filter((item) => compareDecimalStrings(item.pending_quantity, '0.0000') > 0).map((item) => (
                         <div key={item.product_id} className="flex justify-between gap-3 p-2 text-sm">
                             <span>{item.product_name || 'Producto'}</span>
                             <span className="font-medium whitespace-nowrap">
-                                {item.pending_quantity} {item.pending_quantity === 1 ? 'unidad' : 'unidades'}
+                                {formatQuantityForDisplay(item.pending_quantity)} {compareDecimalStrings(item.pending_quantity, '1.0000') === 0 ? 'unidad' : 'unidades'}
                             </span>
                         </div>
                     ))}

@@ -10,6 +10,7 @@ import { OrderCancellationModal } from '../OrderCancellationModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import type { OrderListItem } from '../../interfaces/order.interface';
 import { formatCurrency, formatDateShort } from '@/utils/formatters';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 interface OrderCardProps {
     order: OrderListItem;
@@ -190,8 +191,8 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                     </span>
                     {order.has_pending_delivery && (
                         <span className="text-sm font-semibold text-blue-600">
-                            Entrega pendiente: {order.pending_delivery_quantity}{' '}
-                            {order.pending_delivery_quantity === 1 ? 'unidad' : 'unidades'}
+                            Entrega pendiente: {formatQuantityForDisplay(order.pending_delivery_quantity)}{' '}
+                            {compareDecimalStrings(order.pending_delivery_quantity, '1.0000') === 0 ? 'unidad' : 'unidades'}
                         </span>
                     )}
                 </div>

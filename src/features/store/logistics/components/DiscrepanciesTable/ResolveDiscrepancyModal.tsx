@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal, Form, Select, Input, Tag, Divider } from 'antd';
 import type { DiscrepancyResolutionType, RouteReconciliationStopItem } from '../../interfaces/reconciliation.interface';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 const resolutionOptions: { value: DiscrepancyResolutionType; label: string }[] = [
     { value: 'returned', label: 'Devuelto a depósito' },
@@ -11,11 +13,11 @@ const resolutionOptions: { value: DiscrepancyResolutionType; label: string }[] =
     { value: 'other', label: 'Otro' },
 ];
 
-const getDifferenceTag = (difference: number) => {
-    if (difference > 0) {
-        return <Tag color="error" className="text-sm font-semibold">+{difference}</Tag>;
-    } else if (difference < 0) {
-        return <Tag color="warning" className="text-sm font-semibold">{difference}</Tag>;
+const getDifferenceTag = (difference: DecimalString) => {
+    if (compareDecimalStrings(difference, '0.0000') > 0) {
+        return <Tag color="error" className="text-sm font-semibold">+{formatQuantityForDisplay(difference)}</Tag>;
+    } else if (compareDecimalStrings(difference, '0.0000') < 0) {
+        return <Tag color="warning" className="text-sm font-semibold">{formatQuantityForDisplay(difference)}</Tag>;
     }
     return <Tag color="default" className="text-sm font-semibold">0</Tag>;
 };
@@ -25,7 +27,7 @@ interface ResolveDiscrepancyModalProps {
     item: RouteReconciliationStopItem;
     loading: boolean;
     onClose: () => void;
-    onConfirm: (resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    onConfirm: (resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => Promise<void>;
 }
 
 export const ResolveDiscrepancyModal = ({
@@ -54,7 +56,7 @@ export const ResolveDiscrepancyModal = ({
         try {
             const values = await form.validateFields();
             setSubmitting(true);
-            await onConfirm(values.resolution_type, Math.abs(item.difference), values.notes);
+            await onConfirm(values.resolution_type, item.difference.startsWith('-') ? item.difference.slice(1) : item.difference, values.notes);
         } catch {
             // Validation failed
         } finally {
@@ -81,11 +83,11 @@ export const ResolveDiscrepancyModal = ({
                     <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
                             <div className="text-xs text-gray-500">Cargado</div>
-                            <div className="font-semibold">{item.quantity_loaded}</div>
+                            <div className="font-semibold">{formatQuantityForDisplay(item.quantity_loaded)}</div>
                         </div>
                         <div>
                             <div className="text-xs text-gray-500">Entregado</div>
-                            <div className="font-semibold">{item.quantity_delivered}</div>
+                            <div className="font-semibold">{formatQuantityForDisplay(item.quantity_delivered)}</div>
                         </div>
                         <div>
                             <div className="text-xs text-gray-500">Diferencia</div>

@@ -11,6 +11,8 @@ import type { Product } from '@/features/store/products/interfaces/product.inter
 import type { CreateStockMovementDto } from '../../interfaces/inventory-movement.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import './StockAdjustmentModal.css';
+import type { DecimalString } from '@/types/decimal';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, isZeroDecimal, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
 
 interface StockAdjustmentModalProps {
     open: boolean;
@@ -21,7 +23,7 @@ interface StockAdjustmentModalProps {
 
 interface AdjustmentFormValues {
     type: 'input' | 'output' | 'adjustment';
-    quantity: number;
+    quantity: DecimalString;
     concept: string;
 }
 
@@ -45,29 +47,29 @@ export const StockAdjustmentModal = ({
     const quantityValue = Form.useWatch('quantity', form);
 
     const stockResultante = useMemo(() => {
-        if (!typeValue || !quantityValue || quantityValue === 0) {
+        if (!typeValue || !quantityValue || isZeroDecimal(quantityValue)) {
             return product.available_stock;
         }
 
         if (typeValue === 'input') {
-            return product.available_stock + quantityValue;
+            return addDecimalStrings(product.available_stock, quantityValue);
         }
         if (typeValue === 'output') {
-            return product.available_stock - quantityValue;
+            return subtractDecimalStrings(product.available_stock, quantityValue);
         }
         if (typeValue === 'adjustment') {
-            return product.available_stock + quantityValue;
+            return addDecimalStrings(product.available_stock, quantityValue);
         }
         return product.available_stock;
     }, [typeValue, quantityValue, product.available_stock]);
 
-    const isStockResultanteValid = stockResultante >= 0;
-    const stockIncreased = stockResultante > product.available_stock;
-    const stockDecreased = stockResultante < product.available_stock;
+    const isStockResultanteValid = compareDecimalStrings(stockResultante, '0.0000') >= 0;
+    const stockIncreased = compareDecimalStrings(stockResultante, product.available_stock) > 0;
+    const stockDecreased = compareDecimalStrings(stockResultante, product.available_stock) < 0;
 
-    const isSaveDisabled = loading || !isStockResultanteValid || !quantityValue || quantityValue === 0;
+    const isSaveDisabled = loading || !isStockResultanteValid || !quantityValue || isZeroDecimal(quantityValue);
 
-    const quantityMin = typeValue === 'adjustment' ? undefined : 1;
+    const quantityMin = typeValue === 'adjustment' ? undefined : '1';
     const quantityMax = undefined;
 
     useEffect(() => {
@@ -82,7 +84,7 @@ export const StockAdjustmentModal = ({
             const dto: CreateStockMovementDto = {
                 product_id: product.id,
                 type: values.type,
-                quantity: values.quantity,
+                quantity: normalizeDecimalString(values.quantity),
                 concept: values.concept,
             };
             const response = await InventoryMovementsService.create(dto);
@@ -149,7 +151,7 @@ export const StockAdjustmentModal = ({
                 <div className="stockAdjustmentCardRow">
                     <div className="stockAdjustmentCardItem">
                         <span className="stockAdjustmentCardLabel">Stock Actual</span>
-                        <span className="stockAdjustmentCardValue">{product.available_stock}</span>
+                        <span className="stockAdjustmentCardValue">{formatQuantityForDisplay(product.available_stock)}</span>
                     </div>
                     <span className="stockAdjustmentCardArrow">→</span>
                     <div className="stockAdjustmentCardItem">
@@ -163,7 +165,7 @@ export const StockAdjustmentModal = ({
                                       : ''
                             }`}
                         >
-                            {stockResultante}
+                            {formatQuantityForDisplay(stockResultante)}
                         </span>
                     </div>
                 </div>
@@ -194,12 +196,14 @@ export const StockAdjustmentModal = ({
                     label="Cantidad"
                     rules={[{ required: true, message: 'La cantidad es obligatoria.' }]}
                 >
-                    <InputNumber
+                    <InputNumber<string>
+                        stringMode
                         placeholder="0"
                         style={{ width: '100%' }}
                         min={quantityMin}
                         max={quantityMax}
-                        precision={0}
+                        precision={4}
+                        step="1"
                     />
                 </Form.Item>
 

@@ -7,11 +7,11 @@ const items = [{
     product_id: 'product-1',
     product_name: 'Cinta Métrica',
     sku: 'C-1',
-    ordered_quantity: 2,
-    delivered_quantity: 1,
-    pending_quantity: 1,
-    planned_active_quantity: 0,
-    unassigned_pending_quantity: 1,
+    ordered_quantity: "2.0000",
+    delivered_quantity: "1.0000",
+    pending_quantity: "1.0000",
+    planned_active_quantity: "0.0000",
+    unassigned_pending_quantity: "1.0000",
 }];
 
 test('lists the complete remainder and requires a reason before confirming once', async () => {

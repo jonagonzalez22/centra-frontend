@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import { usePOSStore } from '../../stores/usePOSStore';
 import type { POSItem } from '../../interfaces/sale.interface';
+import { formatQuantityForDisplay } from '@/utils/quantity';
 
 export const POSCart: React.FC = () => {
   const items = usePOSStore((s) => s.items);
@@ -35,13 +36,17 @@ export const POSCart: React.FC = () => {
       key: 'quantity',
       width: 100,
       render: (_, record) => (
-        <InputNumber
-          min={1}
-          max={9999}
+        <InputNumber<string>
+          stringMode
+          precision={4}
+          step="1"
+          min="1"
+          max="9999"
           value={record.quantity}
-          onChange={(val) => updateQuantity(record.product_id, val ?? 1)}
+          onChange={(val) => updateQuantity(record.product_id, val ?? '1.0000')}
           size="small"
           className="w-16"
+          formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
         />
       ),
     },

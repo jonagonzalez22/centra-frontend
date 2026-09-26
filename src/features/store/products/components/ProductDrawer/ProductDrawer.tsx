@@ -6,6 +6,7 @@ import Tabs from '@/components/Tabs/Tabs';
 import { Button } from '@/components/Button';
 import { ProductsService } from '../../services/products.service';
 import { formatDate, formatCurrency } from '@/utils/formatters';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 import type { Product } from '../../interfaces/product.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import { StockHistoryTab } from '@/features/store/inventory/components/StockHistoryTab';
@@ -98,7 +99,7 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
         onAdjustSuccess?.();
     };
 
-    const isLowStock = product ? product.available_stock <= product.stock_min : false;
+    const isLowStock = product ? compareDecimalStrings(product.available_stock, product.stock_min) <= 0 : false;
 
     return (
         <>
@@ -166,15 +167,15 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                             title="Stock"
                                             variant={isLowStock ? 'danger' : 'default'}
                                         >
-                                            <Field label="Stock Físico" value={product.stock} />
-                                            <Field label="Stock Reservado" value={product.stock_reserved} />
+                                            <Field label="Stock Físico" value={formatQuantityForDisplay(product.stock)} />
+                                            <Field label="Stock Reservado" value={formatQuantityForDisplay(product.stock_reserved)} />
                                             <div className="productDrawerStockAvailable">
                                                 <span className="productDrawerFieldLabel">Stock Disponible</span>
                                                 <span className={`productDrawerStockTag ${isLowStock ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {product.available_stock}
+                                                    {formatQuantityForDisplay(product.available_stock)}
                                                 </span>
                                             </div>
-                                            <Field label="Stock Mínimo" value={product.stock_min} />
+                                            <Field label="Stock Mínimo" value={formatQuantityForDisplay(product.stock_min)} />
                                             {isLowStock && (
                                                 <span className="text-red-600 text-sm font-medium">Stock bajo</span>
                                             )}

@@ -22,7 +22,7 @@ const receipt: ReceiptData = {
     items: [
         {
             product_name: 'Tomacorriente Doble 220V con un nombre particularmente largo',
-            quantity: 2,
+            quantity: "2.0000",
             unit_price: 4500,
             subtotal: 9000,
             discount_amount: 0,
@@ -107,4 +107,24 @@ test('uses compact vertical padding for product and payment tables only', () => 
     expect(productTable.layout.paddingBottom()).toBe(3);
     expect(paymentTable.layout.paddingTop()).toBe(3);
     expect(paymentTable.layout.paddingBottom()).toBe(3);
+});
+
+test.each([
+    ['3.0000', '3'],
+    ['3.5000', '3,5'],
+])('formats A4 quantity %s as %s', (quantity, displayedQuantity) => {
+    const document = buildA4Document({
+        ...receipt,
+        items: [
+            {
+                ...receipt.items[0],
+                quantity,
+            },
+        ],
+    });
+    const productTable = document.content[3] as {
+        table: { body: Array<Array<{ text: string }>> };
+    };
+
+    expect(productTable.table.body[1][1].text).toBe(displayedQuantity);
 });

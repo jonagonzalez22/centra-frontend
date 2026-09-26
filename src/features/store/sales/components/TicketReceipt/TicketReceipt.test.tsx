@@ -23,7 +23,7 @@ const receipt: ReceiptData = {
     items: [
         {
             product_name: 'Tomacorriente Doble 220V con un nombre particularmente largo',
-            quantity: 2,
+            quantity: "2.0000",
             unit_price: 4500,
             subtotal: 9000,
             discount_amount: 0,
@@ -31,7 +31,7 @@ const receipt: ReceiptData = {
         },
         {
             product_name: 'Cable taller',
-            quantity: 1,
+            quantity: "1.0000",
             unit_price: 1000,
             subtotal: 1000,
             discount_amount: 500,
@@ -106,7 +106,7 @@ test('keeps long product and payment labels separate from large monetary amounts
                 items: [
                     {
                         product_name: longProduct,
-                        quantity: 12,
+                        quantity: "12.0000",
                         unit_price: 128500,
                         subtotal: 1250000,
                         discount_amount: 0,
@@ -131,4 +131,26 @@ test('keeps long product and payment labels separate from large monetary amounts
     expect(screen.getAllByText(/1\.250\.000,00/).length).toBeGreaterThan(0);
     expect(screen.getByText(longPaymentMethod)).toHaveClass('ticket-receipt__payment-method');
     expect(screen.getByText('Gracias por su compra')).toBeInTheDocument();
+});
+
+test.each([
+    ['3.0000', '3'],
+    ['3.5000', '3,5'],
+])('formats receipt quantity %s as %s', (quantity, displayedQuantity) => {
+    render(
+        <TicketReceipt
+            receipt={{
+                ...receipt,
+                items: [
+                    {
+                        ...receipt.items[0],
+                        quantity,
+                    },
+                ],
+            }}
+        />
+    );
+
+    expect(screen.getByText(new RegExp(`^${displayedQuantity} x`))).toBeInTheDocument();
+    expect(screen.queryByText(new RegExp(`${quantity} x`))).not.toBeInTheDocument();
 });

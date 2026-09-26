@@ -4,6 +4,7 @@ import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import { useInventoryMovementsContext } from '../../context/InventoryMovementsContext';
 import { formatDate } from '@/utils/formatters';
+import { formatQuantityForDisplay, isNegativeDecimal } from '@/utils/quantity';
 import type {
     InventoryMovement,
     MovementType,
@@ -39,14 +40,6 @@ export const MovementsTable = () => {
         [pagination.pageSize, setPage, setPerPage]
     );
 
-    const formatQuantity = (quantity: number, type: MovementType) => {
-        if (type === 'adjustment') {
-            return `${quantity >= 0 ? '+' : ''}${quantity}`;
-        }
-        const prefix = type === 'output' ? '-' : '+';
-        return `${prefix}${Math.abs(quantity)}`;
-    };
-
     const columns = [
         {
             title: 'Fecha',
@@ -77,10 +70,10 @@ export const MovementsTable = () => {
             key: 'quantity',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const movement = record as unknown as InventoryMovement;
-                const isNegative = movement.type === 'output' || (movement.type === 'adjustment' && movement.quantity < 0);
+                const isNegative = movement.type === 'output' || (movement.type === 'adjustment' && isNegativeDecimal(movement.quantity));
                 return (
                     <span className={isNegative ? 'text-red-600' : 'text-green-600'}>
-                        {formatQuantity(movement.quantity, movement.type)}
+                        {formatQuantityForDisplay(movement.quantity)}
                     </span>
                 );
             },

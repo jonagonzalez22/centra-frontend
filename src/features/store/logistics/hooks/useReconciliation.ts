@@ -15,6 +15,8 @@ import type {
     DiscrepancyResolutionType,
 } from '../interfaces/reconciliation.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import type { DecimalString } from '@/types/decimal';
+import { addDecimalStrings, compareDecimalStrings, isPositiveDecimal, maxDecimalStrings } from '@/utils/quantity';
 
 export interface UseReconciliationReturn {
     summary: RouteReconciliationSummary | null;
@@ -34,7 +36,7 @@ export interface UseReconciliationReturn {
     verifyCollectionGroup: (paymentMethodId: string) => Promise<void>;
     rejectCollection: (collectionId: string, reason: string) => Promise<void>;
     resolveDiscrepancies: (payload: ResolveDiscrepancyPayload) => Promise<void>;
-    resolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    resolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => Promise<void>;
     resolveDiscrepanciesBatch: (payload: ResolveDiscrepanciesBatchPayload) => Promise<void>;
     finalize: () => Promise<void>;
 }
@@ -61,7 +63,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         return summary.stops.flatMap((stop: RouteReconciliationStop) =>
             (stop.items || []).filter(
                 (item: RouteReconciliationStopItem) =>
-                    item.difference !== 0 ||
+                    compareDecimalStrings(item.difference, '0.0000') !== 0 ||
                     (item.discrepancy !== null && item.discrepancy.resolution_type !== 'extra_sale')
             )
         );
@@ -74,7 +76,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
             (stop.items || [])
                 .filter(
                     (item: RouteReconciliationStopItem) =>
-                        item.difference !== 0 ||
+                        compareDecimalStrings(item.difference, '0.0000') !== 0 ||
                         (item.discrepancy !== null && item.discrepancy.resolution_type !== 'extra_sale')
                 )
                 .map((item: RouteReconciliationStopItem): RouteReconciliationDetailItem => ({
@@ -95,20 +97,20 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
         )
             .map((items): RouteReconciliationProductGroup => {
                 const pendingItems = items.filter(
-                    (item) => item.difference > 0 && !item.discrepancy?.resolution_type
+                    (item) => isPositiveDecimal(item.difference) && !item.discrepancy?.resolution_type
                 );
                 const resolvedItems = items.filter(
-                    (item) => item.difference > 0 && Boolean(item.discrepancy?.resolution_type)
+                    (item) => isPositiveDecimal(item.difference) && Boolean(item.discrepancy?.resolution_type)
                 );
                 const resolutionTypes = new Set(
                     resolvedItems.map((item) => item.discrepancy?.resolution_type).filter(Boolean)
                 );
                 const containsExtraSale = items.some(
                     (item) =>
-                        item.extra_sale_allocated > 0 ||
+                        isPositiveDecimal(item.extra_sale_allocated) ||
                         item.discrepancy?.resolution_type === 'extra_sale'
                 );
-                const hasUnsupportedDifference = items.some((item) => item.difference <= 0);
+                const hasUnsupportedDifference = items.some((item) => !isPositiveDecimal(item.difference));
                 const status =
                     resolutionTypes.size > 1
                         ? 'mixed'
@@ -121,7 +123,10 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
                 return {
                     product_id: items[0].product_id,
                     product_name: items[0].product_name,
-                    total_difference: items.reduce((total, item) => total + Math.max(0, item.difference), 0),
+                    total_difference: items.reduce(
+                        (total, item) => addDecimalStrings(total, maxDecimalStrings('0.0000', item.difference)),
+                        '0.0000'
+                    ),
                     affected_orders_count: new Set(items.map((item) => item.order_id).filter(Boolean)).size,
                     affected_stops_count: new Set(items.map((item) => item.stop_id)).size,
                     status,
@@ -232,7 +237,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
     );
 
     const resolveDiscrepancy = useCallback(
-        async (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => {
+        async (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => {
             try {
                 setActionLoading(discrepancyId);
                 const payload: ResolveDiscrepancyPayload = {

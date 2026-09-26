@@ -5,6 +5,7 @@ import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import ActionButton from '@/components/ActionButton/ActionButton';
 import { formatCurrency } from '@/utils/formatters';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 import { useProductsContext } from '../../context/ProductsContext';
 import type { Product } from '../../interfaces/product.interface';
 import './ProductsTable.css';
@@ -29,7 +30,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
     }, [pagination.pageSize, setPage, setPerPage]);
 
     const isLowStock = (product: Product) => {
-        return product.available_stock <= product.stock_min;
+        return compareDecimalStrings(product.available_stock, product.stock_min) <= 0;
     };
 
     const columns = [
@@ -78,16 +79,17 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 const product = record as unknown as Product;
                 return (
                     <Tag color={isLowStock(product) ? 'red' : 'green'}>
-                        {product.available_stock}
+                        {formatQuantityForDisplay(product.available_stock)}
                     </Tag>
                 );
             },
         },
         {
             title: 'Stock Res.',
-            dataIndex: 'stock_reserved',
             key: 'stock_reserved',
             responsive: ['lg'] as ResponsiveList,
+            render: (_: unknown, record?: Record<string, unknown>) =>
+                formatQuantityForDisplay((record as unknown as Product).stock_reserved),
         },
         {
             title: 'Stock Mín.',
@@ -99,7 +101,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 if (isLowStock(product)) {
                     return <Tag color="red">Stock bajo</Tag>;
                 }
-                return product.stock_min;
+                return formatQuantityForDisplay(product.stock_min);
             },
         },
         {

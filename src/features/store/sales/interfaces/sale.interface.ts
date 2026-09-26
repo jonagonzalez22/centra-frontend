@@ -1,11 +1,12 @@
 import type { Customer } from '@features/store/customers/types/customer.types';
+import type { DecimalString } from '@/types/decimal';
 
 export interface POSItem {
   product_id: string;
   name: string;
   sku: string;
   barcode: string | null;
-  quantity: number;
+  quantity: DecimalString;
   price: number;
   subtotal: number;
 }
@@ -23,7 +24,7 @@ export interface CreateOperationDTO {
   requested_delivery_date?: string | null;
   items: Array<{
     product_id: string;
-    quantity: number;
+    quantity: DecimalString;
     price: number;
   }>;
   payments: POSPayment[];
@@ -35,7 +36,7 @@ export interface AddItemPayload {
   sku: string;
   barcode: string | null;
   price: number;
-  available_stock: number;
+  available_stock: DecimalString;
 }
 
 export interface OperationResponse {
@@ -58,7 +59,7 @@ export interface SaleListItem extends OperationResponse {
 }
 
 export interface SaleDetail extends SaleListItem {
-  items: Array<{ id: string; product_name: string; quantity: number; price: number; subtotal: number; tax_amount: number; discount_amount: number }>;
+  items: Array<{ id: string; product_name: string; quantity: DecimalString; price: number; subtotal: number; tax_amount: number; discount_amount: number }>;
   payments: Array<{ id: string; amount: number; store_payment_method?: { name: string | null } | null }>;
   history: SaleHistoryEvent[];
 }
@@ -127,7 +128,7 @@ export interface ReceiptCustomer {
 
 export interface ReceiptItem {
   product_name: string;
-  quantity: number;
+  quantity: DecimalString;
   unit_price: number;
   subtotal: number;
   discount_amount: number;
@@ -168,7 +169,7 @@ export interface POSState {
 
 export interface POSActions {
   addItem: (payload: AddItemPayload) => void;
-  updateQuantity: (product_id: string, quantity: number) => void;
+  updateQuantity: (product_id: string, quantity: DecimalString) => void;
   removeItem: (product_id: string) => void;
   setType: (type: 'sale' | 'order') => void;
   setCustomer: (customer: Customer | null) => void;

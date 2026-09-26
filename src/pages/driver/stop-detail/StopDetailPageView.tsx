@@ -12,6 +12,8 @@ import { useCollectionPreview } from '@/features/driver/hooks/useCollectionPrevi
 import { StopDetailCard } from '@/features/driver/components/StopDetailCard';
 import { StopDetailFooter } from '@/features/driver/components/StopDetailFooter';
 import { formatCurrency } from '@/utils/formatters';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings } from '@/utils/quantity';
 import './StopDetailPage.css';
 
 // ── Props ───────────────────────────────────────────────────────────────────────
@@ -19,8 +21,8 @@ import './StopDetailPage.css';
 interface DeliverPayload {
     items: Array<{
         route_stop_item_id: string;
-        quantity_delivered: number;
-        quantity_released_for_extra_sale: number;
+        quantity_delivered: DecimalString;
+        quantity_released_for_extra_sale: DecimalString;
         rejection_reason_id?: string | null;
     }>;
     gps?: { lat: number; lon: number };
@@ -156,11 +158,11 @@ export const StopDetailPageView = ({
         const payload: DeliverPayload = {
             items: stop.items.map((item) => {
                 // quantity_loaded = 0 items: not loaded in depot, always 0, no reason
-                if (item.quantity_loaded === 0) {
+                if (compareDecimalStrings(item.quantity_loaded, '0.0000') === 0) {
                     return {
                         route_stop_item_id: item.route_stop_item_id,
-                        quantity_delivered: 0,
-                        quantity_released_for_extra_sale: 0,
+                        quantity_delivered: '0.0000',
+                        quantity_released_for_extra_sale: '0.0000',
                         rejection_reason_id: null,
                     };
                 }
@@ -168,9 +170,9 @@ export const StopDetailPageView = ({
                     route_stop_item_id: item.route_stop_item_id,
                     quantity_delivered:
                         itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
-                    quantity_released_for_extra_sale: itemsState.quantitiesReleased[item.id] ?? 0,
+                    quantity_released_for_extra_sale: itemsState.quantitiesReleased[item.id] ?? '0.0000',
                     rejection_reason_id:
-                        itemsState.quantitiesDelivered[item.id] < item.quantity_loaded
+                        compareDecimalStrings(itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded, item.quantity_loaded) < 0
                             ? (itemsState.rejectionReasonsByItem[item.id] ?? null)
                             : null,
                 };

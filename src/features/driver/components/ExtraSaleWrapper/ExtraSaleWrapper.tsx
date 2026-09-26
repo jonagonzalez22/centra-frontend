@@ -5,6 +5,8 @@ import { Button } from '@/components/Button';
 import { useExtraSale } from '../../hooks/useExtraSale';
 import type { SurplusProduct } from '../../interfaces/driver.interface';
 import { formatCurrency } from '@/utils/formatters';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 import './ExtraSaleWrapper.css';
 
 interface ExtraSaleWrapperProps {
@@ -17,12 +19,12 @@ interface ExtraSaleWrapperProps {
 
 const ExtraSaleProductCard: React.FC<{
     product: SurplusProduct;
-    quantity: number;
+    quantity: DecimalString;
     onDecrement: () => void;
     onIncrement: () => void;
 }> = ({ product, quantity, onDecrement, onIncrement }) => {
-    const canDecrement = quantity > 0;
-    const canIncrement = quantity < product.available_quantity;
+    const canDecrement = compareDecimalStrings(quantity, '0.0000') > 0;
+    const canIncrement = compareDecimalStrings(quantity, product.available_quantity) < 0;
 
     return (
         <div className="extraSaleCard">
@@ -37,7 +39,7 @@ const ExtraSaleProductCard: React.FC<{
                     </div>
                 </div>
                 <div className="extraSaleCardStock">
-                    Disponible: {product.available_quantity}
+                    Disponible: {formatQuantityForDisplay(product.available_quantity)}
                 </div>
             </div>
             <div className="extraSaleCardStepper">
@@ -49,7 +51,7 @@ const ExtraSaleProductCard: React.FC<{
                 >
                     −
                 </button>
-                <span className="extraSaleStepperValue">{quantity}</span>
+                <span className="extraSaleStepperValue">{formatQuantityForDisplay(quantity)}</span>
                 <button
                     className={`extraSaleStepperBtn ${!canIncrement ? 'extraSaleStepperBtn--disabled' : ''}`}
                     disabled={!canIncrement}
@@ -177,7 +179,7 @@ export const ExtraSaleWrapper: React.FC<ExtraSaleWrapperProps> = ({
                             <ExtraSaleProductCard
                                 key={product.product_id}
                                 product={product}
-                                quantity={selectedQuantities[product.product_id] ?? 0}
+                                quantity={selectedQuantities[product.product_id] ?? '0.0000'}
                                 onDecrement={() => changeQuantity(product.product_id, -1)}
                                 onIncrement={() => changeQuantity(product.product_id, 1)}
                             />

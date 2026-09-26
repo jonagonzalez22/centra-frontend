@@ -9,7 +9,7 @@ vi.mock('../services/driver.service', () => ({
 }));
 
 const getAvailableSurplus = vi.mocked(DriverService.getAvailableSurplus);
-const product = (availableQuantity: number): SurplusProduct => ({
+const product = (availableQuantity: string): SurplusProduct => ({
     product_id: 'product-1',
     product_name: 'Pintura',
     sku: 'P-1',
@@ -22,7 +22,7 @@ describe('useAvailableSurplus', () => {
 
     test.each([
         ['an empty response', []],
-        ['products with zero availability', [product(0)]],
+        ['products with zero availability', [product('0.0000')]],
     ])('does not expose availability for %s', async (_label, response) => {
         getAvailableSurplus.mockResolvedValue(response as SurplusProduct[]);
         const { result } = renderHook(() =>
@@ -36,7 +36,7 @@ describe('useAvailableSurplus', () => {
     });
 
     test('exposes availability only after a successful response with positive quantity', async () => {
-        getAvailableSurplus.mockResolvedValue([product(2)]);
+        getAvailableSurplus.mockResolvedValue([product('2.0000')]);
         const { result } = renderHook(() =>
             useAvailableSurplus({ routeId: 'route-1', stopId: 'stop-1', enabled: true })
         );
@@ -64,7 +64,7 @@ describe('useAvailableSurplus', () => {
         getAvailableSurplus
             .mockReturnValueOnce(firstRequest)
             .mockResolvedValueOnce([])
-            .mockResolvedValueOnce([product(1)]);
+            .mockResolvedValueOnce([product('1.0000')]);
 
         const { result, rerender } = renderHook(
             ({ routeId, stopId }) =>
@@ -76,7 +76,7 @@ describe('useAvailableSurplus', () => {
         await waitFor(() => expect(getAvailableSurplus).toHaveBeenCalledTimes(2));
         await waitFor(() => expect(result.current.loading).toBe(false));
 
-        await act(async () => resolveFirst([product(9)]));
+        await act(async () => resolveFirst([product('9.0000')]));
         expect(result.current.hasAvailableSurplus).toBe(false);
 
         rerender({ routeId: 'route-2', stopId: 'stop-3' });
@@ -85,7 +85,7 @@ describe('useAvailableSurplus', () => {
     });
 
     test('refreshes availability and hides the action after surplus is consumed', async () => {
-        getAvailableSurplus.mockResolvedValueOnce([product(1)]).mockResolvedValueOnce([]);
+        getAvailableSurplus.mockResolvedValueOnce([product('1.0000')]).mockResolvedValueOnce([]);
         const { result } = renderHook(() =>
             useAvailableSurplus({ routeId: 'route-1', stopId: 'stop-1', enabled: true })
         );

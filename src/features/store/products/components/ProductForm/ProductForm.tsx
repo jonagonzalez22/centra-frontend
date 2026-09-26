@@ -9,6 +9,8 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { CreateProductDto, Product } from '../../interfaces/product.interface';
 import type { Category } from '@/features/store/categories/interfaces/category.interface';
 import './ProductForm.css';
+import type { DecimalString } from '@/types/decimal';
+import { formatQuantityForDisplay, normalizeDecimalString } from '@/utils/quantity';
 
 interface ProductFormProps {
     formId?: string;
@@ -29,8 +31,8 @@ interface ProductFormValues {
     description?: string;
     price: number | null;
     cost: number | null;
-    stock: number | null;
-    stock_min: number | null;
+    stock: DecimalString | null;
+    stock_min: DecimalString | null;
     is_active: boolean;
     category_id: string;
 }
@@ -82,8 +84,8 @@ export const ProductForm = ({
                 description: values.description,
                 price: values.price ?? 0,
                 cost: values.cost,
-                stock: isEditing ? undefined : (values.stock ?? 0),
-                stock_min: values.stock_min ?? 0,
+                stock: isEditing ? undefined : normalizeDecimalString(values.stock ?? '0'),
+                stock_min: normalizeDecimalString(values.stock_min ?? '0'),
                 is_active: values.is_active,
                 category_id: values.category_id,
             };
@@ -235,11 +237,15 @@ export const ProductForm = ({
                             label="Stock Inicial"
                             rules={requiredNumberRules('El stock inicial')}
                         >
-                            <InputNumber
+                            <InputNumber<string>
+                                stringMode
                                 placeholder="0"
                                 style={{ width: '100%' }}
-                                min={0}
-                                precision={0}
+                                min="0"
+                                precision={4}
+                                step="1"
+                                formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                                parser={(value) => (value ?? '').replace(/\./g, '').replace(',', '.')}
                                 disabled={isDisabled}
                             />
                         </Form.Item>
@@ -251,11 +257,15 @@ export const ProductForm = ({
                         label="Stock Mínimo"
                         rules={requiredNumberRules('El stock mínimo')}
                     >
-                        <InputNumber
+                        <InputNumber<string>
+                            stringMode
                             placeholder="0"
                             style={{ width: '100%' }}
-                            min={0}
-                            precision={0}
+                            min="0"
+                                precision={4}
+                                step="1"
+                                formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                                parser={(value) => (value ?? '').replace(/\./g, '').replace(',', '.')}
                             disabled={isDisabled}
                         />
                     </Form.Item>

@@ -23,6 +23,7 @@ import { CanDo } from '@/components/auth/CanDo';
 import Tag from '@/components/Tag/Tag';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrencyWithCents } from '@/utils/formatters';
+import { formatQuantityForDisplay } from '@/utils/quantity';
 import { CancelSaleModal } from '@/features/store/sales/components/CancelSaleModal';
 import { SaleDetailHistory } from '@/features/store/sales/components/SaleDetailHistory';
 import { printTicketReceipt } from '@/features/store/sales/documents/ticket-print.service';
@@ -395,7 +396,12 @@ export const SalesHistoryPage = () => {
                                 dataSource={detail.items}
                                 columns={[
                                     { title: 'Producto', dataIndex: 'product_name' },
-                                    { title: 'Cantidad', dataIndex: 'quantity', align: 'right' },
+                                    {
+                                        title: 'Cantidad',
+                                        dataIndex: 'quantity',
+                                        align: 'right',
+                                        render: (quantity) => formatQuantityForDisplay(quantity),
+                                    },
                                     {
                                         title: 'Precio unitario',
                                         dataIndex: 'price',

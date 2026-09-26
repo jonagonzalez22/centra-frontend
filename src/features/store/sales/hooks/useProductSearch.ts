@@ -4,6 +4,7 @@ import { ProductsService } from '@features/store/products/services/products.serv
 import { SalesService } from '../services/sales.service';
 import { usePOSStore } from '../stores/usePOSStore';
 import type { ProductSearchItem } from '../interfaces/product-search.interface';
+import { isPositiveDecimal } from '@/utils/quantity';
 
 export function useProductSearch() {
   const [query, setQuery] = useState('');
@@ -73,7 +74,7 @@ export function useProductSearch() {
           message.error('Producto no encontrado.');
           return false;
         }
-        if (product.available_stock < 1) {
+        if (!isPositiveDecimal(product.available_stock)) {
           message.error('Producto sin stock disponible.');
           return false;
         }

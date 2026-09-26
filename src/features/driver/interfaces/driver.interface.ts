@@ -1,3 +1,5 @@
+import type { DecimalString } from '@/types/decimal';
+
 // ── Driver Module Types ─────────────────────────────────────────────────────────
 
 export type RouteStopStatus = 'pending' | 'arrived' | 'completed' | 'failed' | 'cancelled';
@@ -43,10 +45,10 @@ export interface RouteStopItem {
     product_id: string;
     product_name: string;
     sku: string;
-    quantity_planned: number;
-    quantity_loaded: number;
-    quantity_delivered: number;
-    quantity_released_for_extra_sale: number;
+    quantity_planned: DecimalString;
+    quantity_loaded: DecimalString;
+    quantity_delivered: DecimalString;
+    quantity_released_for_extra_sale: DecimalString;
 }
 
 export interface RouteStop {
@@ -163,10 +165,10 @@ export interface StopDetailItem {
     product_id: string;
     product_name: string;
     sku: string;
-    quantity_planned: number;
-    quantity_loaded: number;
-    quantity_delivered: number;
-    quantity_released_for_extra_sale: number;
+    quantity_planned: DecimalString;
+    quantity_loaded: DecimalString;
+    quantity_delivered: DecimalString;
+    quantity_released_for_extra_sale: DecimalString;
     unit_price: number;
     is_extra: boolean;
     notes: string | null;
@@ -212,7 +214,7 @@ export interface SurplusProduct {
     product_name: string;
     sku: string;
     unit_price: number;
-    available_quantity: number;
+    available_quantity: DecimalString;
 }
 
 export interface SurplusProductsResponse {
@@ -227,7 +229,7 @@ export interface SurplusProductsResponse {
 
 export interface ExtraSaleItemPayload {
     product_id: string;
-    quantity: number;
+    quantity: DecimalString;
 }
 
 export interface AddExtraSalePayload {

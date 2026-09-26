@@ -7,5 +7,6 @@ export interface CommercialProductSearchItem {
 
 export interface CommercialProductDetail extends CommercialProductSearchItem {
     price: number;
-    available_stock: number;
+    available_stock: DecimalString;
 }
+import type { DecimalString } from '@/types/decimal';

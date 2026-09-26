@@ -17,7 +17,7 @@ beforeEach(() => {
     sku: 'MAR-1',
     barcode: null,
     price: 1000,
-    available_stock: 10,
+    available_stock: "10.0000",
   });
   vi.mocked(SalesService.getPaymentMethods).mockResolvedValue([
     {

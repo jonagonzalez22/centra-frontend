@@ -14,6 +14,7 @@ import { FailedDeliveryModal } from '@/features/driver/components/FailedDelivery
 import { ExtraSaleWrapper } from '@/features/driver/components/ExtraSaleWrapper';
 import { useAvailableSurplus } from '@/features/driver/hooks/useAvailableSurplus';
 import type { CollectionPreview } from '@/features/driver/interfaces/driver.interface';
+import type { DecimalString } from '@/types/decimal';
 
 export const StopDetailPage = () => {
     const { stopId } = useParams<{ routeId: string; stopId: string }>();
@@ -53,8 +54,8 @@ export const StopDetailPage = () => {
             payload: {
                 items: Array<{
                     route_stop_item_id: string;
-                    quantity_delivered: number;
-                    quantity_released_for_extra_sale: number;
+                    quantity_delivered: DecimalString;
+                    quantity_released_for_extra_sale: DecimalString;
                     rejection_reason_id?: string | null;
                 }>;
                 gps?: { lat: number; lon: number };
@@ -122,14 +123,14 @@ export const StopDetailPage = () => {
     );
 
     const handleFailedDelivery = useCallback(
-        async (rejectionReasonId: string, quantitiesReleased: Record<string, number>) => {
+        async (rejectionReasonId: string, quantitiesReleased: Record<string, DecimalString>) => {
             if (!stopDetail.stop) return;
             const completePayload: CompleteStopPayload = {
                 status: 'failed',
                 items: stopDetail.stop.items.map((item) => ({
                     route_stop_item_id: item.route_stop_item_id,
-                    quantity_delivered: 0,
-                    quantity_released_for_extra_sale: quantitiesReleased[item.id] ?? 0,
+                    quantity_delivered: '0.0000',
+                    quantity_released_for_extra_sale: quantitiesReleased[item.id] ?? '0.0000',
                 })),
                 rejection_reason_id: rejectionReasonId,
             };

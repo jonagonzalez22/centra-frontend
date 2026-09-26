@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { addDecimalStrings, compareDecimalStrings, isPositiveDecimal, normalizeDecimalString } from '@/utils/quantity';
 import type { POSItem, POSPayment, AddItemPayload, POSStore } from '../interfaces/sale.interface';
 
 const initialItems: POSItem[] = [];
@@ -18,8 +19,8 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
     const existing = items.find((item) => item.product_id === payload.id);
 
     if (existing) {
-      const newQuantity = existing.quantity + 1;
-      if (newQuantity > payload.available_stock) {
+      const newQuantity = addDecimalStrings(existing.quantity, '1.0000');
+      if (compareDecimalStrings(newQuantity, payload.available_stock) > 0) {
         return;
       }
       set({
@@ -28,13 +29,13 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
             ? {
                 ...item,
                 quantity: newQuantity,
-                subtotal: newQuantity * item.price,
+                subtotal: Number(newQuantity) * item.price,
               }
             : item
         ),
       });
     } else {
-      if (payload.available_stock < 1) {
+      if (!isPositiveDecimal(payload.available_stock)) {
         return;
       }
       set({
@@ -45,7 +46,7 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
             name: payload.name,
             sku: payload.sku,
             barcode: payload.barcode,
-            quantity: 1,
+            quantity: '1.0000',
             price: payload.price,
             subtotal: payload.price,
           },
@@ -54,15 +55,16 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
     }
   },
 
-  updateQuantity: (product_id: string, quantity: number) => {
-    if (quantity < 1) {
+  updateQuantity: (product_id: string, quantity) => {
+    const normalizedQuantity = normalizeDecimalString(quantity);
+    if (!isPositiveDecimal(normalizedQuantity)) {
       get().removeItem(product_id);
       return;
     }
     set({
       items: get().items.map((item) =>
         item.product_id === product_id
-          ? { ...item, quantity, subtotal: quantity * item.price }
+          ? { ...item, quantity: normalizedQuantity, subtotal: Number(normalizedQuantity) * item.price }
           : item
       ),
     });

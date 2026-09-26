@@ -139,6 +139,41 @@ test('uses the same 24-hour format in the sale detail drawer', async () => {
     expect(screen.getByRole('button', { name: 'Imprimir A4' })).toHaveClass('ant-btn-default');
 });
 
+test.each([
+    ['3.0000', '3'],
+    ['3.5000', '3,5'],
+])('formats sale detail quantity %s as %s', async (quantity, displayedQuantity) => {
+    const user = userEvent.setup();
+    vi.mocked(SalesService.getSaleById).mockResolvedValue({
+        ...response.items[0],
+        items: [
+            {
+                id: 'item-1',
+                product_name: 'Silicona Transparente 280ml',
+                quantity,
+                price: 7930,
+                subtotal: 23790,
+                tax_amount: 0,
+                discount_amount: 0,
+            },
+        ],
+        payments: [],
+        history: [],
+    });
+    render(
+        <MemoryRouter>
+            <SalesHistoryPage />
+        </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Ver detalle de V-000028' }));
+
+    const productRow = (await screen.findByText('Silicona Transparente 280ml')).closest('tr');
+
+    expect(productRow).toHaveTextContent(displayedQuantity);
+    expect(productRow).not.toHaveTextContent(quantity);
+});
+
 test('shows the standard drawer loader while the detail request is pending and clears it on resolution', async () => {
     const user = userEvent.setup();
     let resolveDetail: (value: Awaited<ReturnType<typeof SalesService.getSaleById>>) => void;

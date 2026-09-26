@@ -10,10 +10,7 @@ const items: StopDetailItem[] = [
         product_id: 'product-x',
         product_name: 'Pintura Látex de nombre muy largo para pantalla móvil',
         sku: 'X',
-        quantity_planned: 5,
-        quantity_loaded: 5,
-        quantity_delivered: 0,
-        quantity_released_for_extra_sale: 0,
+        quantity_planned: '5.0000', quantity_loaded: '5.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
         unit_price: 100,
         is_extra: false,
         notes: null,
@@ -24,10 +21,7 @@ const items: StopDetailItem[] = [
         product_id: 'product-y',
         product_name: 'Rodillo',
         sku: 'Y',
-        quantity_planned: 3,
-        quantity_loaded: 3,
-        quantity_delivered: 0,
-        quantity_released_for_extra_sale: 0,
+        quantity_planned: '3.0000', quantity_loaded: '3.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
         unit_price: 50,
         is_extra: false,
         notes: null,
@@ -85,9 +79,9 @@ test('recalculates suggestions when the global reason changes and allows indepen
     await user.click(screen.getByLabelText(`Reducir disponibilidad de ${items[0].product_name}`));
 
     await user.click(screen.getByText('Confirmar'));
-    expect(onConfirm).toHaveBeenLastCalledWith('safe', { 'item-x': 4, 'item-y': 3 });
+    expect(onConfirm).toHaveBeenLastCalledWith('safe', { 'item-x': '4.0000', 'item-y': '3.0000' });
 
     await selectReason(user, 'Mercadería dañada');
     await user.click(screen.getByText('Confirmar'));
-    expect(onConfirm).toHaveBeenLastCalledWith('damaged', { 'item-x': 0, 'item-y': 0 });
+    expect(onConfirm).toHaveBeenLastCalledWith('damaged', { 'item-x': '0.0000', 'item-y': '0.0000' });
 });

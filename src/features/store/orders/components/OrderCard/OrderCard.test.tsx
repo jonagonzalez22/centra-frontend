@@ -42,7 +42,7 @@ const order: OrderListItem = {
     branch_id: null,
     route_ids: [],
     has_pending_delivery: true,
-    pending_delivery_quantity: 1,
+    pending_delivery_quantity: "1.0000",
 };
 
 test('shows the requested delivery date without a time-slot placeholder', () => {

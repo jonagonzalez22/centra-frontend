@@ -25,6 +25,8 @@ import type {
 import type { DeliveryDateChangeReason, OrderDetail, OrderEditability } from '@/features/store/orders/interfaces/order.interface';
 import { CommercialProductsService } from '@/features/store/orders/services/commercial-products.service';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import type { DecimalString } from '@/types/decimal';
 import { OrderDeliveryDateModal } from './OrderDeliveryDateModal';
 
 interface Props {
@@ -40,7 +42,7 @@ interface Props {
     deliveryDateObservation: string;
     deliveryDateChanged: boolean;
     canCollect: boolean;
-    onQuantityChange: (productId: string, quantity: number | null) => void;
+    onQuantityChange: (productId: string, quantity: DecimalString | null) => void;
     onAddProduct: (product: CommercialProductDetail) => boolean;
     onRemoveProduct: (productId: string) => void;
     onApplyDeliveryDateChange: (draft: {
@@ -275,9 +277,9 @@ export const OrderEditPageView = ({
                                                                     </span>
                                                                 )}
                                                             </span>
-                                                            {draftItem && draftItem.quantity > 0 && (
+                                                            {draftItem && compareDecimalStrings(draftItem.quantity, '0.0000') > 0 && (
                                                                 <span className="text-xs text-blue-500 ml-2 whitespace-nowrap">
-                                                                    {draftItem.quantity} en pedido
+                                                                    {formatQuantityForDisplay(draftItem.quantity)} en pedido
                                                                 </span>
                                                             )}
                                                         </button>
@@ -326,12 +328,12 @@ export const OrderEditPageView = ({
                         )}
 
                         <div className="space-y-3">
-                            {draft.filter((item) => item.quantity > 0).map((item) => {
-                                const canRemove = editable && item.minimum_quantity === 0;
-                                const minimumEditableQuantity = Math.max(item.minimum_quantity, 1);
+                            {draft.filter((item) => compareDecimalStrings(item.quantity, '0.0000') > 0).map((item) => {
+                                const canRemove = editable && compareDecimalStrings(item.minimum_quantity, '0.0000') === 0;
+                                const minimumEditableQuantity = compareDecimalStrings(item.minimum_quantity, '1.0000') > 0 ? item.minimum_quantity : '1.0000';
                                 const canIncrease =
                                     editable &&
-                                    (!item.is_new || item.quantity < (item.available_stock ?? 0));
+                                    (!item.is_new || compareDecimalStrings(item.quantity, item.available_stock ?? '0.0000') < 0);
 
                                 return (
                                     <div
@@ -386,16 +388,17 @@ export const OrderEditPageView = ({
                                                                 styles={{ root: { boxShadow: 'none' } }}
                                                                 aria-label={'Reducir cantidad de ' + item.name}
                                                                 icon={<MinusOutlined />}
-                                                                disabled={item.quantity <= minimumEditableQuantity}
+                                                                disabled={compareDecimalStrings(item.quantity, minimumEditableQuantity) <= 0}
                                                                 action={() =>
                                                                     onQuantityChange(
                                                                         item.product_id,
-                                                                        item.quantity - 1
+                                                                        addDecimalStrings(item.quantity, '-1')
                                                                     )
                                                                 }
                                                             />
                                                         </Tooltip>
-                                                        <InputNumber
+                                                        <InputNumber<string>
+                                                            stringMode
                                                             aria-label={'Cantidad de ' + item.name}
                                                             className="w-16 [&_.ant-input-number-input]:text-center"
                                                             controls={false}
@@ -407,12 +410,13 @@ export const OrderEditPageView = ({
                                                                     ? item.available_stock
                                                                     : undefined
                                                             }
-                                                            precision={0}
+                                                            precision={4}
+                                                            step="1"
                                                             value={item.quantity}
                                                             onChange={(value) =>
                                                                 onQuantityChange(
                                                                     item.product_id,
-                                                                    typeof value === 'number' ? value : null
+                                                                    value
                                                                 )
                                                             }
                                                             onBlur={() =>
@@ -432,7 +436,7 @@ export const OrderEditPageView = ({
                                                                 action={() =>
                                                                     onQuantityChange(
                                                                         item.product_id,
-                                                                        item.quantity + 1
+                                                                        addDecimalStrings(item.quantity, '1')
                                                                     )
                                                                 }
                                                             />
@@ -442,20 +446,20 @@ export const OrderEditPageView = ({
                                             )}
                                         </div>
 
-                                        {(item.delivered_quantity > 0 ||
-                                            item.active_committed_quantity > 0 ||
-                                            item.minimum_quantity > 0) && (
+                                        {(compareDecimalStrings(item.delivered_quantity, '0.0000') > 0 ||
+                                            compareDecimalStrings(item.active_committed_quantity, '0.0000') > 0 ||
+                                            compareDecimalStrings(item.minimum_quantity, '0.0000') > 0) && (
                                             <div className="flex flex-wrap gap-2 mt-3 text-xs">
-                                                {item.delivered_quantity > 0 && (
-                                                    <Tag>Entregadas: {item.delivered_quantity}</Tag>
+                                                {compareDecimalStrings(item.delivered_quantity, '0.0000') > 0 && (
+                                                    <Tag>Entregadas: {formatQuantityForDisplay(item.delivered_quantity)}</Tag>
                                                 )}
-                                                {item.active_committed_quantity > 0 && (
+                                                {compareDecimalStrings(item.active_committed_quantity, '0.0000') > 0 && (
                                                     <Tag color="blue">
-                                                        Comprometidas: {item.active_committed_quantity}
+                                                        Comprometidas: {formatQuantityForDisplay(item.active_committed_quantity)}
                                                     </Tag>
                                                 )}
                                                 <Tag color="gold">
-                                                    Cantidad mínima: {item.minimum_quantity}
+                                                    Cantidad mínima: {formatQuantityForDisplay(item.minimum_quantity)}
                                                 </Tag>
                                             </div>
                                         )}

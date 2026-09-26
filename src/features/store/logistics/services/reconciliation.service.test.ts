@@ -48,7 +48,7 @@ describe('ReconciliationService', () => {
                 {
                     route_stop_item_id: 'item-1',
                     resolution_type: 'returned' as const,
-                    quantity_to_resolve: 2,
+                    quantity_to_resolve: "2.0000",
                 },
             ],
         };

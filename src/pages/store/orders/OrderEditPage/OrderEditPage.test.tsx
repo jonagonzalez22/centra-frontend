@@ -159,7 +159,7 @@ const order = {
             id: 'line-1',
             product_id: 'product-1',
             product_name: 'Producto A',
-            quantity: 10,
+            quantity: "10.0000",
             price: 100,
             subtotal: 1000,
             tax_amount: 0,
@@ -170,7 +170,7 @@ const order = {
     events: [],
     history: [],
     route_ids: [],
-    delivery_summary: { has_pending_delivery: false, pending_delivery_quantity: 0, items: [] },
+    delivery_summary: { has_pending_delivery: false, pending_delivery_quantity: "0.0000", items: [] },
 } satisfies OrderDetail;
 
 const editability = {
@@ -188,11 +188,11 @@ const editability = {
         {
             product_id: 'product-1',
             product_name: 'Producto A',
-            current_quantity: 10,
-            delivered_quantity: 4,
-            active_committed_quantity: 3,
-            minimum_quantity: 7,
-            editable_quantity: 3,
+            current_quantity: '10.0000',
+            delivered_quantity: "4.0000",
+            active_committed_quantity: '3.0000',
+            minimum_quantity: '7.0000',
+            editable_quantity: '3.0000',
         },
     ],
 } satisfies OrderEditability;
@@ -214,7 +214,7 @@ beforeEach(() => {
         sku: 'SKU-B',
         barcode: '7790000000006',
         price: 250,
-        available_stock: 5,
+        available_stock: "5.0000",
     });
 });
 
@@ -438,7 +438,7 @@ test('saves item and delivery date changes in one request', async () => {
 
     await waitFor(() =>
         expect(update).toHaveBeenCalledWith('order-1', {
-            items: [{ product_id: 'product-1', quantity: 11 }],
+            items: [{ product_id: 'product-1', quantity: "11.0000" }],
             requested_delivery_date: '2026-09-22',
             reason: 'operational_issue',
         })
@@ -497,8 +497,8 @@ test('adds a commercial product, keeps one row per product, and saves grouped fi
     await waitFor(() =>
         expect(update).toHaveBeenCalledWith('order-1', {
             items: [
-                { product_id: 'product-1', quantity: 11 },
-                { product_id: 'product-2', quantity: 1 },
+                { product_id: 'product-1', quantity: "11.0000" },
+                { product_id: 'product-2', quantity: "1.0000" },
             ],
         })
     );
@@ -545,7 +545,7 @@ test('enforces minimum quantity locally and allows removing a product with minim
                 ...editability.items[0],
                 current_quantity: 1,
                 minimum_quantity: 0,
-                delivered_quantity: 0,
+                delivered_quantity: "0.0000",
                 active_committed_quantity: 0,
             },
         ],
@@ -569,7 +569,7 @@ test('keeps an eliminable product when its quantity field is temporarily empty',
                 ...editability.items[0],
                 current_quantity: 1,
                 minimum_quantity: 0,
-                delivered_quantity: 0,
+                delivered_quantity: "0.0000",
                 active_committed_quantity: 0,
             },
         ],

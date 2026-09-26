@@ -3,12 +3,20 @@ import { message } from 'antd';
 import { DriverService } from '../services/driver.service';
 import type { SurplusProduct } from '../interfaces/driver.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import type { DecimalString } from '@/types/decimal';
+import {
+    addDecimalStrings,
+    compareDecimalStrings,
+    isPositiveDecimal,
+    minDecimalStrings,
+    normalizeDecimalString,
+} from '@/utils/quantity';
 
 export interface UseExtraSaleReturn {
     surplusProducts: SurplusProduct[];
     loadingSurplus: boolean;
     submitting: boolean;
-    selectedQuantities: Record<string, number>;
+    selectedQuantities: Record<string, DecimalString>;
     searchQuery: string;
     filteredProducts: SurplusProduct[];
     summary: {
@@ -18,7 +26,7 @@ export interface UseExtraSaleReturn {
     };
     isValid: boolean;
     loadSurplus: (routeId: string) => Promise<void>;
-    setQuantity: (productId: string, quantity: number) => void;
+    setQuantity: (productId: string, quantity: DecimalString) => void;
     changeQuantity: (productId: string, delta: number) => void;
     setSearchQuery: (query: string) => void;
     submitExtraSale: (stopId: string) => Promise<void>;
@@ -29,7 +37,7 @@ export const useExtraSale = (): UseExtraSaleReturn => {
     const [surplusProducts, setSurplusProducts] = useState<SurplusProduct[]>([]);
     const [loadingSurplus, setLoadingSurplus] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
+    const [selectedQuantities, setSelectedQuantities] = useState<Record<string, DecimalString>>({});
     const [searchQuery, setSearchQuery] = useState('');
 
     const loadSurplus = useCallback(async (routeId: string) => {
@@ -47,12 +55,13 @@ export const useExtraSale = (): UseExtraSaleReturn => {
         }
     }, []);
 
-    const setQuantity = useCallback((productId: string, quantity: number) => {
+    const setQuantity = useCallback((productId: string, quantity: DecimalString) => {
         setSelectedQuantities((prev) => {
             const product = surplusProducts.find((p) => p.product_id === productId);
-            const max = product?.available_quantity ?? 0;
-            const clamped = Math.max(0, Math.min(quantity, max));
-            if (clamped === 0) {
+            const max = product?.available_quantity ?? '0.0000';
+            const normalized = normalizeDecimalString(quantity);
+            const clamped = minDecimalStrings(normalized, max);
+            if (!isPositiveDecimal(clamped)) {
                 const next = { ...prev };
                 delete next[productId];
                 return next;
@@ -63,12 +72,15 @@ export const useExtraSale = (): UseExtraSaleReturn => {
 
     const changeQuantity = useCallback((productId: string, delta: number) => {
         setSelectedQuantities((prev) => {
-            const current = prev[productId] ?? 0;
+            const current = prev[productId] ?? '0.0000';
             const product = surplusProducts.find((p) => p.product_id === productId);
-            const max = product?.available_quantity ?? 0;
-            const next = current + delta;
-            const clamped = Math.max(0, Math.min(next, max));
-            if (clamped === 0) {
+            const max = product?.available_quantity ?? '0.0000';
+            const next = addDecimalStrings(current, String(delta));
+            const clamped = minDecimalStrings(
+                compareDecimalStrings(next, '0.0000') < 0 ? '0.0000' : next,
+                max
+            );
+            if (!isPositiveDecimal(clamped)) {
                 const result = { ...prev };
                 delete result[productId];
                 return result;
@@ -92,12 +104,13 @@ export const useExtraSale = (): UseExtraSaleReturn => {
         let totalProducts = 0;
         let totalAmount = 0;
         for (const [productId, qty] of Object.entries(selectedQuantities)) {
-            if (qty <= 0) continue;
-            totalUnits += qty;
+            if (!isPositiveDecimal(qty)) continue;
+            totalUnits += Number(qty);
             totalProducts += 1;
             const product = surplusProducts.find((p) => p.product_id === productId);
             if (product) {
-                totalAmount += qty * product.unit_price;
+                // Sólo preview monetario: el backend recalcula el total autoritativo.
+                totalAmount += Number(qty) * product.unit_price;
             }
         }
         return { totalUnits, totalProducts, totalAmount };
@@ -108,7 +121,7 @@ export const useExtraSale = (): UseExtraSaleReturn => {
     const submitExtraSale = useCallback(async (stopId: string) => {
         if (!isValid) return;
         const items = Object.entries(selectedQuantities)
-            .filter(([, qty]) => qty > 0)
+            .filter(([, qty]) => isPositiveDecimal(qty))
             .map(([product_id, quantity]) => ({ product_id, quantity }));
 
         try {

@@ -1,16 +1,16 @@
 export interface LoadSheetProductSummary {
     product_id: string;
     product_name: string;
-    total_planned: number;
-    total_loaded: number;
+    total_planned: DecimalString;
+    total_loaded: DecimalString;
 }
 
 export interface LoadSheetStopItem {
     route_stop_item_id: string;
     product_id: string;
     product_name: string;
-    quantity_planned: number;
-    quantity_loaded: number;
+    quantity_planned: DecimalString;
+    quantity_loaded: DecimalString;
 }
 
 export interface LoadSheetStop {
@@ -27,12 +27,12 @@ export interface LoadSheetData {
     operational_date: string;
     by_product: LoadSheetProductSummary[];
     by_stop: LoadSheetStop[];
-    total_items: number;
+    total_items: DecimalString;
 }
 
 export interface ConfirmLoadItem {
     route_stop_item_id: string;
-    quantity_loaded: number;
+    quantity_loaded: DecimalString;
     reason?: string;
     notes?: string;
 }
@@ -48,7 +48,7 @@ export interface ConfirmLoadResponse {
 
 export interface BulkLoadProduct {
     product_id: string;
-    quantity_loaded: number;
+    quantity_loaded: DecimalString;
     reason?: string;
     notes?: string;
 }
@@ -59,7 +59,7 @@ export interface BulkLoadPayload {
 
 export interface AdjustItemEntry {
     route_stop_item_id: string;
-    quantity_loaded: number;
+    quantity_loaded: DecimalString;
     reason?: string;
     notes?: string;
 }
@@ -68,3 +68,4 @@ export interface AdjustItemsPayload {
     product_id: string;
     items: AdjustItemEntry[];
 }
+import type { DecimalString } from '@/types/decimal';

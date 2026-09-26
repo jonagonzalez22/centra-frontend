@@ -1,3 +1,5 @@
+import type { DecimalString } from '@/types/decimal';
+
 export interface OrderCustomer {
     id: string;
     name: string;
@@ -32,23 +34,23 @@ export interface OrderListItem {
     branch_id: string | null;
     route_ids: string[];
     has_pending_delivery: boolean;
-    pending_delivery_quantity: number;
+    pending_delivery_quantity: DecimalString;
 }
 
 export interface DeliverySummaryItem {
     product_id: string;
     product_name: string | null;
     sku?: string | null;
-    ordered_quantity: number;
-    delivered_quantity: number;
-    pending_quantity: number;
-    planned_active_quantity: number;
-    unassigned_pending_quantity: number;
+    ordered_quantity: DecimalString;
+    delivered_quantity: DecimalString;
+    pending_quantity: DecimalString;
+    planned_active_quantity: DecimalString;
+    unassigned_pending_quantity: DecimalString;
 }
 
 export interface DeliverySummary {
     has_pending_delivery: boolean;
-    pending_delivery_quantity: number;
+    pending_delivery_quantity: DecimalString;
     items: DeliverySummaryItem[];
 }
 
@@ -56,7 +58,7 @@ export interface OrderItem {
     id: string;
     product_id: string;
     product_name: string;
-    quantity: number;
+    quantity: DecimalString;
     price: number;
     subtotal: number;
     tax_amount: number;
@@ -120,7 +122,7 @@ export interface OrderHistoryRoute {
 
 export interface OrderHistoryDiscrepancy {
     id: string;
-    quantity: number;
+    quantity: DecimalString;
     resolution_type: string | null;
     status: 'pending' | 'resolved';
     notes: string | null;
@@ -132,11 +134,11 @@ export interface OrderHistoryItem {
     id: string;
     product_id: string;
     product_name: string | null;
-    quantity_planned: number;
-    quantity_loaded: number;
-    quantity_delivered: number;
+    quantity_planned: DecimalString;
+    quantity_loaded: DecimalString;
+    quantity_delivered: DecimalString;
     discrepancies: OrderHistoryDiscrepancy[];
-    pending_quantity?: number;
+    pending_quantity?: DecimalString;
 }
 
 export interface OrderHistoryDetails {
@@ -217,11 +219,11 @@ export type DeliveryDateBlockReason =
 export interface OrderEditabilityItem {
     product_id: string;
     product_name: string | null;
-    current_quantity: number;
-    delivered_quantity: number;
-    active_committed_quantity: number;
-    minimum_quantity: number;
-    editable_quantity: number;
+    current_quantity: DecimalString;
+    delivered_quantity: DecimalString;
+    active_committed_quantity: DecimalString;
+    minimum_quantity: DecimalString;
+    editable_quantity: DecimalString;
 }
 
 export interface OrderEditability {
@@ -248,7 +250,7 @@ export type DeliveryDateChangeReason =
 export interface UpdateOrderPayload {
     items?: Array<{
         product_id: string;
-        quantity: number;
+        quantity: DecimalString;
     }>;
     requested_delivery_date?: string;
     reason?: DeliveryDateChangeReason;

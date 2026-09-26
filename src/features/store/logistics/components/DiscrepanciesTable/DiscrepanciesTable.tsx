@@ -8,6 +8,8 @@ import type {
     RouteReconciliationDetailItem,
     DiscrepancyResolutionType,
 } from '../../interfaces/reconciliation.interface';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 const resolutionLabels: Record<string, { label: string; color: string }> = {
     returned: { label: 'Devuelto a depósito', color: 'success' },
@@ -22,7 +24,7 @@ interface DiscrepanciesTableProps {
     discrepancies: RouteReconciliationDetailItem[];
     loading: boolean;
     actionLoading: string | false;
-    onResolve: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    onResolve: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => Promise<void>;
     readOnly: boolean;
 }
 
@@ -36,7 +38,7 @@ export const DiscrepanciesTable = ({
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<RouteReconciliationDetailItem | null>(null);
 
-    const handleResolve = async (resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => {
+    const handleResolve = async (resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => {
         if (selectedItem) {
             await onResolve(selectedItem.route_stop_item_id, resolutionType, quantityToResolve, notes);
             setModalOpen(false);
@@ -54,11 +56,11 @@ export const DiscrepanciesTable = ({
         setSelectedItem(null);
     };
 
-    const getDifferenceTag = (difference: number) => {
-        if (difference > 0) {
-            return <Tag color="error">+{difference}</Tag>;
-        } else if (difference < 0) {
-            return <Tag color="warning">{difference}</Tag>;
+    const getDifferenceTag = (difference: DecimalString) => {
+        if (compareDecimalStrings(difference, '0.0000') > 0) {
+            return <Tag color="error">+{formatQuantityForDisplay(difference)}</Tag>;
+        } else if (compareDecimalStrings(difference, '0.0000') < 0) {
+            return <Tag color="warning">{formatQuantityForDisplay(difference)}</Tag>;
         }
         return <Tag color="default">0</Tag>;
     };
@@ -104,7 +106,7 @@ export const DiscrepanciesTable = ({
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const item = record as unknown as RouteReconciliationDetailItem;
-                return item.quantity_loaded;
+                return formatQuantityForDisplay(item.quantity_loaded);
             },
         },
         {
@@ -114,7 +116,7 @@ export const DiscrepanciesTable = ({
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const item = record as unknown as RouteReconciliationDetailItem;
-                return item.quantity_delivered;
+                return formatQuantityForDisplay(item.quantity_delivered);
             },
         },
         {

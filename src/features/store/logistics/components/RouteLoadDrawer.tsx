@@ -4,6 +4,8 @@ import { CheckOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { useLoadSheet } from '../hooks/useLoadSheet';
 import type { BulkLoadPayload } from '../interfaces/loadSheet.interface';
+import type { DecimalString } from '@/types/decimal';
+import { compareDecimalStrings, formatQuantityForDisplay, minDecimalStrings } from '@/utils/quantity';
 
 const { Text } = Typography;
 
@@ -24,7 +26,7 @@ const REASON_OPTIONS = [
 ];
 
 interface ProductEdit {
-    quantity_loaded: number;
+    quantity_loaded: DecimalString;
     reason?: string;
     notes?: string;
 }
@@ -61,7 +63,7 @@ export const RouteLoadDrawer = ({
         return edits;
     }, [loadSheet, userEdits]);
 
-    const handleConfirmAll = (productId: string, totalPlanned: number) => {
+    const handleConfirmAll = (productId: string, totalPlanned: DecimalString) => {
         setUserEdits((prev) => ({
             ...prev,
             [productId]: {
@@ -95,8 +97,8 @@ export const RouteLoadDrawer = ({
     const renderProductCard = (product: {
         product_id: string;
         product_name: string;
-        total_planned: number;
-        total_loaded: number;
+        total_planned: DecimalString;
+        total_loaded: DecimalString;
     }) => {
         const productId = product.product_id;
         const edit = productEdits[productId];
@@ -137,18 +139,18 @@ export const RouteLoadDrawer = ({
                         Planificado
                     </Text>
                     <Text strong style={{ fontSize: 24, fontWeight: 'bold', color: '#093764' }}>
-                        {product.total_planned}
+                        {formatQuantityForDisplay(product.total_planned)}
                         <Text style={{ fontSize: 14, fontWeight: 400, color: '#999', marginLeft: 6 }}>
                             unid.
                         </Text>
                     </Text>
-                    {edit && edit.quantity_loaded > 0 && (
+                    {edit && compareDecimalStrings(edit.quantity_loaded, '0.0000') > 0 && (
                         <div style={{ marginTop: 4 }}>
                             <Text type="secondary" style={{ fontSize: 12 }}>
                                 Cargado:{' '}
                             </Text>
                             <Text strong style={{ fontSize: 16, color: '#52c41a' }}>
-                                {edit.quantity_loaded}
+                                {formatQuantityForDisplay(edit.quantity_loaded)}
                             </Text>
                         </div>
                     )}
@@ -156,8 +158,8 @@ export const RouteLoadDrawer = ({
 
                         {isEditing ? (
                     (() => {
-                        const qty = edit?.quantity_loaded ?? 0;
-                        const needsReason = qty < product.total_planned;
+                        const qty = edit?.quantity_loaded ?? '0.0000';
+                        const needsReason = compareDecimalStrings(qty, product.total_planned) < 0;
                         const reasonMissing = needsReason && !edit?.reason;
                         const needsNotes = edit?.reason === 'other';
                         const notesMissing = needsNotes && !edit?.notes?.trim();
@@ -172,12 +174,15 @@ export const RouteLoadDrawer = ({
                             >
                                 Cantidad a cargar en esta ruta
                             </Text>
-                            <InputNumber
-                                min={0}
+                            <InputNumber<string>
+                                stringMode
+                                min="0"
                                 max={product.total_planned}
                                 value={edit?.quantity_loaded}
+                                precision={4}
+                                step="1"
                                 onChange={(val) => {
-                                    const clamped = Math.min(val ?? 0, product.total_planned);
+                                    const clamped = minDecimalStrings(val ?? '0.0000', product.total_planned);
                                     setUserEdits((prev) => ({
                                         ...prev,
                                         [productId]: {
@@ -188,7 +193,7 @@ export const RouteLoadDrawer = ({
                                 }}
                                 style={{ width: '100%' }}
                             />
-                            {(edit?.quantity_loaded ?? 0) === 0 && (
+                            {compareDecimalStrings(edit?.quantity_loaded ?? '0.0000', '0.0000') === 0 && (
                                 <Text
                                     style={{
                                         color: '#faad14',
@@ -201,7 +206,7 @@ export const RouteLoadDrawer = ({
                                 </Text>
                             )}
                         </div>
-                        {(edit?.quantity_loaded ?? 0) < product.total_planned && (
+                        {compareDecimalStrings(edit?.quantity_loaded ?? '0.0000', product.total_planned) < 0 && (
                             <>
                                 <Select
                                     placeholder="Motivo (obligatorio)"

@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { CollectionPreview } from '../interfaces/driver.interface';
 import { DriverService } from '../services/driver.service';
+import type { DecimalString } from '@/types/decimal';
 
 interface PreviewItem {
     route_stop_item_id: string;
-    quantity_delivered: number;
+    quantity_delivered: DecimalString;
 }
 
 interface UseCollectionPreviewOptions {

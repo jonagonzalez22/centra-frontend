@@ -4,6 +4,8 @@ import { Button } from '@/components/Button';
 import { RoutesService } from '../services/routes.service';
 import type { LoadSheetData, AdjustItemsPayload } from '../interfaces/loadSheet.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import type { DecimalString } from '@/types/decimal';
+import { addDecimalStrings, compareDecimalStrings, subtractDecimalStrings } from '@/utils/quantity';
 
 const { Text } = Typography;
 
@@ -24,7 +26,7 @@ export const RouteAdjustmentDrawer = ({
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-    const [quantities, setQuantities] = useState<Record<string, number>>({});
+    const [quantities, setQuantities] = useState<Record<string, DecimalString>>({});
     const [reasons, setReasons] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -45,7 +47,7 @@ export const RouteAdjustmentDrawer = ({
 
     useEffect(() => {
         if (!selectedProductId || !loadSheet) return;
-        const qty: Record<string, number> = {};
+        const qty: Record<string, DecimalString> = {};
         const rsn: Record<string, string> = {};
         for (const stop of loadSheet.by_stop) {
             for (const item of stop.items) {
@@ -60,17 +62,17 @@ export const RouteAdjustmentDrawer = ({
     }, [selectedProductId, loadSheet]);
 
     const totals = useMemo(() => {
-        if (!selectedProductId || !loadSheet) return { totalOnTruck: 0, assigned: 0, remaining: 0 };
+        if (!selectedProductId || !loadSheet) return { totalOnTruck: '0.0000', assigned: '0.0000', remaining: '0.0000' };
         const product = loadSheet.by_product.find(p => p.product_id === selectedProductId);
-        const totalOnTruck = product?.total_loaded ?? 0;
-        const assigned = Object.values(quantities).reduce((sum, q) => sum + q, 0);
-        return { totalOnTruck, assigned, remaining: totalOnTruck - assigned };
+        const totalOnTruck = product?.total_loaded ?? '0.0000';
+        const assigned = Object.values(quantities).reduce((sum, q) => addDecimalStrings(sum, q), '0.0000');
+        return { totalOnTruck, assigned, remaining: subtractDecimalStrings(totalOnTruck, assigned) };
     }, [selectedProductId, loadSheet, quantities]);
 
-    const canSave = totals.remaining === 0 && totals.assigned > 0;
+    const canSave = compareDecimalStrings(totals.remaining, '0.0000') === 0 && compareDecimalStrings(totals.assigned, '0.0000') > 0;
 
     const productOptions = (loadSheet?.by_product ?? [])
-        .filter(p => p.total_loaded > 0)
+        .filter(p => compareDecimalStrings(p.total_loaded, '0.0000') > 0)
         .map(p => ({
             label: `${p.product_name} (${p.total_loaded} unid.)`,
             value: p.product_id,
@@ -109,8 +111,8 @@ export const RouteAdjustmentDrawer = ({
         }
     };
 
-    const updateQuantity = (routeStopItemId: string, val: number | null) => {
-        setQuantities(prev => ({ ...prev, [routeStopItemId]: val ?? 0 }));
+    const updateQuantity = (routeStopItemId: string, val: DecimalString | null) => {
+        setQuantities(prev => ({ ...prev, [routeStopItemId]: val ?? '0.0000' }));
     };
 
     const handleClose = () => {
@@ -186,7 +188,7 @@ export const RouteAdjustmentDrawer = ({
                                         <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
                                             Faltante
                                         </Text>
-                                        <Text strong style={{ fontSize: 20, color: totals.remaining > 0 ? '#faad14' : '#52c41a' }}>
+                                        <Text strong style={{ fontSize: 20, color: compareDecimalStrings(totals.remaining, '0.0000') > 0 ? '#faad14' : '#52c41a' }}>
                                             {totals.remaining}
                                         </Text>
                                     </div>
@@ -222,10 +224,13 @@ export const RouteAdjustmentDrawer = ({
                                             <Text type="secondary" style={{ fontSize: 12 }}>
                                                 Cargado
                                             </Text>
-                                            <InputNumber
-                                                min={0}
+                                            <InputNumber<string>
+                                                stringMode
+                                                min="0"
                                                 value={quantities[item.route_stop_item_id]}
                                                 onChange={(val) => updateQuantity(item.route_stop_item_id, val)}
+                                                precision={4}
+                                                step="1"
                                                 style={{ width: 80 }}
                                             />
                                         </div>

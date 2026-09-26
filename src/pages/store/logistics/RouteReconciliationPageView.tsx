@@ -7,6 +7,7 @@ import Tabs from '@/components/Tabs/Tabs';
 import { CollectionsTable } from '@/features/store/logistics/components/CollectionsTable';
 import { DiscrepancyGroupsTable } from '@/features/store/logistics/components/DiscrepancyGroupsTable';
 import type { RouteReconciliationSummary, RouteReconciliationCollectionGroup, RouteReconciliationProductGroup, DiscrepancyResolutionType, ResolveDiscrepanciesBatchPayload } from '@/features/store/logistics/interfaces/reconciliation.interface';
+import type { DecimalString } from '@/types/decimal';
 import { formatDateShort } from '@/utils/formatters';
 import './RouteReconciliationPage.css';
 
@@ -39,7 +40,7 @@ interface RouteReconciliationPageViewProps {
     onVerify: (collectionId: string) => Promise<void>;
     onVerifyGroup: (paymentMethodId: string) => Promise<void>;
     onReject: (collectionId: string, reason: string) => Promise<void>;
-    onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: number, notes?: string) => Promise<void>;
+    onResolveDiscrepancy: (discrepancyId: string, resolutionType: DiscrepancyResolutionType, quantityToResolve: DecimalString, notes?: string) => Promise<void>;
     onResolveDiscrepanciesBatch: (payload: ResolveDiscrepanciesBatchPayload) => Promise<void>;
     onFinalize: () => Promise<void>;
     onBack: () => void;

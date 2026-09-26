@@ -2,6 +2,7 @@ import { Collapse, Descriptions, Empty, Spin, Timeline } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { formatQuantityForDisplay } from '@/utils/quantity';
 import type {
     OrderHistoryDetails,
     OrderHistoryDiscrepancy,
@@ -43,7 +44,7 @@ const discrepancySummary = (discrepancy: OrderHistoryDiscrepancy): string => {
         ? (RESOLUTION_LABELS[discrepancy.resolution_type] ?? discrepancy.resolution_type)
         : 'Sin resolver';
 
-    return `${discrepancy.quantity} — ${resolution}`;
+    return `${formatQuantityForDisplay(discrepancy.quantity)} — ${resolution}`;
 };
 
 const DeliveryDetails = ({ details }: { details: OrderHistoryDetails }) => {
@@ -55,9 +56,30 @@ const DeliveryDetails = ({ details }: { details: OrderHistoryDetails }) => {
             render: (_: unknown, record?: Record<string, unknown>) =>
                 (record as unknown as OrderHistoryItem).product_name || 'Producto',
         },
-        { title: 'Plan.', dataIndex: 'quantity_planned', key: 'quantity_planned', width: 70 },
-        { title: 'Carg.', dataIndex: 'quantity_loaded', key: 'quantity_loaded', width: 70 },
-        { title: 'Entreg.', dataIndex: 'quantity_delivered', key: 'quantity_delivered', width: 80 },
+        {
+            title: 'Plan.',
+            dataIndex: 'quantity_planned',
+            key: 'quantity_planned',
+            width: 70,
+            render: (quantity: unknown) =>
+                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+        },
+        {
+            title: 'Carg.',
+            dataIndex: 'quantity_loaded',
+            key: 'quantity_loaded',
+            width: 70,
+            render: (quantity: unknown) =>
+                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+        },
+        {
+            title: 'Entreg.',
+            dataIndex: 'quantity_delivered',
+            key: 'quantity_delivered',
+            width: 80,
+            render: (quantity: unknown) =>
+                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+        },
     ];
 
     return (
@@ -169,7 +191,10 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
                             {event.details.items?.map((item) => (
                                 <div key={item.product_id} className="flex justify-between gap-3">
                                     <span>{item.product_name || 'Producto'}</span>
-                                    <span>{item.pending_quantity} canceladas</span>
+                                    <span>
+                                        {formatQuantityForDisplay(item.pending_quantity ?? '0.0000')}{' '}
+                                        canceladas
+                                    </span>
                                 </div>
                             ))}
                         </div>

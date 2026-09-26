@@ -38,10 +38,10 @@ const summary: RouteReconciliationSummary = {
                     route_stop_item_id: 'item-1',
                     product_id: 'product-d',
                     product_name: 'Producto D',
-                    quantity_loaded: 3,
-                    quantity_delivered: 1,
-                    difference: 2,
-                    extra_sale_allocated: 0,
+                    quantity_loaded: "3.0000",
+                    quantity_delivered: "1.0000",
+                    difference: "2.0000",
+                    extra_sale_allocated: "0.0000",
                     discrepancy: null,
                 },
             ],
@@ -64,10 +64,10 @@ const summary: RouteReconciliationSummary = {
                     route_stop_item_id: 'item-2',
                     product_id: 'product-d',
                     product_name: 'Producto D',
-                    quantity_loaded: 4,
-                    quantity_delivered: 1,
-                    difference: 3,
-                    extra_sale_allocated: 0,
+                    quantity_loaded: "4.0000",
+                    quantity_delivered: "1.0000",
+                    difference: "3.0000",
+                    extra_sale_allocated: "0.0000",
                     discrepancy: null,
                 },
             ],
@@ -87,7 +87,7 @@ describe('useReconciliation', () => {
 
         expect(result.current.discrepancyGroups[0]).toMatchObject({
             product_id: 'product-d',
-            total_difference: 5,
+            total_difference: "5.0000",
             affected_orders_count: 2,
             status: 'pending',
             can_batch_resolve: true,
@@ -117,7 +117,7 @@ describe('useReconciliation', () => {
                     items: [
                         {
                             ...summary.stops[0].items[0],
-                            difference: 0,
+                            difference: "0.0000",
                             discrepancy: {
                                 id: 'discrepancy-extra-sale',
                                 resolution_type: 'extra_sale',

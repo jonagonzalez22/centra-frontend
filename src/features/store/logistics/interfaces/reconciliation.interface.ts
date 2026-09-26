@@ -34,10 +34,10 @@ export interface RouteReconciliationStopItem {
     route_stop_item_id: string;
     product_id: string;
     product_name: string;
-    quantity_loaded: number;
-    quantity_delivered: number;
-    difference: number;
-    extra_sale_allocated: number;
+    quantity_loaded: DecimalString;
+    quantity_delivered: DecimalString;
+    difference: DecimalString;
+    extra_sale_allocated: DecimalString;
     discrepancy: DeliveryDiscrepancy | null;
 }
 
@@ -54,7 +54,7 @@ export type RouteReconciliationProductStatus = 'pending' | 'resolved' | 'partial
 export interface RouteReconciliationProductGroup {
     product_id: string;
     product_name: string;
-    total_difference: number;
+    total_difference: DecimalString;
     affected_orders_count: number;
     affected_stops_count: number;
     status: RouteReconciliationProductStatus;
@@ -136,7 +136,7 @@ export interface RejectCollectionPayload {
 export interface ResolveDiscrepancyPayload {
     route_stop_item_id: string;
     resolution_type: DiscrepancyResolutionType;
-    quantity_to_resolve: number;
+    quantity_to_resolve: DecimalString;
     notes?: string;
 }
 
@@ -144,7 +144,8 @@ export interface ResolveDiscrepanciesBatchPayload {
     items: Array<{
         route_stop_item_id: string;
         resolution_type: BatchDiscrepancyResolutionType;
-        quantity_to_resolve: number;
+        quantity_to_resolve: DecimalString;
         notes?: string;
     }>;
 }
+import type { DecimalString } from '@/types/decimal';

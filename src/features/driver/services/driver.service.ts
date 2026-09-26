@@ -1,6 +1,7 @@
 import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import type { DecimalString } from '@/types/decimal';
 import type {
     ActiveRouteResponse,
     RouteStopsResponse,
@@ -17,8 +18,8 @@ export interface CompleteStopPayload {
     status: 'completed' | 'failed';
     items: Array<{
         route_stop_item_id: string;
-        quantity_delivered: number;
-        quantity_released_for_extra_sale: number;
+        quantity_delivered: DecimalString;
+        quantity_released_for_extra_sale: DecimalString;
         rejection_reason_id?: string | null;
     }>;
     gps?: {
@@ -131,7 +132,7 @@ export const DriverService = {
 
     previewCollection: async (
         stopId: string,
-        items: Array<{ route_stop_item_id: string; quantity_delivered: number }>,
+        items: Array<{ route_stop_item_id: string; quantity_delivered: DecimalString }>,
         signal?: AbortSignal
     ): Promise<CollectionPreview> => {
         const { data } = await api.post<{

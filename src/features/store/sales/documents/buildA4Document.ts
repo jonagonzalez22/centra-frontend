@@ -1,4 +1,5 @@
 import { formatCurrencyWithCents } from '@/utils/formatters';
+import { formatQuantityForDisplay } from '@/utils/quantity';
 import type { ReceiptData } from '../interfaces/sale.interface';
 import { formatCuit, formatReceiptOccurredAt } from '../utils/receipt-formatters';
 import type { A4DocumentDefinition, PdfDocumentNode } from './a4-document.types';
@@ -78,7 +79,7 @@ export const buildA4Document = (receipt: ReceiptData): A4DocumentDefinition => {
         ],
         ...items.map((item) => [
             { text: item.product_name, fontSize: 10 },
-            { text: String(item.quantity), alignment: 'center', fontSize: 10 },
+            { text: formatQuantityForDisplay(item.quantity), alignment: 'center', fontSize: 10 },
             { text: formatCurrencyWithCents(item.unit_price), alignment: 'right', fontSize: 10 },
             {
                 text: formatCurrencyWithCents(item.subtotal),

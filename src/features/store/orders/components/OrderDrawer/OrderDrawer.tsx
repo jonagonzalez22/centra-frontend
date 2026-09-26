@@ -20,6 +20,7 @@ import OrderDrawerHistory from './OrderDrawerHistory';
 import type { OrderDetail } from '../../interfaces/order.interface';
 import type { TabsItem } from '@/components/Tabs/Tabs';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
 
 interface OrderDrawerProps {
     open: boolean;
@@ -58,7 +59,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
     const hasPendingDelivery = order?.delivery_summary?.has_pending_delivery ?? false;
     const hasActivePendingAssignment =
         order?.delivery_summary?.items.some(
-            (item) => item.pending_quantity > 0 && item.planned_active_quantity > 0
+            (item) => compareDecimalStrings(item.pending_quantity, '0.0000') > 0 && compareDecimalStrings(item.planned_active_quantity, '0.0000') > 0
         ) ?? false;
 
     useEffect(() => {
@@ -237,11 +238,11 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                 <p className="text-sm text-gray-600 mt-1">
                                     {
                                         order.delivery_summary.items.filter(
-                                            (item) => item.pending_quantity > 0
+                                            (item) => compareDecimalStrings(item.pending_quantity, '0.0000') > 0
                                         ).length
                                     }{' '}
                                     {order.delivery_summary.items.filter(
-                                        (item) => item.pending_quantity > 0
+                                        (item) => compareDecimalStrings(item.pending_quantity, '0.0000') > 0
                                     ).length === 1
                                         ? 'producto tiene'
                                         : 'productos tienen'}{' '}
@@ -334,7 +335,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                   scroll={{ x: 420, y: 'calc(100vh - 280px)' }}
                                   rowKey="product_id"
                                   dataSource={order.delivery_summary.items.filter(
-                                      (item) => item.pending_quantity > 0
+                                      (item) => compareDecimalStrings(item.pending_quantity, '0.0000') > 0
                                   )}
                                   columns={[
                                       {
@@ -348,18 +349,24 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                           dataIndex: 'ordered_quantity',
                                           key: 'ordered_quantity',
                                           align: 'right' as const,
+                                          render: (quantity: string) =>
+                                              formatQuantityForDisplay(quantity),
                                       },
                                       {
                                           title: 'Entregado',
                                           dataIndex: 'delivered_quantity',
                                           key: 'delivered_quantity',
                                           align: 'right' as const,
+                                          render: (quantity: string) =>
+                                              formatQuantityForDisplay(quantity),
                                       },
                                       {
                                           title: 'Pendiente',
                                           dataIndex: 'pending_quantity',
                                           key: 'pending_quantity',
                                           align: 'right' as const,
+                                          render: (quantity: string) =>
+                                              formatQuantityForDisplay(quantity),
                                       },
                                   ]}
                               />

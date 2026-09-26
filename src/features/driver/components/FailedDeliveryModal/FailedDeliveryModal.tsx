@@ -6,13 +6,16 @@ import SelectField from '@/components/SelectField/SelectField';
 import type { RejectionReason } from '../../services/driver.service';
 import type { StopDetailItem } from '../../interfaces/driver.interface';
 import './FailedDeliveryModal.css';
+import type { DecimalString } from '@/types/decimal';
+import { addDecimalStrings, compareDecimalStrings, minDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
+import { formatQuantityForDisplay } from '@/utils/quantity';
 
 interface FailedDeliveryModalProps {
     open: boolean;
     rejectionReasons: RejectionReason[];
     items: StopDetailItem[];
     loading: boolean;
-    onConfirm: (rejectionReasonId: string, quantitiesReleased: Record<string, number>) => void;
+    onConfirm: (rejectionReasonId: string, quantitiesReleased: Record<string, DecimalString>) => void;
     onClose: () => void;
 }
 
@@ -26,18 +29,22 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
 }) => {
     const [form] = Form.useForm<{ rejection_reason_id: string }>();
     const [selectedReasonId, setSelectedReasonId] = useState<string>();
-    const [quantitiesReleased, setQuantitiesReleased] = useState<Record<string, number>>({});
+    const [quantitiesReleased, setQuantitiesReleased] = useState<Record<string, DecimalString>>({});
 
     useEffect(() => {
         if (open) {
             form.resetFields();
-            setSelectedReasonId(undefined);
-            setQuantitiesReleased({});
         }
     }, [open, form]);
 
     const handleFinish = ({ rejection_reason_id }: { rejection_reason_id: string }) => {
         onConfirm(rejection_reason_id, quantitiesReleased);
+    };
+
+    const handleClose = () => {
+        setSelectedReasonId(undefined);
+        setQuantitiesReleased({});
+        onClose();
     };
 
     const handleReasonChange = (reasonId: string) => {
@@ -47,16 +54,19 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
             Object.fromEntries(
                 items.map((item) => [
                     item.id,
-                    reason?.suggest_extra_sale ? item.quantity_loaded : 0,
+                    reason?.suggest_extra_sale ? item.quantity_loaded : '0.0000',
                 ])
             )
         );
     };
 
-    const setReleasedQuantity = (item: StopDetailItem, value: number) => {
+    const setReleasedQuantity = (item: StopDetailItem, value: DecimalString) => {
         setQuantitiesReleased((previous) => ({
             ...previous,
-            [item.id]: Math.max(0, Math.min(value, item.quantity_loaded)),
+            [item.id]: minDecimalStrings(
+                compareDecimalStrings(value, '0.0000') < 0 ? '0.0000' : normalizeDecimalString(value),
+                item.quantity_loaded
+            ),
         }));
     };
 
@@ -67,7 +77,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
 
     const footer = (
         <>
-            <Button variant="default" label="Cancelar" action={onClose} disabled={loading} />
+            <Button variant="default" label="Cancelar" action={handleClose} disabled={loading} />
             <Button
                 variant="danger"
                 label="Confirmar"
@@ -80,7 +90,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
     return (
         <Modal
             open={open}
-            onClose={onClose}
+            onClose={handleClose}
             title="No se pudo entregar"
             width={400}
             footer={footer}
@@ -123,16 +133,16 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                 Indicá cuántas unidades pueden reutilizarse.
                             </div>
                             {items
-                                .filter((item) => item.quantity_loaded > 0)
+                                .filter((item) => compareDecimalStrings(item.quantity_loaded, '0.0000') > 0)
                                 .map((item) => {
-                                    const released = quantitiesReleased[item.id] ?? 0;
+                                    const released = quantitiesReleased[item.id] ?? '0.0000';
                                     return (
                                         <div className="failedDeliveryProduct" key={item.id}>
                                             <div className="failedDeliveryProductName">
                                                 {item.product_name}
                                             </div>
                                             <div className="failedDeliveryProductRemaining">
-                                                No entregado: {item.quantity_loaded}
+                                                No entregado: {formatQuantityForDisplay(item.quantity_loaded)}
                                             </div>
                                             <div className="failedDeliveryReleaseLabel">
                                                 Disponible para Venta Extra
@@ -140,22 +150,22 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                             <div className="failedDeliveryStepper">
                                                 <button
                                                     type="button"
-                                                    disabled={released === 0 || loading}
+                                                    disabled={compareDecimalStrings(released, '0.0000') === 0 || loading}
                                                     onClick={() =>
-                                                        setReleasedQuantity(item, released - 1)
+                                                        setReleasedQuantity(item, addDecimalStrings(released, '-1'))
                                                     }
                                                     aria-label={`Reducir disponibilidad de ${item.product_name}`}
                                                 >
                                                     −
                                                 </button>
-                                                <span>{released}</span>
+                                                <span>{formatQuantityForDisplay(released)}</span>
                                                 <button
                                                     type="button"
                                                     disabled={
-                                                        released === item.quantity_loaded || loading
+                                                        compareDecimalStrings(released, item.quantity_loaded) === 0 || loading
                                                     }
                                                     onClick={() =>
-                                                        setReleasedQuantity(item, released + 1)
+                                                        setReleasedQuantity(item, addDecimalStrings(released, '1'))
                                                     }
                                                     aria-label={`Aumentar disponibilidad de ${item.product_name}`}
                                                 >
@@ -163,7 +173,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                                 </button>
                                             </div>
                                             <div className="failedDeliveryProductMaximum">
-                                                Máximo: {item.quantity_loaded}
+                                                Máximo: {formatQuantityForDisplay(item.quantity_loaded)}
                                             </div>
                                         </div>
                                     );
