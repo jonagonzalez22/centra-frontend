@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Spin, message } from 'antd';
+import { Spin, Tooltip, message } from 'antd';
 import { Package, DollarSign, Tag as TagIcon, AlertTriangle, Settings } from 'lucide-react';
 import Drawer from '@/components/Drawer/Drawer';
 import Tabs from '@/components/Tabs/Tabs';
 import { Button } from '@/components/Button';
 import { ProductsService } from '../../services/products.service';
 import { formatDate, formatCurrency } from '@/utils/formatters';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 import type { Product } from '../../interfaces/product.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import { StockHistoryTab } from '@/features/store/inventory/components/StockHistoryTab';
@@ -167,15 +167,53 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                             title="Stock"
                                             variant={isLowStock ? 'danger' : 'default'}
                                         >
-                                            <Field label="Stock Físico" value={formatQuantityForDisplay(product.stock)} />
-                                            <Field label="Stock Reservado" value={formatQuantityForDisplay(product.stock_reserved)} />
-                                            <div className="productDrawerStockAvailable">
-                                                <span className="productDrawerFieldLabel">Stock Disponible</span>
-                                                <span className={`productDrawerStockTag ${isLowStock ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {formatQuantityForDisplay(product.available_stock)}
+                                            <Field
+                                                label="Unidad de medida"
+                                                value={product.stock_measurement_unit
+                                                    ? `${product.stock_measurement_unit.name} (${product.stock_measurement_unit.symbol})`
+                                                    : '—'}
+                                            />
+                                            <Field
+                                                label="Cantidad mínima de venta"
+                                                value={formatQuantityWithUnit(
+                                                    product.sale_quantity_step ?? '1.0000',
+                                                    product.stock_measurement_unit?.symbol,
+                                                )}
+                                            />
+                                            <Field
+                                                label="Stock Físico"
+                                                value={formatQuantityWithUnit(
+                                                    product.stock,
+                                                    product.stock_measurement_unit?.symbol,
+                                                )}
+                                            />
+                                            <Field
+                                                label="Stock Reservado"
+                                                value={formatQuantityWithUnit(
+                                                    product.stock_reserved,
+                                                    product.stock_measurement_unit?.symbol,
+                                                )}
+                                            />
+                                            <div className="productDrawerField">
+                                                <span className="productDrawerFieldLabel">
+                                                    <Tooltip title="Considera el stock reservado y la cantidad mínima de venta configurada.">
+                                                        Disponible para vender
+                                                    </Tooltip>
+                                                </span>
+                                                <span className={`productDrawerFieldValue productDrawerStockTag ${isLowStock ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {formatQuantityWithUnit(
+                                                        product.commercial_available_quantity ?? product.available_stock,
+                                                        product.stock_measurement_unit?.symbol,
+                                                    )}
                                                 </span>
                                             </div>
-                                            <Field label="Stock Mínimo" value={formatQuantityForDisplay(product.stock_min)} />
+                                            <Field
+                                                label="Stock Mínimo"
+                                                value={formatQuantityWithUnit(
+                                                    product.stock_min,
+                                                    product.stock_measurement_unit?.symbol,
+                                                )}
+                                            />
                                             {isLowStock && (
                                                 <span className="text-red-600 text-sm font-medium">Stock bajo</span>
                                             )}

@@ -83,3 +83,13 @@ export function formatQuantityForDisplay(value: DecimalString | number, locale =
 
     return `${negative ? '-' : ''}${groupedInteger}${separator}${trimmedFraction}`;
 }
+
+export function formatQuantityWithUnit(
+    value: DecimalString | number,
+    symbol?: string | null,
+    locale = 'es-AR',
+): string {
+    const formatted = formatQuantityForDisplay(value, locale);
+
+    return symbol ? `${formatted} ${symbol}` : formatted;
+}

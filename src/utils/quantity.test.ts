@@ -3,6 +3,7 @@ import {
     addDecimalStrings,
     compareDecimalStrings,
     formatQuantityForDisplay,
+    formatQuantityWithUnit,
     isPositiveDecimal,
     isZeroDecimal,
     normalizeDecimalString,
@@ -28,5 +29,7 @@ describe('quantity helpers', () => {
         expect(formatQuantityForDisplay('10.5000')).toBe('10,5');
         expect(formatQuantityForDisplay('10.2500')).toBe('10,25');
         expect(formatQuantityForDisplay('0.1250')).toBe('0,125');
+        expect(formatQuantityWithUnit('48.8750', 'kg')).toBe('48,875 kg');
+        expect(formatQuantityWithUnit('1.0000', 'u')).toBe('1 u');
     });
 });

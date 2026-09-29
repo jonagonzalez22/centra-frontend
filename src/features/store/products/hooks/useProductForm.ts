@@ -75,6 +75,8 @@ export const buildInitialValuesFromProduct = (product: Product): CreateProductDt
         cost: product.cost ?? undefined,
         stock: product.stock,
         stock_min: product.stock_min,
+        stock_measurement_unit_id: product.stock_measurement_unit_id ?? '',
+        sale_quantity_step: product.sale_quantity_step ?? '1.0000',
         is_active: product.is_active,
         category_id: product.category.id,
     };

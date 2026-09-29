@@ -5,7 +5,7 @@ import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import ActionButton from '@/components/ActionButton/ActionButton';
 import { formatCurrency } from '@/utils/formatters';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 import { useProductsContext } from '../../context/ProductsContext';
 import type { Product } from '../../interfaces/product.interface';
 import './ProductsTable.css';
@@ -79,7 +79,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 const product = record as unknown as Product;
                 return (
                     <Tag color={isLowStock(product) ? 'red' : 'green'}>
-                        {formatQuantityForDisplay(product.available_stock)}
+                        {formatQuantityWithUnit(product.available_stock, product.stock_measurement_unit?.symbol)}
                     </Tag>
                 );
             },
@@ -89,7 +89,10 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             key: 'stock_reserved',
             responsive: ['lg'] as ResponsiveList,
             render: (_: unknown, record?: Record<string, unknown>) =>
-                formatQuantityForDisplay((record as unknown as Product).stock_reserved),
+                formatQuantityWithUnit(
+                    (record as unknown as Product).stock_reserved,
+                    (record as unknown as Product).stock_measurement_unit?.symbol,
+                ),
         },
         {
             title: 'Stock Mín.',
@@ -101,7 +104,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 if (isLowStock(product)) {
                     return <Tag color="red">Stock bajo</Tag>;
                 }
-                return formatQuantityForDisplay(product.stock_min);
+                return formatQuantityWithUnit(product.stock_min, product.stock_measurement_unit?.symbol);
             },
         },
         {

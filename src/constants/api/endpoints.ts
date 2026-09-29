@@ -17,6 +17,9 @@ export const API_ENDPOINTS = {
         CATEGORIES: {
             URL: '/v1/store/categories',
         },
+        MEASUREMENT_UNITS: {
+            URL: '/v1/store/measurement-units',
+        },
         PRODUCTS: {
             URL: '/v1/store/products',
         },

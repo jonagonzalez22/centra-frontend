@@ -8,9 +8,27 @@ import type {
     UpdateProductDto,
     ProductsFilters,
     ProductsListResponse,
+    MeasurementUnit,
 } from '../interfaces/product.interface';
 
 export const ProductsService = {
+    getMeasurementUnits: async (): Promise<MeasurementUnit[]> => {
+        const { data } = await api.get<ApiListResponse<MeasurementUnit[]>>(
+            API_ENDPOINTS.STORE.MEASUREMENT_UNITS.URL
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
     getAll: async (filters: ProductsFilters = {}): Promise<ProductsListResponse> => {
         const { data } = await api.get<ApiListResponse<ProductsListResponse>>(
             API_ENDPOINTS.STORE.PRODUCTS.URL,

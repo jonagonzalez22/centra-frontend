@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
@@ -7,7 +7,7 @@ import { useProductForm, buildInitialValuesFromProduct } from '../../hooks/usePr
 import { useProductsContext } from '../../context/ProductsContext';
 import { ProductsService } from '../../services/products.service';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
-import type { Product, CreateProductDto } from '../../interfaces/product.interface';
+import type { MeasurementUnit, Product, CreateProductDto } from '../../interfaces/product.interface';
 import './ProductFormModal.css';
 
 interface ProductFormModalProps {
@@ -22,6 +22,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const { categories, categoriesLoading } = useProductsContext();
     const { loading, createProduct, updateProduct } = useProductForm({ onSuccess });
     const [skuGenerating, setSkuGenerating] = useState(false);
+    const [measurementUnits, setMeasurementUnits] = useState<MeasurementUnit[]>([]);
+    const [measurementUnitsLoading, setMeasurementUnitsLoading] = useState(false);
 
     const isEditing = !!product;
     const title = isEditing ? 'Editar Producto' : 'Crear Producto';
@@ -35,6 +37,44 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
             }
         }
     }, [open, product, form]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        let mounted = true;
+        setMeasurementUnitsLoading(true);
+
+        ProductsService.getMeasurementUnits()
+            .then((units) => {
+                if (mounted) setMeasurementUnits(units);
+            })
+            .catch((err) => {
+                if (mounted) {
+                    const apiError = err as ApiError;
+                    message.error(apiError.message || 'No se pudieron cargar las unidades de medida.');
+                    setMeasurementUnits([]);
+                }
+            })
+            .finally(() => {
+                if (mounted) setMeasurementUnitsLoading(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, [open]);
+
+    const defaultMeasurementUnit = useMemo(
+        () => measurementUnits.find((unit) => unit.code === 'unit'),
+        [measurementUnits],
+    );
+
+    useEffect(() => {
+        if (open && !product && defaultMeasurementUnit) {
+            form.setFieldValue('stock_measurement_unit_id', defaultMeasurementUnit.id);
+            form.setFieldValue('sale_quantity_step', '1.0000');
+        }
+    }, [defaultMeasurementUnit, form, open, product]);
 
     const handleGenerateSku = async () => {
         const values = form.getFieldsValue(['name', 'category_id']);
@@ -109,6 +149,9 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 loading={loading}
                 categories={categories}
                 categoriesLoading={categoriesLoading}
+                measurementUnits={measurementUnits}
+                measurementUnitsLoading={measurementUnitsLoading}
+                defaultMeasurementUnitId={defaultMeasurementUnit?.id}
                 onSubmit={handleSubmit}
                 product={product}
                 skuGenerating={skuGenerating}

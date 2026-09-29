@@ -1,6 +1,16 @@
+import type { DecimalString } from '@/types/decimal';
+
 export interface ProductCategory {
     id: string;
     name: string;
+}
+
+export interface MeasurementUnit {
+    id: string;
+    code: string;
+    name: string;
+    symbol: string;
+    category: string;
 }
 
 export interface Product {
@@ -15,6 +25,10 @@ export interface Product {
     stock_reserved: DecimalString;
     available_stock: DecimalString;
     stock_min: DecimalString;
+    stock_measurement_unit_id: string | null;
+    stock_measurement_unit: MeasurementUnit | null;
+    sale_quantity_step: DecimalString;
+    commercial_available_quantity: DecimalString;
     is_active: boolean;
     category: ProductCategory;
     parent_product_id: string | null;
@@ -31,6 +45,8 @@ export interface CreateProductDto {
     cost?: string | number | null;
     stock?: DecimalString;
     stock_min: DecimalString;
+    stock_measurement_unit_id: string;
+    sale_quantity_step: DecimalString;
     is_active?: boolean;
     category_id: string;
 }
@@ -62,4 +78,3 @@ export interface ProductsSearchValues {
     category_id?: string;
     is_active?: boolean;
 }
-import type { DecimalString } from '@/types/decimal';
