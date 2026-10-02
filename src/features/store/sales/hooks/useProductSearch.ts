@@ -54,7 +54,9 @@ export function useProductSearch() {
           sku: product.sku,
           barcode: product.barcode,
           price: Number(product.price),
-          available_stock: product.available_stock,
+          commercial_available_quantity: product.commercial_available_quantity,
+          sale_quantity_step: product.sale_quantity_step,
+          stock_measurement_unit_symbol: product.stock_measurement_unit?.symbol ?? null,
         });
       } catch {
         message.error('Error al obtener el producto.');
@@ -74,7 +76,7 @@ export function useProductSearch() {
           message.error('Producto no encontrado.');
           return false;
         }
-        if (!isPositiveDecimal(product.available_stock)) {
+        if (!isPositiveDecimal(product.commercial_available_quantity)) {
           message.error('Producto sin stock disponible.');
           return false;
         }
@@ -84,7 +86,9 @@ export function useProductSearch() {
           sku: product.sku,
           barcode: product.barcode,
           price: Number(product.price),
-          available_stock: product.available_stock,
+          commercial_available_quantity: product.commercial_available_quantity,
+          sale_quantity_step: product.sale_quantity_step,
+          stock_measurement_unit_symbol: product.stock_measurement_unit?.symbol ?? null,
         });
         setQuery('');
         setResults([]);

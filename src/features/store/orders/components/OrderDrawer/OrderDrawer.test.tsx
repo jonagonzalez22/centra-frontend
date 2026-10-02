@@ -68,9 +68,9 @@ test('shows collect action in payments tab, not in the general footer', async ()
 });
 
 test.each([
-    ['3.0000', '3'],
-    ['3.5000', '3,5'],
-])('formats item quantity %s as %s in the items and payments tab', async (quantity, displayedQuantity) => {
+    ['3.0000', '3 u'],
+    ['3.5000', '3,5 u'],
+])('formats item quantity %s with its UOM in the items and payments tab', async (quantity, displayedQuantity) => {
     const user = userEvent.setup();
     render(
         <OrderDrawer
@@ -87,6 +87,7 @@ test.each([
                         subtotal: 23790,
                         tax_amount: 0,
                         discount_amount: 0,
+                        stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
                     },
                 ],
             }}

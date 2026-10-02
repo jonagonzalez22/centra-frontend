@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CommercialProductDetail } from '../interfaces/commercial-product.interface';
 import type { OrderEditability } from '../interfaces/order.interface';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, minDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, isMultipleOfDecimalStrings, maxDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
 
 export interface OrderProductDraftItem {
     product_id: string;
@@ -14,6 +14,10 @@ export interface OrderProductDraftItem {
     minimum_quantity: DecimalString;
     delivered_quantity: DecimalString;
     active_committed_quantity: DecimalString;
+    sale_quantity_step: DecimalString;
+    commercial_available_quantity: DecimalString;
+    maximum_editable_quantity: DecimalString;
+    stock_measurement_unit_symbol: string | null;
     price?: number;
     available_stock?: DecimalString;
     is_new: boolean;
@@ -30,6 +34,10 @@ const initialDraft = (editability: OrderEditability | null): OrderProductDraftIt
         minimum_quantity: item.minimum_quantity,
         delivered_quantity: item.delivered_quantity,
         active_committed_quantity: item.active_committed_quantity,
+        sale_quantity_step: item.sale_quantity_step,
+        commercial_available_quantity: item.commercial_available_quantity,
+        maximum_editable_quantity: item.maximum_editable_quantity,
+        stock_measurement_unit_symbol: item.stock_measurement_unit?.symbol ?? null,
         is_new: false,
     }));
 
@@ -50,23 +58,27 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                 if (item.product_id !== productId) return item;
 
                 const requestedQuantity = normalizeDecimalString(value);
+                if (!isMultipleOfDecimalStrings(requestedQuantity, item.sale_quantity_step)) return item;
                 // Reaching zero is intentionally reserved for the explicit
                 // remove action and its confirmation flow.
-                const minimum = compareDecimalStrings(item.minimum_quantity, '1.0000') > 0 ? item.minimum_quantity : '1.0000';
-                const stockMaximum = item.is_new ? (item.available_stock ?? requestedQuantity) : requestedQuantity;
+                const minimum = maxDecimalStrings(item.minimum_quantity, item.sale_quantity_step);
+                const stockMaximum = item.is_new
+                    ? item.commercial_available_quantity
+                    : item.maximum_editable_quantity;
 
                 return {
                     ...item,
-                    quantity: item.is_new
-                        ? (compareDecimalStrings(minDecimalStrings(stockMaximum, requestedQuantity), minimum) < 0 ? minimum : minDecimalStrings(stockMaximum, requestedQuantity))
-                        : (compareDecimalStrings(requestedQuantity, minimum) < 0 ? minimum : requestedQuantity),
+                    quantity: compareDecimalStrings(requestedQuantity, minimum) < 0 ||
+                        compareDecimalStrings(requestedQuantity, stockMaximum) > 0
+                        ? item.quantity
+                        : requestedQuantity,
                 };
             })
         );
     }, []);
 
     const addProduct = useCallback((product: CommercialProductDetail) => {
-        if (compareDecimalStrings(product.available_stock, '1.0000') < 0) return false;
+        if (compareDecimalStrings(product.commercial_available_quantity, product.sale_quantity_step) < 0) return false;
 
         setDraft((current) => {
             const existing = current.find((item) => item.product_id === product.id);
@@ -76,9 +88,12 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                     item.product_id === product.id
                         ? {
                               ...item,
-                              quantity: item.is_new
-                                  ? minDecimalStrings(addDecimalStrings(item.quantity, '1'), item.available_stock ?? item.quantity)
-                                  : addDecimalStrings(item.quantity, '1'),
+                              quantity: compareDecimalStrings(
+                                  addDecimalStrings(item.quantity, item.sale_quantity_step),
+                                  item.maximum_editable_quantity,
+                              ) <= 0
+                                  ? addDecimalStrings(item.quantity, item.sale_quantity_step)
+                                  : item.quantity,
                           }
                         : item
                 );
@@ -92,12 +107,16 @@ export const useOrderProductDraft = (editability: OrderEditability | null) => {
                     sku: product.sku,
                     barcode: product.barcode,
                     original_quantity: '0.0000',
-                    quantity: '1.0000',
+                    quantity: product.sale_quantity_step,
                     minimum_quantity: '0.0000',
                     delivered_quantity: '0.0000',
                     active_committed_quantity: '0.0000',
                     price: product.price,
                     available_stock: product.available_stock,
+                    sale_quantity_step: product.sale_quantity_step,
+                    commercial_available_quantity: product.commercial_available_quantity,
+                    maximum_editable_quantity: product.commercial_available_quantity,
+                    stock_measurement_unit_symbol: product.stock_measurement_unit?.symbol ?? null,
                     is_new: true,
                 },
             ];

@@ -1,6 +1,6 @@
 import { Empty, Spin } from 'antd';
 import { formatCurrency } from '@/utils/formatters';
-import { formatQuantityForDisplay } from '@/utils/quantity';
+import { formatQuantityWithUnit } from '@/utils/quantity';
 import type { OrderItem } from '../../interfaces/order.interface';
 
 interface OrderDrawerItemsProps {
@@ -37,7 +37,7 @@ const OrderDrawerItems: React.FC<OrderDrawerItemsProps> = ({ items, loading }) =
                         <tr key={item.id} className="border-t border-gray-100">
                             <td className="p-2">{item.product_name}</td>
                             <td className="text-center p-2">
-                                {formatQuantityForDisplay(item.quantity)}
+                                {formatQuantityWithUnit(item.quantity, item.stock_measurement_unit?.symbol)}
                             </td>
                             <td className="text-right p-2">{formatCurrency(item.price)}</td>
                             <td className="text-right p-2">{formatCurrency(item.subtotal)}</td>

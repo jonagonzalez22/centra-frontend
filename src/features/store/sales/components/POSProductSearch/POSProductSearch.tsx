@@ -2,6 +2,7 @@ import { Input, Spin, Empty } from 'antd';
 import { Search } from 'lucide-react';
 import { useProductSearch } from '../../hooks/useProductSearch';
 import { usePOSStore } from '../../stores/usePOSStore';
+import { formatQuantityWithUnit } from '@/utils/quantity';
 
 export const POSProductSearch: React.FC = () => {
   const {
@@ -71,7 +72,7 @@ export const POSProductSearch: React.FC = () => {
                   </div>
                   {inCart && (
                     <span className="text-xs text-blue-500 ml-2 whitespace-nowrap">
-                      {inCart.quantity} en carrito
+                      {formatQuantityWithUnit(inCart.quantity, inCart.stock_measurement_unit_symbol)} en carrito
                     </span>
                   )}
                 </div>

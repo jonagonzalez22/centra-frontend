@@ -20,7 +20,7 @@ import OrderDrawerHistory from './OrderDrawerHistory';
 import type { OrderDetail } from '../../interfaces/order.interface';
 import type { TabsItem } from '@/components/Tabs/Tabs';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 interface OrderDrawerProps {
     open: boolean;
@@ -349,24 +349,24 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                           dataIndex: 'ordered_quantity',
                                           key: 'ordered_quantity',
                                           align: 'right' as const,
-                                          render: (quantity: string) =>
-                                              formatQuantityForDisplay(quantity),
+                                          render: (quantity: string, item) =>
+                                              formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol),
                                       },
                                       {
                                           title: 'Entregado',
                                           dataIndex: 'delivered_quantity',
                                           key: 'delivered_quantity',
                                           align: 'right' as const,
-                                          render: (quantity: string) =>
-                                              formatQuantityForDisplay(quantity),
+                                          render: (quantity: string, item) =>
+                                              formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol),
                                       },
                                       {
                                           title: 'Pendiente',
                                           dataIndex: 'pending_quantity',
                                           key: 'pending_quantity',
                                           align: 'right' as const,
-                                          render: (quantity: string) =>
-                                              formatQuantityForDisplay(quantity),
+                                          render: (quantity: string, item) =>
+                                              formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol),
                                       },
                                   ]}
                               />

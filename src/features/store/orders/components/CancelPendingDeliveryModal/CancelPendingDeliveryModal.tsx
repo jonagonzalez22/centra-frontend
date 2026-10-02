@@ -2,7 +2,7 @@ import { Form, Input } from 'antd';
 import Modal from '@/components/Modal/Modal';
 import { Button } from '@/components/Button';
 import type { DeliverySummaryItem } from '../../interfaces/order.interface';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 interface Props {
     open: boolean;
@@ -31,7 +31,7 @@ const CancelPendingDeliveryModal: React.FC<Props> = ({ open, items, loading, onC
                         <div key={item.product_id} className="flex justify-between gap-3 p-2 text-sm">
                             <span>{item.product_name || 'Producto'}</span>
                             <span className="font-medium whitespace-nowrap">
-                                {formatQuantityForDisplay(item.pending_quantity)} {compareDecimalStrings(item.pending_quantity, '1.0000') === 0 ? 'unidad' : 'unidades'}
+                                {formatQuantityWithUnit(item.pending_quantity, item.stock_measurement_unit?.symbol)}
                             </span>
                         </div>
                     ))}

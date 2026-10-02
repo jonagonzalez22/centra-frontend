@@ -12,6 +12,7 @@ const items = [{
     pending_quantity: "1.0000",
     planned_active_quantity: "0.0000",
     unassigned_pending_quantity: "1.0000",
+    stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
 }];
 
 test('lists the complete remainder and requires a reason before confirming once', async () => {
@@ -28,7 +29,7 @@ test('lists the complete remainder and requires a reason before confirming once'
     );
 
     expect(screen.getByText('Cinta Métrica')).toBeInTheDocument();
-    expect(screen.getByText('1 unidad')).toBeInTheDocument();
+    expect(screen.getByText('1 u')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancelar pendiente' }));
     expect(await screen.findByText('El motivo es obligatorio.')).toBeInTheDocument();
     await user.type(screen.getByPlaceholderText('Cliente ya no necesita la mercadería'), 'No entregar');

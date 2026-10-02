@@ -4,6 +4,8 @@ import {
     compareDecimalStrings,
     formatQuantityForDisplay,
     formatQuantityWithUnit,
+    floorToMultipleDecimalStrings,
+    isMultipleOfDecimalStrings,
     isPositiveDecimal,
     isZeroDecimal,
     normalizeDecimalString,
@@ -22,6 +24,16 @@ describe('quantity helpers', () => {
         expect(subtractDecimalStrings('5.0000', '0.1250')).toBe('4.8750');
         expect(isZeroDecimal('0.0000')).toBe(true);
         expect(isPositiveDecimal('0.0001')).toBe(true);
+    });
+
+    it('handles commercial steps exactly', () => {
+        expect(isMultipleOfDecimalStrings('4.0000', '1.0000')).toBe(true);
+        expect(isMultipleOfDecimalStrings('1.2500', '0.2500')).toBe(true);
+        expect(isMultipleOfDecimalStrings('1.3000', '0.2500')).toBe(false);
+        expect(isMultipleOfDecimalStrings('0.3000', '0.1000')).toBe(true);
+        expect(isMultipleOfDecimalStrings('0.0300', '0.0100')).toBe(true);
+        expect(addDecimalStrings('0.2500', '0.2500')).toBe('0.5000');
+        expect(floorToMultipleDecimalStrings('1.3900', '0.2500')).toBe('1.2500');
     });
 
     it('formats quantities without exposing trailing zeroes', () => {

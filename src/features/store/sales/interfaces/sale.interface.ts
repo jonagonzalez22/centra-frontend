@@ -9,6 +9,9 @@ export interface POSItem {
   quantity: DecimalString;
   price: number;
   subtotal: number;
+  sale_quantity_step: DecimalString;
+  commercial_available_quantity: DecimalString;
+  stock_measurement_unit_symbol: string | null;
 }
 
 export interface POSPayment {
@@ -36,7 +39,11 @@ export interface AddItemPayload {
   sku: string;
   barcode: string | null;
   price: number;
-  available_stock: DecimalString;
+  commercial_available_quantity?: DecimalString;
+  sale_quantity_step?: DecimalString;
+  stock_measurement_unit_symbol?: string | null;
+  /** Compatibility with existing callers; commercial availability takes precedence. */
+  available_stock?: DecimalString;
 }
 
 export interface OperationResponse {

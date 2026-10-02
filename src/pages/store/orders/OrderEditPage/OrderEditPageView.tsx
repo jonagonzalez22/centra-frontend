@@ -7,6 +7,7 @@ import {
     Grid,
     Input,
     InputNumber,
+    message,
     Popconfirm,
     Space,
     Spin,
@@ -25,7 +26,7 @@ import type {
 import type { DeliveryDateChangeReason, OrderDetail, OrderEditability } from '@/features/store/orders/interfaces/order.interface';
 import { CommercialProductsService } from '@/features/store/orders/services/commercial-products.service';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
-import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, formatQuantityWithUnit, isMultipleOfDecimalStrings, maxDecimalStrings } from '@/utils/quantity';
 import type { DecimalString } from '@/types/decimal';
 import { OrderDeliveryDateModal } from './OrderDeliveryDateModal';
 
@@ -82,11 +83,41 @@ export const OrderEditPageView = ({
     const [showDropdown, setShowDropdown] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const [deliveryDateModalOpen, setDeliveryDateModalOpen] = useState(false);
+    const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
     const screens = Grid.useBreakpoint();
     const isDesktopLayout = screens.lg === true;
     const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const editable = editability.editable;
     const pendingAmount = order.pending_amount ?? Math.max(0, order.total - order.paid_amount);
+
+    const changeQuantity = (item: OrderProductDraftItem, value: DecimalString | null) => {
+        if (value === null) return;
+        try {
+            if (!isMultipleOfDecimalStrings(value, item.sale_quantity_step)) {
+                message.error(item.sale_quantity_step === '1.0000'
+                    ? 'Este producto se vende por unidad.'
+                    : `Este producto se vende en cantidades de ${formatQuantityWithUnit(item.sale_quantity_step, item.stock_measurement_unit_symbol)}.`);
+                return;
+            }
+            const maximum = item.maximum_editable_quantity;
+            if (compareDecimalStrings(value, maximum) > 0) {
+                message.error(`Disponible: ${formatQuantityWithUnit(maximum, item.stock_measurement_unit_symbol)}.`);
+                return;
+            }
+            onQuantityChange(item.product_id, value);
+        } catch {
+            message.error('Ingresá una cantidad válida.');
+        }
+    };
+
+    const commitQuantityInput = (item: OrderProductDraftItem) => {
+        changeQuantity(item, quantityInputs[item.product_id] ?? item.quantity);
+        setQuantityInputs((current) => {
+            const next = { ...current };
+            delete next[item.product_id];
+            return next;
+        });
+    };
 
     const searchCatalog = async (term: string): Promise<CommercialProductSearchItem[]> => {
         const isBarcode = /^\d{8,}$/.test(term);
@@ -330,10 +361,13 @@ export const OrderEditPageView = ({
                         <div className="space-y-3">
                             {draft.filter((item) => compareDecimalStrings(item.quantity, '0.0000') > 0).map((item) => {
                                 const canRemove = editable && compareDecimalStrings(item.minimum_quantity, '0.0000') === 0;
-                                const minimumEditableQuantity = compareDecimalStrings(item.minimum_quantity, '1.0000') > 0 ? item.minimum_quantity : '1.0000';
+                                const minimumEditableQuantity = maxDecimalStrings(item.minimum_quantity, item.sale_quantity_step);
                                 const canIncrease =
                                     editable &&
-                                    (!item.is_new || compareDecimalStrings(item.quantity, item.available_stock ?? '0.0000') < 0);
+                                    compareDecimalStrings(
+                                        addDecimalStrings(item.quantity, item.sale_quantity_step),
+                                        item.maximum_editable_quantity,
+                                    ) <= 0;
 
                                 return (
                                     <div
@@ -365,8 +399,8 @@ export const OrderEditPageView = ({
                                                 )}
                                                 {item.is_new ? (
                                                     <p className="text-sm text-gray-600 mt-2 mb-0">
-                                                        Precio actual: {formatCurrency(item.price ?? 0)} · Stock
-                                                        disponible: {item.available_stock ?? 0}
+                                                        Precio actual: {formatCurrency(item.price ?? 0)} · Disponible:{' '}
+                                                        {formatQuantityWithUnit(item.commercial_available_quantity, item.stock_measurement_unit_symbol)}
                                                     </p>
                                                 ) : (
                                                     <p className="text-sm text-gray-600 mt-2 mb-0">
@@ -392,7 +426,7 @@ export const OrderEditPageView = ({
                                                                 action={() =>
                                                                     onQuantityChange(
                                                                         item.product_id,
-                                                                        addDecimalStrings(item.quantity, '-1')
+                                                                        addDecimalStrings(item.quantity, `-${item.sale_quantity_step}`)
                                                                     )
                                                                 }
                                                             />
@@ -405,26 +439,20 @@ export const OrderEditPageView = ({
                                                             variant="outlined"
                                                             styles={{ root: { boxShadow: 'none' } }}
                                                             min={minimumEditableQuantity}
-                                                            max={
-                                                                item.is_new
-                                                                    ? item.available_stock
-                                                                    : undefined
-                                                            }
+                                                            max={item.maximum_editable_quantity}
                                                             precision={4}
-                                                            step="1"
-                                                            value={item.quantity}
+                                                            step={item.sale_quantity_step}
+                                                            value={quantityInputs[item.product_id] ?? item.quantity}
+                                                            formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                                                            parser={(value) => value?.replace(',', '.') ?? ''}
                                                             onChange={(value) =>
-                                                                onQuantityChange(
-                                                                    item.product_id,
-                                                                    value
-                                                                )
+                                                                setQuantityInputs((current) => ({
+                                                                    ...current,
+                                                                    [item.product_id]: value ?? '',
+                                                                }))
                                                             }
-                                                            onBlur={() =>
-                                                                onQuantityChange(item.product_id, item.quantity)
-                                                            }
-                                                            onPressEnter={() =>
-                                                                onQuantityChange(item.product_id, item.quantity)
-                                                            }
+                                                            onBlur={() => commitQuantityInput(item)}
+                                                            onPressEnter={() => commitQuantityInput(item)}
                                                         />
                                                         <Tooltip title="Aumentar cantidad">
                                                             <Button
@@ -434,14 +462,16 @@ export const OrderEditPageView = ({
                                                                 icon={<PlusOutlined />}
                                                                 disabled={!canIncrease}
                                                                 action={() =>
-                                                                    onQuantityChange(
-                                                                        item.product_id,
-                                                                        addDecimalStrings(item.quantity, '1')
-                                                                    )
+                                                                    changeQuantity(item, addDecimalStrings(item.quantity, item.sale_quantity_step))
                                                                 }
                                                             />
                                                         </Tooltip>
                                                     </Space.Compact>
+                                                    {item.stock_measurement_unit_symbol && (
+                                                        <span className="text-sm text-gray-500">
+                                                            {item.stock_measurement_unit_symbol}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

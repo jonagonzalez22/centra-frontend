@@ -42,7 +42,7 @@ const order: OrderListItem = {
     branch_id: null,
     route_ids: [],
     has_pending_delivery: true,
-    pending_delivery_quantity: "1.0000",
+    pending_delivery_items_count: 1,
 };
 
 test('shows the requested delivery date without a time-slot placeholder', () => {
@@ -52,6 +52,7 @@ test('shows the requested delivery date without a time-slot placeholder', () => 
     expect(screen.queryByText('Franja horaria')).not.toBeInTheDocument();
     expect(screen.queryByText('Sin franja asignada')).not.toBeInTheDocument();
     expect(screen.getByText('Dina Capuzello')).toBeInTheDocument();
+    expect(screen.getByText('1 ítem pendiente de entrega')).toBeInTheDocument();
 });
 
 test('offers edit navigation only with orders.edit permission', async () => {

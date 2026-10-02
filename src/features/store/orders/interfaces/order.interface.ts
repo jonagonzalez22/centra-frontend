@@ -34,7 +34,15 @@ export interface OrderListItem {
     branch_id: string | null;
     route_ids: string[];
     has_pending_delivery: boolean;
-    pending_delivery_quantity: DecimalString;
+    pending_delivery_items_count: number;
+}
+
+export interface StockMeasurementUnit {
+    id: string;
+    code: string;
+    name: string;
+    symbol: string;
+    category: string;
 }
 
 export interface DeliverySummaryItem {
@@ -46,6 +54,7 @@ export interface DeliverySummaryItem {
     pending_quantity: DecimalString;
     planned_active_quantity: DecimalString;
     unassigned_pending_quantity: DecimalString;
+    stock_measurement_unit: StockMeasurementUnit | null;
 }
 
 export interface DeliverySummary {
@@ -63,6 +72,7 @@ export interface OrderItem {
     subtotal: number;
     tax_amount: number;
     discount_amount: number;
+    stock_measurement_unit: StockMeasurementUnit | null;
 }
 
 export interface OrderPayment {
@@ -224,6 +234,14 @@ export interface OrderEditabilityItem {
     active_committed_quantity: DecimalString;
     minimum_quantity: DecimalString;
     editable_quantity: DecimalString;
+    sale_quantity_step: DecimalString;
+    commercial_available_quantity: DecimalString;
+    maximum_editable_quantity: DecimalString;
+    stock_measurement_unit: {
+        code: string;
+        name: string;
+        symbol: string;
+    } | null;
 }
 
 export interface OrderEditability {

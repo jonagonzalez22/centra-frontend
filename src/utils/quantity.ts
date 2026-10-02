@@ -65,6 +65,32 @@ export function isNegativeDecimal(value: DecimalString | number): boolean {
     return compareDecimalStrings(value, '0.0000') < 0;
 }
 
+/** Checks commercial steps using the same fixed four-decimal representation as the API. */
+export function isMultipleOfDecimalStrings(value: DecimalString | number, step: DecimalString | number): boolean {
+    const scaledStep = toScaled(step);
+
+    if (scaledStep <= 0n) {
+        throw new Error('El paso de venta debe ser mayor a cero.');
+    }
+
+    return toScaled(value) % scaledStep === 0n;
+}
+
+/** Floors a non-negative quantity to its nearest commercial step without float arithmetic. */
+export function floorToMultipleDecimalStrings(
+    value: DecimalString | number,
+    step: DecimalString | number,
+): DecimalString {
+    const scaledValue = toScaled(value);
+    const scaledStep = toScaled(step);
+
+    if (scaledStep <= 0n) {
+        throw new Error('El paso de venta debe ser mayor a cero.');
+    }
+
+    return fromScaled((scaledValue / scaledStep) * scaledStep);
+}
+
 /** Human-oriented display; domain values stay fixed-scale DecimalString. */
 export function formatQuantityForDisplay(value: DecimalString | number, locale = 'es-AR'): string {
     const normalized = normalizeDecimalString(value);

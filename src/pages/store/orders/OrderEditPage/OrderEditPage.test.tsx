@@ -164,6 +164,7 @@ const order = {
             subtotal: 1000,
             tax_amount: 0,
             discount_amount: 0,
+            stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
         },
     ],
     payments: [],
@@ -193,6 +194,10 @@ const editability = {
             active_committed_quantity: '3.0000',
             minimum_quantity: '7.0000',
             editable_quantity: '3.0000',
+            sale_quantity_step: '1.0000',
+            commercial_available_quantity: '5.0000',
+            maximum_editable_quantity: '15.0000',
+            stock_measurement_unit: { code: 'unit', name: 'Unidad', symbol: 'u' },
         },
     ],
 } satisfies OrderEditability;
@@ -215,6 +220,9 @@ beforeEach(() => {
         barcode: '7790000000006',
         price: 250,
         available_stock: "5.0000",
+        commercial_available_quantity: '5.0000',
+        sale_quantity_step: '1.0000',
+        stock_measurement_unit: { code: 'unit', name: 'Unidad', symbol: 'u' },
     });
 });
 
@@ -445,6 +453,36 @@ test('saves item and delivery date changes in one request', async () => {
     );
 });
 
+test('uses the product step for order edits and keeps invalid decimal quantities out of the payload', async () => {
+    getEditability.mockResolvedValue({
+        ...editability,
+        items: [{
+            ...editability.items[0],
+            current_quantity: '1.2500',
+            minimum_quantity: '0.0000',
+            sale_quantity_step: '0.2500',
+            commercial_available_quantity: '1.0000',
+            maximum_editable_quantity: '2.2500',
+            stock_measurement_unit: { code: 'kg', name: 'Kilogramo', symbol: 'kg' },
+        }],
+    });
+
+    render(<OrderEditPage />);
+    await screen.findByText('Editar pedido P-000123');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aumentar cantidad de Producto A' }));
+
+    const quantityInput = screen.getByRole('spinbutton', { name: 'Cantidad de Producto A' });
+    fireEvent.change(quantityInput, { target: { value: '1.3' } });
+    fireEvent.blur(quantityInput);
+    expect(await screen.findByText('Este producto se vende en cantidades de 0,25 kg.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    await waitFor(() => expect(update).toHaveBeenCalledWith('order-1', {
+        items: [{ product_id: 'product-1', quantity: '1.5000' }],
+    }));
+});
+
 test('does not search short text and uses the commercial catalog for name search', async () => {
     commercialSearch.mockResolvedValueOnce([
         { id: 'product-2', name: 'Producto B', sku: 'SKU-B', barcode: '7790000000006' },
@@ -488,7 +526,7 @@ test('adds a commercial product, keeps one row per product, and saves grouped fi
     const addButton = await screen.findByRole('button', { name: 'Agregar Producto B' });
     fireEvent.mouseDown(addButton);
     await waitFor(() => expect(commercialGetById).toHaveBeenCalledWith('product-2'));
-    expect(await screen.findByText(/Precio actual:.*Stock disponible: 5/)).toBeInTheDocument();
+    expect(await screen.findByText(/Precio actual:.*Disponible:.*5 u/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Aumentar cantidad de Producto A' }));
     expect(screen.getByText('El total definitivo se recalculará al guardar.')).toBeInTheDocument();
@@ -519,7 +557,7 @@ test('selects the barcode result with Enter through the commercial detail flow',
 
     await waitFor(() => expect(commercialSearch).toHaveBeenCalledWith({ barcode: '7790000000006' }));
     await waitFor(() => expect(commercialGetById).toHaveBeenCalledWith('product-2'));
-    expect(await screen.findByText(/Precio actual:.*Stock disponible: 5/)).toBeInTheDocument();
+    expect(await screen.findByText(/Precio actual:.*Disponible:.*5 u/)).toBeInTheDocument();
 });
 
 test('preserves the draft and displays backend validation errors', async () => {
