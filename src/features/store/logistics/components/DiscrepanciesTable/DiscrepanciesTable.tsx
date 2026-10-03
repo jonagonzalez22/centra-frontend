@@ -9,7 +9,7 @@ import type {
     DiscrepancyResolutionType,
 } from '../../interfaces/reconciliation.interface';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 const resolutionLabels: Record<string, { label: string; color: string }> = {
     returned: { label: 'Devuelto a depósito', color: 'success' },
@@ -56,11 +56,11 @@ export const DiscrepanciesTable = ({
         setSelectedItem(null);
     };
 
-    const getDifferenceTag = (difference: DecimalString) => {
+    const getDifferenceTag = (difference: DecimalString, symbol?: string | null) => {
         if (compareDecimalStrings(difference, '0.0000') > 0) {
-            return <Tag color="error">+{formatQuantityForDisplay(difference)}</Tag>;
+            return <Tag color="error">+{formatQuantityWithUnit(difference, symbol)}</Tag>;
         } else if (compareDecimalStrings(difference, '0.0000') < 0) {
-            return <Tag color="warning">{formatQuantityForDisplay(difference)}</Tag>;
+            return <Tag color="warning">{formatQuantityWithUnit(difference, symbol)}</Tag>;
         }
         return <Tag color="default">0</Tag>;
     };
@@ -106,7 +106,7 @@ export const DiscrepanciesTable = ({
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const item = record as unknown as RouteReconciliationDetailItem;
-                return formatQuantityForDisplay(item.quantity_loaded);
+                return formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol);
             },
         },
         {
@@ -116,7 +116,7 @@ export const DiscrepanciesTable = ({
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const item = record as unknown as RouteReconciliationDetailItem;
-                return formatQuantityForDisplay(item.quantity_delivered);
+                return formatQuantityWithUnit(item.quantity_delivered, item.stock_measurement_unit?.symbol);
             },
         },
         {
@@ -126,7 +126,7 @@ export const DiscrepanciesTable = ({
             align: 'center' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const item = record as unknown as RouteReconciliationDetailItem;
-                return getDifferenceTag(item.difference);
+                return getDifferenceTag(item.difference, item.stock_measurement_unit?.symbol);
             },
         },
         {

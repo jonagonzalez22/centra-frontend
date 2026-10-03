@@ -8,6 +8,7 @@ import {
     addDecimalStrings,
     compareDecimalStrings,
     isPositiveDecimal,
+    isMultipleOfDecimalStrings,
     minDecimalStrings,
     normalizeDecimalString,
 } from '@/utils/quantity';
@@ -20,7 +21,6 @@ export interface UseExtraSaleReturn {
     searchQuery: string;
     filteredProducts: SurplusProduct[];
     summary: {
-        totalUnits: number;
         totalProducts: number;
         totalAmount: number;
     };
@@ -60,6 +60,7 @@ export const useExtraSale = (): UseExtraSaleReturn => {
             const product = surplusProducts.find((p) => p.product_id === productId);
             const max = product?.available_quantity ?? '0.0000';
             const normalized = normalizeDecimalString(quantity);
+            if (!isMultipleOfDecimalStrings(normalized, product?.sale_quantity_step ?? '1.0000')) return prev;
             const clamped = minDecimalStrings(normalized, max);
             if (!isPositiveDecimal(clamped)) {
                 const next = { ...prev };
@@ -75,7 +76,8 @@ export const useExtraSale = (): UseExtraSaleReturn => {
             const current = prev[productId] ?? '0.0000';
             const product = surplusProducts.find((p) => p.product_id === productId);
             const max = product?.available_quantity ?? '0.0000';
-            const next = addDecimalStrings(current, String(delta));
+            const step = product?.sale_quantity_step ?? '1.0000';
+            const next = addDecimalStrings(current, delta < 0 ? `-${step}` : step);
             const clamped = minDecimalStrings(
                 compareDecimalStrings(next, '0.0000') < 0 ? '0.0000' : next,
                 max
@@ -100,12 +102,10 @@ export const useExtraSale = (): UseExtraSaleReturn => {
     }, [surplusProducts, searchQuery]);
 
     const summary = useMemo(() => {
-        let totalUnits = 0;
         let totalProducts = 0;
         let totalAmount = 0;
         for (const [productId, qty] of Object.entries(selectedQuantities)) {
             if (!isPositiveDecimal(qty)) continue;
-            totalUnits += Number(qty);
             totalProducts += 1;
             const product = surplusProducts.find((p) => p.product_id === productId);
             if (product) {
@@ -113,10 +113,10 @@ export const useExtraSale = (): UseExtraSaleReturn => {
                 totalAmount += Number(qty) * product.unit_price;
             }
         }
-        return { totalUnits, totalProducts, totalAmount };
+        return { totalProducts, totalAmount };
     }, [selectedQuantities, surplusProducts]);
 
-    const isValid = summary.totalUnits > 0;
+    const isValid = summary.totalProducts > 0;
 
     const submitExtraSale = useCallback(async (stopId: string) => {
         if (!isValid) return;

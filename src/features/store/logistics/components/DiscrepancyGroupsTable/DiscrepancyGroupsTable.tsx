@@ -13,7 +13,7 @@ import type {
     RouteReconciliationProductGroup,
 } from '../../interfaces/reconciliation.interface';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 const statusConfig = {
     pending: { label: 'Pendiente', color: 'warning' },
@@ -94,7 +94,10 @@ export const DiscrepancyGroupsTable = ({
             key: 'total_difference',
             align: 'center' as const,
             width: 110,
-            render: (value: unknown) => formatQuantityForDisplay(String(value)),
+            render: (value: unknown, row?: Record<string, unknown>) => {
+                const group = row as unknown as RouteReconciliationProductGroup;
+                return formatQuantityWithUnit(String(value), group.stock_measurement_unit?.symbol);
+            },
         },
         {
             title: 'Pedidos',
@@ -208,7 +211,7 @@ export const DiscrepancyGroupsTable = ({
                 {batchGroup && (
                     <>
                         <Typography.Paragraph>
-                            Se aplicará la misma resolución a {batchGroup.total_difference} unidades
+                            Se aplicará la misma resolución a {formatQuantityWithUnit(batchGroup.total_difference, batchGroup.stock_measurement_unit?.symbol)}
                             distribuidas en {batchGroup.affected_orders_count} pedidos.
                         </Typography.Paragraph>
                         <Form form={form} layout="vertical">

@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Drawer, Card, InputNumber, Select, Input, Spin, Alert, Typography } from 'antd';
+import { Drawer, Card, InputNumber, Select, Input, Spin, Alert, Typography, message } from 'antd';
 import { CheckOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { useLoadSheet } from '../hooks/useLoadSheet';
-import type { BulkLoadPayload } from '../interfaces/loadSheet.interface';
+import type { BulkLoadPayload, LoadSheetProductSummary } from '../interfaces/loadSheet.interface';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, formatQuantityForDisplay, minDecimalStrings } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit, isMultipleOfDecimalStrings, minDecimalStrings } from '@/utils/quantity';
 
 const { Text } = Typography;
 
@@ -40,6 +40,8 @@ export const RouteLoadDrawer = ({
 }: RouteLoadDrawerProps) => {
     const { loadSheet, loading, bulkLoading, load, bulkLoad } = useLoadSheet(routeId);
     const [userEdits, setUserEdits] = useState<Record<string, Partial<ProductEdit>>>({});
+    const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+    const [quantityErrors, setQuantityErrors] = useState<Record<string, string>>({});
     const [editingProduct, setEditingProduct] = useState<string | null>(null);
     const [confirmedProducts, setConfirmedProducts] = useState<Set<string>>(new Set());
 
@@ -94,12 +96,57 @@ export const RouteLoadDrawer = ({
         }
     };
 
-    const renderProductCard = (product: {
-        product_id: string;
-        product_name: string;
-        total_planned: DecimalString;
-        total_loaded: DecimalString;
-    }) => {
+    const quantityStepMessage = (product: LoadSheetProductSummary) => product.sale_quantity_step === '1.0000'
+        ? 'Esta cantidad debe ser un número entero de unidades.'
+        : `Esta cantidad debe ser múltiplo de ${formatQuantityWithUnit(product.sale_quantity_step, product.stock_measurement_unit?.symbol)}.`;
+
+    const commitProductQuantity = (product: LoadSheetProductSummary) => {
+        const productId = product.product_id;
+        const currentQuantity = productEdits[productId]?.quantity_loaded ?? product.total_loaded;
+        const inputValue = quantityInputs[productId] ?? currentQuantity;
+
+        try {
+            if (compareDecimalStrings(inputValue, product.total_planned) > 0) {
+                const clamped = minDecimalStrings(inputValue, product.total_planned);
+                const error = `La cantidad no puede superar ${formatQuantityWithUnit(product.total_planned, product.stock_measurement_unit?.symbol)}.`;
+                setUserEdits((prev) => ({
+                    ...prev,
+                    [productId]: { ...prev[productId], quantity_loaded: clamped },
+                }));
+                setQuantityErrors((prev) => ({ ...prev, [productId]: error }));
+                message.error(error);
+                return;
+            }
+            const clamped = minDecimalStrings(inputValue, product.total_planned);
+            if (compareDecimalStrings(clamped, '0.0000') < 0 || !isMultipleOfDecimalStrings(clamped, product.sale_quantity_step)) {
+                const error = quantityStepMessage(product);
+                setQuantityErrors((prev) => ({ ...prev, [productId]: error }));
+                message.error(error);
+                return;
+            }
+            setUserEdits((prev) => ({
+                ...prev,
+                [productId]: { ...prev[productId], quantity_loaded: clamped },
+            }));
+            setQuantityErrors((prev) => {
+                const next = { ...prev };
+                delete next[productId];
+                return next;
+            });
+        } catch {
+            const error = 'Ingresá una cantidad válida.';
+            setQuantityErrors((prev) => ({ ...prev, [productId]: error }));
+            message.error(error);
+        } finally {
+            setQuantityInputs((prev) => {
+                const next = { ...prev };
+                delete next[productId];
+                return next;
+            });
+        }
+    };
+
+    const renderProductCard = (product: LoadSheetProductSummary) => {
         const productId = product.product_id;
         const edit = productEdits[productId];
         const isEditing = editingProduct === productId;
@@ -139,18 +186,15 @@ export const RouteLoadDrawer = ({
                         Planificado
                     </Text>
                     <Text strong style={{ fontSize: 24, fontWeight: 'bold', color: '#093764' }}>
-                        {formatQuantityForDisplay(product.total_planned)}
-                        <Text style={{ fontSize: 14, fontWeight: 400, color: '#999', marginLeft: 6 }}>
-                            unid.
-                        </Text>
+                        {formatQuantityWithUnit(product.total_planned, product.stock_measurement_unit?.symbol)}
                     </Text>
-                    {edit && compareDecimalStrings(edit.quantity_loaded, '0.0000') > 0 && (
+                    {compareDecimalStrings(product.total_loaded, '0.0000') > 0 && (
                         <div style={{ marginTop: 4 }}>
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                                Cargado:{' '}
+                                Cargado actualmente:{' '}
                             </Text>
                             <Text strong style={{ fontSize: 16, color: '#52c41a' }}>
-                                {formatQuantityForDisplay(edit.quantity_loaded)}
+                                {formatQuantityWithUnit(product.total_loaded, product.stock_measurement_unit?.symbol)}
                             </Text>
                         </div>
                     )}
@@ -177,22 +221,21 @@ export const RouteLoadDrawer = ({
                             <InputNumber<string>
                                 stringMode
                                 min="0"
-                                max={product.total_planned}
-                                value={edit?.quantity_loaded}
+                                value={quantityInputs[productId] ?? edit?.quantity_loaded}
                                 precision={4}
-                                step="1"
-                                onChange={(val) => {
-                                    const clamped = minDecimalStrings(val ?? '0.0000', product.total_planned);
-                                    setUserEdits((prev) => ({
-                                        ...prev,
-                                        [productId]: {
-                                            ...prev[productId],
-                                            quantity_loaded: clamped,
-                                        },
-                                    }));
-                                }}
+                                step={product.sale_quantity_step}
+                                onChange={(val) => setQuantityInputs((prev) => ({ ...prev, [productId]: val ?? '' }))}
+                                onBlur={() => commitProductQuantity(product)}
+                                onPressEnter={() => commitProductQuantity(product)}
+                                formatter={(value) => value ? formatQuantityWithUnit(value, product.stock_measurement_unit?.symbol) : ''}
+                                parser={(value) => value?.replace(/\s[^\s]+$/, '').replace(',', '.') ?? ''}
                                 style={{ width: '100%' }}
                             />
+                            {quantityErrors[productId] && (
+                                <Text style={{ color: '#ff4d4f', fontSize: 12, display: 'block', marginTop: 4 }}>
+                                    {quantityErrors[productId]}
+                                </Text>
+                            )}
                             {compareDecimalStrings(edit?.quantity_loaded ?? '0.0000', '0.0000') === 0 && (
                                 <Text
                                     style={{

@@ -38,6 +38,8 @@ export interface RouteReconciliationStopItem {
     quantity_delivered: DecimalString;
     difference: DecimalString;
     extra_sale_allocated: DecimalString;
+    sale_quantity_step?: DecimalString;
+    stock_measurement_unit?: { symbol: string } | null;
     discrepancy: DeliveryDiscrepancy | null;
 }
 
@@ -54,6 +56,7 @@ export type RouteReconciliationProductStatus = 'pending' | 'resolved' | 'partial
 export interface RouteReconciliationProductGroup {
     product_id: string;
     product_name: string;
+    stock_measurement_unit?: { symbol: string } | null;
     total_difference: DecimalString;
     affected_orders_count: number;
     affected_stops_count: number;

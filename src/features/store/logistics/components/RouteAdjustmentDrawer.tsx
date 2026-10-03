@@ -5,7 +5,7 @@ import { RoutesService } from '../services/routes.service';
 import type { LoadSheetData, AdjustItemsPayload } from '../interfaces/loadSheet.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, subtractDecimalStrings } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit, isMultipleOfDecimalStrings, subtractDecimalStrings } from '@/utils/quantity';
 
 const { Text } = Typography;
 
@@ -27,6 +27,8 @@ export const RouteAdjustmentDrawer = ({
     const [saving, setSaving] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [quantities, setQuantities] = useState<Record<string, DecimalString>>({});
+    const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+    const [quantityErrors, setQuantityErrors] = useState<Record<string, string>>({});
     const [reasons, setReasons] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -58,6 +60,8 @@ export const RouteAdjustmentDrawer = ({
             }
         }
         setQuantities(qty);
+        setQuantityInputs({});
+        setQuantityErrors({});
         setReasons(rsn);
     }, [selectedProductId, loadSheet]);
 
@@ -74,7 +78,7 @@ export const RouteAdjustmentDrawer = ({
     const productOptions = (loadSheet?.by_product ?? [])
         .filter(p => compareDecimalStrings(p.total_loaded, '0.0000') > 0)
         .map(p => ({
-            label: `${p.product_name} (${p.total_loaded} unid.)`,
+            label: `${p.product_name} (${formatQuantityWithUnit(p.total_loaded, p.stock_measurement_unit?.symbol)})`,
             value: p.product_id,
         }));
 
@@ -111,8 +115,47 @@ export const RouteAdjustmentDrawer = ({
         }
     };
 
-    const updateQuantity = (routeStopItemId: string, val: DecimalString | null) => {
-        setQuantities(prev => ({ ...prev, [routeStopItemId]: val ?? '0.0000' }));
+    const quantityStepMessage = (step: DecimalString, symbol?: string | null) => step === '1.0000'
+        ? 'Esta cantidad debe ser un número entero de unidades.'
+        : `Esta cantidad debe ser múltiplo de ${formatQuantityWithUnit(step, symbol)}.`;
+
+    const commitQuantity = (routeStopItemId: string, step: DecimalString, symbol?: string | null) => {
+        const currentQuantity = quantities[routeStopItemId] ?? '0.0000';
+        const inputValue = quantityInputs[routeStopItemId] ?? currentQuantity;
+        const maximum = compareDecimalStrings(totals.remaining, '0.0000') > 0
+            ? addDecimalStrings(currentQuantity, totals.remaining)
+            : currentQuantity;
+
+        try {
+            if (
+                compareDecimalStrings(inputValue, '0.0000') < 0
+                || compareDecimalStrings(inputValue, maximum) > 0
+                || !isMultipleOfDecimalStrings(inputValue, step)
+            ) {
+                const error = !isMultipleOfDecimalStrings(inputValue, step)
+                        ? quantityStepMessage(step, symbol)
+                        : `Máximo asignable: ${formatQuantityWithUnit(maximum, symbol)}.`;
+                setQuantityErrors(prev => ({ ...prev, [routeStopItemId]: error }));
+                message.error(error);
+                return;
+            }
+            setQuantities(prev => ({ ...prev, [routeStopItemId]: inputValue }));
+            setQuantityErrors(prev => {
+                const next = { ...prev };
+                delete next[routeStopItemId];
+                return next;
+            });
+        } catch {
+            const error = 'Ingresá una cantidad válida.';
+            setQuantityErrors(prev => ({ ...prev, [routeStopItemId]: error }));
+            message.error(error);
+        } finally {
+            setQuantityInputs(prev => {
+                const next = { ...prev };
+                delete next[routeStopItemId];
+                return next;
+            });
+        }
     };
 
     const handleClose = () => {
@@ -173,7 +216,7 @@ export const RouteAdjustmentDrawer = ({
                                             Total en Camión
                                         </Text>
                                         <Text strong style={{ fontSize: 20, color: '#093764' }}>
-                                            {totals.totalOnTruck}
+                                            {formatQuantityWithUnit(totals.totalOnTruck, loadSheet.by_product.find(p => p.product_id === selectedProductId)?.stock_measurement_unit?.symbol)}
                                         </Text>
                                     </div>
                                     <div>
@@ -181,7 +224,7 @@ export const RouteAdjustmentDrawer = ({
                                             Asignado
                                         </Text>
                                         <Text strong style={{ fontSize: 20, color: '#52c41a' }}>
-                                            {totals.assigned}
+                                            {formatQuantityWithUnit(totals.assigned, loadSheet.by_product.find(p => p.product_id === selectedProductId)?.stock_measurement_unit?.symbol)}
                                         </Text>
                                     </div>
                                     <div>
@@ -189,7 +232,7 @@ export const RouteAdjustmentDrawer = ({
                                             Faltante
                                         </Text>
                                         <Text strong style={{ fontSize: 20, color: compareDecimalStrings(totals.remaining, '0.0000') > 0 ? '#faad14' : '#52c41a' }}>
-                                            {totals.remaining}
+                                            {formatQuantityWithUnit(totals.remaining, loadSheet.by_product.find(p => p.product_id === selectedProductId)?.stock_measurement_unit?.symbol)}
                                         </Text>
                                     </div>
                                 </div>
@@ -217,22 +260,36 @@ export const RouteAdjustmentDrawer = ({
                                                 Planificado
                                             </Text>
                                             <Text strong style={{ fontSize: 18, color: '#093764' }}>
-                                                {item.quantity_planned}
+                                                {formatQuantityWithUnit(item.quantity_planned, item.stock_measurement_unit?.symbol)}
                                             </Text>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                                             <Text type="secondary" style={{ fontSize: 12 }}>
-                                                Cargado
+                                                Cargado actualmente: {formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol)}
+                                            </Text>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                                Nuevo valor
                                             </Text>
                                             <InputNumber<string>
                                                 stringMode
                                                 min="0"
-                                                value={quantities[item.route_stop_item_id]}
-                                                onChange={(val) => updateQuantity(item.route_stop_item_id, val)}
+                                                value={quantityInputs[item.route_stop_item_id] ?? quantities[item.route_stop_item_id]}
+                                                onChange={(val) => setQuantityInputs(prev => ({ ...prev, [item.route_stop_item_id]: val ?? '' }))}
+                                                onBlur={() => commitQuantity(item.route_stop_item_id, item.sale_quantity_step, item.stock_measurement_unit?.symbol)}
+                                                onPressEnter={() => commitQuantity(item.route_stop_item_id, item.sale_quantity_step, item.stock_measurement_unit?.symbol)}
                                                 precision={4}
-                                                step="1"
+                                                step={item.sale_quantity_step}
+                                                formatter={(value) => value ? formatQuantityWithUnit(value, item.stock_measurement_unit?.symbol) : ''}
+                                                parser={(value) => value?.replace(/\s[^\s]+$/, '').replace(',', '.') ?? ''}
                                                 style={{ width: 80 }}
                                             />
+                                            </div>
+                                            {quantityErrors[item.route_stop_item_id] && (
+                                                <Text style={{ color: '#ff4d4f', fontSize: 12, textAlign: 'right' }}>
+                                                    {quantityErrors[item.route_stop_item_id]}
+                                                </Text>
+                                            )}
                                         </div>
                                     </div>
                                 </Card>

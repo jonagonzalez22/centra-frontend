@@ -16,7 +16,7 @@ beforeEach(() => {
         selectedQuantities: {},
         searchQuery: '',
         filteredProducts: [],
-        summary: { totalUnits: 0, totalProducts: 0, totalAmount: 0 },
+        summary: { totalProducts: 0, totalAmount: 0 },
         isValid: false,
         loadSurplus,
         setQuantity: vi.fn(),

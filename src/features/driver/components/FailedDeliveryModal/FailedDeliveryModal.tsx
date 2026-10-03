@@ -7,8 +7,7 @@ import type { RejectionReason } from '../../services/driver.service';
 import type { StopDetailItem } from '../../interfaces/driver.interface';
 import './FailedDeliveryModal.css';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, minDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
-import { formatQuantityForDisplay } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit, minDecimalStrings, normalizeDecimalString } from '@/utils/quantity';
 
 interface FailedDeliveryModalProps {
     open: boolean;
@@ -130,7 +129,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                 Disponibilidad para Venta Extra
                             </div>
                             <div className="failedDeliveryAvailabilityHelp">
-                                Indicá cuántas unidades pueden reutilizarse.
+                                Indicá cuánto producto puede reutilizarse.
                             </div>
                             {items
                                 .filter((item) => compareDecimalStrings(item.quantity_loaded, '0.0000') > 0)
@@ -142,7 +141,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                                 {item.product_name}
                                             </div>
                                             <div className="failedDeliveryProductRemaining">
-                                                No entregado: {formatQuantityForDisplay(item.quantity_loaded)}
+                                                No entregado: {formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol)}
                                             </div>
                                             <div className="failedDeliveryReleaseLabel">
                                                 Disponible para Venta Extra
@@ -152,20 +151,20 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                                     type="button"
                                                     disabled={compareDecimalStrings(released, '0.0000') === 0 || loading}
                                                     onClick={() =>
-                                                        setReleasedQuantity(item, addDecimalStrings(released, '-1'))
+                                                        setReleasedQuantity(item, addDecimalStrings(released, `-${item.sale_quantity_step ?? '1.0000'}`))
                                                     }
                                                     aria-label={`Reducir disponibilidad de ${item.product_name}`}
                                                 >
                                                     −
                                                 </button>
-                                                <span>{formatQuantityForDisplay(released)}</span>
+                                                <span>{formatQuantityWithUnit(released, item.stock_measurement_unit?.symbol)}</span>
                                                 <button
                                                     type="button"
                                                     disabled={
                                                         compareDecimalStrings(released, item.quantity_loaded) === 0 || loading
                                                     }
                                                     onClick={() =>
-                                                        setReleasedQuantity(item, addDecimalStrings(released, '1'))
+                                                        setReleasedQuantity(item, addDecimalStrings(released, item.sale_quantity_step ?? '1.0000'))
                                                     }
                                                     aria-label={`Aumentar disponibilidad de ${item.product_name}`}
                                                 >
@@ -173,7 +172,7 @@ export const FailedDeliveryModal: React.FC<FailedDeliveryModalProps> = ({
                                                 </button>
                                             </div>
                                             <div className="failedDeliveryProductMaximum">
-                                                Máximo: {formatQuantityForDisplay(item.quantity_loaded)}
+                                                Máximo: {formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol)}
                                             </div>
                                         </div>
                                     );

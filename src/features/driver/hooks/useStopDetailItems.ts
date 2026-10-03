@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { StopDetailItem, RouteStopStatus } from '../interfaces/driver.interface';
 import type { RejectionReason } from '../services/driver.service';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, minDecimalStrings, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, isMultipleOfDecimalStrings, minDecimalStrings, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
 
 // ── Types ────────────────────────────────────────────────────────────────────────
 
@@ -260,10 +260,11 @@ export const useStopDetailItems = (
             }
 
             // quantity_loaded = 0 items are never editable
-            const canDecrement = canDeliver && !isNotLoaded && compareDecimalStrings(deliveredQty, '0.0000') > 0;
-            const canIncrement = canDeliver && !isNotLoaded && compareDecimalStrings(deliveredQty, originalQty) < 0;
-            const canDecrementReleased = canDeliver && isReduced && compareDecimalStrings(releasedQty, '0.0000') > 0;
-            const canIncrementReleased = canDeliver && isReduced && compareDecimalStrings(releasedQty, remainingQty) < 0;
+            const step = item.sale_quantity_step ?? '1.0000';
+            const canDecrement = canDeliver && !isNotLoaded && compareDecimalStrings(deliveredQty, step) >= 0;
+            const canIncrement = canDeliver && !isNotLoaded && compareDecimalStrings(addDecimalStrings(deliveredQty, step), originalQty) <= 0;
+            const canDecrementReleased = canDeliver && isReduced && compareDecimalStrings(releasedQty, step) >= 0;
+            const canIncrementReleased = canDeliver && isReduced && compareDecimalStrings(addDecimalStrings(releasedQty, step), remainingQty) <= 0;
             const selectedReason = rejectionReasons.find(
                 (reason) => reason.id === rejectionReasonsByItem[itemId]
             );
@@ -307,6 +308,8 @@ export const useStopDetailItems = (
     const setQuantity = useCallback(
         (itemId: string, value: DecimalString | number) => {
             const normalizedValue = normalizeDecimalString(value);
+            const item = items?.find((candidate) => candidate.id === itemId);
+            if (!item || !isMultipleOfDecimalStrings(normalizedValue, item.sale_quantity_step ?? '1.0000') || compareDecimalStrings(normalizedValue, item.quantity_loaded) > 0) return;
             // quantity_loaded = 0 items are never editable
             if (items && compareDecimalStrings(items.find((i) => i.id === itemId)?.quantity_loaded ?? '0.0000', '0.0000') === 0) return;
 
@@ -321,7 +324,6 @@ export const useStopDetailItems = (
                 ...prev,
                 [itemId]: normalizedValue,
             }));
-            const item = items?.find((candidate) => candidate.id === itemId);
             if (item) {
                 const remaining = compareDecimalStrings(item.quantity_loaded, normalizedValue) > 0
                     ? subtractDecimalStrings(item.quantity_loaded, normalizedValue)
@@ -339,6 +341,7 @@ export const useStopDetailItems = (
         (itemId: string, value: DecimalString | number) => {
             const item = items?.find((candidate) => candidate.id === itemId);
             if (!item) return;
+            if (!isMultipleOfDecimalStrings(value, item.sale_quantity_step ?? '1.0000')) return;
             const delivered = quantitiesDelivered[itemId] ?? item.quantity_loaded;
             const remaining = compareDecimalStrings(item.quantity_loaded, delivered) > 0
                 ? subtractDecimalStrings(item.quantity_loaded, delivered)

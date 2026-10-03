@@ -49,6 +49,8 @@ export interface RouteStopItem {
     quantity_loaded: DecimalString;
     quantity_delivered: DecimalString;
     quantity_released_for_extra_sale: DecimalString;
+    sale_quantity_step?: DecimalString;
+    stock_measurement_unit?: { symbol: string } | null;
 }
 
 export interface RouteStop {
@@ -172,6 +174,8 @@ export interface StopDetailItem {
     unit_price: number;
     is_extra: boolean;
     notes: string | null;
+    sale_quantity_step?: DecimalString;
+    stock_measurement_unit?: { symbol: string } | null;
 }
 
 export interface StopCollection {
@@ -215,6 +219,8 @@ export interface SurplusProduct {
     sku: string;
     unit_price: number;
     available_quantity: DecimalString;
+    sale_quantity_step?: DecimalString;
+    stock_measurement_unit?: { symbol: string } | null;
 }
 
 export interface SurplusProductsResponse {

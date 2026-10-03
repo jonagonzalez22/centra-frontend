@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Modal, Form, Select, Input, Tag, Divider } from 'antd';
 import type { DiscrepancyResolutionType, RouteReconciliationStopItem } from '../../interfaces/reconciliation.interface';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 const resolutionOptions: { value: DiscrepancyResolutionType; label: string }[] = [
     { value: 'returned', label: 'Devuelto a depósito' },
@@ -13,11 +13,11 @@ const resolutionOptions: { value: DiscrepancyResolutionType; label: string }[] =
     { value: 'other', label: 'Otro' },
 ];
 
-const getDifferenceTag = (difference: DecimalString) => {
+const getDifferenceTag = (difference: DecimalString, symbol?: string | null) => {
     if (compareDecimalStrings(difference, '0.0000') > 0) {
-        return <Tag color="error" className="text-sm font-semibold">+{formatQuantityForDisplay(difference)}</Tag>;
+        return <Tag color="error" className="text-sm font-semibold">+{formatQuantityWithUnit(difference, symbol)}</Tag>;
     } else if (compareDecimalStrings(difference, '0.0000') < 0) {
-        return <Tag color="warning" className="text-sm font-semibold">{formatQuantityForDisplay(difference)}</Tag>;
+        return <Tag color="warning" className="text-sm font-semibold">{formatQuantityWithUnit(difference, symbol)}</Tag>;
     }
     return <Tag color="default" className="text-sm font-semibold">0</Tag>;
 };
@@ -83,15 +83,15 @@ export const ResolveDiscrepancyModal = ({
                     <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
                             <div className="text-xs text-gray-500">Cargado</div>
-                            <div className="font-semibold">{formatQuantityForDisplay(item.quantity_loaded)}</div>
+                            <div className="font-semibold">{formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol)}</div>
                         </div>
                         <div>
                             <div className="text-xs text-gray-500">Entregado</div>
-                            <div className="font-semibold">{formatQuantityForDisplay(item.quantity_delivered)}</div>
+                            <div className="font-semibold">{formatQuantityWithUnit(item.quantity_delivered, item.stock_measurement_unit?.symbol)}</div>
                         </div>
                         <div>
                             <div className="text-xs text-gray-500">Diferencia</div>
-                            <div className="font-semibold">{getDifferenceTag(item.difference)}</div>
+                            <div className="font-semibold">{getDifferenceTag(item.difference, item.stock_measurement_unit?.symbol)}</div>
                         </div>
                     </div>
                 </div>

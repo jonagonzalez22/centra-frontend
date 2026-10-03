@@ -123,6 +123,7 @@ export const useReconciliation = (routeId: string): UseReconciliationReturn => {
                 return {
                     product_id: items[0].product_id,
                     product_name: items[0].product_name,
+                    stock_measurement_unit: items[0].stock_measurement_unit,
                     total_difference: items.reduce(
                         (total, item) => addDecimalStrings(total, maxDecimalStrings('0.0000', item.difference)),
                         '0.0000'

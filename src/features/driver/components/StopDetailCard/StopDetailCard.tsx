@@ -98,7 +98,7 @@ export const StopDetailCard = ({
                     <button
                         className={`stopDetailStepperBtn ${!canDecrement ? 'stopDetailStepperBtn--disabled' : ''}`}
                         disabled={!canDecrement}
-                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, '-1'))}
+                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, `-${item.sale_quantity_step ?? '1.0000'}`))}
                         type="button"
                         aria-label={`Reducir cantidad entregada de ${item.product_name}`}
                     >
@@ -110,7 +110,7 @@ export const StopDetailCard = ({
                     <button
                         className={`stopDetailStepperBtn ${!canIncrement ? 'stopDetailStepperBtn--disabled' : ''}`}
                         disabled={!canIncrement}
-                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, '1'))}
+                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, item.sale_quantity_step ?? '1.0000'))}
                         type="button"
                         aria-label={`Aumentar cantidad entregada de ${item.product_name}`}
                     >
@@ -124,6 +124,7 @@ export const StopDetailCard = ({
                 <div className="stopDetailCardProductName">{item.product_name}</div>
                 <div className="stopDetailCardProductMeta">
                     {item.sku && <span>SKU: {item.sku}</span>}
+                    {item.stock_measurement_unit?.symbol && <span>Unidad: {item.stock_measurement_unit.symbol}</span>}
                     {item.unit_price > 0 && (
                         <span className="stopDetailUnitPrice">
                             {formatCurrency(item.unit_price)}/u
@@ -166,7 +167,7 @@ export const StopDetailCard = ({
                                 <button
                                     className={`stopDetailStepperBtn ${!canDecrementReleased ? 'stopDetailStepperBtn--disabled' : ''}`}
                                     disabled={!canDecrementReleased}
-                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, '-1'))}
+                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, `-${item.sale_quantity_step ?? '1.0000'}`))}
                                     type="button"
                                     aria-label={`Reducir disponibilidad de ${item.product_name}`}
                                 >
@@ -176,7 +177,7 @@ export const StopDetailCard = ({
                                 <button
                                     className={`stopDetailStepperBtn ${!canIncrementReleased ? 'stopDetailStepperBtn--disabled' : ''}`}
                                     disabled={!canIncrementReleased}
-                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, '1'))}
+                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, item.sale_quantity_step ?? '1.0000'))}
                                     type="button"
                                     aria-label={`Aumentar disponibilidad de ${item.product_name}`}
                                 >
@@ -184,7 +185,7 @@ export const StopDetailCard = ({
                                 </button>
                             </div>
                             <div className="stopDetailExtraSaleReleaseHelp">
-                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuántas unidades pueden reutilizarse.
+                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuánto producto puede reutilizarse.
                             </div>
                             {!selectedReasonSuggestsExtraSale && (
                                 <div className="stopDetailExtraSaleReleaseSuggestion">

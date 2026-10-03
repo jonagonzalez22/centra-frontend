@@ -11,7 +11,7 @@ const items: StopDetailItem[] = [
         product_name: 'Pintura Látex de nombre muy largo para pantalla móvil',
         sku: 'X',
         quantity_planned: '5.0000', quantity_loaded: '5.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
-        unit_price: 100,
+        unit_price: 100, sale_quantity_step: '0.2500', stock_measurement_unit: { symbol: 'kg' },
         is_extra: false,
         notes: null,
     },
@@ -22,7 +22,7 @@ const items: StopDetailItem[] = [
         product_name: 'Rodillo',
         sku: 'Y',
         quantity_planned: '3.0000', quantity_loaded: '3.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
-        unit_price: 50,
+        unit_price: 50, sale_quantity_step: '1.0000', stock_measurement_unit: { symbol: 'u' },
         is_extra: false,
         notes: null,
     },
@@ -57,8 +57,8 @@ test('reuses the failed modal and suggests every loaded quantity for a configure
     await selectReason(user, 'Cliente ausente');
 
     expect(screen.getByText('Disponibilidad para Venta Extra')).toBeInTheDocument();
-    expect(screen.getByText('Máximo: 5')).toBeInTheDocument();
-    expect(screen.getByText('Máximo: 3')).toBeInTheDocument();
+    expect(screen.getByText('Máximo: 5 kg')).toBeInTheDocument();
+    expect(screen.getByText('Máximo: 3 u')).toBeInTheDocument();
 });
 
 test('recalculates suggestions when the global reason changes and allows independent adjustment', async () => {
@@ -79,7 +79,7 @@ test('recalculates suggestions when the global reason changes and allows indepen
     await user.click(screen.getByLabelText(`Reducir disponibilidad de ${items[0].product_name}`));
 
     await user.click(screen.getByText('Confirmar'));
-    expect(onConfirm).toHaveBeenLastCalledWith('safe', { 'item-x': '4.0000', 'item-y': '3.0000' });
+    expect(onConfirm).toHaveBeenLastCalledWith('safe', { 'item-x': '4.7500', 'item-y': '3.0000' });
 
     await selectReason(user, 'Mercadería dañada');
     await user.click(screen.getByText('Confirmar'));

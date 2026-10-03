@@ -3,6 +3,8 @@ export interface LoadSheetProductSummary {
     product_name: string;
     total_planned: DecimalString;
     total_loaded: DecimalString;
+    sale_quantity_step: DecimalString;
+    stock_measurement_unit: { symbol: string } | null;
 }
 
 export interface LoadSheetStopItem {
@@ -11,6 +13,8 @@ export interface LoadSheetStopItem {
     product_name: string;
     quantity_planned: DecimalString;
     quantity_loaded: DecimalString;
+    sale_quantity_step: DecimalString;
+    stock_measurement_unit: { symbol: string } | null;
 }
 
 export interface LoadSheetStop {

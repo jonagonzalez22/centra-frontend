@@ -11,6 +11,7 @@ const baseProps: StopDetailCardProps = {
         sku: 'P-1',
         quantity_planned: '5.0000', quantity_loaded: '5.0000', quantity_delivered: '0.0000', quantity_released_for_extra_sale: '0.0000',
         unit_price: 100,
+        stock_measurement_unit: { symbol: 'kg' },
         is_extra: false,
         notes: null,
     },
@@ -45,6 +46,8 @@ test('does not show extra-sale availability for a full delivery', () => {
     render(<StopDetailCard {...baseProps} />);
 
     expect(screen.queryByText('Disponible para Venta Extra')).not.toBeInTheDocument();
+    expect(screen.getByText('Unidad: kg')).toBeInTheDocument();
+    expect(screen.getByText('5/5')).toBeInTheDocument();
 });
 
 test('shows the reason for a reduction but hides availability until a reason is selected', () => {

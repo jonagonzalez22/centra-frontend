@@ -6,7 +6,7 @@ import { useExtraSale } from '../../hooks/useExtraSale';
 import type { SurplusProduct } from '../../interfaces/driver.interface';
 import { formatCurrency } from '@/utils/formatters';
 import type { DecimalString } from '@/types/decimal';
-import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 import './ExtraSaleWrapper.css';
 
 interface ExtraSaleWrapperProps {
@@ -24,7 +24,9 @@ const ExtraSaleProductCard: React.FC<{
     onIncrement: () => void;
 }> = ({ product, quantity, onDecrement, onIncrement }) => {
     const canDecrement = compareDecimalStrings(quantity, '0.0000') > 0;
-    const canIncrement = compareDecimalStrings(quantity, product.available_quantity) < 0;
+    const canIncrement = compareDecimalStrings(
+        addDecimalStrings(quantity, product.sale_quantity_step ?? '1.0000'), product.available_quantity
+    ) <= 0;
 
     return (
         <div className="extraSaleCard">
@@ -39,7 +41,7 @@ const ExtraSaleProductCard: React.FC<{
                     </div>
                 </div>
                 <div className="extraSaleCardStock">
-                    Disponible: {formatQuantityForDisplay(product.available_quantity)}
+                    Disponible: {formatQuantityWithUnit(product.available_quantity, product.stock_measurement_unit?.symbol)}
                 </div>
             </div>
             <div className="extraSaleCardStepper">
@@ -51,7 +53,7 @@ const ExtraSaleProductCard: React.FC<{
                 >
                     −
                 </button>
-                <span className="extraSaleStepperValue">{formatQuantityForDisplay(quantity)}</span>
+                <span className="extraSaleStepperValue">{formatQuantityWithUnit(quantity, product.stock_measurement_unit?.symbol)}</span>
                 <button
                     className={`extraSaleStepperBtn ${!canIncrement ? 'extraSaleStepperBtn--disabled' : ''}`}
                     disabled={!canIncrement}
@@ -105,9 +107,9 @@ export const ExtraSaleWrapper: React.FC<ExtraSaleWrapperProps> = ({
     };
 
     const summaryText =
-        summary.totalUnits === 0
+        summary.totalProducts === 0
             ? 'Sin productos seleccionados'
-            : `${summary.totalUnits} unidad${summary.totalUnits !== 1 ? 'es' : ''} en ${summary.totalProducts} producto${summary.totalProducts !== 1 ? 's' : ''}`;
+            : `${summary.totalProducts} producto${summary.totalProducts !== 1 ? 's' : ''} seleccionado${summary.totalProducts !== 1 ? 's' : ''}`;
 
     return (
         <Drawer
