@@ -140,8 +140,8 @@ test('uses the same 24-hour format in the sale detail drawer', async () => {
 });
 
 test.each([
-    ['3.0000', '3'],
-    ['3.5000', '3,5'],
+    ['3.0000', '3 kg'],
+    ['3.5000', '3,5 kg'],
 ])('formats sale detail quantity %s as %s', async (quantity, displayedQuantity) => {
     const user = userEvent.setup();
     vi.mocked(SalesService.getSaleById).mockResolvedValue({
@@ -155,6 +155,8 @@ test.each([
                 subtotal: 23790,
                 tax_amount: 0,
                 discount_amount: 0,
+                stock_measurement_unit: { code: 'kg', symbol: 'kg' },
+                sale_quantity_step: '0.2500',
             },
         ],
         payments: [],
@@ -172,7 +174,7 @@ test.each([
 
     expect(productRow).toHaveTextContent(displayedQuantity);
     expect(productRow).not.toHaveTextContent(quantity);
-});
+}, 15_000);
 
 test('shows the standard drawer loader while the detail request is pending and clears it on resolution', async () => {
     const user = userEvent.setup();

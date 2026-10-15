@@ -12,7 +12,8 @@ const items = [{
     pending_quantity: "1.0000",
     planned_active_quantity: "0.0000",
     unassigned_pending_quantity: "1.0000",
-    stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
+    stock_measurement_unit: { code: 'unit', symbol: 'u' },
+    sale_quantity_step: '1.0000',
 }];
 
 test('lists the complete remainder and requires a reason before confirming once', async () => {

@@ -28,6 +28,8 @@ const receipt: ReceiptData = {
             subtotal: 9000,
             discount_amount: 0,
             tax_amount: 0,
+            measurement_unit: { code: 'u', symbol: 'u' },
+            sale_quantity_step: '1.0000',
         },
         {
             product_name: 'Cable taller',
@@ -36,6 +38,8 @@ const receipt: ReceiptData = {
             subtotal: 1000,
             discount_amount: 500,
             tax_amount: 210,
+            measurement_unit: { code: 'kg', symbol: 'kg' },
+            sale_quantity_step: '0.2500',
         },
     ],
     totals: {
@@ -71,6 +75,7 @@ test('renders customer, historical items, conditional totals and multiple paymen
     expect(
         screen.getByText('Tomacorriente Doble 220V con un nombre particularmente largo')
     ).toBeInTheDocument();
+    expect(screen.getByText(/^2 u x/)).toBeInTheDocument();
     expect(screen.getByText('Descuento')).toBeInTheDocument();
     expect(screen.getByText('Impuestos')).toBeInTheDocument();
     expect(screen.getByText('PAGOS')).toBeInTheDocument();
@@ -134,8 +139,9 @@ test('keeps long product and payment labels separate from large monetary amounts
 });
 
 test.each([
-    ['3.0000', '3'],
-    ['3.5000', '3,5'],
+    ['3.0000', '3 u'],
+    ['3.5000', '3,5 u'],
+    ['0.7500', '0,75 u'],
 ])('formats receipt quantity %s as %s', (quantity, displayedQuantity) => {
     render(
         <TicketReceipt
@@ -152,5 +158,22 @@ test.each([
     );
 
     expect(screen.getByText(new RegExp(`^${displayedQuantity} x`))).toBeInTheDocument();
-    expect(screen.queryByText(new RegExp(`${quantity} x`))).not.toBeInTheDocument();
+    expect(screen.queryByText(new RegExp(`${quantity} u x`))).not.toBeInTheDocument();
+});
+
+test('renders historical units without catalog-only metadata', () => {
+    render(
+        <TicketReceipt
+            receipt={{
+                ...receipt,
+                items: [{
+                    ...receipt.items[0],
+                    quantity: '0.7500',
+                    measurement_unit: { code: 'kg', symbol: 'kg' },
+                }],
+            }}
+        />
+    );
+
+    expect(screen.getByText(/^0,75 kg x/)).toBeInTheDocument();
 });

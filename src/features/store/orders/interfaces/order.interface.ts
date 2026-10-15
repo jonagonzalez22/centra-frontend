@@ -1,4 +1,5 @@
 import type { DecimalString } from '@/types/decimal';
+import type { HistoricalMeasurementUnit } from '@/types/measurement-unit';
 
 export interface OrderCustomer {
     id: string;
@@ -37,14 +38,6 @@ export interface OrderListItem {
     pending_delivery_items_count: number;
 }
 
-export interface StockMeasurementUnit {
-    id: string;
-    code: string;
-    name: string;
-    symbol: string;
-    category: string;
-}
-
 export interface DeliverySummaryItem {
     product_id: string;
     product_name: string | null;
@@ -54,7 +47,8 @@ export interface DeliverySummaryItem {
     pending_quantity: DecimalString;
     planned_active_quantity: DecimalString;
     unassigned_pending_quantity: DecimalString;
-    stock_measurement_unit: StockMeasurementUnit | null;
+    stock_measurement_unit: HistoricalMeasurementUnit | null;
+    sale_quantity_step: DecimalString | null;
 }
 
 export interface DeliverySummary {
@@ -72,7 +66,8 @@ export interface OrderItem {
     subtotal: number;
     tax_amount: number;
     discount_amount: number;
-    stock_measurement_unit: StockMeasurementUnit | null;
+    stock_measurement_unit: HistoricalMeasurementUnit | null;
+    sale_quantity_step: DecimalString | null;
 }
 
 export interface OrderPayment {

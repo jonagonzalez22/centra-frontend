@@ -1,5 +1,5 @@
 import { formatCurrencyWithCents } from '@/utils/formatters';
-import { formatQuantityForDisplay } from '@/utils/quantity';
+import { formatQuantityWithUnit } from '@/utils/quantity';
 import type { ReceiptData } from '../../interfaces/sale.interface';
 import { formatCuit, formatReceiptOccurredAt } from '../../utils/receipt-formatters';
 
@@ -64,7 +64,7 @@ export const TicketReceipt: React.FC<TicketReceiptProps> = ({ receipt }) => {
                         <div className="ticket-receipt__item-name">{item.product_name}</div>
                         <div className="ticket-receipt__item-line">
                             <span className="ticket-receipt__item-meta">
-                                {formatQuantityForDisplay(item.quantity)} x{' '}
+                                {formatQuantityWithUnit(item.quantity, item.measurement_unit?.symbol)} x{' '}
                                 {formatCurrencyWithCents(item.unit_price)}
                             </span>
                             <span className="ticket-receipt__item-subtotal">

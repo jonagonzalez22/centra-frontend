@@ -27,6 +27,8 @@ const receipt: ReceiptData = {
             subtotal: 9000,
             discount_amount: 0,
             tax_amount: 0,
+            measurement_unit: { code: 'kg', symbol: 'kg' },
+            sale_quantity_step: '0.2500',
         },
     ],
     totals: {
@@ -110,8 +112,9 @@ test('uses compact vertical padding for product and payment tables only', () => 
 });
 
 test.each([
-    ['3.0000', '3'],
-    ['3.5000', '3,5'],
+    ['3.0000', '3 kg'],
+    ['3.5000', '3,5 kg'],
+    ['0.7500', '0,75 kg'],
 ])('formats A4 quantity %s as %s', (quantity, displayedQuantity) => {
     const document = buildA4Document({
         ...receipt,

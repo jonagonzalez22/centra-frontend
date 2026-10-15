@@ -87,7 +87,8 @@ test.each([
                         subtotal: 23790,
                         tax_amount: 0,
                         discount_amount: 0,
-                        stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
+                        stock_measurement_unit: { code: 'unit', symbol: 'u' },
+                        sale_quantity_step: '1.0000',
                     },
                 ],
             }}

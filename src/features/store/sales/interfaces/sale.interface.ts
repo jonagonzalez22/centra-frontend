@@ -1,5 +1,6 @@
 import type { Customer } from '@features/store/customers/types/customer.types';
 import type { DecimalString } from '@/types/decimal';
+import type { HistoricalMeasurementUnit } from '@/types/measurement-unit';
 
 export interface POSItem {
   product_id: string;
@@ -66,7 +67,17 @@ export interface SaleListItem extends OperationResponse {
 }
 
 export interface SaleDetail extends SaleListItem {
-  items: Array<{ id: string; product_name: string; quantity: DecimalString; price: number; subtotal: number; tax_amount: number; discount_amount: number }>;
+  items: Array<{
+    id: string;
+    product_name: string;
+    quantity: DecimalString;
+    price: number;
+    subtotal: number;
+    tax_amount: number;
+    discount_amount: number;
+    stock_measurement_unit?: HistoricalMeasurementUnit | null;
+    sale_quantity_step?: DecimalString | null;
+  }>;
   payments: Array<{ id: string; amount: number; store_payment_method?: { name: string | null } | null }>;
   history: SaleHistoryEvent[];
 }
@@ -140,6 +151,8 @@ export interface ReceiptItem {
   subtotal: number;
   discount_amount: number;
   tax_amount: number;
+  measurement_unit?: HistoricalMeasurementUnit | null;
+  sale_quantity_step?: DecimalString | null;
 }
 
 export interface ReceiptTotals {
