@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Popconfirm, Tag, Button as AntButton } from 'antd';
+import { Popconfirm, Tag, Tooltip, Button as AntButton } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
@@ -30,7 +30,8 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
     }, [pagination.pageSize, setPage, setPerPage]);
 
     const isLowStock = (product: Product) => {
-        return compareDecimalStrings(product.available_stock, product.stock_min) <= 0;
+        return !product.stock_source_product
+            && compareDecimalStrings(product.available_stock, product.stock_min) <= 0;
     };
 
     const columns = [
@@ -54,6 +55,17 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             responsive: ['md'] as ResponsiveList,
         },
         {
+            title: <Tooltip title="Stock físico"><span>Stock</span></Tooltip>,
+            key: 'stock',
+            responsive: ['lg'] as ResponsiveList,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const product = record as unknown as Product;
+                return product.stock_source_product
+                    ? '—'
+                    : formatQuantityWithUnit(product.stock, product.stock_measurement_unit?.symbol);
+            },
+        },
+        {
             title: 'Categoría',
             key: 'category',
             responsive: ['lg'] as ResponsiveList,
@@ -73,34 +85,38 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             },
         },
         {
-            title: 'Stock Disp.',
+            title: <Tooltip title="Stock disponible"><span>Disponible</span></Tooltip>,
             key: 'available_stock',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return (
                     <Tag color={isLowStock(product) ? 'red' : 'green'}>
-                        {formatQuantityWithUnit(product.available_stock, product.stock_measurement_unit?.symbol)}
+                        {formatQuantityWithUnit(product.commercial_available_quantity, product.stock_measurement_unit?.symbol)}
                     </Tag>
                 );
             },
         },
         {
-            title: 'Stock Res.',
+            title: <Tooltip title="Stock reservado"><span>Reservado</span></Tooltip>,
             key: 'stock_reserved',
             responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) =>
-                formatQuantityWithUnit(
-                    (record as unknown as Product).stock_reserved,
-                    (record as unknown as Product).stock_measurement_unit?.symbol,
-                ),
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const product = record as unknown as Product;
+                return product.stock_source_product
+                    ? '—'
+                    : formatQuantityWithUnit(product.stock_reserved, product.stock_measurement_unit?.symbol);
+            },
         },
         {
-            title: 'Stock Mín.',
+            title: <Tooltip title="Stock mínimo"><span>Mínimo</span></Tooltip>,
             dataIndex: 'stock_min',
             key: 'stock_min',
             responsive: ['lg'] as ResponsiveList,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
+                if (product.stock_source_product) {
+                    return '—';
+                }
                 if (isLowStock(product)) {
                     return <Tag color="red">Stock bajo</Tag>;
                 }

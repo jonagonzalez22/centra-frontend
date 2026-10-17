@@ -9,6 +9,7 @@ import type {
     ProductsFilters,
     ProductsListResponse,
     MeasurementUnit,
+    ProductSourceCandidate,
 } from '../interfaces/product.interface';
 
 export const ProductsService = {
@@ -117,6 +118,24 @@ export const ProductsService = {
 
     searchProducts: async (q: string): Promise<Product[]> => {
         const { data } = await api.get<ApiListResponse<Product[]>>(
+            API_ENDPOINTS.STORE.PRODUCTS_SEARCH.URL,
+            { params: { q } }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    searchSourceProducts: async (q: string): Promise<ProductSourceCandidate[]> => {
+        const { data } = await api.get<ApiListResponse<ProductSourceCandidate[]>>(
             API_ENDPOINTS.STORE.PRODUCTS_SEARCH.URL,
             { params: { q } }
         );

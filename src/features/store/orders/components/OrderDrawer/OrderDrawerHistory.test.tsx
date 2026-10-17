@@ -97,6 +97,7 @@ describe('OrderDrawerHistory', () => {
                                     quantity_planned: "10.0000",
                                     quantity_loaded: "10.0000",
                                     quantity_delivered: "8.0000",
+                                    stock_measurement_unit: { code: 'kg', symbol: 'kg' },
                                     discrepancies: [],
                                 },
                                 {
@@ -106,6 +107,7 @@ describe('OrderDrawerHistory', () => {
                                     quantity_planned: "5.0000",
                                     quantity_loaded: "5.0000",
                                     quantity_delivered: "5.0000",
+                                    stock_measurement_unit: { code: 'kg', symbol: 'kg' },
                                     discrepancies: [],
                                 },
                             ],
@@ -145,17 +147,18 @@ describe('OrderDrawerHistory', () => {
                                 {
                                     id: 'item-1',
                                     product_id: 'product-1',
-                                    product_name: 'Cemento 50kg',
-                                    quantity_planned: "10.0000",
-                                    quantity_loaded: "10.0000",
-                                    quantity_delivered: "8.0000",
+                                    product_name: 'Jabón Ariel x 1L',
+                                    quantity_planned: "5.0000",
+                                    quantity_loaded: "5.0000",
+                                    quantity_delivered: "3.0000",
+                                    stock_measurement_unit: { code: 'l', symbol: 'L' },
                                     discrepancies: [
                                         {
                                             id: 'discrepancy-1',
                                             quantity: "2.0000",
-                                            resolution_type: 'pending_redelivery',
+                                            resolution_type: 'damaged',
                                             status: 'resolved',
-                                            notes: 'Entregar mañana',
+                                            notes: 'Merma durante el traslado',
                                             resolved_by: {
                                                 id: 'admin-1',
                                                 name: 'María López',
@@ -173,12 +176,14 @@ describe('OrderDrawerHistory', () => {
 
         expect(screen.getByText('Entrega parcial conciliada')).toBeInTheDocument();
         expect(screen.getByText('Queda mercadería pendiente')).toBeInTheDocument();
-        expect(screen.queryByText('Pendiente de reentrega')).not.toBeInTheDocument();
+        expect(screen.queryByText('Dañado / merma')).not.toBeInTheDocument();
 
         await user.click(screen.getByText('Ver detalle'));
 
-        expect(screen.getByText('2 — Pendiente de reentrega')).toBeInTheDocument();
-        expect(screen.getByText('Entregar mañana')).toBeInTheDocument();
+        expect(screen.getAllByText('5 L')).toHaveLength(2);
+        expect(screen.getByText('3 L')).toBeInTheDocument();
+        expect(screen.getByText('2 L — Dañado / merma')).toBeInTheDocument();
+        expect(screen.getByText('Merma durante el traslado')).toBeInTheDocument();
     });
 
     test('renders existing commercial events with their detail', async () => {

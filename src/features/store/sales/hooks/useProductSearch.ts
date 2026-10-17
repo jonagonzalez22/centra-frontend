@@ -30,7 +30,7 @@ export function useProductSearch() {
       setActiveIndex(-1);
       try {
         const products = await ProductsService.searchProducts(query);
-        setResults(products);
+        setResults(products.filter((product) => isPositiveDecimal(product.commercial_available_quantity)));
         setShowDropdown(true);
       } catch {
         setResults([]);
@@ -48,6 +48,10 @@ export function useProductSearch() {
       setSearchingFull(true);
       try {
         const product = await SalesService.getProductById(productId);
+        if (!isPositiveDecimal(product.commercial_available_quantity)) {
+          message.error('Producto sin stock disponible.');
+          return;
+        }
         addItem({
           id: product.id,
           name: product.name,

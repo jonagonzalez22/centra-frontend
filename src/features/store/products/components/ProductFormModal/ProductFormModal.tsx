@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Form, message } from 'antd';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
@@ -7,7 +7,7 @@ import { useProductForm, buildInitialValuesFromProduct } from '../../hooks/usePr
 import { useProductsContext } from '../../context/ProductsContext';
 import { ProductsService } from '../../services/products.service';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
-import type { MeasurementUnit, Product, CreateProductDto } from '../../interfaces/product.interface';
+import type { MeasurementUnit, Product, ProductSourceCandidate, CreateProductDto } from '../../interfaces/product.interface';
 import './ProductFormModal.css';
 
 interface ProductFormModalProps {
@@ -24,6 +24,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const [skuGenerating, setSkuGenerating] = useState(false);
     const [measurementUnits, setMeasurementUnits] = useState<MeasurementUnit[]>([]);
     const [measurementUnitsLoading, setMeasurementUnitsLoading] = useState(false);
+    const [sourceProducts, setSourceProducts] = useState<ProductSourceCandidate[]>([]);
+    const sourceSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const isEditing = !!product;
     const title = isEditing ? 'Editar Producto' : 'Crear Producto';
@@ -59,10 +61,35 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 if (mounted) setMeasurementUnitsLoading(false);
             });
 
+        const currentSource = product?.stock_source_product;
+        setSourceProducts(currentSource ? [{ ...currentSource, stock_source_product_id: null }] : []);
+
         return () => {
             mounted = false;
         };
-    }, [open]);
+    }, [open, product?.stock_source_product]);
+
+    useEffect(() => () => clearTimeout(sourceSearchTimeoutRef.current), []);
+
+    const handleSearchSourceProducts = useCallback((query: string) => {
+        clearTimeout(sourceSearchTimeoutRef.current);
+
+        const term = query.trim();
+        if (term.length < 2) return;
+
+        sourceSearchTimeoutRef.current = setTimeout(async () => {
+            try {
+                const candidates = await ProductsService.searchSourceProducts(term);
+                setSourceProducts((current) => {
+                    const byId = new Map(current.map((candidate) => [candidate.id, candidate]));
+                    candidates.forEach((candidate) => byId.set(candidate.id, candidate));
+                    return [...byId.values()];
+                });
+            } catch {
+                // El Select conserva las opciones que ya había podido cargar.
+            }
+        }, 250);
+    }, []);
 
     const defaultMeasurementUnit = useMemo(
         () => measurementUnits.find((unit) => unit.code === 'unit'),
@@ -151,6 +178,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 categoriesLoading={categoriesLoading}
                 measurementUnits={measurementUnits}
                 measurementUnitsLoading={measurementUnitsLoading}
+                sourceProducts={sourceProducts}
+                onSearchSourceProducts={handleSearchSourceProducts}
                 defaultMeasurementUnitId={defaultMeasurementUnit?.id}
                 onSubmit={handleSubmit}
                 product={product}

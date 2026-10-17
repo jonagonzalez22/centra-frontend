@@ -1,4 +1,4 @@
-import { Form, Row, Col, Switch, InputNumber, message, Spin } from 'antd';
+import { Alert, Form, Row, Col, Switch, InputNumber, message, Spin } from 'antd';
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
 import Input from '@/components/Input/Input';
@@ -6,11 +6,12 @@ import SelectField from '@/components/SelectField/SelectField';
 import { Button } from '@/components/Button';
 import { requiredStringRules } from '@/utils/validationRules';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
-import type { CreateProductDto, MeasurementUnit, Product } from '../../interfaces/product.interface';
+import type { CreateProductDto, MeasurementUnit, Product, ProductSourceCandidate } from '../../interfaces/product.interface';
 import type { Category } from '@/features/store/categories/interfaces/category.interface';
 import './ProductForm.css';
 import type { DecimalString } from '@/types/decimal';
 import { compareDecimalStrings, formatQuantityForDisplay, normalizeDecimalString } from '@/utils/quantity';
+import { buildStockConsumptionDescription, sourceOptionMatches } from '../../utils/stockSourcePresentation';
 
 interface ProductFormProps {
     formId?: string;
@@ -20,6 +21,8 @@ interface ProductFormProps {
     categoriesLoading: boolean;
     measurementUnits: MeasurementUnit[];
     measurementUnitsLoading: boolean;
+    sourceProducts?: ProductSourceCandidate[];
+    onSearchSourceProducts?: (query: string) => void;
     defaultMeasurementUnitId?: string;
     onSubmit: (values: CreateProductDto) => Promise<void>;
     product?: Product;
@@ -38,6 +41,9 @@ interface ProductFormValues {
     stock_min: DecimalString | null;
     stock_measurement_unit_id?: string;
     sale_quantity_step: DecimalString | null;
+    uses_external_stock?: boolean;
+    stock_source_product_id?: string | null;
+    stock_consumption_quantity?: DecimalString | null;
     is_active: boolean;
     category_id: string;
 }
@@ -102,6 +108,8 @@ export const ProductForm = ({
     categoriesLoading,
     measurementUnits,
     measurementUnitsLoading,
+    sourceProducts = [],
+    onSearchSourceProducts,
     defaultMeasurementUnitId,
     onSubmit,
     product,
@@ -126,10 +134,14 @@ export const ProductForm = ({
                 description: values.description,
                 price: values.price ?? 0,
                 cost: values.cost,
-                stock: isEditing ? undefined : normalizeDecimalString(values.stock ?? '0'),
-                stock_min: normalizeDecimalString(values.stock_min ?? '0'),
+                stock: isEditing || values.uses_external_stock ? undefined : normalizeDecimalString(values.stock ?? '0'),
+                stock_min: values.uses_external_stock ? '0.0000' : normalizeDecimalString(values.stock_min ?? '0'),
                 stock_measurement_unit_id: values.stock_measurement_unit_id ?? defaultMeasurementUnitId ?? '',
                 sale_quantity_step: normalizeDecimalString(values.sale_quantity_step ?? '1'),
+                stock_source_product_id: values.uses_external_stock ? values.stock_source_product_id ?? null : null,
+                stock_consumption_quantity: values.uses_external_stock
+                    ? normalizeDecimalString(values.stock_consumption_quantity ?? '0')
+                    : null,
                 is_active: values.is_active,
                 category_id: values.category_id,
             };
@@ -152,6 +164,23 @@ export const ProductForm = ({
     const nameValue = Form.useWatch('name', form);
     const categoryValue = Form.useWatch('category_id', form);
     const canGenerateSku = !!nameValue || !!categoryValue;
+    const usesExternalStock = Form.useWatch('uses_external_stock', form) ?? false;
+    const selectedSourceId = Form.useWatch('stock_source_product_id', form);
+    const selectedMeasurementUnitId = Form.useWatch('stock_measurement_unit_id', form);
+    const stockConsumptionQuantity = Form.useWatch('stock_consumption_quantity', form);
+    const selectedSource = sourceProducts.find((candidate) => candidate.id === selectedSourceId);
+    const selectedChildUnit = measurementUnits.find((unit) => unit.id === selectedMeasurementUnitId);
+    const sourceOptions = sourceProducts
+        .filter((candidate) => candidate.id !== product?.id && candidate.stock_source_product_id === null)
+        .map((candidate) => ({
+            value: candidate.id,
+            label: `${candidate.name}${candidate.sku ? ` · ${candidate.sku}` : ''} · ${candidate.stock_measurement_unit?.symbol ?? '—'}`,
+        }));
+    const consumptionDescription = buildStockConsumptionDescription(
+        selectedSource,
+        stockConsumptionQuantity,
+        selectedChildUnit?.symbol,
+    );
 
     return (
         <Form
@@ -165,12 +194,74 @@ export const ProductForm = ({
                 stock_measurement_unit_id: defaultMeasurementUnitId,
                 sale_quantity_step: '1.0000',
                 cost: null,
+                uses_external_stock: false,
                 price: null,
             }}
             onFinish={handleFinish}
             onFinishFailed={handleFinishFailed}
             validateTrigger="onBlur"
         >
+            <Row gutter={16}>
+                <Col {...colResponsive}>
+                    <Form.Item name="uses_external_stock" label="Usa stock de otro producto" valuePropName="checked">
+                        <Switch checkedChildren="Sí" unCheckedChildren="No" disabled={isDisabled} />
+                    </Form.Item>
+                </Col>
+            </Row>
+
+            {usesExternalStock && (
+                <>
+                    <Row gutter={16}>
+                        <Col {...colResponsive}>
+                            <SelectField
+                                name="stock_source_product_id"
+                                label="Producto fuente"
+                                placeholder="Seleccionar producto fuente"
+                                options={sourceOptions}
+                                rules={[{ required: true, message: 'El producto fuente es obligatorio.' }]}
+                                disabled={isDisabled}
+                                showSearch
+                                filterOption={sourceOptionMatches}
+                                onSearch={onSearchSourceProducts}
+                                notFoundContent="Buscá por nombre o SKU"
+                            />
+                        </Col>
+                        <Col {...colResponsive}>
+                            <Form.Item
+                                name="stock_consumption_quantity"
+                                label="Consumo de stock por unidad vendida"
+                                rules={saleQuantityStepRules}
+                                extra={selectedSource
+                                    ? `La unidad de consumo es ${selectedSource.stock_measurement_unit?.symbol ?? 'la unidad de la fuente'}.`
+                                    : 'Seleccioná una fuente para ver su unidad.'}
+                            >
+                                <InputNumber<string>
+                                    stringMode
+                                    min="0.0001"
+                                    precision={4}
+                                    step="1"
+                                    style={{ width: '100%' }}
+                                    parser={parseFormattedQuantity}
+                                    formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Alert
+                        className="mb-4"
+                        type="info"
+                        showIcon
+                        title="Stock compartido"
+                        description={(
+                            <>
+                                <div>El stock de este producto se administra desde su producto fuente.</div>
+                                <div>{consumptionDescription}</div>
+                            </>
+                        )}
+                    />
+                </>
+            )}
+
             <Row gutter={16}>
                 <Col {...colResponsive}>
                     <InputField
@@ -276,7 +367,7 @@ export const ProductForm = ({
                 </Col>
             </Row>
 
-            <Row gutter={16}>
+            {!usesExternalStock && <Row gutter={16}>
                 {!isEditing && (
                     <Col {...colResponsive}>
                         <Form.Item
@@ -317,7 +408,7 @@ export const ProductForm = ({
                         />
                     </Form.Item>
                 </Col>
-            </Row>
+            </Row>}
 
             <Row gutter={16}>
                 <Col {...colResponsive}>

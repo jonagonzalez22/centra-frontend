@@ -142,6 +142,7 @@ export interface OrderHistoryItem {
     quantity_planned: DecimalString;
     quantity_loaded: DecimalString;
     quantity_delivered: DecimalString;
+    stock_measurement_unit: HistoricalMeasurementUnit | null;
     discrepancies: OrderHistoryDiscrepancy[];
     pending_quantity?: DecimalString;
 }

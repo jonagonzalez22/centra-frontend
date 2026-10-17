@@ -2,7 +2,7 @@ import { Collapse, Descriptions, Empty, Spin, Timeline } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
 import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
-import { formatQuantityForDisplay } from '@/utils/quantity';
+import { formatQuantityForDisplay, formatQuantityWithUnit } from '@/utils/quantity';
 import type {
     OrderHistoryDetails,
     OrderHistoryDiscrepancy,
@@ -39,12 +39,15 @@ const REASON_LABELS: Record<string, string> = {
     other: 'Otro',
 };
 
-const discrepancySummary = (discrepancy: OrderHistoryDiscrepancy): string => {
+const discrepancySummary = (
+    discrepancy: OrderHistoryDiscrepancy,
+    unitSymbol?: string | null,
+): string => {
     const resolution = discrepancy.resolution_type
         ? (RESOLUTION_LABELS[discrepancy.resolution_type] ?? discrepancy.resolution_type)
         : 'Sin resolver';
 
-    return `${formatQuantityForDisplay(discrepancy.quantity)} — ${resolution}`;
+    return `${formatQuantityWithUnit(discrepancy.quantity, unitSymbol)} — ${resolution}`;
 };
 
 const DeliveryDetails = ({ details }: { details: OrderHistoryDetails }) => {
@@ -61,24 +64,39 @@ const DeliveryDetails = ({ details }: { details: OrderHistoryDetails }) => {
             dataIndex: 'quantity_planned',
             key: 'quantity_planned',
             width: 70,
-            render: (quantity: unknown) =>
-                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+            render: (quantity: unknown, record?: Record<string, unknown>) => {
+                const item = record as unknown as OrderHistoryItem;
+
+                return typeof quantity === 'string'
+                    ? formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol)
+                    : '—';
+            },
         },
         {
             title: 'Carg.',
             dataIndex: 'quantity_loaded',
             key: 'quantity_loaded',
             width: 70,
-            render: (quantity: unknown) =>
-                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+            render: (quantity: unknown, record?: Record<string, unknown>) => {
+                const item = record as unknown as OrderHistoryItem;
+
+                return typeof quantity === 'string'
+                    ? formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol)
+                    : '—';
+            },
         },
         {
             title: 'Entreg.',
             dataIndex: 'quantity_delivered',
             key: 'quantity_delivered',
             width: 80,
-            render: (quantity: unknown) =>
-                typeof quantity === 'string' ? formatQuantityForDisplay(quantity) : '—',
+            render: (quantity: unknown, record?: Record<string, unknown>) => {
+                const item = record as unknown as OrderHistoryItem;
+
+                return typeof quantity === 'string'
+                    ? formatQuantityWithUnit(quantity, item.stock_measurement_unit?.symbol)
+                    : '—';
+            },
         },
     ];
 
@@ -121,7 +139,10 @@ const DeliveryDetails = ({ details }: { details: OrderHistoryDetails }) => {
                                         {item.product_name || 'Producto'}
                                     </div>
                                     <div className="text-gray-600">
-                                        {discrepancySummary(discrepancy)}
+                                        {discrepancySummary(
+                                            discrepancy,
+                                            item.stock_measurement_unit?.symbol,
+                                        )}
                                     </div>
                                     {discrepancy.notes && (
                                         <div className="text-gray-500">{discrepancy.notes}</div>

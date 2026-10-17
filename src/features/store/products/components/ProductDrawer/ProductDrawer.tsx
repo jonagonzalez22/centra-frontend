@@ -55,6 +55,7 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
     const [loading, setLoading] = useState(false);
     const [adjustModalOpen, setAdjustModalOpen] = useState(false);
     const [stockHistoryKey, setStockHistoryKey] = useState(0);
+    const usesExternalStock = product?.stock_source_product != null;
 
     const loadProduct = useCallback(async () => {
         if (!productId) return;
@@ -99,7 +100,9 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
         onAdjustSuccess?.();
     };
 
-    const isLowStock = product ? compareDecimalStrings(product.available_stock, product.stock_min) <= 0 : false;
+    const isLowStock = product
+        ? !usesExternalStock && compareDecimalStrings(product.available_stock, product.stock_min) <= 0
+        : false;
 
     return (
         <>
@@ -113,14 +116,16 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                     </span>
                 }
                 extra={
-                    <CanDo permission="inventory.adjust">
-                        <Button
-                            variant="primary"
-                            label="Ajustar Stock"
-                            icon={<Settings size={14} />}
-                            action={handleOpenAdjustModal}
-                        />
-                    </CanDo>
+                    product && !usesExternalStock ? (
+                        <CanDo permission="inventory.adjust">
+                            <Button
+                                variant="primary"
+                                label="Ajustar Stock"
+                                icon={<Settings size={14} />}
+                                action={handleOpenAdjustModal}
+                            />
+                        </CanDo>
+                    ) : null
                 }
                 loading={loading}
                 destroyOnClose={false}
@@ -180,40 +185,36 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                                     product.stock_measurement_unit?.symbol,
                                                 )}
                                             />
-                                            <Field
-                                                label="Stock Físico"
-                                                value={formatQuantityWithUnit(
-                                                    product.stock,
-                                                    product.stock_measurement_unit?.symbol,
-                                                )}
-                                            />
-                                            <Field
-                                                label="Stock Reservado"
-                                                value={formatQuantityWithUnit(
-                                                    product.stock_reserved,
-                                                    product.stock_measurement_unit?.symbol,
-                                                )}
-                                            />
+                                            {usesExternalStock ? (
+                                                <>
+                                                    <Field label="Tipo de stock" value="Stock compartido" />
+                                                    <Field label="Producto fuente" value={product.stock_source_product?.name} />
+                                                    <Field
+                                                        label="Consumo"
+                                                        value={`${formatQuantityWithUnit(product.stock_consumption_quantity ?? '0.0000', product.stock_source_product?.stock_measurement_unit?.symbol)} por 1 ${product.stock_measurement_unit?.symbol ?? 'u'}`}
+                                                    />
+                                                </>
+                                            ) : <>
+                                                <Field label="Stock Físico" value={formatQuantityWithUnit(product.stock, product.stock_measurement_unit?.symbol)} />
+                                                <Field label="Stock Reservado" value={formatQuantityWithUnit(product.stock_reserved, product.stock_measurement_unit?.symbol)} />
+                                            </>}
                                             <div className="productDrawerField">
                                                 <span className="productDrawerFieldLabel">
-                                                    <Tooltip title="Considera el stock reservado y la cantidad mínima de venta configurada.">
+                                                    <Tooltip title={usesExternalStock
+                                                        ? 'Cantidad comercial disponible según el producto fuente.'
+                                                        : 'Considera el stock reservado y la cantidad mínima de venta configurada.'}
+                                                    >
                                                         Disponible para vender
                                                     </Tooltip>
                                                 </span>
-                                                <span className={`productDrawerFieldValue productDrawerStockTag ${isLowStock ? 'text-red-600' : 'text-green-600'}`}>
+                                                <span className={`productDrawerFieldValue productDrawerStockTag ${usesExternalStock ? '' : isLowStock ? 'text-red-600' : 'text-green-600'}`}>
                                                     {formatQuantityWithUnit(
                                                         product.commercial_available_quantity ?? product.available_stock,
                                                         product.stock_measurement_unit?.symbol,
                                                     )}
                                                 </span>
                                             </div>
-                                            <Field
-                                                label="Stock Mínimo"
-                                                value={formatQuantityWithUnit(
-                                                    product.stock_min,
-                                                    product.stock_measurement_unit?.symbol,
-                                                )}
-                                            />
+                                            {!usesExternalStock && <Field label="Stock Mínimo" value={formatQuantityWithUnit(product.stock_min, product.stock_measurement_unit?.symbol)} />}
                                             {isLowStock && (
                                                 <span className="text-red-600 text-sm font-medium">Stock bajo</span>
                                             )}

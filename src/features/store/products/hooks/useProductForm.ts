@@ -77,6 +77,9 @@ export const buildInitialValuesFromProduct = (product: Product): CreateProductDt
         stock_min: product.stock_min,
         stock_measurement_unit_id: product.stock_measurement_unit_id ?? '',
         sale_quantity_step: product.sale_quantity_step ?? '1.0000',
+        stock_source_product_id: product.stock_source_product?.id ?? null,
+        stock_consumption_quantity: product.stock_consumption_quantity ?? null,
+        uses_external_stock: product.stock_source_product !== null,
         is_active: product.is_active,
         category_id: product.category.id,
     };
