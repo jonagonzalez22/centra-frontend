@@ -32,6 +32,7 @@ export interface Product {
     sale_quantity_step: DecimalString;
     commercial_available_quantity: DecimalString;
     is_active: boolean;
+    is_sellable: boolean;
     category: ProductCategory;
     parent_product_id: string | null;
     created_at: string;
@@ -62,6 +63,7 @@ export interface CreateProductDto {
     stock_consumption_quantity?: DecimalString | null;
     uses_external_stock?: boolean;
     is_active?: boolean;
+    is_sellable?: boolean;
     category_id: string;
 }
 
@@ -82,6 +84,8 @@ export interface ProductsFilters {
     name?: string;
     sku?: string;
     is_active?: boolean;
+    is_sellable?: boolean;
+    stock_type?: 'own' | 'shared';
     sort_by?: string;
     sort_dir?: 'asc' | 'desc';
 }
@@ -91,4 +95,6 @@ export interface ProductsSearchValues {
     sku?: string;
     category_id?: string;
     is_active?: boolean;
+    is_sellable?: boolean;
+    stock_type?: 'own' | 'shared';
 }

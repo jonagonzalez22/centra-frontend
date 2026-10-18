@@ -9,18 +9,34 @@ import type { ProductsSearchValues } from '../../interfaces/product.interface';
 import './ProductsSearchBar.css';
 
 type StatusValue = 'all' | 'true' | 'false';
+type StockTypeValue = 'all' | 'own' | 'shared';
+type SellableValue = 'all' | 'true' | 'false';
 
 interface ProductsSearchFormValues {
     name?: string;
     sku?: string;
     category_id?: string;
     is_active: StatusValue;
+    stock_type: StockTypeValue;
+    is_sellable: SellableValue;
 }
 
 const STATUS_OPTIONS = [
     { label: 'Todos', value: 'all' },
     { label: 'Activos', value: 'true' },
     { label: 'Inactivos', value: 'false' },
+];
+
+const STOCK_TYPE_OPTIONS = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Propio', value: 'own' },
+    { label: 'Compartido', value: 'shared' },
+];
+
+const SELLABLE_OPTIONS = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Sí', value: 'true' },
+    { label: 'No', value: 'false' },
 ];
 
 export const ProductsSearchBar = () => {
@@ -31,8 +47,13 @@ export const ProductsSearchBar = () => {
     const skuValue = Form.useWatch('sku', form);
     const categoryValue = Form.useWatch('category_id', form);
     const statusValue = Form.useWatch('is_active', form);
+    const stockTypeValue = Form.useWatch('stock_type', form);
+    const sellableValue = Form.useWatch('is_sellable', form);
 
-    const hasActiveFilters = nameValue || skuValue || categoryValue || (statusValue && statusValue !== 'all');
+    const hasActiveFilters = nameValue || skuValue || categoryValue
+        || (statusValue && statusValue !== 'all')
+        || (stockTypeValue && stockTypeValue !== 'all')
+        || (sellableValue && sellableValue !== 'all');
 
     const buildFilters = useCallback((values: ProductsSearchFormValues): ProductsSearchValues => {
         const filters: ProductsSearchValues = {};
@@ -42,6 +63,12 @@ export const ProductsSearchBar = () => {
         if (values.category_id) filters.category_id = values.category_id;
         if (values.is_active && values.is_active !== 'all') {
             filters.is_active = values.is_active === 'true';
+        }
+        if (values.stock_type && values.stock_type !== 'all') {
+            filters.stock_type = values.stock_type;
+        }
+        if (values.is_sellable && values.is_sellable !== 'all') {
+            filters.is_sellable = values.is_sellable === 'true';
         }
 
         return filters;
@@ -90,8 +117,8 @@ export const ProductsSearchBar = () => {
 
                 <InputField
                     name="sku"
-                    label="SKU"
-                    placeholder="Buscar por SKU"
+                    label="Código"
+                    placeholder="Buscar por código"
                     allowClear
                     disabled={categoriesLoading}
                 />
@@ -111,6 +138,24 @@ export const ProductsSearchBar = () => {
                     label="Estado"
                     placeholder="Todos"
                     options={STATUS_OPTIONS}
+                    allowClear
+                    disabled={categoriesLoading}
+                />
+
+                <SelectField
+                    name="stock_type"
+                    label="Tipo de stock"
+                    placeholder="Todos"
+                    options={STOCK_TYPE_OPTIONS}
+                    allowClear
+                    disabled={categoriesLoading}
+                />
+
+                <SelectField
+                    name="is_sellable"
+                    label="Disponible para venta"
+                    placeholder="Todos"
+                    options={SELLABLE_OPTIONS}
                     allowClear
                     disabled={categoriesLoading}
                 />

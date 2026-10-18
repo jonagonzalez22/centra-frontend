@@ -137,7 +137,7 @@ export const ProductsService = {
     searchSourceProducts: async (q: string): Promise<ProductSourceCandidate[]> => {
         const { data } = await api.get<ApiListResponse<ProductSourceCandidate[]>>(
             API_ENDPOINTS.STORE.PRODUCTS_SEARCH.URL,
-            { params: { q } }
+            { params: { q, for_stock_source: 1 } }
         );
 
         if (data.status === 'error') {

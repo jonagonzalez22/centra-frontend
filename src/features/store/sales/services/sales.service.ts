@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
-import type { Product } from '@features/store/products/interfaces/product.interface';
+import type { CommercialProductDetail } from '@features/store/orders/interfaces/commercial-product.interface';
 import type {
   CancelSaleDTO,
   CreateOperationDTO,
@@ -16,14 +16,6 @@ import type {
 
 interface PaymentMethodsListData {
   items: StorePaymentMethod[];
-}
-
-interface ProductsListData {
-  items: Product[];
-  total: number;
-  per_page: number;
-  current_page: number;
-  last_page: number;
 }
 
 export const SalesService = {
@@ -74,10 +66,10 @@ export const SalesService = {
     return data.data.items.filter((pm) => pm.is_enabled);
   },
 
-  searchByBarcode: async (barcode: string): Promise<Product | null> => {
-    const { data } = await api.get<ApiListResponse<ProductsListData>>(
-      API_ENDPOINTS.STORE.PRODUCTS.URL,
-      { params: { barcode, is_active: true } }
+  searchByBarcode: async (barcode: string): Promise<CommercialProductDetail | null> => {
+    const { data } = await api.get<ApiListResponse<CommercialProductDetail[]>>(
+      API_ENDPOINTS.STORE.OPERATIONS.PRODUCTS.SEARCH,
+      { params: { barcode } }
     );
 
     if (data.status === 'error') {
@@ -89,12 +81,12 @@ export const SalesService = {
       throw error;
     }
 
-    return data.data.items.length > 0 ? data.data.items[0] : null;
+    return data.data[0] ?? null;
   },
 
-  getProductById: async (id: string): Promise<Product> => {
-    const { data } = await api.get<ApiListResponse<Product>>(
-      `${API_ENDPOINTS.STORE.PRODUCTS.URL}/${id}`
+  getProductById: async (id: string): Promise<CommercialProductDetail> => {
+    const { data } = await api.get<ApiListResponse<CommercialProductDetail>>(
+      API_ENDPOINTS.STORE.OPERATIONS.PRODUCTS.DETAIL(id)
     );
 
     if (data.status === 'error') {

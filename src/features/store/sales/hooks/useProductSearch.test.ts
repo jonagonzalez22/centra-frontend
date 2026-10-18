@@ -7,8 +7,8 @@ const searchProducts = vi.hoisted(() => vi.fn());
 const getProductById = vi.hoisted(() => vi.fn());
 const searchByBarcode = vi.hoisted(() => vi.fn());
 
-vi.mock('@features/store/products/services/products.service', () => ({
-  ProductsService: { searchProducts },
+vi.mock('@features/store/orders/services/commercial-products.service', () => ({
+  CommercialProductsService: { search: searchProducts },
 }));
 
 vi.mock('../services/sales.service', () => ({

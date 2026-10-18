@@ -81,6 +81,7 @@ export const buildInitialValuesFromProduct = (product: Product): CreateProductDt
         stock_consumption_quantity: product.stock_consumption_quantity ?? null,
         uses_external_stock: product.stock_source_product !== null,
         is_active: product.is_active,
+        is_sellable: product.is_sellable,
         category_id: product.category.id,
     };
 };

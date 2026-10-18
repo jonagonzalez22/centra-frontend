@@ -116,7 +116,7 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
             form.setFieldsValue({ sku });
         } catch (err) {
             const apiError = err as ApiError;
-            message.error(apiError.message || 'Error al generar SKU');
+            message.error(apiError.message || 'Error al generar el código');
         } finally {
             setSkuGenerating(false);
         }

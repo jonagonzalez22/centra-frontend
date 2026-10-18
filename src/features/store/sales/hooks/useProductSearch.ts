@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { message } from 'antd';
-import { ProductsService } from '@features/store/products/services/products.service';
+import { CommercialProductsService } from '@features/store/orders/services/commercial-products.service';
 import { SalesService } from '../services/sales.service';
 import { usePOSStore } from '../stores/usePOSStore';
 import type { ProductSearchItem } from '../interfaces/product-search.interface';
@@ -29,7 +29,7 @@ export function useProductSearch() {
       setLoading(true);
       setActiveIndex(-1);
       try {
-        const products = await ProductsService.searchProducts(query);
+        const products = await CommercialProductsService.search({ q: query });
         setResults(products.filter((product) => isPositiveDecimal(product.commercial_available_quantity)));
         setShowDropdown(true);
       } catch {
@@ -55,7 +55,7 @@ export function useProductSearch() {
         addItem({
           id: product.id,
           name: product.name,
-          sku: product.sku,
+          sku: product.sku ?? '',
           barcode: product.barcode,
           price: Number(product.price),
           commercial_available_quantity: product.commercial_available_quantity,
@@ -87,7 +87,7 @@ export function useProductSearch() {
         addItem({
           id: product.id,
           name: product.name,
-          sku: product.sku,
+          sku: product.sku ?? '',
           barcode: product.barcode,
           price: Number(product.price),
           commercial_available_quantity: product.commercial_available_quantity,

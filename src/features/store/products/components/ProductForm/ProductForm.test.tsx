@@ -26,13 +26,17 @@ describe('ProductForm UOM configuration', () => {
     it('renders the measurement unit selector and sale step with safe defaults', () => {
         renderForm();
 
+        expect(screen.getByText('Código')).toBeInTheDocument();
+        expect(screen.getByText('Disponible para venta')).toBeInTheDocument();
+        expect(screen.getByText('Estado')).toBeInTheDocument();
+        expect(screen.queryByText('Código Interno (SKU)')).not.toBeInTheDocument();
         expect(screen.getByText('Unidad de medida')).toBeInTheDocument();
         expect(screen.getByText('Cantidad mínima de venta')).toBeInTheDocument();
         expect(screen.getByText('Define la cantidad mínima en la que se puede vender o pedir este producto.')).toBeInTheDocument();
         expect(screen.getAllByRole('combobox')).toHaveLength(2);
     });
 
-    it('matches source options by name or SKU', () => {
+    it('matches source options by name or code', () => {
         const option = { label: 'Jabón Ariel granel · ARIEL-GR · L' };
 
         expect(sourceOptionMatches('ariel', option)).toBe(true);

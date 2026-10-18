@@ -30,6 +30,7 @@ describe('ProductDrawer UOM information', () => {
             stock_measurement_unit: { id: 'kg-1', code: 'kg', name: 'Kilogramo', symbol: 'kg', category: 'weight' },
             sale_quantity_step: '0.2500',
             is_active: true,
+            is_sellable: true,
             category: { id: 'category-1', name: 'Limpieza' },
             parent_product_id: null,
             created_at: '2026-01-01T00:00:00Z',
@@ -39,11 +40,15 @@ describe('ProductDrawer UOM information', () => {
         render(<ProductDrawer open onClose={vi.fn()} productId="product-1" />);
 
         expect(await screen.findByText('Kilogramo (kg)')).toBeInTheDocument();
+        expect(screen.getByText('Código')).toBeInTheDocument();
+        expect(screen.getByText('JAB-1')).toBeInTheDocument();
+        expect(screen.queryByText('SKU')).not.toBeInTheDocument();
         expect(screen.getAllByText('48,875 kg')).toHaveLength(1);
         expect(screen.getByText('48,75 kg')).toBeInTheDocument();
         expect(screen.getByText('0,25 kg')).toBeInTheDocument();
         expect(screen.getByText('Cantidad mínima de venta')).toBeInTheDocument();
         expect(screen.getByText('Disponible para vender')).toBeInTheDocument();
+        expect(screen.getByText('Disponible para venta')).toBeInTheDocument();
         expect(screen.queryByText('Stock Disponible')).not.toBeInTheDocument();
         expect(screen.queryByText('Stock Comercial Disponible')).not.toBeInTheDocument();
     });
@@ -66,6 +71,7 @@ describe('ProductDrawer UOM information', () => {
             stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
             sale_quantity_step: '1.0000',
             is_active: true,
+            is_sellable: true,
             category: { id: 'category-1', name: 'General' },
             parent_product_id: null,
             created_at: '2026-01-01T00:00:00Z',
@@ -103,6 +109,7 @@ describe('ProductDrawer UOM information', () => {
             stock_consumption_quantity: '5.0000',
             sale_quantity_step: '1.0000',
             is_active: true,
+            is_sellable: true,
             category: { id: 'category-1', name: 'Limpieza' },
             parent_product_id: null,
             created_at: '2026-01-01T00:00:00Z',
@@ -118,5 +125,22 @@ describe('ProductDrawer UOM information', () => {
         expect(screen.queryByText('Stock bajo')).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Ajustar Stock' })).not.toBeInTheDocument();
         expect(container.querySelector('.productDrawerSectionDanger')).not.toBeInTheDocument();
+    });
+
+    it('shows a non-sellable source separately from its active state', async () => {
+        vi.mocked(ProductsService.getById).mockResolvedValue({
+            id: 'source-product', name: 'Jaula de cloro', sku: 'CLORO-500', barcode: null, description: null,
+            price: 100, cost: null, stock: '20.0000', stock_reserved: '0.0000', available_stock: '20.0000',
+            commercial_available_quantity: '20.0000', stock_min: '0.0000', stock_measurement_unit_id: 'l-1',
+            stock_measurement_unit: { id: 'l-1', code: 'l', name: 'Litro', symbol: 'L', category: 'volume' },
+            sale_quantity_step: '1.0000', is_active: true, is_sellable: false,
+            category: { id: 'category-1', name: 'Limpieza' }, parent_product_id: null,
+            created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+        });
+
+        render(<ProductDrawer open onClose={vi.fn()} productId="source-product" />);
+
+        expect(await screen.findByText('Activo')).toBeInTheDocument();
+        expect(screen.getByText('No')).toBeInTheDocument();
     });
 });

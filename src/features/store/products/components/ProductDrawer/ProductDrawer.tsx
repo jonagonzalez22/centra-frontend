@@ -145,7 +145,7 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                     <div className="productDrawerContent">
                                         <Section icon={<Package size={16} />} title="Información">
                                             <Field label="Nombre" value={product.name} />
-                                            <Field label="SKU" value={product.sku} />
+                                            <Field label="Código" value={product.sku} />
                                             <Field label="Código de Barras" value={product.barcode} />
                                             <Field label="Descripción" value={product.description} />
                                         </Section>
@@ -224,6 +224,7 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                             <span className={product.is_active ? 'text-green-600' : 'text-red-600'}>
                                                 {product.is_active ? 'Activo' : 'Inactivo'}
                                             </span>
+                                            <Field label="Disponible para venta" value={product.is_sellable ? 'Sí' : 'No'} />
                                         </Section>
 
                                         <Section icon={<Package size={16} />} title="Metadatos">

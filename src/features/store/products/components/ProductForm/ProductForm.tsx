@@ -45,6 +45,7 @@ interface ProductFormValues {
     stock_source_product_id?: string | null;
     stock_consumption_quantity?: DecimalString | null;
     is_active: boolean;
+    is_sellable: boolean;
     category_id: string;
 }
 
@@ -143,6 +144,7 @@ export const ProductForm = ({
                     ? normalizeDecimalString(values.stock_consumption_quantity ?? '0')
                     : null,
                 is_active: values.is_active,
+                is_sellable: values.is_sellable,
                 category_id: values.category_id,
             };
             await onSubmit(payload);
@@ -195,6 +197,7 @@ export const ProductForm = ({
                 sale_quantity_step: '1.0000',
                 cost: null,
                 uses_external_stock: false,
+                is_sellable: true,
                 price: null,
             }}
             onFinish={handleFinish}
@@ -223,7 +226,7 @@ export const ProductForm = ({
                                 showSearch
                                 filterOption={sourceOptionMatches}
                                 onSearch={onSearchSourceProducts}
-                                notFoundContent="Buscá por nombre o SKU"
+                                notFoundContent="Buscá por nombre o código"
                             />
                         </Col>
                         <Col {...colResponsive}>
@@ -289,11 +292,11 @@ export const ProductForm = ({
                 <Col {...colResponsive}>
                     <Form.Item
                         name="sku"
-                        label="Código Interno (SKU)"
-                        rules={requiredStringRules('El SKU')}
+                        label="Código"
+                        rules={requiredStringRules('El código')}
                     >
                         <Input
-                            placeholder="Código interno"
+                            placeholder="Ingresar código"
                             disabled={isDisabled}
                             suffix={
                                 <div className="flex items-center gap-1">
@@ -450,6 +453,20 @@ export const ProductForm = ({
                         <Switch
                             checkedChildren="Activo"
                             unCheckedChildren="Inactivo"
+                            disabled={isDisabled}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col {...colResponsive}>
+                    <Form.Item
+                        name="is_sellable"
+                        label="Disponible para venta"
+                        valuePropName="checked"
+                        extra="Si está desactivado, el producto seguirá disponible para inventario y gestión, pero no podrá seleccionarse en nuevas ventas o pedidos."
+                    >
+                        <Switch
+                            checkedChildren="Sí"
+                            unCheckedChildren="No"
                             disabled={isDisabled}
                         />
                     </Form.Item>

@@ -49,7 +49,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             },
         },
         {
-            title: 'SKU',
+            title: 'Código',
             dataIndex: 'sku',
             key: 'sku',
             responsive: ['md'] as ResponsiveList,
@@ -72,6 +72,20 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return product.category?.name ?? '—';
+            },
+        },
+        {
+            title: 'Tipo de stock',
+            key: 'stock_type',
+            responsive: ['lg'] as ResponsiveList,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const product = record as unknown as Product;
+                const isShared = Boolean(product.stock_source_product);
+                return (
+                    <Tag color={isShared ? 'blue' : 'default'}>
+                        {isShared ? 'Compartido' : 'Propio'}
+                    </Tag>
+                );
             },
         },
         {
@@ -131,6 +145,19 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 return (
                     <Tag color={product.is_active ? 'green' : 'red'}>
                         {product.is_active ? 'Activo' : 'Inactivo'}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: 'Venta',
+            key: 'is_sellable',
+            responsive: ['lg'] as ResponsiveList,
+            render: (_: unknown, record?: Record<string, unknown>) => {
+                const product = record as unknown as Product;
+                return (
+                    <Tag color={product.is_sellable ? 'green' : 'default'}>
+                        {product.is_sellable ? 'Disponible' : 'No disponible'}
                     </Tag>
                 );
             },

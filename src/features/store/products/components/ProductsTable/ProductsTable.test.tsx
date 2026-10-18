@@ -17,12 +17,16 @@ vi.mock('@/components/Table/Table', () => ({
     }: {
         columns: Array<{
             key: string;
+            title?: ReactNode;
             dataIndex?: string;
             render?: (value: unknown, record: Record<string, unknown>) => ReactNode;
         }>;
         dataSource: Array<Record<string, unknown>>;
     }) => (
         <div>
+            <div data-testid="headers">
+                {columns.map((column) => <span key={column.key}>{column.title}</span>)}
+            </div>
             {dataSource.map((record) => (
                 <div key={String(record.id)} data-testid={`row-${String(record.id)}`}>
                     {columns.map((column) => (
@@ -55,6 +59,7 @@ const product = (overrides: Partial<Product> = {}): Product => ({
     sale_quantity_step: '1.0000',
     commercial_available_quantity: '1.0000',
     is_active: true,
+    is_sellable: true,
     category: { id: 'category-1', name: 'General' },
     parent_product_id: null,
     created_at: '2026-01-01T00:00:00.000000Z',
@@ -86,12 +91,21 @@ const renderTable = (items: Product[]) => {
 };
 
 describe('ProductsTable shared stock display', () => {
+    it('labels the commercial identifier as Código', () => {
+        renderTable([product()]);
+
+        expect(within(screen.getByTestId('headers')).getByText('Código')).toBeInTheDocument();
+        expect(screen.queryByText('SKU')).not.toBeInTheDocument();
+    });
+
     it('shows physical stock and Stock bajo for a low-stock product with its own stock', () => {
         renderTable([product({ stock_reserved: '0.5000' })]);
 
         const row = within(screen.getByTestId('row-product-1'));
         expect(row.getByTestId('cell-stock')).toHaveTextContent('1 u');
         expect(row.getByTestId('cell-stock_reserved')).toHaveTextContent('0,5 u');
+        expect(row.getByTestId('cell-stock_type')).toHaveTextContent('Propio');
+        expect(row.getByTestId('cell-is_sellable')).toHaveTextContent('Disponible');
         expect(screen.getByText('Stock bajo')).toBeInTheDocument();
     });
 
@@ -103,6 +117,7 @@ describe('ProductsTable shared stock display', () => {
             available_stock: '0.0000',
             stock_min: '0.0000',
             commercial_available_quantity: '2.0000',
+            is_sellable: false,
             stock_source_product: {
                 id: 'source-1',
                 name: 'Producto fuente',
@@ -116,5 +131,7 @@ describe('ProductsTable shared stock display', () => {
         expect(row.getByTestId('cell-stock')).toHaveTextContent('—');
         expect(row.getByTestId('cell-stock_reserved')).toHaveTextContent('—');
         expect(row.getByTestId('cell-available_stock')).toHaveTextContent('2 u');
+        expect(row.getByTestId('cell-stock_type')).toHaveTextContent('Compartido');
+        expect(row.getByTestId('cell-is_sellable')).toHaveTextContent('No disponible');
     });
 });
