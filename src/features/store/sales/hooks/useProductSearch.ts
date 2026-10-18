@@ -30,7 +30,9 @@ export function useProductSearch() {
       setActiveIndex(-1);
       try {
         const products = await CommercialProductsService.search({ q: query });
-        setResults(products.filter((product) => isPositiveDecimal(product.commercial_available_quantity)));
+        setResults(products
+          .filter((product) => isPositiveDecimal(product.commercial_available_quantity))
+          .map((product) => ({ ...product, sku: product.sku ?? '' })));
         setShowDropdown(true);
       } catch {
         setResults([]);
