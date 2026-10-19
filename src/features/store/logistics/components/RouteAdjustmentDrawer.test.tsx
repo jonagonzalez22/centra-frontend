@@ -45,6 +45,7 @@ test('restores the last valid quantity after an invalid load adjustment', async 
     fireEvent.click(await screen.findByText('Producto a granel (1,25 kg)'));
 
     const input = await screen.findByRole('spinbutton');
+    await waitFor(() => expect(input).toHaveValue('1,25 kg'));
     fireEvent.change(input, { target: { value: '1,1' } });
     fireEvent.blur(input);
 
@@ -61,6 +62,7 @@ test('explains the adjustment maximum instead of silently clipping it', async ()
     fireEvent.click(await screen.findByText('Producto a granel (1,25 kg)'));
 
     const input = await screen.findByRole('spinbutton');
+    await waitFor(() => expect(input).toHaveValue('1,25 kg'));
     fireEvent.change(input, { target: { value: '1,5' } });
     fireEvent.blur(input);
 

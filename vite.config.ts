@@ -19,7 +19,11 @@ export default defineConfig({
       test: {
         environment: 'jsdom',
         globals: true,
-        setupFiles: './src/tests/setup.ts'
+        setupFiles: './src/tests/setup.ts',
+        // Las pruebas de Ant Design + jsdom son intensivas; limitar los workers evita
+        // que las interacciones de user-event excedan el timeout por contención de CPU.
+        maxWorkers: 1,
+        fileParallelism: false,
       }
     }]
   }

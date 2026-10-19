@@ -1,0 +1,31 @@
+.suppliersPage .ant-table-wrapper {
+    @apply max-w-full overflow-x-auto;
+}
+.suppliersPage .ant-table {
+    @apply min-w-[720px];
+}
+.supplierFormGrid {
+    @apply grid grid-cols-2 gap-x-4;
+}
+.supplierFormFullWidth {
+    @apply col-span-2;
+}
+@media (max-width: 767px) {
+    .suppliersPage .categoriesSearchBarRow {
+        @apply flex-col items-stretch;
+    }
+    .suppliersPage .categoriesSearchBarRow > * {
+        @apply min-w-0 w-full;
+    }
+    .suppliersPage .categoriesSearchBarActions,
+    .suppliersPage .categoriesSearchBarActions .ant-btn,
+    .suppliersPage > .mb-6 .ant-btn-primary {
+        @apply w-full;
+    }
+    .supplierFormGrid {
+        @apply grid-cols-1;
+    }
+    .supplierFormFullWidth {
+        @apply col-span-1;
+    }
+}

@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { SuppliersPage } from './SuppliersPage';
 import { SuppliersService, type Supplier } from './suppliers.service';
 
@@ -36,7 +37,14 @@ describe('SuppliersPage', () => {
         vi.mocked(SuppliersService.getById).mockResolvedValue(supplier);
         const user = userEvent.setup();
 
-        render(<SuppliersPage />);
+        render(
+            <MemoryRouter>
+                <SuppliersPage />
+            </MemoryRouter>
+        );
+        expect(
+            await screen.findByRole('button', { name: 'Productos del proveedor' })
+        ).toBeInTheDocument();
         await user.click(await screen.findByRole('button', { name: 'Ver detalle' }));
 
         expect(await screen.findByText('Detalle de Proveedor')).toBeInTheDocument();

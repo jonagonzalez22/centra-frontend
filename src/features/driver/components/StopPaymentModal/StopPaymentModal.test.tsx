@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DriverService } from '../../services/driver.service';
 import { StopPaymentModal } from './StopPaymentModal';
@@ -21,10 +21,23 @@ const paymentMethod = {
     sort_order: 1,
 };
 
+async function waitForPaymentMethodsToLoad() {
+    await waitFor(() => {
+        const select = screen.getByRole('combobox').closest('.ant-select');
+        expect(select).not.toHaveClass('ant-select-loading');
+    });
+}
+
 test('keeps raw monetary input editable and calculates cents using integer arithmetic', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(DriverService.getPaymentMethods).mockResolvedValue([paymentMethod]);
+    let resolvePaymentMethods!: (methods: typeof paymentMethod[]) => void;
+    vi.mocked(DriverService.getPaymentMethods).mockImplementationOnce(
+        () =>
+            new Promise((resolve) => {
+                resolvePaymentMethods = resolve;
+            })
+    );
 
     render(
         <StopPaymentModal
@@ -39,6 +52,9 @@ test('keeps raw monetary input editable and calculates cents using integer arith
     expect(screen.getByText('Cobrado')).toBeInTheDocument();
     expect(screen.getByText('Pendiente')).toBeInTheDocument();
 
+    await waitFor(() => expect(DriverService.getPaymentMethods).toHaveBeenCalled());
+    resolvePaymentMethods([paymentMethod]);
+    await waitForPaymentMethodsToLoad();
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByText('Efectivo'));
 
@@ -57,12 +73,21 @@ test('keeps raw monetary input editable and calculates cents using integer arith
 
 test('blocks amounts above amount_to_collect_now and still allows partial payments', async () => {
     const user = userEvent.setup();
-    vi.mocked(DriverService.getPaymentMethods).mockResolvedValue([paymentMethod]);
+    let resolvePaymentMethods!: (methods: typeof paymentMethod[]) => void;
+    vi.mocked(DriverService.getPaymentMethods).mockImplementationOnce(
+        () =>
+            new Promise((resolve) => {
+                resolvePaymentMethods = resolve;
+            })
+    );
 
     render(
         <StopPaymentModal open amountToCollectNow={10.01} onClose={vi.fn()} onConfirm={vi.fn()} />
     );
 
+    await waitFor(() => expect(DriverService.getPaymentMethods).toHaveBeenCalled());
+    resolvePaymentMethods([paymentMethod]);
+    await waitForPaymentMethodsToLoad();
     await user.click(await screen.findByRole('combobox'));
     await user.click(await screen.findByText('Efectivo'));
     const input = screen.getByLabelText('Monto del cobro 1');

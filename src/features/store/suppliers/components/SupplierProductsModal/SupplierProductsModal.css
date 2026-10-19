@@ -1,0 +1,55 @@
+.supplierProductsModalHeader {
+    @apply flex items-center justify-between gap-4 pr-10;
+}
+
+.supplierProductsModalSubtitle {
+    @apply mt-2 text-sm font-normal text-gray-500;
+}
+
+.supplierProductsModalSearch {
+    @apply mb-0 flex-1;
+}
+
+.supplierProductsToolbar {
+    @apply mb-5 flex items-center gap-3;
+}
+
+.supplierProductsEmpty {
+    @apply py-12 text-center text-gray-500;
+}
+
+.supplierProductsActions {
+    @apply flex items-center gap-1;
+}
+
+.supplierProductsModal .ant-table-wrapper {
+    @apply max-w-full overflow-x-auto;
+}
+.supplierProductsModal .ant-table {
+    @apply min-w-[760px];
+}
+@media (max-width: 767px) {
+    .supplierProductsModal {
+        @apply m-0 max-w-none;
+        width: 100% !important;
+        top: 0 !important;
+    }
+    .supplierProductsModal .ant-modal-content {
+        @apply min-h-screen rounded-none;
+    }
+    .supplierProductsModal .supplierProductsModalHeader {
+        @apply flex-col items-stretch pr-10;
+    }
+    .supplierProductsModal .supplierProductsModalHeader .ant-btn {
+        @apply w-full;
+    }
+    .supplierProductsToolbar {
+        @apply flex-col items-stretch gap-3;
+    }
+    .supplierProductsAddButton {
+        @apply order-first w-full;
+    }
+    .supplierProductsModal .ant-pagination {
+        @apply flex-wrap gap-y-2;
+    }
+}
