@@ -8,6 +8,8 @@ import { useProductsContext } from '../../context/ProductsContext';
 import { ProductsService } from '../../services/products.service';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { MeasurementUnit, Product, ProductSourceCandidate, CreateProductDto } from '../../interfaces/product.interface';
+import type { ProductBrand } from '../../interfaces/product.interface';
+import { BrandsService } from '@/features/store/brands/services/brands.service';
 import './ProductFormModal.css';
 
 interface ProductFormModalProps {
@@ -25,6 +27,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const [measurementUnits, setMeasurementUnits] = useState<MeasurementUnit[]>([]);
     const [measurementUnitsLoading, setMeasurementUnitsLoading] = useState(false);
     const [sourceProducts, setSourceProducts] = useState<ProductSourceCandidate[]>([]);
+    const [brands, setBrands] = useState<ProductBrand[]>([]);
+    const [brandsLoading, setBrandsLoading] = useState(false);
     const sourceSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const isEditing = !!product;
@@ -70,6 +74,23 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     }, [open, product?.stock_source_product]);
 
     useEffect(() => () => clearTimeout(sourceSearchTimeoutRef.current), []);
+
+    useEffect(() => {
+        if (!open) return;
+        let mounted = true;
+        setBrandsLoading(true);
+        BrandsService.getAll({ per_page: 100, is_active: true })
+            .then((activeBrands) => {
+                if (!mounted) return;
+                const current = product?.brand;
+                setBrands(current && !activeBrands.some((brand) => brand.id === current.id) ? [...activeBrands, current] : activeBrands);
+            })
+            .catch((err) => {
+                if (mounted) { const apiError = err as ApiError; message.error(apiError.message || 'No se pudieron cargar las marcas.'); setBrands(product?.brand ? [product.brand] : []); }
+            })
+            .finally(() => { if (mounted) setBrandsLoading(false); });
+        return () => { mounted = false; };
+    }, [open, product?.brand]);
 
     const handleSearchSourceProducts = useCallback((query: string) => {
         clearTimeout(sourceSearchTimeoutRef.current);
@@ -176,6 +197,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 loading={loading}
                 categories={categories}
                 categoriesLoading={categoriesLoading}
+                brands={brands}
+                brandsLoading={brandsLoading}
                 measurementUnits={measurementUnits}
                 measurementUnitsLoading={measurementUnitsLoading}
                 sourceProducts={sourceProducts}

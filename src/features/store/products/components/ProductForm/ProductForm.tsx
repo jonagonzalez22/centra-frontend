@@ -12,6 +12,7 @@ import './ProductForm.css';
 import type { DecimalString } from '@/types/decimal';
 import { compareDecimalStrings, formatQuantityForDisplay, normalizeDecimalString } from '@/utils/quantity';
 import { buildStockConsumptionDescription, sourceOptionMatches } from '../../utils/stockSourcePresentation';
+import type { ProductBrand } from '../../interfaces/product.interface';
 
 interface ProductFormProps {
     formId?: string;
@@ -19,6 +20,8 @@ interface ProductFormProps {
     loading: boolean;
     categories: Category[];
     categoriesLoading: boolean;
+    brands?: ProductBrand[];
+    brandsLoading?: boolean;
     measurementUnits: MeasurementUnit[];
     measurementUnitsLoading: boolean;
     sourceProducts?: ProductSourceCandidate[];
@@ -47,6 +50,7 @@ interface ProductFormValues {
     is_active: boolean;
     is_sellable: boolean;
     category_id: string;
+    brand_id?: string | null;
 }
 
 const colResponsive = {
@@ -107,6 +111,8 @@ export const ProductForm = ({
     loading,
     categories,
     categoriesLoading,
+    brands = [],
+    brandsLoading = false,
     measurementUnits,
     measurementUnitsLoading,
     sourceProducts = [],
@@ -121,6 +127,7 @@ export const ProductForm = ({
     const form = externalForm ?? internalForm;
 
     const isEditing = !!product;
+
 
     const handleFinishFailed = () => {
         message.error('Por favor, revisá los campos marcados en rojo.');
@@ -146,6 +153,7 @@ export const ProductForm = ({
                 is_active: values.is_active,
                 is_sellable: values.is_sellable,
                 category_id: values.category_id,
+                brand_id: values.brand_id ?? null,
             };
             await onSubmit(payload);
         } catch (err) {
@@ -209,6 +217,18 @@ export const ProductForm = ({
                     <Form.Item name="uses_external_stock" label="Usa stock de otro producto" valuePropName="checked">
                         <Switch checkedChildren="Sí" unCheckedChildren="No" disabled={isDisabled} />
                     </Form.Item>
+                </Col>
+                <Col {...colResponsive}>
+                    <SelectField
+                        name="brand_id"
+                        label="Marca"
+                        placeholder="Sin marca"
+                        options={brands.map((brand) => ({ label: brand.name, value: brand.id }))}
+                        allowClear
+                        showSearch
+                        disabled={isDisabled || brandsLoading}
+                        loading={brandsLoading}
+                    />
                 </Col>
             </Row>
 

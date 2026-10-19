@@ -8,6 +8,8 @@ import type {
     ProductsListResponse,
 } from '../interfaces/product.interface';
 import type { Category } from '@/features/store/categories/interfaces/category.interface';
+import { BrandsService } from '@/features/store/brands/services/brands.service';
+import type { ProductBrand } from '../interfaces/product.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface ProductsPagination {
@@ -25,6 +27,7 @@ export interface UseProductsReturn {
     filters: ProductsFilters;
     categories: Category[];
     categoriesLoading: boolean;
+    brands?: ProductBrand[];
     setPage: (page: number) => void;
     setPerPage: (perPage: number) => void;
     setFilters: (filters: ProductsFilters) => void;
@@ -47,6 +50,7 @@ export const useProducts = (): UseProductsReturn => {
     const [filters, setFiltersState] = useState<ProductsFilters>({});
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true);
+    const [brands, setBrands] = useState<ProductBrand[]>([]);
 
     const currentPageRef = useRef(1);
     const currentPerPageRef = useRef(DEFAULT_PER_PAGE);
@@ -61,6 +65,9 @@ export const useProducts = (): UseProductsReturn => {
         } finally {
             setCategoriesLoading(false);
         }
+    }, []);
+    const fetchBrands = useCallback(async () => {
+        try { setBrands(await BrandsService.getAll({ per_page: 100, is_active: true })); } catch { setBrands([]); }
     }, []);
 
     const fetchProducts = useCallback(async (currentFilters: ProductsFilters = {}) => {
@@ -146,7 +153,8 @@ export const useProducts = (): UseProductsReturn => {
     useEffect(() => {
         fetchProducts({ page: 1, per_page: DEFAULT_PER_PAGE });
         fetchCategories();
-    }, [fetchProducts, fetchCategories]);
+        fetchBrands();
+    }, [fetchProducts, fetchCategories, fetchBrands]);
 
     return {
         items,
@@ -156,6 +164,7 @@ export const useProducts = (): UseProductsReturn => {
         filters,
         categories,
         categoriesLoading,
+        brands,
         setPage,
         setPerPage,
         setFilters,

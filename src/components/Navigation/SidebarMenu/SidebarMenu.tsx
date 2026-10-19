@@ -179,6 +179,14 @@ const menuItems: MenuItem[] = [
                 role: 'STORE_USER',
             },
             {
+                label: 'Marcas',
+                key: '/tienda/marcas',
+                context: 'store',
+                feature: 'inventory',
+                permission: 'brands.view',
+                role: 'STORE_USER',
+            },
+            {
                 label: 'Movimientos',
                 key: '/tienda/inventario/movimientos',
                 context: 'store',

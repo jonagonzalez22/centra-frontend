@@ -165,6 +165,7 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
 
                                         <Section icon={<TagIcon size={16} />} title="Categoría">
                                             <Field label="Categoría" value={product.category?.name} />
+                                            <Field label="Marca" value={product.brand?.name} />
                                         </Section>
 
                                         <Section

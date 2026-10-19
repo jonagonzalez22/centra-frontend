@@ -75,6 +75,12 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             },
         },
         {
+            title: 'Marca',
+            key: 'brand',
+            responsive: ['lg'] as ResponsiveList,
+            render: (_: unknown, record?: Record<string, unknown>) => (record as unknown as Product).brand?.name ?? '—',
+        },
+        {
             title: 'Tipo de stock',
             key: 'stock_type',
             responsive: ['lg'] as ResponsiveList,

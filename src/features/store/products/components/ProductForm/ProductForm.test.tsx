@@ -33,7 +33,8 @@ describe('ProductForm UOM configuration', () => {
         expect(screen.getByText('Unidad de medida')).toBeInTheDocument();
         expect(screen.getByText('Cantidad mínima de venta')).toBeInTheDocument();
         expect(screen.getByText('Define la cantidad mínima en la que se puede vender o pedir este producto.')).toBeInTheDocument();
-        expect(screen.getAllByRole('combobox')).toHaveLength(2);
+        expect(screen.getByText('Marca')).toBeInTheDocument();
+        expect(screen.getAllByRole('combobox')).toHaveLength(3);
     });
 
     it('matches source options by name or code', () => {

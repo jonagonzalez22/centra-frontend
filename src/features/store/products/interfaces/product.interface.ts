@@ -4,6 +4,7 @@ export interface ProductCategory {
     id: string;
     name: string;
 }
+export interface ProductBrand { id: string; name: string; is_active: boolean; }
 
 export interface MeasurementUnit {
     id: string;
@@ -34,6 +35,7 @@ export interface Product {
     is_active: boolean;
     is_sellable: boolean;
     category: ProductCategory;
+    brand?: ProductBrand | null;
     parent_product_id: string | null;
     created_at: string;
     updated_at: string;
@@ -65,6 +67,7 @@ export interface CreateProductDto {
     is_active?: boolean;
     is_sellable?: boolean;
     category_id: string;
+    brand_id?: string | null;
 }
 
 export type UpdateProductDto = Partial<CreateProductDto>;
@@ -81,6 +84,7 @@ export interface ProductsFilters {
     page?: number;
     per_page?: number;
     category_id?: string;
+    brand_id?: string;
     name?: string;
     sku?: string;
     is_active?: boolean;
@@ -94,6 +98,7 @@ export interface ProductsSearchValues {
     name?: string;
     sku?: string;
     category_id?: string;
+    brand_id?: string;
     is_active?: boolean;
     is_sellable?: boolean;
     stock_type?: 'own' | 'shared';

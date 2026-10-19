@@ -83,5 +83,6 @@ export const buildInitialValuesFromProduct = (product: Product): CreateProductDt
         is_active: product.is_active,
         is_sellable: product.is_sellable,
         category_id: product.category.id,
+        brand_id: product.brand?.id ?? null,
     };
 };

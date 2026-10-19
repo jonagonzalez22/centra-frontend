@@ -16,6 +16,7 @@ interface ProductsSearchFormValues {
     name?: string;
     sku?: string;
     category_id?: string;
+    brand_id?: string;
     is_active: StatusValue;
     stock_type: StockTypeValue;
     is_sellable: SellableValue;
@@ -40,17 +41,18 @@ const SELLABLE_OPTIONS = [
 ];
 
 export const ProductsSearchBar = () => {
-    const { setFilters, categories, categoriesLoading } = useProductsContext();
+    const { setFilters, categories, categoriesLoading, brands = [] } = useProductsContext();
     const [form] = Form.useForm<ProductsSearchFormValues>();
 
     const nameValue = Form.useWatch('name', form);
     const skuValue = Form.useWatch('sku', form);
     const categoryValue = Form.useWatch('category_id', form);
+    const brandValue = Form.useWatch('brand_id', form);
     const statusValue = Form.useWatch('is_active', form);
     const stockTypeValue = Form.useWatch('stock_type', form);
     const sellableValue = Form.useWatch('is_sellable', form);
 
-    const hasActiveFilters = nameValue || skuValue || categoryValue
+    const hasActiveFilters = nameValue || skuValue || categoryValue || brandValue
         || (statusValue && statusValue !== 'all')
         || (stockTypeValue && stockTypeValue !== 'all')
         || (sellableValue && sellableValue !== 'all');
@@ -61,6 +63,7 @@ export const ProductsSearchBar = () => {
         if (values.name) filters.name = values.name;
         if (values.sku) filters.sku = values.sku;
         if (values.category_id) filters.category_id = values.category_id;
+        if (values.brand_id) filters.brand_id = values.brand_id;
         if (values.is_active && values.is_active !== 'all') {
             filters.is_active = values.is_active === 'true';
         }
@@ -131,6 +134,15 @@ export const ProductsSearchBar = () => {
                     allowClear
                     disabled={categoriesLoading}
                     loading={categoriesLoading}
+                />
+                <SelectField
+                    name="brand_id"
+                    label="Marca"
+                    placeholder="Todas"
+                    options={brands.map((brand) => ({ label: brand.name, value: brand.id }))}
+                    allowClear
+                    showSearch
+                    disabled={categoriesLoading}
                 />
 
                 <SelectField
