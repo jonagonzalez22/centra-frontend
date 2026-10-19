@@ -1,0 +1,11 @@
+.brandFormModalFooter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 16px;
+}
+
+.brandFormModalFooter > * {
+    min-width: 100px;
+}
