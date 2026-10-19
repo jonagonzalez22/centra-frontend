@@ -18,6 +18,7 @@ import { RolesPage } from '@/pages/admin/settings/Roles/RolesPage';
 import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 import { BrandsPage } from '@/features/store/brands/BrandsPage';
+import { SuppliersPage } from '@/features/store/suppliers/SuppliersPage';
 import { CustomersPage } from '@/pages/store/customers/CustomersPage';
 import { CustomerShowPage } from '@/pages/store/customers/CustomerShowPage';
 import { CustomersCreatePage } from '@/pages/store/customers/CustomersCreatePage';
@@ -143,6 +144,7 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="brands.view" redirectTo="/tienda/dashboard" />,
                                 children: [{ path: 'marcas', element: <BrandsPage /> }],
                             },
+                            { element: <FeatureRoute feature="purchases" />, children: [{ element: <PermissionRoute permission="suppliers.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'proveedores', element: <SuppliersPage /> }] }] },
                         ],
                     },
 

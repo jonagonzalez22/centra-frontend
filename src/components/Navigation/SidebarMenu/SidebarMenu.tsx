@@ -11,6 +11,7 @@ import {
     Package,
     UsersRound,
     ShoppingCart,
+    ClipboardList,
     MapPin,
 } from 'lucide-react';
 import './SidebarMenu.css';
@@ -195,6 +196,15 @@ const menuItems: MenuItem[] = [
                 role: 'STORE_USER',
             },
         ],
+    },
+    {
+        label: 'Compras',
+        key: '/tienda/compras/parent',
+        icon: <ClipboardList size={ICON_SIZE} />,
+        context: 'store',
+        feature: 'purchases',
+        role: 'STORE_USER',
+        children: [{ label: 'Proveedores', key: '/tienda/proveedores', context: 'store', feature: 'purchases', permission: 'suppliers.view', role: 'STORE_USER' }],
     },
     {
         label: 'Logística',

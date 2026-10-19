@@ -1,0 +1,31 @@
+.supplierDrawerTitle {
+    @apply flex items-center gap-2;
+}
+
+.supplierDrawerContent {
+    @apply flex flex-col gap-3;
+}
+
+.supplierDrawerSection {
+    @apply bg-white border border-gray-200 rounded-lg p-4;
+}
+
+.supplierDrawerSectionTitle {
+    @apply flex items-center gap-2 text-sm font-semibold text-gray-800 mb-3;
+}
+
+.supplierDrawerSectionContent {
+    @apply flex flex-col gap-2;
+}
+
+.supplierDrawerField {
+    @apply flex flex-col gap-0.5;
+}
+
+.supplierDrawerFieldLabel {
+    @apply text-xs text-gray-500;
+}
+
+.supplierDrawerFieldValue {
+    @apply text-sm text-gray-900;
+}

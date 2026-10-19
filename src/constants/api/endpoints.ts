@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
         BRANDS: {
             URL: '/v1/store/brands',
         },
+        SUPPLIERS: { URL: '/v1/store/suppliers' },
         MEASUREMENT_UNITS: {
             URL: '/v1/store/measurement-units',
         },
