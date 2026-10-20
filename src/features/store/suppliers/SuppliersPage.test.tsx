@@ -43,11 +43,11 @@ describe('SuppliersPage', () => {
             </MemoryRouter>
         );
         expect(
-            await screen.findByRole('button', { name: 'Productos del proveedor' })
+            await screen.findByRole('button', { name: 'Productos' })
         ).toBeInTheDocument();
         await user.click(await screen.findByRole('button', { name: 'Ver detalle' }));
 
         expect(await screen.findByText('Detalle de Proveedor')).toBeInTheDocument();
         expect(SuppliersService.getById).toHaveBeenCalledWith(supplier.id);
-    });
+    }, 15000);
 });

@@ -14,6 +14,93 @@
     @apply mb-5 flex items-center gap-3;
 }
 
+.supplierProductsBulkButton {
+    @apply shrink-0;
+}
+
+.supplierProductsPreferred,
+.supplierProductsPreferredActive {
+    @apply min-h-9 min-w-9;
+}
+
+.supplierProductsPreferredActive {
+    @apply text-amber-500;
+}
+
+.supplierProductsBulkHeader {
+    @apply pr-10;
+}
+
+.supplierProductsBulkFilters {
+    @apply mb-6 grid grid-cols-3 gap-4;
+}
+
+.supplierProductsSearchFilter {
+    @apply col-span-2;
+}
+
+.supplierProductsSearchFilter label,
+.supplierProductsSourceFilter label {
+    @apply mb-1 block text-sm text-gray-600;
+}
+
+.supplierProductsSearchFilter .ant-input-affix-wrapper,
+.supplierProductsSearchFilter .ant-input {
+    @apply w-full;
+}
+
+.supplierProductsSelectedCount {
+    @apply shrink-0 text-sm text-gray-500;
+}
+
+.supplierProductsSourceFilter {
+    @apply w-72 shrink-0;
+}
+
+.supplierProductsSourceFilter .ant-select {
+    @apply w-full;
+}
+
+.supplierProductsBulkOptions {
+    @apply mb-6;
+}
+
+.supplierProductsSelectedCount {
+    @apply mb-3 block text-sm text-gray-500;
+}
+
+.supplierProductsPreferredOption {
+    @apply flex flex-col items-start gap-1;
+}
+
+.supplierProductsBulkHelp {
+    @apply ml-6 text-xs font-normal text-gray-500;
+}
+
+.supplierProductsBulkModal .ant-table-wrapper {
+    @apply max-w-full overflow-x-auto;
+}
+
+.supplierProductsBulkModal .ant-modal-content {
+    @apply flex max-h-[calc(100vh-64px)] flex-col overflow-hidden;
+}
+
+.supplierProductsBulkModal .ant-modal-body {
+    @apply flex min-h-0 flex-1 flex-col;
+}
+
+.supplierProductsBulkTableRegion {
+    @apply min-h-0 flex-1;
+}
+
+.supplierProductsBulkTableRegion .ant-table-wrapper {
+    @apply h-full;
+}
+
+.supplierProductsBulkModal .ant-table {
+    @apply min-w-[580px];
+}
+
 .supplierProductsEmpty {
     @apply py-12 text-center text-gray-500;
 }
@@ -48,6 +135,44 @@
     }
     .supplierProductsAddButton {
         @apply order-first w-full;
+    }
+    .supplierProductsBulkButton {
+        @apply order-2 w-full;
+    }
+    .supplierProductsModalSearch {
+        @apply order-3 w-full;
+    }
+    .supplierProductsBulkModal {
+        @apply m-0 max-w-none;
+        width: 100% !important;
+        top: 0 !important;
+    }
+    .supplierProductsBulkModal .ant-modal-content {
+        @apply min-h-screen max-h-none rounded-none;
+    }
+    .supplierProductsBulkFilters {
+        @apply grid-cols-1 gap-4;
+    }
+    .supplierProductsSearchFilter {
+        @apply col-span-1;
+    }
+    .supplierProductsSourceFilter {
+        @apply w-full;
+    }
+    .supplierProductsBulkOptions {
+        @apply flex-col items-start gap-2;
+    }
+    .supplierProductsSelectedCount {
+        @apply text-left;
+    }
+    .supplierProductsBulkModal .ant-pagination {
+        @apply flex-wrap gap-y-2;
+    }
+    .supplierProductsBulkModal .ant-modal-footer {
+        @apply flex flex-wrap gap-2;
+    }
+    .supplierProductsBulkModal .ant-modal-footer .ant-btn {
+        @apply flex-1;
     }
     .supplierProductsModal .ant-pagination {
         @apply flex-wrap gap-y-2;
