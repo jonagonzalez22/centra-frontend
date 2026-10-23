@@ -19,6 +19,10 @@ import { PlansPage } from '@/pages/admin/plans/PlansPage';
 import { CategoriesPage } from '@/features/store/categories/CategoriesPage';
 import { BrandsPage } from '@/features/store/brands/BrandsPage';
 import { SuppliersPage } from '@/features/store/suppliers/SuppliersPage';
+import { PurchasesPage } from '@/pages/store/purchases/PurchasesPage';
+import { PurchaseDetailPage } from '@/pages/store/purchases/PurchaseDetailPage';
+import { PurchaseFormPage } from '@/pages/store/purchases/PurchaseFormPage';
+import { PurchaseReceiptPage } from '@/pages/store/purchases/PurchaseReceiptPage';
 import { CustomersPage } from '@/pages/store/customers/CustomersPage';
 import { CustomerShowPage } from '@/pages/store/customers/CustomerShowPage';
 import { CustomersCreatePage } from '@/pages/store/customers/CustomersCreatePage';
@@ -144,7 +148,17 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="brands.view" redirectTo="/tienda/dashboard" />,
                                 children: [{ path: 'marcas', element: <BrandsPage /> }],
                             },
-                            { element: <FeatureRoute feature="purchases" />, children: [{ element: <PermissionRoute permission="suppliers.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'proveedores', element: <SuppliersPage /> }] }] },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="purchases" />,
+                        children: [
+                            { element: <PermissionRoute permission="purchases.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'compras', element: <PurchasesPage /> }, { path: 'compras/:id', element: <PurchaseDetailPage /> }] },
+                            { element: <PermissionRoute permission="purchases.create" redirectTo="/tienda/compras" />, children: [{ path: 'compras/nueva', element: <PurchaseFormPage /> }] },
+                            { element: <PermissionRoute permission="purchases.edit" redirectTo="/tienda/compras" />, children: [{ path: 'compras/:id/editar', element: <PurchaseFormPage /> }] },
+                            { element: <PermissionRoute permission="purchases.view" redirectTo="/tienda/dashboard" />, children: [{ element: <PermissionRoute permission="purchases.receive" redirectTo="/tienda/compras" />, children: [{ path: 'compras/:id/recibir', element: <PurchaseReceiptPage /> }] }] },
+                            { element: <PermissionRoute permission="suppliers.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'proveedores', element: <SuppliersPage /> }] },
                         ],
                     },
 

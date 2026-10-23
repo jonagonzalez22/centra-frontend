@@ -119,6 +119,24 @@ describe('SupplierProductsModal', () => {
         );
     });
 
+    it('keeps the association visible and shows the domain error when removal is blocked', async () => {
+        const user = userEvent.setup();
+        vi.mocked(SupplierProductsService.delete).mockRejectedValue({
+            message: 'Error de validación.',
+            errors: {
+                supplier_product: ['No se puede desasociar este producto porque está incluido en una compra en borrador de este proveedor.'],
+            },
+        });
+        render(<SupplierProductsModal open supplier={supplier} onClose={vi.fn()} />);
+
+        await user.click(await screen.findByRole('button', { name: 'Eliminar producto del proveedor' }));
+        await user.click(screen.getByRole('button', { name: 'Quitar' }));
+
+        expect(await screen.findByText('No se puede desasociar este producto porque está incluido en una compra en borrador de este proveedor.')).toBeInTheDocument();
+        expect(screen.getByText('Cloro granel')).toBeInTheDocument();
+        expect(SupplierProductsService.delete).toHaveBeenCalledWith('supplier-1', 'association-1');
+    });
+
     it('selects multiple candidates and bulk associates their ids', async () => {
         const firstCandidate = {
             id: 'candidate-1',
@@ -126,6 +144,8 @@ describe('SupplierProductsModal', () => {
             sku: 'DET-001',
             is_active: true,
             is_sellable: false,
+            is_associated: false,
+            supplier_product: null,
             stock_measurement_unit: null,
             brand: null,
         };

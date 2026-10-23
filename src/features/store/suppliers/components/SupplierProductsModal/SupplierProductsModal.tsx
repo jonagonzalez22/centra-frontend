@@ -67,7 +67,10 @@ const EMPTY_CANDIDATES: SupplierProductCandidatesResponse = {
 
 const apiMessage = (error: unknown, fallback: string) => {
     const apiError = error as ApiError;
-    return apiError.errors?.product_id?.[0] || apiError.message || fallback;
+    return apiError.errors?.product_id?.[0]
+        || apiError.errors?.supplier_product?.[0]
+        || apiError.message
+        || fallback;
 };
 
 export const SupplierProductsModal = ({ open, supplier, onClose }: SupplierProductsModalProps) => {

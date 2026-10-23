@@ -1,4 +1,4 @@
-import { Popconfirm, Button as AntButton } from 'antd';
+import { Empty, Popconfirm, Button as AntButton } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Tag } from '@/components/Tag';
@@ -85,7 +85,7 @@ export const CategoriesTable: React.FC<CategoriesTableProps> = ({
                 total: pagination.total,
             }}
             onChange={(pag) => onChange({ current: pag.current ?? 1, pageSize: pag.pageSize ?? 15 })}
-            emptyText="No hay categorías para mostrar"
+            emptyText={<Empty description="No hay categorías para mostrar" />}
             scroll={{ x: 'max-content' }}
         />
     );

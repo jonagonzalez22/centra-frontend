@@ -298,7 +298,7 @@ test('renders the compact filter bar and exposes an accessible clear action', as
     expect(screen.getByPlaceholderText('Nro. de venta')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Desde')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Hasta')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Limpiar filtros' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();
 });
 
 test('renders cancelled sales with the Spanish status tag', async () => {

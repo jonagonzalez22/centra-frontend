@@ -53,6 +53,13 @@ export interface SupplierProductCandidate {
     sku: string;
     is_active: boolean;
     is_sellable: boolean;
+    is_associated: boolean;
+    supplier_product: {
+        id: string;
+        supplier_code: string | null;
+        supplier_product_name: string | null;
+        is_preferred: boolean;
+    } | null;
     stock_measurement_unit: SupplierProductProduct['stock_measurement_unit'];
     brand: { id: string; name: string } | null;
 }
@@ -85,6 +92,7 @@ export const SupplierProductsService = {
             search?: string;
             q?: string;
             source_supplier_id?: string;
+            include_associated?: 0 | 1;
             page?: number;
             per_page?: number;
         } = {}

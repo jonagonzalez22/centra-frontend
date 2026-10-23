@@ -1,4 +1,4 @@
-import { Popconfirm, Button as AntButton, Tooltip } from 'antd';
+import { Empty, Popconfirm, Button as AntButton, Tooltip } from 'antd';
 import { DeleteOutlined, EyeOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Tag } from '@/components/Tag';
 import Table from '@/components/Table/Table';
@@ -121,7 +121,7 @@ export const CustomersTable = ({
                 total: pagination.total,
             }}
             onChange={(pag) => onPageChange(pag.current ?? 1, pag.pageSize ?? 15)}
-            emptyText="No hay clientes para mostrar"
+            emptyText={<Empty description="No hay clientes para mostrar" />}
             scroll={{ x: 'max-content' }}
             size="small"
         />

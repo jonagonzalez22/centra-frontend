@@ -1,4 +1,4 @@
-import { Table as AntTable, GetProp, TableProps as AntTableProp } from 'antd';
+import { Empty, Table as AntTable, GetProp, TableProps as AntTableProp } from 'antd';
 import type { TableRowSelection } from 'antd/es/table/interface';
 
 type TablePaginationConfig = Exclude<GetProp<AntTableProp, 'pagination'>, boolean>;
@@ -18,7 +18,7 @@ interface TableProps {
     dataSource: Record<string, unknown>[] | [];
     pagination?: TablePaginationConfig | false;
     loading?: boolean;
-    emptyText?: string;
+    emptyText?: React.ReactNode;
     onChange?: TableChangeHandler;
     scroll?: { x?: number | string };
     size?: 'small' | 'middle' | 'large';
@@ -47,7 +47,7 @@ const Table: React.FC<TableProps> = ({
             rowKey="id"
             pagination={pagination === false ? false : { ...pagination, hideOnSinglePage: true }}
             loading={loading}
-            locale={{ emptyText: emptyText || 'No hay datos' }}
+            locale={{ emptyText: emptyText ?? <Empty description="No hay datos" /> }}
             onChange={onChange}
             scroll={scroll}
             size={size}

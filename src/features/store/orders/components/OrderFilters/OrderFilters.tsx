@@ -41,6 +41,12 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     onReset,
 }) => {
     const [form] = Form.useForm<OrderFiltersFormValues>();
+    const dateValue = Form.useWatch('date', form);
+    const operationNumberValue = Form.useWatch('operation_number', form);
+    const customerNameValue = Form.useWatch('customer_name', form);
+    const localityValue = Form.useWatch('locality', form);
+    const statusValue = Form.useWatch('status', form);
+    const collectionStatusValue = Form.useWatch('collection_status', form);
 
     const buildFilters = useCallback(
         (values: OrderFiltersFormValues): Partial<OrderFiltersType> => {
@@ -99,6 +105,14 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         form.resetFields();
         onReset();
     }, [debouncedSetFilters, form, onReset]);
+    const hasActiveFilters = Boolean(
+        dateValue ||
+            operationNumberValue ||
+            customerNameValue ||
+            localityValue ||
+            statusValue ||
+            collectionStatusValue
+    );
 
     return (
         <Form
@@ -175,9 +189,9 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                 <div className="orderFiltersActions">
                     <Button
                         variant="default"
-                        label="Limpiar filtros"
+                        label="Limpiar"
                         action={handleReset}
-                        disabled={loading}
+                        disabled={loading || !hasActiveFilters}
                     />
                 </div>
             </div>

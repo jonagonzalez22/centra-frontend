@@ -1,0 +1,23 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { PurchaseReceiptPage } from './PurchaseReceiptPage';
+import { PurchasesService } from '@/features/store/purchases/purchases.service';
+
+vi.mock('@/features/store/purchases/purchases.service', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/features/store/purchases/purchases.service')>()), PurchasesService: { getById: vi.fn(), createReceipt: vi.fn() } }));
+
+const purchase = { id: 'purchase-1', purchase_number: 'OC-000001', purchase_type: 'order' as const, status: 'ordered' as const, supplier: { id: 'supplier-1', business_name: 'Proveedor', tax_id: null }, total: '10.00', ordered_at: null, cancelled_at: null, created_at: '2026-10-20 10:00:00', notes: null, items: [{ id: 'item-pending', product_id: 'product-1', product_name: 'Pendiente', product_sku: 'SKU-1', supplier_code: null, supplier_product_name: null, measurement_unit_code: 'unit', measurement_unit_symbol: 'u', quantity_ordered: '3.0000', quantity_received: '1.0000', quantity_pending: '2.0000', unit_price: '5.00', subtotal: '15.00' }, { id: 'item-complete', product_id: 'product-2', product_name: 'Completo', product_sku: 'SKU-2', supplier_code: null, supplier_product_name: null, measurement_unit_code: 'unit', measurement_unit_symbol: 'u', quantity_ordered: '1.0000', quantity_received: '1.0000', quantity_pending: '0.0000', unit_price: '5.00', subtotal: '5.00' }], receipts: [] };
+const Location = () => <div data-testid="location">{useLocation().pathname}</div>;
+const renderPage = () => render(<MemoryRouter initialEntries={['/tienda/compras/purchase-1/recibir']}><Routes><Route path="/tienda/compras/:id/recibir" element={<PurchaseReceiptPage />} /><Route path="/tienda/compras/:id" element={<Location />} /></Routes></MemoryRouter>);
+const confirmationButton = () => {
+    const buttons = screen.getAllByRole('button', { name: 'Confirmar recepción' });
+    return buttons[buttons.length - 1];
+};
+
+describe('PurchaseReceiptPage', () => {
+    beforeEach(() => { vi.clearAllMocks(); vi.mocked(PurchasesService.getById).mockResolvedValue(purchase); vi.mocked(PurchasesService.createReceipt).mockResolvedValue({ id: 'receipt-1', receipt_number: 'REC-000001', received_at: null, created_at: null, notes: null, items: [] }); });
+
+    it('shows only pending items, starts empty, and fills all pending quantities on demand', async () => { renderPage(); await screen.findByLabelText('Recibir ahora Pendiente'); expect(screen.queryByText('Completo')).not.toBeInTheDocument(); expect(screen.getByRole('button', { name: 'Confirmar recepción' })).toBeDisabled(); fireEvent.click(screen.getByRole('button', { name: 'Recibir todo pendiente' })); expect(screen.getByLabelText('Recibir ahora Pendiente')).toHaveValue('2'); expect(screen.getByRole('button', { name: 'Confirmar recepción' })).toBeEnabled(); });
+    it('confirms one partial receipt once and navigates to the detail', async () => { renderPage(); const input = await screen.findByLabelText('Recibir ahora Pendiente'); fireEvent.change(input, { target: { value: '1,5' } }); fireEvent.click(screen.getByRole('button', { name: 'Confirmar recepción' })); fireEvent.click(confirmationButton()); await waitFor(() => expect(PurchasesService.createReceipt).toHaveBeenCalledWith('purchase-1', { notes: null, items: [{ purchase_item_id: 'item-pending', quantity: '1.5000' }] })); expect(PurchasesService.createReceipt).toHaveBeenCalledTimes(1); expect(await screen.findByTestId('location')).toHaveTextContent('/tienda/compras/purchase-1'); });
+    it('keeps entered quantities after an API error and allows retry', async () => { vi.mocked(PurchasesService.createReceipt).mockRejectedValue({ response: { data: { message: 'La cantidad supera el pendiente.' } } }); renderPage(); fireEvent.click(await screen.findByRole('button', { name: 'Recibir todo pendiente' })); fireEvent.click(screen.getByRole('button', { name: 'Confirmar recepción' })); fireEvent.click(confirmationButton()); await waitFor(() => expect(PurchasesService.createReceipt).toHaveBeenCalled()); expect(screen.getByLabelText('Recibir ahora Pendiente')).toHaveValue('2'); expect(screen.getByRole('button', { name: 'Confirmar recepción' })).toBeEnabled(); });
+    it('explains that the first direct receipt freezes editing', async () => { vi.mocked(PurchasesService.getById).mockResolvedValue({ ...purchase, purchase_type: 'direct', status: 'draft' }); renderPage(); expect(await screen.findByText('Al confirmar la primera recepción, esta compra dejará de ser editable.')).toBeInTheDocument(); });
+});

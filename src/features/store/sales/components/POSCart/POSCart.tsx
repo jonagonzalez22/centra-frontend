@@ -1,10 +1,11 @@
-import { InputNumber, Button, Table, message, Space, Tooltip } from 'antd';
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Button, Table, message } from 'antd';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { ColumnsType } from 'antd/es/table';
+import { QuantityInput } from '@/components/QuantityInput';
 import { usePOSStore } from '../../stores/usePOSStore';
 import type { POSItem } from '../../interfaces/sale.interface';
-import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, formatQuantityWithUnit, isMultipleOfDecimalStrings, isPositiveDecimal } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit, isMultipleOfDecimalStrings, isPositiveDecimal } from '@/utils/quantity';
 
 export const POSCart: React.FC = () => {
   const items = usePOSStore((s) => s.items);
@@ -60,21 +61,14 @@ export const POSCart: React.FC = () => {
         const canDecrease = compareDecimalStrings(record.quantity, record.sale_quantity_step) > 0;
         const nextQuantity = addDecimalStrings(record.quantity, record.sale_quantity_step);
         const canIncrease = compareDecimalStrings(nextQuantity, record.commercial_available_quantity) <= 0;
-        return <div className="flex self-center items-center gap-2"><Space.Compact>
-          <Tooltip title="Reducir cantidad">
-            <Button type="primary" styles={{ root: { boxShadow: 'none' } }} icon={<Minus size={14} />} disabled={!canDecrease}
-              aria-label={`Reducir cantidad de ${record.name}`}
-              onClick={() => changeQuantity(record, addDecimalStrings(record.quantity, `-${record.sale_quantity_step}`))} />
-          </Tooltip>
-          <InputNumber<string>
-          stringMode
-          precision={4}
-          step={record.sale_quantity_step}
+        return <QuantityInput
+          ariaLabel={`Cantidad de ${record.name}`}
+          value={quantityInputs[record.product_id] ?? record.quantity}
           min={record.sale_quantity_step}
           max={record.commercial_available_quantity}
-          value={quantityInputs[record.product_id] ?? record.quantity}
-          onChange={(val) => setQuantityInputs((current) => ({ ...current, [record.product_id]: val ?? '' }))}
-          onBlur={() => {
+          step={record.sale_quantity_step}
+          onChange={(value) => setQuantityInputs((current) => ({ ...current, [record.product_id]: value ?? '' }))}
+          onCommit={() => {
             changeQuantity(record, quantityInputs[record.product_id] ?? record.quantity);
             setQuantityInputs((current) => {
               const next = { ...current };
@@ -82,27 +76,15 @@ export const POSCart: React.FC = () => {
               return next;
             });
           }}
-          onPressEnter={() => {
-            changeQuantity(record, quantityInputs[record.product_id] ?? record.quantity);
-            setQuantityInputs((current) => {
-              const next = { ...current };
-              delete next[record.product_id];
-              return next;
-            });
-          }}
-          controls={false}
-          variant="outlined"
-          styles={{ root: { boxShadow: 'none' } }}
-          className="w-16 [&_.ant-input-number-input]:text-center"
-          formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
-          parser={(value) => value?.replace(',', '.') ?? ''}
-          />
-          <Tooltip title="Aumentar cantidad">
-            <Button type="primary" styles={{ root: { boxShadow: 'none' } }} icon={<Plus size={14} />} disabled={!canIncrease}
-              aria-label={`Aumentar cantidad de ${record.name}`}
-              onClick={() => changeQuantity(record, nextQuantity)} />
-          </Tooltip>
-        </Space.Compact>{record.stock_measurement_unit_symbol && <span className="text-xs text-gray-500">{record.stock_measurement_unit_symbol}</span>}</div>;
+          onDecrease={() => changeQuantity(record, addDecimalStrings(record.quantity, `-${record.sale_quantity_step}`))}
+          onIncrease={() => changeQuantity(record, nextQuantity)}
+          decreaseAriaLabel={`Reducir cantidad de ${record.name}`}
+          increaseAriaLabel={`Aumentar cantidad de ${record.name}`}
+          decreaseDisabled={!canDecrease}
+          increaseDisabled={!canIncrease}
+          unitSymbol={record.stock_measurement_unit_symbol}
+          unitClassName="text-xs text-gray-500"
+        />;
       },
     },
     {

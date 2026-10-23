@@ -120,7 +120,7 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
                         description="No se encontraron pedidos"
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     >
-                        <Button variant="primary" label="Limpiar filtros" action={onResetFilters} />
+                        <Button variant="primary" label="Limpiar" action={onResetFilters} />
                     </Empty>
                 </div>
             ) : dateGroups ? (

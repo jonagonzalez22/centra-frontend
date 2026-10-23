@@ -77,6 +77,7 @@ export const SuppliersPage = () => {
             message.error('No se pudo guardar el proveedor.');
         }
     };
+    const hasActiveFilters = Boolean(filters.search || filters.is_active);
 
     return (
         <div className="w-full suppliersPage">
@@ -138,6 +139,7 @@ export const SuppliersPage = () => {
                             <Button
                                 variant="default"
                                 label="Limpiar"
+                                disabled={!hasActiveFilters}
                                 action={() => {
                                     filtersForm.resetFields();
                                     setFilters({});

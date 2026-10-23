@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Popconfirm, Tag, Tooltip, Button as AntButton } from 'antd';
+import { Empty, Popconfirm, Tag, Tooltip, Button as AntButton } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
@@ -229,6 +229,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             onChange={(paginationConfig) => {
                 handlePageChange(paginationConfig.current ?? 1, paginationConfig.pageSize ?? 15);
             }}
+            emptyText={<Empty description="No hay productos para mostrar" />}
             scroll={{ x: 'max-content' }}
             size="small"
         />

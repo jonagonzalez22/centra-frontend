@@ -77,7 +77,7 @@ test('clear filters restores both selectors to all', async () => {
     await user.click(option('Entregados'));
     await user.click(screen.getByLabelText('Cobranza'));
     await user.click(option('Con saldo pendiente'));
-    await user.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
+    await user.click(screen.getByRole('button', { name: 'Limpiar' }));
 
     expect(selectValue('Estado')).toHaveTextContent('Todos');
     expect(selectValue('Cobranza')).toHaveTextContent('Todos');

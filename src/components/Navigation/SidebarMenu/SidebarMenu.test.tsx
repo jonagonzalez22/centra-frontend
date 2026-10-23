@@ -164,4 +164,25 @@ describe('SidebarMenu', () => {
 
         expect(screen.queryByText('Inventario')).not.toBeInTheDocument();
     });
+
+    test('shows Compras > Listado only with the purchases feature and purchases.view', async () => {
+        const user = userEvent.setup();
+        useStoreUser({ permissions: ['purchases.view'], features: ['purchases'] });
+        const view = renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/compras" />
+        );
+
+        expect(screen.getByText('Compras')).toBeInTheDocument();
+        expect(screen.getByText('Listado')).toBeInTheDocument();
+        expect(screen.queryByText('Proveedores')).not.toBeInTheDocument();
+        await user.click(screen.getByText('Listado'));
+        expect(screen.getByTestId('location')).toHaveTextContent('/tienda/compras');
+
+        view.unmount();
+        useStoreUser({ permissions: ['purchases.view'], features: [] });
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/compras" />
+        );
+        expect(screen.queryByText('Compras')).not.toBeInTheDocument();
+    });
 });

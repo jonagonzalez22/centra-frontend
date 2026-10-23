@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { DeleteOutlined, EditOutlined, LockOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, LockOutlined } from '@ant-design/icons';
 import {
     Alert,
     Descriptions,
     Empty,
     Grid,
     Input,
-    InputNumber,
     message,
     Popconfirm,
-    Space,
     Spin,
     Tag,
     Tooltip,
@@ -17,6 +15,7 @@ import {
 import { Search } from 'lucide-react';
 import { Button } from '@/components/Button';
 import Card from '@/components/Card/Card';
+import { QuantityInput } from '@/components/QuantityInput';
 import { OrderStatusBadge } from '@/features/store/orders/components/OrderStatusBadge';
 import type { OrderProductDraftItem } from '@/features/store/orders/hooks/useOrderProductDraft';
 import type {
@@ -415,63 +414,28 @@ export const OrderEditPageView = ({
                                                         (canRemove ? ' sm:pt-10' : '')
                                                     }
                                                 >
-                                                    <Space.Compact>
-                                                        <Tooltip title="Reducir cantidad">
-                                                            <Button
-                                                                variant="primary"
-                                                                styles={{ root: { boxShadow: 'none' } }}
-                                                                aria-label={'Reducir cantidad de ' + item.name}
-                                                                icon={<MinusOutlined />}
-                                                                disabled={compareDecimalStrings(item.quantity, minimumEditableQuantity) <= 0}
-                                                                action={() =>
-                                                                    onQuantityChange(
-                                                                        item.product_id,
-                                                                        addDecimalStrings(item.quantity, `-${item.sale_quantity_step}`)
-                                                                    )
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                        <InputNumber<string>
-                                                            stringMode
-                                                            aria-label={'Cantidad de ' + item.name}
-                                                            className="w-16 [&_.ant-input-number-input]:text-center"
-                                                            controls={false}
-                                                            variant="outlined"
-                                                            styles={{ root: { boxShadow: 'none' } }}
-                                                            min={minimumEditableQuantity}
-                                                            max={item.maximum_editable_quantity}
-                                                            precision={4}
-                                                            step={item.sale_quantity_step}
-                                                            value={quantityInputs[item.product_id] ?? item.quantity}
-                                                            formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
-                                                            parser={(value) => value?.replace(',', '.') ?? ''}
-                                                            onChange={(value) =>
-                                                                setQuantityInputs((current) => ({
-                                                                    ...current,
-                                                                    [item.product_id]: value ?? '',
-                                                                }))
-                                                            }
-                                                            onBlur={() => commitQuantityInput(item)}
-                                                            onPressEnter={() => commitQuantityInput(item)}
-                                                        />
-                                                        <Tooltip title="Aumentar cantidad">
-                                                            <Button
-                                                                variant="primary"
-                                                                styles={{ root: { boxShadow: 'none' } }}
-                                                                aria-label={'Aumentar cantidad de ' + item.name}
-                                                                icon={<PlusOutlined />}
-                                                                disabled={!canIncrease}
-                                                                action={() =>
-                                                                    changeQuantity(item, addDecimalStrings(item.quantity, item.sale_quantity_step))
-                                                                }
-                                                            />
-                                                        </Tooltip>
-                                                    </Space.Compact>
-                                                    {item.stock_measurement_unit_symbol && (
-                                                        <span className="text-sm text-gray-500">
-                                                            {item.stock_measurement_unit_symbol}
-                                                        </span>
-                                                    )}
+                                                    <QuantityInput
+                                                        ariaLabel={'Cantidad de ' + item.name}
+                                                        value={quantityInputs[item.product_id] ?? item.quantity}
+                                                        min={minimumEditableQuantity}
+                                                        max={item.maximum_editable_quantity}
+                                                        step={item.sale_quantity_step}
+                                                        onChange={(value) => setQuantityInputs((current) => ({
+                                                            ...current,
+                                                            [item.product_id]: value ?? '',
+                                                        }))}
+                                                        onCommit={() => commitQuantityInput(item)}
+                                                        onDecrease={() => onQuantityChange(
+                                                            item.product_id,
+                                                            addDecimalStrings(item.quantity, `-${item.sale_quantity_step}`)
+                                                        )}
+                                                        onIncrease={() => changeQuantity(item, addDecimalStrings(item.quantity, item.sale_quantity_step))}
+                                                        decreaseAriaLabel={'Reducir cantidad de ' + item.name}
+                                                        increaseAriaLabel={'Aumentar cantidad de ' + item.name}
+                                                        decreaseDisabled={compareDecimalStrings(item.quantity, minimumEditableQuantity) <= 0}
+                                                        increaseDisabled={!canIncrease}
+                                                        unitSymbol={item.stock_measurement_unit_symbol}
+                                                    />
                                                 </div>
                                             )}
                                         </div>

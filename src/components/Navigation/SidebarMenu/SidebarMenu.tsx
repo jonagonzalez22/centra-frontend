@@ -204,7 +204,10 @@ const menuItems: MenuItem[] = [
         context: 'store',
         feature: 'purchases',
         role: 'STORE_USER',
-        children: [{ label: 'Proveedores', key: '/tienda/proveedores', context: 'store', feature: 'purchases', permission: 'suppliers.view', role: 'STORE_USER' }],
+        children: [
+            { label: 'Listado', key: '/tienda/compras', context: 'store', feature: 'purchases', permission: 'purchases.view', role: 'STORE_USER' },
+            { label: 'Proveedores', key: '/tienda/proveedores', context: 'store', feature: 'purchases', permission: 'suppliers.view', role: 'STORE_USER' },
+        ],
     },
     {
         label: 'Logística',

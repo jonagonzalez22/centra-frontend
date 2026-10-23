@@ -252,6 +252,9 @@ export const SalesHistoryPage = () => {
         }));
     };
     const clearFilters = () => setFilters({ ...initialFilters });
+    const hasActiveFilters = Boolean(
+        filters.operation_number || filters.date_from || filters.date_to || filters.status
+    );
     return (
         <>
             <div className="space-y-5">
@@ -315,12 +318,13 @@ export const SalesHistoryPage = () => {
                             ]}
                             onChange={(v) => setFilters({ ...filters, status: v, page: 1 })}
                         />
-                        <Tooltip title="Limpiar filtros">
+                        <Tooltip title="Limpiar">
                             <Button
                                 variant="default"
                                 icon={<ClearOutlined />}
-                                aria-label="Limpiar filtros"
+                                aria-label="Limpiar"
                                 action={clearFilters}
+                                disabled={!hasActiveFilters}
                             />
                         </Tooltip>
                     </div>
