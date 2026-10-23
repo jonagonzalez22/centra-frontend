@@ -34,6 +34,18 @@
     @apply mb-4 text-sm text-red-600 text-center;
 }
 
+.stockAdjustmentQuantityInput {
+    @apply flex items-center gap-2;
+}
+
+.stockAdjustmentQuantityInput .ant-input-number {
+    @apply flex-1;
+}
+
+.stockAdjustmentQuantityUnit {
+    @apply min-w-8 text-sm font-medium text-gray-600;
+}
+
 .stockAdjustmentModalFooter {
     @apply flex justify-end gap-3;
 }

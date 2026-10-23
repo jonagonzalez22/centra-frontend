@@ -4,7 +4,7 @@ import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import { useInventoryMovementsContext } from '../../context/InventoryMovementsContext';
 import { formatDate } from '@/utils/formatters';
-import { formatQuantityForDisplay, isNegativeDecimal } from '@/utils/quantity';
+import { formatQuantityWithUnit, isNegativeDecimal } from '@/utils/quantity';
 import type {
     InventoryMovement,
     MovementType,
@@ -73,7 +73,10 @@ export const MovementsTable = () => {
                 const isNegative = movement.type === 'output' || (movement.type === 'adjustment' && isNegativeDecimal(movement.quantity));
                 return (
                     <span className={isNegative ? 'text-red-600' : 'text-green-600'}>
-                        {formatQuantityForDisplay(movement.quantity)}
+                        {formatQuantityWithUnit(
+                            movement.quantity,
+                            movement.product?.stock_measurement_unit?.symbol,
+                        )}
                     </span>
                 );
             },

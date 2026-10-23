@@ -5,14 +5,14 @@ import { Button } from '@/components/Button';
 import Card from '@/components/Card/Card';
 import Modal from '@/components/Modal/Modal';
 import SelectField from '@/components/SelectField/SelectField';
-import InputField from '@/components/InputField/InputField';
+import Input from '@/components/Input/Input';
 import { InventoryMovementsService } from '../../services/inventoryMovements.service';
 import type { Product } from '@/features/store/products/interfaces/product.interface';
 import type { CreateStockMovementDto } from '../../interfaces/inventory-movement.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import './StockAdjustmentModal.css';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, isZeroDecimal, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
+import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, formatQuantityWithUnit, isZeroDecimal, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
 
 interface StockAdjustmentModalProps {
     open: boolean;
@@ -32,6 +32,12 @@ const TYPE_OPTIONS = [
     { label: 'Salida', value: 'output' },
     { label: 'Ajuste', value: 'adjustment' },
 ];
+
+const parseFormattedQuantity = (value: string | undefined): string => {
+    const raw = value ?? '';
+
+    return raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw;
+};
 
 export const StockAdjustmentModal = ({
     open,
@@ -71,6 +77,7 @@ export const StockAdjustmentModal = ({
 
     const quantityMin = typeValue === 'adjustment' ? undefined : '1';
     const quantityMax = undefined;
+    const measurementUnitSymbol = product.stock_measurement_unit?.symbol;
 
     useEffect(() => {
         if (open) {
@@ -151,7 +158,7 @@ export const StockAdjustmentModal = ({
                 <div className="stockAdjustmentCardRow">
                     <div className="stockAdjustmentCardItem">
                         <span className="stockAdjustmentCardLabel">Stock Actual</span>
-                        <span className="stockAdjustmentCardValue">{formatQuantityForDisplay(product.available_stock)}</span>
+                        <span className="stockAdjustmentCardValue">{formatQuantityWithUnit(product.available_stock, measurementUnitSymbol)}</span>
                     </div>
                     <span className="stockAdjustmentCardArrow">→</span>
                     <div className="stockAdjustmentCardItem">
@@ -165,7 +172,7 @@ export const StockAdjustmentModal = ({
                                       : ''
                             }`}
                         >
-                            {formatQuantityForDisplay(stockResultante)}
+                            {formatQuantityWithUnit(stockResultante, measurementUnitSymbol)}
                         </span>
                     </div>
                 </div>
@@ -196,23 +203,33 @@ export const StockAdjustmentModal = ({
                     label="Cantidad"
                     rules={[{ required: true, message: 'La cantidad es obligatoria.' }]}
                 >
-                    <InputNumber<string>
-                        stringMode
-                        placeholder="0"
-                        style={{ width: '100%' }}
-                        min={quantityMin}
-                        max={quantityMax}
-                        precision={4}
-                        step="1"
-                    />
+                    <div className="stockAdjustmentQuantityInput">
+                        <InputNumber<string>
+                            stringMode
+                            aria-label="Cantidad del ajuste"
+                            placeholder="0"
+                            style={{ width: '100%' }}
+                            min={quantityMin}
+                            max={quantityMax}
+                            precision={4}
+                            step="1"
+                            formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                            parser={parseFormattedQuantity}
+                        />
+                        {measurementUnitSymbol && <span className="stockAdjustmentQuantityUnit">{measurementUnitSymbol}</span>}
+                    </div>
                 </Form.Item>
 
-                <InputField
+                <Form.Item
                     name="concept"
                     label="Motivo / Concepto"
-                    placeholder="Ej: Reposición por faltante, Ajuste de inventario..."
-                    rules={[{ required: true, message: 'El concepto es obligatorio.' }]}
-                />
+                    rules={[{ required: true, whitespace: true, message: 'El concepto es obligatorio.' }]}
+                    validateTrigger={['onBlur', 'onChange']}
+                >
+                    <Input
+                        placeholder="Ej: Reposición por faltante, Ajuste de inventario..."
+                    />
+                </Form.Item>
             </Form>
         </Modal>
     );

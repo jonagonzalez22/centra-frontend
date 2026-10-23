@@ -5,6 +5,9 @@ export interface InventoryMovementProduct {
     id: string;
     name: string;
     sku: string;
+    stock_measurement_unit: {
+        symbol: string;
+    } | null;
 }
 
 export interface InventoryMovementUser {
