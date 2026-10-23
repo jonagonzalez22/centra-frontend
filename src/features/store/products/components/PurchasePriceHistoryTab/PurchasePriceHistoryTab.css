@@ -1,0 +1,44 @@
+.purchasePriceHistoryTab {
+    @apply flex flex-col gap-3;
+}
+
+.purchasePriceHistoryTabLoading {
+    @apply flex min-h-[100px] items-center justify-center;
+}
+
+.purchasePriceHistorySupplier {
+    @apply rounded-lg border border-gray-200 bg-white p-3;
+}
+
+.purchasePriceHistorySupplierHeader {
+    @apply mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
+}
+
+.purchasePriceHistorySupplierHeader h3 {
+    @apply m-0 text-sm font-semibold text-gray-900;
+}
+
+.purchasePriceHistorySupplierHeader span,
+.purchasePriceHistoryDate {
+    @apply text-xs text-gray-500;
+}
+
+.purchasePriceHistoryRows {
+    @apply divide-y divide-gray-100 border-t border-gray-100;
+}
+
+.purchasePriceHistoryRow {
+    @apply flex items-center justify-between gap-3 py-2 text-sm;
+}
+
+.purchasePriceHistoryRow > div {
+    @apply flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1;
+}
+
+.purchasePriceHistoryPurchaseLink {
+    @apply font-medium text-centra-primary hover:underline;
+}
+
+.purchasePriceHistoryRow strong {
+    @apply whitespace-nowrap text-gray-900;
+}

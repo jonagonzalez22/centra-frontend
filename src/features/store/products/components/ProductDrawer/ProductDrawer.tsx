@@ -12,6 +12,8 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import { StockHistoryTab } from '@/features/store/inventory/components/StockHistoryTab';
 import { StockAdjustmentModal } from '@/features/store/inventory/components/StockAdjustmentModal';
 import { CanDo } from '@/components/auth/CanDo';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PurchasePriceHistoryTab } from '../PurchasePriceHistoryTab';
 import './ProductDrawer.css';
 
 interface ProductDrawerProps {
@@ -55,6 +57,9 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
     const [loading, setLoading] = useState(false);
     const [adjustModalOpen, setAdjustModalOpen] = useState(false);
     const [stockHistoryKey, setStockHistoryKey] = useState(0);
+    const [activeTab, setActiveTab] = useState('info');
+    const [priceHistoryOpened, setPriceHistoryOpened] = useState(false);
+    const { can } = usePermissions();
     const usesExternalStock = product?.stock_source_product != null;
 
     const loadProduct = useCallback(async () => {
@@ -79,6 +84,8 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
         }
 
         loadProduct();
+        setActiveTab('info');
+        setPriceHistoryOpened(false);
 
         return () => {
             setProduct(null);
@@ -137,6 +144,13 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                     </div>
                 ) : product ? (
                     <Tabs
+                        activeKey={activeTab}
+                        onChange={(key) => {
+                            setActiveTab(key);
+                            if (key === 'purchase-price-history') {
+                                setPriceHistoryOpened(true);
+                            }
+                        }}
                         items={[
                             {
                                 key: 'info',
@@ -240,6 +254,11 @@ export const ProductDrawer = ({ open, onClose, productId, onAdjustSuccess }: Pro
                                 label: 'Historial de Stock',
                                 children: <StockHistoryTab key={stockHistoryKey} productId={product.id} />,
                             },
+                            ...(can('purchases.view') ? [{
+                                key: 'purchase-price-history',
+                                label: 'Historial de precios',
+                                children: priceHistoryOpened ? <PurchasePriceHistoryTab productId={product.id} /> : null,
+                            }] : []),
                         ]}
                     />
                 ) : null}

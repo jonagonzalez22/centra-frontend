@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
         },
         PRODUCTS: {
             URL: '/v1/store/products',
+            PURCHASE_PRICE_HISTORY: (productId: string) => `/v1/store/products/${productId}/purchase-price-history`,
         },
         USERS: {
             URL: '/v1/store/users',

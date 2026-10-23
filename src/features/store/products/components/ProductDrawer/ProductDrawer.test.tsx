@@ -1,15 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ProductDrawer } from './ProductDrawer';
 import { ProductsService } from '../../services/products.service';
 
 vi.mock('../../services/products.service', () => ({
     ProductsService: {
         getById: vi.fn(),
+        getPurchasePriceHistory: vi.fn(),
     },
 }));
 vi.mock('@/features/store/inventory/components/StockHistoryTab', () => ({ StockHistoryTab: () => null }));
 vi.mock('@/features/store/inventory/components/StockAdjustmentModal', () => ({ StockAdjustmentModal: () => null }));
 vi.mock('@/components/auth/CanDo', () => ({ CanDo: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock('@/hooks/usePermissions', () => ({ usePermissions: () => ({ can: () => true }) }));
 
 describe('ProductDrawer UOM information', () => {
     it('shows the unit, step, and physical/commercial stock values', async () => {
@@ -142,5 +144,27 @@ describe('ProductDrawer UOM information', () => {
 
         expect(await screen.findByText('Activo')).toBeInTheDocument();
         expect(screen.getByText('No')).toBeInTheDocument();
+    });
+
+    it('loads purchase price history only after its tab is selected', async () => {
+        vi.mocked(ProductsService.getById).mockResolvedValue({
+            id: 'history-product', name: 'Producto', sku: 'PRODUCTO-1', barcode: null, description: null,
+            price: 100, cost: null, stock: '1.0000', stock_reserved: '0.0000', available_stock: '1.0000',
+            commercial_available_quantity: '1.0000', stock_min: '0.0000', stock_measurement_unit_id: 'unit-1',
+            stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
+            sale_quantity_step: '1.0000', is_active: true, is_sellable: true,
+            category: { id: 'category-1', name: 'General' }, parent_product_id: null,
+            created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+        });
+        vi.mocked(ProductsService.getPurchasePriceHistory).mockResolvedValue([]);
+
+        render(<ProductDrawer open onClose={vi.fn()} productId="history-product" />);
+
+        await screen.findByText('Producto');
+        expect(ProductsService.getPurchasePriceHistory).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Historial de precios' }));
+
+        await waitFor(() => expect(ProductsService.getPurchasePriceHistory).toHaveBeenCalledWith('history-product'));
     });
 });

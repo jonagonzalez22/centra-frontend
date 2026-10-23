@@ -88,6 +88,19 @@ export interface ProductsListResponse {
     last_page: number;
 }
 
+export interface ProductPurchasePriceHistory {
+    supplier: {
+        id: string;
+        business_name: string;
+    };
+    prices: Array<{
+        purchase_id: string;
+        purchase_number: string;
+        date: string;
+        unit_price: string;
+    }>;
+}
+
 export interface ProductsFilters {
     page?: number;
     per_page?: number;

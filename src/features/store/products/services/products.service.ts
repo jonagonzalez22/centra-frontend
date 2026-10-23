@@ -10,6 +10,7 @@ import type {
     ProductsListResponse,
     MeasurementUnit,
     ProductSourceCandidate,
+    ProductPurchasePriceHistory,
 } from '../interfaces/product.interface';
 
 export const ProductsService = {
@@ -51,6 +52,23 @@ export const ProductsService = {
     getById: async (id: string): Promise<Product> => {
         const { data } = await api.get<ApiListResponse<Product>>(
             `${API_ENDPOINTS.STORE.PRODUCTS.URL}/${id}`
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    getPurchasePriceHistory: async (id: string): Promise<ProductPurchasePriceHistory[]> => {
+        const { data } = await api.get<ApiListResponse<ProductPurchasePriceHistory[]>>(
+            API_ENDPOINTS.STORE.PRODUCTS.PURCHASE_PRICE_HISTORY(id),
         );
 
         if (data.status === 'error') {
