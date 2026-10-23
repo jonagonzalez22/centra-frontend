@@ -1,7 +1,78 @@
 .productForm .ant-form-item {
-    @apply mb-4;
+    @apply mb-3;
 }
 
 .productForm .ant-form-item-label {
     @apply pb-1;
+}
+
+.productFormGrid {
+    @apply grid gap-x-4;
+    align-items: start;
+}
+
+.productFormGrid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.productFormGrid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.productFormGrid--shared-stock {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+@media (max-width: 1199px) {
+    .productFormGrid--three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .productFormGrid--shared-stock {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .productFormGrid--three,
+    .productFormGrid--two,
+    .productFormGrid--shared-stock {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.productFormSuppliers {
+    @apply mb-4 rounded-lg border border-slate-200 p-3;
+}
+
+.productFormSuppliersHeader {
+    @apply mb-3;
+}
+
+.productFormSuppliersTitle {
+    @apply text-sm font-medium text-slate-900;
+}
+
+.productFormSuppliersTitle span {
+    @apply ml-2 text-xs font-normal text-slate-500;
+}
+
+.productFormSuppliersHelp {
+    @apply mt-1 text-xs text-slate-500;
+}
+
+.productFormSuppliersList {
+    @apply flex flex-col gap-3;
+}
+
+.productFormSupplierRow {
+    @apply rounded-md bg-slate-50 p-3;
+}
+
+.productFormSupplierActions {
+    @apply flex flex-wrap items-center justify-between gap-2;
+}
+
+.productFormSharedStockAlert.ant-alert {
+    @apply py-2;
 }

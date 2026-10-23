@@ -6,7 +6,7 @@ export interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
-    width?: number;
+    width?: AntModalProps['width'];
     footer?: React.ReactNode | null;
     loading?: boolean;
     destroyOnClose?: boolean;

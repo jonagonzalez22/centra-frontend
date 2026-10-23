@@ -1,3 +1,28 @@
+.productFormModal .ant-modal-content {
+    @apply flex flex-col;
+    max-height: calc(100vh - 32px);
+}
+
+.productFormModal .ant-modal-header,
+.productFormModal .ant-modal-footer {
+    flex: none;
+}
+
+.productFormModal .ant-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .productFormModalFooter {
-    @apply flex justify-end gap-2;
+    @apply flex flex-wrap justify-end gap-2;
+}
+
+@media (max-width: 575px) {
+    .productFormModalFooter {
+        @apply w-full;
+    }
+
+    .productFormModalFooter .ant-btn {
+        @apply flex-1;
+    }
 }

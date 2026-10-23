@@ -68,6 +68,14 @@ export interface CreateProductDto {
     is_sellable?: boolean;
     category_id: string;
     brand_id?: string | null;
+    suppliers?: InitialProductSupplierDto[];
+}
+
+export interface InitialProductSupplierDto {
+    supplier_id: string;
+    supplier_code?: string | null;
+    supplier_product_name?: string | null;
+    is_preferred?: boolean;
 }
 
 export type UpdateProductDto = Partial<CreateProductDto>;

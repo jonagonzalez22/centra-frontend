@@ -1,4 +1,6 @@
-import { Alert, Form, Row, Col, Switch, InputNumber, message, Spin } from 'antd';
+import { Alert, Form, Row, Col, Switch, InputNumber, message, Spin, Select, Checkbox } from 'antd';
+import { useEffect } from 'react';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
 import Input from '@/components/Input/Input';
@@ -6,13 +8,16 @@ import SelectField from '@/components/SelectField/SelectField';
 import { Button } from '@/components/Button';
 import { requiredStringRules } from '@/utils/validationRules';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
-import type { CreateProductDto, MeasurementUnit, Product, ProductSourceCandidate } from '../../interfaces/product.interface';
+import type { CreateProductDto, MeasurementUnit, Product, ProductSourceCandidate, InitialProductSupplierDto } from '../../interfaces/product.interface';
 import type { Category } from '@/features/store/categories/interfaces/category.interface';
 import './ProductForm.css';
 import type { DecimalString } from '@/types/decimal';
 import { compareDecimalStrings, formatQuantityForDisplay, normalizeDecimalString } from '@/utils/quantity';
 import { buildStockConsumptionDescription, sourceOptionMatches } from '../../utils/stockSourcePresentation';
 import type { ProductBrand } from '../../interfaces/product.interface';
+import type { Supplier } from '@/features/store/suppliers/suppliers.service';
+
+type ActiveSupplierOption = Pick<Supplier, 'id' | 'business_name' | 'is_active'>;
 
 interface ProductFormProps {
     formId?: string;
@@ -22,6 +27,8 @@ interface ProductFormProps {
     categoriesLoading: boolean;
     brands?: ProductBrand[];
     brandsLoading?: boolean;
+    suppliers?: ActiveSupplierOption[];
+    suppliersLoading?: boolean;
     measurementUnits: MeasurementUnit[];
     measurementUnitsLoading: boolean;
     sourceProducts?: ProductSourceCandidate[];
@@ -51,14 +58,15 @@ interface ProductFormValues {
     is_sellable: boolean;
     category_id: string;
     brand_id?: string | null;
+    suppliers?: InitialProductSupplierDto[];
 }
 
-const colResponsive = {
+const colFullWidth = {
     xs: { span: 24 },
     sm: { span: 24 },
-    md: { span: 12 },
-    lg: { span: 12 },
-    xl: { span: 12 },
+    md: { span: 24 },
+    lg: { span: 24 },
+    xl: { span: 24 },
 };
 
 const buildCategoryOptions = (categories: Category[]) =>
@@ -113,6 +121,8 @@ export const ProductForm = ({
     categoriesLoading,
     brands = [],
     brandsLoading = false,
+    suppliers = [],
+    suppliersLoading = false,
     measurementUnits,
     measurementUnitsLoading,
     sourceProducts = [],
@@ -154,6 +164,14 @@ export const ProductForm = ({
                 is_sellable: values.is_sellable,
                 category_id: values.category_id,
                 brand_id: values.brand_id ?? null,
+                suppliers: isEditing || values.uses_external_stock
+                    ? undefined
+                    : (values.suppliers ?? []).map((supplier) => ({
+                        supplier_id: supplier.supplier_id,
+                        supplier_code: supplier.supplier_code?.trim() || null,
+                        supplier_product_name: supplier.supplier_product_name?.trim() || null,
+                        is_preferred: supplier.is_preferred ?? false,
+                    })),
             };
             await onSubmit(payload);
         } catch (err) {
@@ -191,11 +209,19 @@ export const ProductForm = ({
         stockConsumptionQuantity,
         selectedChildUnit?.symbol,
     );
+    const selectedSuppliers = Form.useWatch('suppliers', form) ?? [];
+
+    useEffect(() => {
+        if (usesExternalStock) {
+            form.setFieldValue('suppliers', []);
+        }
+    }, [form, usesExternalStock]);
 
     return (
         <Form
             form={form}
             id={formId}
+            className="productForm"
             layout="vertical"
             initialValues={{
                 is_active: true,
@@ -213,29 +239,17 @@ export const ProductForm = ({
             validateTrigger="onBlur"
         >
             <Row gutter={16}>
-                <Col {...colResponsive}>
+                <Col {...colFullWidth}>
                     <Form.Item name="uses_external_stock" label="Usa stock de otro producto" valuePropName="checked">
                         <Switch checkedChildren="Sí" unCheckedChildren="No" disabled={isDisabled} />
                     </Form.Item>
-                </Col>
-                <Col {...colResponsive}>
-                    <SelectField
-                        name="brand_id"
-                        label="Marca"
-                        placeholder="Sin marca"
-                        options={brands.map((brand) => ({ label: brand.name, value: brand.id }))}
-                        allowClear
-                        showSearch
-                        disabled={isDisabled || brandsLoading}
-                        loading={brandsLoading}
-                    />
                 </Col>
             </Row>
 
             {usesExternalStock && (
                 <>
-                    <Row gutter={16}>
-                        <Col {...colResponsive}>
+                    <div className="productFormGrid productFormGrid--shared-stock">
+                        <div>
                             <SelectField
                                 name="stock_source_product_id"
                                 label="Producto fuente"
@@ -248,8 +262,8 @@ export const ProductForm = ({
                                 onSearch={onSearchSourceProducts}
                                 notFoundContent="Buscá por nombre o código"
                             />
-                        </Col>
-                        <Col {...colResponsive}>
+                        </div>
+                        <div>
                             <Form.Item
                                 name="stock_consumption_quantity"
                                 label="Consumo de stock por unidad vendida"
@@ -268,10 +282,10 @@ export const ProductForm = ({
                                     formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
                                 />
                             </Form.Item>
-                        </Col>
-                    </Row>
+                        </div>
+                    </div>
                     <Alert
-                        className="mb-4"
+                        className="productFormSharedStockAlert mb-3"
                         type="info"
                         showIcon
                         title="Stock compartido"
@@ -285,8 +299,8 @@ export const ProductForm = ({
                 </>
             )}
 
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+            <div className="productFormGrid productFormGrid--three">
+                <div>
                     <InputField
                         name="name"
                         label="Nombre"
@@ -294,8 +308,20 @@ export const ProductForm = ({
                         rules={requiredStringRules('El nombre')}
                         disabled={isDisabled}
                     />
-                </Col>
-                <Col {...colResponsive}>
+                </div>
+                <div>
+                    <SelectField
+                        name="brand_id"
+                        label="Marca"
+                        placeholder="Sin marca"
+                        options={brands.map((brand) => ({ label: brand.name, value: brand.id }))}
+                        allowClear
+                        showSearch
+                        disabled={isDisabled || brandsLoading}
+                        loading={brandsLoading}
+                    />
+                </div>
+                <div>
                     <SelectField
                         name="category_id"
                         label="Categoría"
@@ -305,11 +331,11 @@ export const ProductForm = ({
                         disabled={isDisabled}
                         loading={categoriesLoading}
                     />
-                </Col>
-            </Row>
+                </div>
+            </div>
 
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+            <div className="productFormGrid productFormGrid--three">
+                <div>
                     <Form.Item
                         name="sku"
                         label="Código"
@@ -335,30 +361,128 @@ export const ProductForm = ({
                             }
                         />
                     </Form.Item>
-                </Col>
-                <Col {...colResponsive}>
+                </div>
+                <div>
                     <InputField
                         name="barcode"
                         label="Código de Barras"
                         placeholder="Opcional"
                         disabled={isDisabled}
                     />
-                </Col>
-            </Row>
-
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+                </div>
+                <div>
                     <InputField
                         name="description"
                         label="Descripción"
                         placeholder="Descripción del producto (opcional)"
                         disabled={isDisabled}
                     />
-                </Col>
-            </Row>
+                </div>
+            </div>
 
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+            {!isEditing && !usesExternalStock && (
+                <section className="productFormSuppliers" aria-labelledby="productFormSuppliersTitle">
+                    <div className="productFormSuppliersHeader">
+                        <div>
+                            <div className="productFormSuppliersTitle" id="productFormSuppliersTitle">
+                                Proveedores <span>Opcional</span>
+                            </div>
+                            <div className="productFormSuppliersHelp">
+                                Asociá proveedores sólo si este producto se compra a terceros.
+                            </div>
+                        </div>
+                    </div>
+
+                    <Form.List name="suppliers">
+                        {(fields, { add, remove }) => (
+                            <div className="productFormSuppliersList">
+                                {fields.map((field) => {
+                                    const { key: fieldKey, ...fieldProps } = field;
+                                    const selectedSupplierIds = selectedSuppliers
+                                        .map((supplier: InitialProductSupplierDto | undefined) => supplier?.supplier_id)
+                                        .filter((supplierId: string | undefined): supplierId is string => !!supplierId);
+                                    const currentSupplierId = selectedSuppliers[field.name]?.supplier_id;
+                                    const supplierOptions = suppliers
+                                        .filter((supplier) => supplier.id === currentSupplierId || !selectedSupplierIds.includes(supplier.id))
+                                        .map((supplier) => ({ label: supplier.business_name, value: supplier.id }));
+
+                                    return (
+                                        <div className="productFormSupplierRow" key={fieldKey}>
+                                            <Row gutter={12} align="bottom">
+                                                <Col xs={24} md={12}>
+                                                    <Form.Item
+                                                        {...fieldProps}
+                                                        name={[field.name, 'supplier_id']}
+                                                        label="Proveedor"
+                                                        rules={[{ required: true, message: 'Seleccioná un proveedor.' }]}
+                                                    >
+                                                        <Select
+                                                            placeholder="Seleccionar proveedor"
+                                                            options={supplierOptions}
+                                                            showSearch
+                                                            optionFilterProp="label"
+                                                            loading={suppliersLoading}
+                                                            disabled={isDisabled || suppliersLoading}
+                                                        />
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col xs={24} md={6}>
+                                                    <Form.Item {...fieldProps} name={[field.name, 'supplier_code']} label="Código proveedor">
+                                                        <Input placeholder="Opcional" disabled={isDisabled} />
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col xs={24} md={6}>
+                                                    <Form.Item {...fieldProps} name={[field.name, 'supplier_product_name']} label="Nombre según proveedor">
+                                                        <Input placeholder="Opcional" disabled={isDisabled} />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                            <div className="productFormSupplierActions">
+                                                <Form.Item {...fieldProps} name={[field.name, 'is_preferred']} valuePropName="checked" noStyle>
+                                                    <Checkbox
+                                                        disabled={isDisabled}
+                                                        onChange={(event) => {
+                                                            if (!event.target.checked) return;
+                                                            const nextSuppliers = selectedSuppliers.map((supplier: InitialProductSupplierDto, index: number) => ({
+                                                                ...supplier,
+                                                                is_preferred: index === field.name,
+                                                            }));
+                                                            form.setFieldValue('suppliers', nextSuppliers);
+                                                        }}
+                                                    >
+                                                        Proveedor preferido
+                                                    </Checkbox>
+                                                </Form.Item>
+                                                <Button
+                                                    variant="text"
+                                                    size="small"
+                                                    icon={<DeleteOutlined />}
+                                                    aria-label="Quitar proveedor"
+                                                    label="Quitar proveedor"
+                                                    action={() => remove(field.name)}
+                                                    disabled={isDisabled}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                <Button
+                                    variant="default"
+                                    size="small"
+                                    icon={<PlusOutlined />}
+                                    label={fields.length === 0 ? 'Agregar proveedor' : 'Agregar otro proveedor'}
+                                    aria-label={fields.length === 0 ? 'Agregar proveedor' : 'Agregar otro proveedor'}
+                                    action={() => add({ is_preferred: false })}
+                                    disabled={isDisabled || suppliersLoading || fields.length >= suppliers.length}
+                                />
+                            </div>
+                        )}
+                    </Form.List>
+                </section>
+            )}
+
+            <div className={`productFormGrid ${usesExternalStock || isEditing ? 'productFormGrid--two' : 'productFormGrid--three'}`}>
+                <div>
                     <Form.Item
                         name="price"
                         label="Precio"
@@ -372,8 +496,8 @@ export const ProductForm = ({
                             disabled={isDisabled}
                         />
                     </Form.Item>
-                </Col>
-                <Col {...colResponsive}>
+                </div>
+                <div>
                     <Form.Item
                         name="cost"
                         label="Costo"
@@ -387,12 +511,9 @@ export const ProductForm = ({
                             disabled={isDisabled}
                         />
                     </Form.Item>
-                </Col>
-            </Row>
-
-            {!usesExternalStock && <Row gutter={16}>
-                {!isEditing && (
-                    <Col {...colResponsive}>
+                </div>
+                {!usesExternalStock && !isEditing && (
+                    <div>
                         <Form.Item
                             name="stock"
                             label="Stock Inicial"
@@ -410,31 +531,33 @@ export const ProductForm = ({
                                 disabled={isDisabled}
                             />
                         </Form.Item>
-                    </Col>
+                    </div>
                 )}
-                <Col {...colResponsive}>
-                    <Form.Item
-                        name="stock_min"
-                        label="Stock Mínimo"
-                        rules={requiredNumberRules('El stock mínimo')}
-                    >
-                        <InputNumber<string>
-                            stringMode
-                            placeholder="0"
-                            style={{ width: '100%' }}
-                            min="0"
-                            precision={4}
-                            step="1"
-                            formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
-                            parser={parseFormattedQuantity}
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>}
+            </div>
 
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+            <div className={`productFormGrid ${usesExternalStock ? 'productFormGrid--two' : 'productFormGrid--three'}`}>
+                {!usesExternalStock && (
+                    <div>
+                        <Form.Item
+                            name="stock_min"
+                            label="Stock Mínimo"
+                            rules={requiredNumberRules('El stock mínimo')}
+                        >
+                            <InputNumber<string>
+                                stringMode
+                                placeholder="0"
+                                style={{ width: '100%' }}
+                                min="0"
+                                precision={4}
+                                step="1"
+                                formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                                parser={parseFormattedQuantity}
+                                disabled={isDisabled}
+                            />
+                        </Form.Item>
+                    </div>
+                )}
+                <div>
                     <SelectField
                         name="stock_measurement_unit_id"
                         label="Unidad de medida"
@@ -444,8 +567,8 @@ export const ProductForm = ({
                         disabled={isDisabled || measurementUnitOptions.length === 0}
                         loading={measurementUnitsLoading}
                     />
-                </Col>
-                <Col {...colResponsive}>
+                </div>
+                <div>
                     <Form.Item
                         name="sale_quantity_step"
                         label="Cantidad mínima de venta"
@@ -464,11 +587,11 @@ export const ProductForm = ({
                             disabled={isDisabled}
                         />
                     </Form.Item>
-                </Col>
-            </Row>
+                </div>
+            </div>
 
-            <Row gutter={16}>
-                <Col {...colResponsive}>
+            <div className="productFormGrid productFormGrid--two">
+                <div>
                     <Form.Item name="is_active" label="Estado" valuePropName="checked">
                         <Switch
                             checkedChildren="Activo"
@@ -476,8 +599,8 @@ export const ProductForm = ({
                             disabled={isDisabled}
                         />
                     </Form.Item>
-                </Col>
-                <Col {...colResponsive}>
+                </div>
+                <div>
                     <Form.Item
                         name="is_sellable"
                         label="Disponible para venta"
@@ -490,8 +613,8 @@ export const ProductForm = ({
                             disabled={isDisabled}
                         />
                     </Form.Item>
-                </Col>
-            </Row>
+                </div>
+            </div>
         </Form>
     );
 };

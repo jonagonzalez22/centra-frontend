@@ -10,6 +10,7 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { MeasurementUnit, Product, ProductSourceCandidate, CreateProductDto } from '../../interfaces/product.interface';
 import type { ProductBrand } from '../../interfaces/product.interface';
 import { BrandsService } from '@/features/store/brands/services/brands.service';
+import { SuppliersService, type Supplier } from '@/features/store/suppliers/suppliers.service';
 import './ProductFormModal.css';
 
 interface ProductFormModalProps {
@@ -29,6 +30,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const [sourceProducts, setSourceProducts] = useState<ProductSourceCandidate[]>([]);
     const [brands, setBrands] = useState<ProductBrand[]>([]);
     const [brandsLoading, setBrandsLoading] = useState(false);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [suppliersLoading, setSuppliersLoading] = useState(false);
     const sourceSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const isEditing = !!product;
@@ -91,6 +94,31 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
             .finally(() => { if (mounted) setBrandsLoading(false); });
         return () => { mounted = false; };
     }, [open, product?.brand]);
+
+    useEffect(() => {
+        if (!open || isEditing) return;
+
+        let mounted = true;
+        setSuppliersLoading(true);
+        SuppliersService.getAll({ is_active: true })
+            .then((activeSuppliers) => {
+                if (mounted) setSuppliers(activeSuppliers);
+            })
+            .catch((err) => {
+                if (mounted) {
+                    const apiError = err as ApiError;
+                    message.error(apiError.message || 'No se pudieron cargar los proveedores.');
+                    setSuppliers([]);
+                }
+            })
+            .finally(() => {
+                if (mounted) setSuppliersLoading(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, [isEditing, open]);
 
     const handleSearchSourceProducts = useCallback((query: string) => {
         clearTimeout(sourceSearchTimeoutRef.current);
@@ -162,7 +190,16 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
             open={open}
             onClose={handleClose}
             title={title}
-            width={720}
+            width="min(1200px, calc(100vw - 32px))"
+            className="productFormModal"
+            styles={{
+                body: {
+                    flex: '1 1 auto',
+                    minHeight: 0,
+                    overflowX: 'hidden',
+                    overflowY: 'auto',
+                },
+            }}
             footer={
                 <div className="productFormModalFooter">
                     <Button
@@ -199,6 +236,8 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 categoriesLoading={categoriesLoading}
                 brands={brands}
                 brandsLoading={brandsLoading}
+                suppliers={suppliers}
+                suppliersLoading={suppliersLoading}
                 measurementUnits={measurementUnits}
                 measurementUnitsLoading={measurementUnitsLoading}
                 sourceProducts={sourceProducts}
