@@ -10,11 +10,11 @@ vi.mock('@/features/store/purchases/purchases.service', async (importOriginal) =
 vi.mock('@/features/store/suppliers/suppliers.service', () => ({ SuppliersService: { getAll: vi.fn() } }));
 vi.mock('@/components/auth/CanDo', () => ({ CanDo: ({ permission, children }: { permission: string; children: React.ReactNode }) => permission === 'purchases.create' && !canCreate ? null : children }));
 
-const item = { id: 'purchase-1', purchase_number: 'OC-000001', purchase_type: 'order' as const, status: 'draft' as const, supplier: { id: 'supplier-1', business_name: 'Limpieza Clorito', tax_id: null }, total: '125.50', ordered_at: null, cancelled_at: null, created_at: '2026-10-20 10:00:00' };
+const item = { id: 'purchase-1', purchase_number: 'OC-000001', purchase_type: 'order' as const, status: 'draft' as const, supplier: { id: 'supplier-1', business_name: 'Limpieza Clorito', tax_id: null }, total: '125.50', documents_count: 0, ordered_at: null, cancelled_at: null, created_at: '2026-10-20 10:00:00' };
 const option = (label: string) => screen.getAllByText(label).find((element) => element.closest('.ant-select-item-option'))!;
 const CurrentPath = () => <output aria-label="Ruta actual">{useLocation().pathname}</output>;
 describe('PurchasesPage', () => {
-    beforeEach(() => { canCreate = true; vi.mocked(SuppliersService.getAll).mockResolvedValue([{ id: 'supplier-1', business_name: 'Limpieza Clorito', tax_id: null, contact_name: null, phone: null, email: null, address: null, notes: null, is_active: true, created_at: '', updated_at: '' }]); vi.mocked(PurchasesService.getAll).mockResolvedValue({ items: [item, { ...item, id: 'purchase-2', purchase_type: 'direct', status: 'cancelled', purchase_number: 'OC-000002' }], total: 2, per_page: 15, current_page: 1, last_page: 1 }); });
+    beforeEach(() => { canCreate = true; vi.mocked(SuppliersService.getAll).mockResolvedValue([{ id: 'supplier-1', business_name: 'Limpieza Clorito', tax_id: null, contact_name: null, phone: null, email: null, address: null, notes: null, is_active: true, created_at: '', updated_at: '' }]); vi.mocked(PurchasesService.getAll).mockResolvedValue({ items: [item, { ...item, id: 'purchase-2', purchase_type: 'direct', status: 'cancelled', purchase_number: 'OC-000002', documents_count: 1 }, { ...item, id: 'purchase-3', status: 'received', purchase_number: 'OC-000003', documents_count: 2 }, { ...item, id: 'purchase-4', status: 'ordered', purchase_number: 'OC-000004', documents_count: 0 }], total: 4, per_page: 15, current_page: 1, last_page: 1 }); });
     it('renders purchases, translated values and server filters', async () => {
         const user = userEvent.setup();
         render(<MemoryRouter initialEntries={['/tienda/compras']}><CurrentPath /><PurchasesPage /></MemoryRouter>);
@@ -29,7 +29,8 @@ describe('PurchasesPage', () => {
         await user.click(newPurchase);
         expect(screen.getByLabelText('Ruta actual')).toHaveTextContent('/tienda/compras/nueva');
         expect(PurchasesService.getAll).toHaveBeenCalled();
-        expect(screen.getByText('Orden de compra')).toBeInTheDocument(); expect(screen.getByText('Compra directa')).toBeInTheDocument(); expect(screen.getByText('Borrador')).toBeInTheDocument(); expect(screen.getByText('Cancelada')).toBeInTheDocument(); expect(screen.getAllByText('Limpieza Clorito')).not.toHaveLength(0);
+        expect(screen.getByText('Búsqueda')).toBeInTheDocument(); expect(screen.getAllByText('Documentos')).not.toHaveLength(0); expect(screen.getByPlaceholderText('Número o proveedor')).toBeInTheDocument();
+        expect(screen.getAllByText('Orden de compra')).not.toHaveLength(0); expect(screen.getByText('Compra directa')).toBeInTheDocument(); expect(screen.getByText('Borrador')).toBeInTheDocument(); expect(screen.getByText('Cancelada')).toBeInTheDocument(); expect(screen.getAllByText('Limpieza Clorito')).not.toHaveLength(0); expect(screen.getByText('—')).toBeInTheDocument(); expect(screen.getByText('Sin documentos')).toBeInTheDocument(); expect(screen.getByText('1 documento')).toBeInTheDocument(); expect(screen.getByText('2 documentos')).toBeInTheDocument();
         fireEvent.change(screen.getByRole('textbox', { name: 'Buscar compras' }), { target: { value: 'OC-1' } });
         await waitFor(() => expect(PurchasesService.getAll).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'OC-1', page: 1 })));
     });
@@ -48,6 +49,8 @@ describe('PurchasesPage', () => {
         await waitFor(() => expect(PurchasesService.getAll).toHaveBeenLastCalledWith(expect.objectContaining({ purchase_type: 'direct', page: 1 })));
         fireEvent.mouseDown(screen.getByLabelText('Proveedor')); fireEvent.click(option('Limpieza Clorito'));
         await waitFor(() => expect(PurchasesService.getAll).toHaveBeenLastCalledWith(expect.objectContaining({ supplier_id: 'supplier-1', page: 1 })));
+        fireEvent.mouseDown(screen.getByLabelText('Documentos')); fireEvent.click(option('Con documentos'));
+        await waitFor(() => expect(PurchasesService.getAll).toHaveBeenLastCalledWith(expect.objectContaining({ documents: 'with_documents', page: 1 })));
         await user.click(screen.getByRole('button', { name: 'Limpiar' }));
         await waitFor(() => expect(PurchasesService.getAll).toHaveBeenLastCalledWith({ page: 1, per_page: 15 }));
         expect(screen.getByRole('button', { name: 'Limpiar' })).toBeDisabled();

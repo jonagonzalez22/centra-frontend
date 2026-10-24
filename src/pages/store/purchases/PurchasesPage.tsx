@@ -11,6 +11,7 @@ import {
     PurchasesService,
     purchaseStatusLabel,
     purchaseTypeLabel,
+    type PurchaseDocumentsFilter,
     type PurchaseListItem,
     type PurchaseParams,
     type PurchaseStatus,
@@ -58,7 +59,7 @@ export const PurchasesPage = () => {
     const change = (next: Partial<PurchaseParams>) =>
         setFilters((current) => ({ ...current, ...next, page: 1 }));
     const hasActiveFilters = Boolean(
-        filters.search || filters.status || filters.purchase_type || filters.supplier_id
+        filters.search || filters.status || filters.purchase_type || filters.supplier_id || filters.documents
     );
     return (
         <div className="w-full">
@@ -84,55 +85,79 @@ export const PurchasesPage = () => {
                     </CanDo>
                 </div>
             </div>
-            <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-                <Input
-                    aria-label="Buscar compras"
-                    placeholder="Número o proveedor"
-                    allowClear
-                    value={filters.search}
-                    onChange={(e) => change({ search: e.target.value || undefined })}
-                />
-                <Select
-                    aria-label="Estado"
-                    placeholder="Todos los estados"
-                    allowClear
-                    value={filters.status}
-                    onChange={(value) => change({ status: value })}
-                    options={Object.entries(statusColor).map(([value]) => ({
-                        value,
-                        label: purchaseStatusLabel(value as PurchaseStatus),
-                    }))}
-                />
-                <Select
-                    aria-label="Tipo"
-                    placeholder="Todos los tipos"
-                    allowClear
-                    value={filters.purchase_type}
-                    onChange={(value) => change({ purchase_type: value })}
-                    options={[
-                        { value: 'order', label: 'Orden de compra' },
-                        { value: 'direct', label: 'Compra directa' },
-                    ]}
-                />
-                <Select
-                    aria-label="Proveedor"
-                    placeholder="Todos los proveedores"
-                    allowClear
-                    showSearch
-                    optionFilterProp="label"
-                    value={filters.supplier_id}
-                    onChange={(value) => change({ supplier_id: value })}
-                    options={suppliers.map((supplier) => ({
-                        value: supplier.id,
-                        label: supplier.business_name,
-                    }))}
-                />
-                <Button
-                    variant="default"
-                    label="Limpiar"
-                    action={() => setFilters({ page: 1, per_page: 15 })}
-                    disabled={!hasActiveFilters}
-                />
+            <div className="mb-6">
+                <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 lg:grid-cols-5">
+                    <label className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-centra-text">Búsqueda</span>
+                        <Input
+                            aria-label="Buscar compras"
+                            placeholder="Número o proveedor"
+                            allowClear
+                            value={filters.search}
+                            onChange={(e) => change({ search: e.target.value || undefined })}
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-centra-text">Estado</span>
+                        <Select
+                            aria-label="Estado"
+                            className="w-full"
+                            placeholder="Todos los estados"
+                            allowClear
+                            value={filters.status}
+                            onChange={(value) => change({ status: value })}
+                            options={Object.entries(statusColor).map(([value]) => ({ value, label: purchaseStatusLabel(value as PurchaseStatus) }))}
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-centra-text">Tipo</span>
+                        <Select
+                            aria-label="Tipo"
+                            className="w-full"
+                            placeholder="Todos los tipos"
+                            allowClear
+                            value={filters.purchase_type}
+                            onChange={(value) => change({ purchase_type: value })}
+                            options={[{ value: 'order', label: 'Orden de compra' }, { value: 'direct', label: 'Compra directa' }]}
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-centra-text">Proveedor</span>
+                        <Select
+                            aria-label="Proveedor"
+                            className="w-full"
+                            placeholder="Todos los proveedores"
+                            allowClear
+                            showSearch
+                            optionFilterProp="label"
+                            value={filters.supplier_id}
+                            onChange={(value) => change({ supplier_id: value })}
+                            options={suppliers.map((supplier) => ({ value: supplier.id, label: supplier.business_name }))}
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-centra-text">Documentos</span>
+                        <Select
+                            aria-label="Documentos"
+                            className="w-full"
+                            value={filters.documents ?? 'all'}
+                            onChange={(value: 'all' | PurchaseDocumentsFilter) => change({ documents: value === 'all' ? undefined : value })}
+                            options={[
+                                { value: 'all', label: 'Todos' },
+                                { value: 'with_documents', label: 'Con documentos' },
+                                { value: 'without_documents', label: 'Sin documentos' },
+                            ]}
+                        />
+                    </label>
+                </div>
+                <div className="mt-3 flex items-end gap-2">
+                    <Button
+                        variant="default"
+                        label="Limpiar"
+                        action={() => setFilters({ page: 1, per_page: 15 })}
+                        disabled={!hasActiveFilters}
+                    />
+                </div>
             </div>
             <Table
                     rowKey="id"
@@ -192,6 +217,21 @@ export const PurchasesPage = () => {
                                     {purchaseStatusLabel(item.status)}
                                 </Tag>
                             ),
+                        },
+                        {
+                            title: 'Documentos',
+                            render: (_, item: PurchaseListItem) => {
+                                if (item.status === 'draft') return '—';
+                                const documentsCount = item.documents_count ?? 0;
+
+                                if (documentsCount === 0) return <Tag color="default">Sin documentos</Tag>;
+
+                                return (
+                                    <Tag color="blue">
+                                        {documentsCount} {documentsCount === 1 ? 'documento' : 'documentos'}
+                                    </Tag>
+                                );
+                            },
                         },
                         {
                             title: 'Total',
