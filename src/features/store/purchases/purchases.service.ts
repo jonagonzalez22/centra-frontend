@@ -123,6 +123,16 @@ export interface CreatePurchaseReceiptPayload {
     items: Array<{ purchase_item_id: string; quantity: string }>;
 }
 
+export interface PurchasePdfDownload {
+    blob: Blob;
+    filename: string;
+}
+
+const filenameFromDisposition = (value: string | undefined, fallback: string): string => {
+    const match = value?.match(/filename="?([^";]+)"?/i);
+    return match?.[1] ?? fallback;
+};
+
 export const PurchasesService = {
     async getAll(params: PurchaseParams = {}): Promise<PurchaseListResponse> {
         const { data } = await api.get('/v1/store/purchases', { params });
@@ -151,6 +161,16 @@ export const PurchasesService = {
     async close(id: string): Promise<PurchaseDetail> {
         const { data } = await api.post(`/v1/store/purchases/${id}/close`);
         return data.data as PurchaseDetail;
+    },
+    async downloadPdf(id: string, fallbackFilename: string): Promise<PurchasePdfDownload> {
+        const response = await api.get(`/v1/store/purchases/${id}/pdf`, { responseType: 'blob' });
+        return {
+            blob: response.data as Blob,
+            filename: filenameFromDisposition(
+                response.headers['content-disposition'],
+                fallbackFilename
+            ),
+        };
     },
     async createReceipt(
         id: string,

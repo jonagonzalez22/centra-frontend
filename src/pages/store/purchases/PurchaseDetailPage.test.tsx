@@ -16,6 +16,7 @@ vi.mock('@/features/store/purchases/purchases.service', async (importOriginal) =
         order: vi.fn(),
         cancel: vi.fn(),
         close: vi.fn(),
+        downloadPdf: vi.fn(),
     },
 }));
 vi.mock('@/components/auth/CanDo', () => ({
@@ -82,6 +83,7 @@ describe('PurchaseDetailPage', () => {
         canReceive = true;
         canClose = true;
         vi.mocked(PurchasesService.getById).mockResolvedValue(detail);
+        vi.mocked(PurchasesService.downloadPdf).mockReset();
     });
     it('uses the standard spinner while the initial detail request is pending', async () => {
         let resolvePurchase!: (value: typeof detail) => void;
@@ -112,6 +114,70 @@ describe('PurchaseDetailPage', () => {
         expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Emitir orden' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Cancelar compra' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Descargar PDF' })).toBeInTheDocument();
+    });
+    it.each(['ordered', 'partially_received', 'received', 'closed', 'cancelled'] as const)(
+        'keeps PDF download visible for order in %s',
+        async (status) => {
+            vi.mocked(PurchasesService.getById).mockResolvedValue({ ...detail, status });
+            renderDetail();
+            expect(
+                await screen.findByRole('button', { name: 'Descargar PDF' })
+            ).toBeInTheDocument();
+        }
+    );
+    it('does not offer PDF download for direct purchases', async () => {
+        vi.mocked(PurchasesService.getById).mockResolvedValue({
+            ...detail,
+            purchase_type: 'direct',
+        });
+        renderDetail();
+        await screen.findByText('Compra directa');
+        expect(screen.queryByRole('button', { name: 'Descargar PDF' })).not.toBeInTheDocument();
+    });
+    it('downloads the order PDF and prevents an accidental second click while loading', async () => {
+        let resolveDownload!: (value: { blob: Blob; filename: string }) => void;
+        vi.mocked(PurchasesService.downloadPdf).mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveDownload = resolve;
+                })
+        );
+        const createObjectUrl = vi.fn(() => 'blob:purchase-pdf');
+        const revokeObjectUrl = vi.fn();
+        Object.defineProperty(URL, 'createObjectURL', {
+            value: createObjectUrl,
+            configurable: true,
+        });
+        Object.defineProperty(URL, 'revokeObjectURL', {
+            value: revokeObjectUrl,
+            configurable: true,
+        });
+        renderDetail();
+        const button = (await screen.findByText('Descargar PDF')).closest('button');
+        if (!button) throw new Error('No se encontró el botón de descarga.');
+        fireEvent.click(button);
+        expect(button).toBeDisabled();
+        fireEvent.click(button);
+        expect(PurchasesService.downloadPdf).toHaveBeenCalledTimes(1);
+        resolveDownload({ blob: new Blob(['pdf']), filename: 'OC-000001-BORRADOR.pdf' });
+        await waitFor(() => expect(button).not.toBeDisabled());
+        expect(createObjectUrl).toHaveBeenCalled();
+        expect(revokeObjectUrl).toHaveBeenCalledWith('blob:purchase-pdf');
+    });
+    it('keeps the detail open and shows a discreet error if the PDF download fails', async () => {
+        const feedback = vi.spyOn(message, 'error').mockImplementation(() => undefined as never);
+        vi.mocked(PurchasesService.downloadPdf).mockRejectedValueOnce(new Error('API error'));
+        renderDetail();
+        fireEvent.click(await screen.findByRole('button', { name: 'Descargar PDF' }));
+        await waitFor(() =>
+            expect(PurchasesService.downloadPdf).toHaveBeenCalledWith(
+                'purchase-1',
+                'OC-000001-BORRADOR.pdf'
+            )
+        );
+        expect(feedback).toHaveBeenCalledWith('No se pudo descargar el PDF de la orden de compra.');
+        expect(screen.getByRole('heading', { name: 'OC-000001' })).toBeInTheDocument();
     });
     it('renders supplier documents in the Purchase detail', async () => {
         vi.mocked(PurchasesService.getById).mockResolvedValue({

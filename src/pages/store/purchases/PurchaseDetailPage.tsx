@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Breadcrumb, Collapse, Empty, Grid, Popconfirm, Spin, Table, Tag, message } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
@@ -42,6 +43,7 @@ export const PurchaseDetailPage = () => {
     const [purchase, setPurchase] = useState<PurchaseDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [downloadingPdf, setDownloadingPdf] = useState(false);
     const closingRef = useRef(false);
     const screens = Grid.useBreakpoint();
     const load = useCallback(async () => {
@@ -137,6 +139,34 @@ export const PurchaseDetailPage = () => {
             setSaving(false);
         }
     };
+    const downloadPdf = async () => {
+        if (downloadingPdf) return;
+        setDownloadingPdf(true);
+        try {
+            const suffix =
+                purchase.status === 'draft'
+                    ? '-BORRADOR'
+                    : purchase.status === 'cancelled'
+                      ? '-CANCELADA'
+                      : '';
+            const { blob, filename } = await PurchasesService.downloadPdf(
+                purchase.id,
+                `${purchase.purchase_number}${suffix}.pdf`
+            );
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch {
+            message.error('No se pudo descargar el PDF de la orden de compra.');
+        } finally {
+            setDownloadingPdf(false);
+        }
+    };
     return (
         <div className="w-full">
             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -158,6 +188,18 @@ export const PurchaseDetailPage = () => {
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <CanDo permission="purchases.view">
+                        {purchase.purchase_type === 'order' && (
+                            <Button
+                                variant="default"
+                                label="Descargar PDF"
+                                icon={<DownloadOutlined />}
+                                action={() => void downloadPdf()}
+                                loading={downloadingPdf}
+                                disabled={downloadingPdf}
+                            />
+                        )}
+                    </CanDo>
                     <CanDo permission="purchases.receive">
                         {canReceive && (
                             <Button
