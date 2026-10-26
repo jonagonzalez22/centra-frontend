@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Breadcrumb, Collapse, Empty, Grid, Popconfirm, Spin, Table, Tag, message } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import {
+    Breadcrumb,
+    Collapse,
+    Dropdown,
+    Empty,
+    Grid,
+    Popconfirm,
+    Spin,
+    Table,
+    Tag,
+    message,
+} from 'antd';
+import { CopyOutlined, DownloadOutlined, WhatsAppOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
@@ -16,6 +27,10 @@ import {
     type PurchaseStatus,
 } from '@/features/store/purchases/purchases.service';
 import { PurchaseDocumentsSection } from './PurchaseDocumentsSection';
+import {
+    buildPurchaseWhatsAppMessage,
+    buildPurchaseWhatsAppUrl,
+} from '@/features/store/purchases/purchaseWhatsApp';
 
 const statusColor: Record<PurchaseStatus, string> = {
     draft: 'default',
@@ -76,6 +91,10 @@ export const PurchaseDetailPage = () => {
         (purchase.purchase_type === 'direct' &&
             ['draft', 'partially_received'].includes(purchase.status));
     const canClose = purchase.status === 'partially_received';
+    const canShareWhatsApp =
+        purchase.purchase_type === 'order' && ['draft', 'ordered'].includes(purchase.status);
+    const whatsAppMessage = buildPurchaseWhatsAppMessage(purchase);
+    const whatsAppUrl = buildPurchaseWhatsAppUrl(purchase.supplier.phone, whatsAppMessage);
     const pendingItemCount = purchase.items.filter(
         (item) => compareDecimalStrings(item.quantity_pending, '0.0000') > 0
     ).length;
@@ -101,7 +120,17 @@ export const PurchaseDetailPage = () => {
     const order = async () => {
         setSaving(true);
         try {
-            setPurchase(await PurchasesService.order(purchase.id));
+            const updatedPurchase = await PurchasesService.order(purchase.id);
+            setPurchase({
+                ...updatedPurchase,
+                supplier: {
+                    ...updatedPurchase.supplier,
+                    phone:
+                        updatedPurchase.supplier.phone === undefined
+                            ? purchase.supplier.phone
+                            : updatedPurchase.supplier.phone,
+                },
+            });
             message.success('Orden de compra emitida correctamente.');
         } catch {
             message.error('No se pudo emitir la orden de compra.');
@@ -167,6 +196,17 @@ export const PurchaseDetailPage = () => {
             setDownloadingPdf(false);
         }
     };
+    const copyWhatsAppMessage = async () => {
+        try {
+            await navigator.clipboard.writeText(whatsAppMessage);
+            message.success('Mensaje copiado');
+        } catch {
+            message.error('No se pudo copiar el mensaje.');
+        }
+    };
+    const openWhatsApp = () => {
+        if (whatsAppUrl) window.open(whatsAppUrl, '_blank', 'noopener,noreferrer');
+    };
     return (
         <div className="w-full">
             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -199,6 +239,43 @@ export const PurchaseDetailPage = () => {
                                 disabled={downloadingPdf}
                             />
                         )}
+                    </CanDo>
+                    <CanDo permission="purchases.view">
+                        {canShareWhatsApp &&
+                            (whatsAppUrl ? (
+                                <Dropdown
+                                    trigger={['click']}
+                                    menu={{
+                                        items: [
+                                            {
+                                                key: 'open-whatsapp',
+                                                icon: <WhatsAppOutlined />,
+                                                label: 'Abrir WhatsApp',
+                                                onClick: openWhatsApp,
+                                            },
+                                            {
+                                                key: 'copy-message',
+                                                icon: <CopyOutlined />,
+                                                label: 'Copiar mensaje',
+                                                onClick: () => void copyWhatsAppMessage(),
+                                            },
+                                        ],
+                                    }}
+                                >
+                                    <Button
+                                        variant="default"
+                                        label="WhatsApp"
+                                        icon={<WhatsAppOutlined />}
+                                    />
+                                </Dropdown>
+                            ) : (
+                                <Button
+                                    variant="default"
+                                    label="Copiar mensaje"
+                                    icon={<CopyOutlined />}
+                                    action={() => void copyWhatsAppMessage()}
+                                />
+                            ))}
                     </CanDo>
                     <CanDo permission="purchases.receive">
                         {canReceive && (

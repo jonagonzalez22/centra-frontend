@@ -37,6 +37,7 @@ export interface PurchaseSupplierSnapshot {
     id: string;
     business_name: string;
     tax_id: string | null;
+    phone?: string | null;
 }
 export interface PurchaseListItem {
     id: string;

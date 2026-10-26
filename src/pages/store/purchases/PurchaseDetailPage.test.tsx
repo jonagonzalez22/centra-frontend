@@ -76,6 +76,12 @@ const renderDetail = () =>
             </Routes>
         </MemoryRouter>
     );
+const findActionButton = async (label: string) => {
+    const button = (await screen.findByText(label)).closest('button');
+    if (!button) throw new Error(`No se encontró el botón ${label}.`);
+
+    return button;
+};
 describe('PurchaseDetailPage', () => {
     beforeEach(() => {
         canEdit = true;
@@ -134,6 +140,112 @@ describe('PurchaseDetailPage', () => {
         renderDetail();
         await screen.findByText('Compra directa');
         expect(screen.queryByRole('button', { name: 'Descargar PDF' })).not.toBeInTheDocument();
+        expect(screen.queryByText('Copiar mensaje')).not.toBeInTheDocument();
+    });
+    it.each(['draft', 'ordered'] as const)(
+        'offers the WhatsApp message action for an order in %s',
+        async (status) => {
+            vi.mocked(PurchasesService.getById).mockResolvedValue({ ...detail, status });
+            renderDetail();
+            expect(await findActionButton('Copiar mensaje')).toBeInTheDocument();
+        }
+    );
+    it.each(['draft', 'ordered'] as const)(
+        'offers both WhatsApp actions for %s when the supplier has a phone',
+        async (status) => {
+            vi.mocked(PurchasesService.getById).mockResolvedValue({
+                ...detail,
+                status,
+                supplier: { ...detail.supplier, phone: '+54 261 555-0100' },
+            });
+            renderDetail();
+            fireEvent.click(await findActionButton('WhatsApp'));
+            expect(await screen.findByText('Abrir WhatsApp')).toBeInTheDocument();
+            expect(screen.getByText('Copiar mensaje')).toBeInTheDocument();
+        }
+    );
+    it.each(['partially_received', 'received', 'closed', 'cancelled'] as const)(
+        'does not offer a WhatsApp message for %s purchases',
+        async (status) => {
+            vi.mocked(PurchasesService.getById).mockResolvedValue({
+                ...detail,
+                status,
+                supplier: { ...detail.supplier, phone: '+54 261 555-0100' },
+            });
+            renderDetail();
+            await screen.findByText(
+                status === 'partially_received'
+                    ? 'Parcialmente recibida'
+                    : status === 'received'
+                      ? 'Recibida'
+                      : status === 'closed'
+                        ? 'Cerrada'
+                        : 'Cancelada'
+            );
+            expect(screen.queryByText('Copiar mensaje')).not.toBeInTheDocument();
+        }
+    );
+    it('copies the exact draft message when the supplier has no phone', async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+        renderDetail();
+        fireEvent.click(await findActionButton('Copiar mensaje'));
+        await waitFor(() =>
+            expect(writeText).toHaveBeenCalledWith(
+                expect.stringContaining(
+                    'borrador de la OC-000001 para confirmar disponibilidad y precios'
+                )
+            )
+        );
+        expect(writeText).toHaveBeenCalledWith(
+            expect.stringMatching(
+                /• 2 unid\. · \[EXT-H\] · Producto histórico · \$\s5,00\/unid\. = \$\s10,00/
+            )
+        );
+        expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/Total estimado: \$\s10,00/));
+    });
+    it('shows discreet feedback when copying the message fails', async () => {
+        const feedback = vi.spyOn(message, 'error').mockImplementation(() => undefined as never);
+        Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: vi.fn().mockRejectedValue(new Error('Clipboard denied')) },
+            configurable: true,
+        });
+        renderDetail();
+        fireEvent.click(await findActionButton('Copiar mensaje'));
+        await waitFor(() => expect(feedback).toHaveBeenCalledWith('No se pudo copiar el mensaje.'));
+        expect(screen.getByRole('heading', { name: 'OC-000001' })).toBeInTheDocument();
+    });
+    it('opens wa.me with the encoded message when the current supplier has a phone', async () => {
+        const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+        vi.mocked(PurchasesService.getById).mockResolvedValue({
+            ...detail,
+            status: 'ordered',
+            supplier: { ...detail.supplier, phone: '+54 261 555-0100' },
+        });
+        renderDetail();
+        fireEvent.click(await findActionButton('WhatsApp'));
+        fireEvent.click(await screen.findByText('Abrir WhatsApp'));
+        expect(open).toHaveBeenCalledWith(
+            expect.stringMatching(/^https:\/\/wa\.me\/542615550100\?text=/),
+            '_blank',
+            'noopener,noreferrer'
+        );
+    });
+    it('keeps the supplier phone after emitting when the order response omits it', async () => {
+        vi.mocked(PurchasesService.getById).mockResolvedValue({
+            ...detail,
+            supplier: { ...detail.supplier, phone: '+54 261 555-0100' },
+        });
+        vi.mocked(PurchasesService.order).mockResolvedValue({ ...detail, status: 'ordered' });
+        renderDetail();
+        fireEvent.click(await screen.findByRole('button', { name: 'Emitir orden' }));
+        const confirms = screen.getAllByRole('button', { name: 'Emitir orden' });
+        fireEvent.click(confirms[confirms.length - 1]);
+        await waitFor(() => expect(PurchasesService.order).toHaveBeenCalledWith('purchase-1'));
+        expect(await findActionButton('WhatsApp')).toBeInTheDocument();
+        fireEvent.click(await findActionButton('WhatsApp'));
+        expect(await screen.findByText('Abrir WhatsApp')).toBeInTheDocument();
+        expect(screen.getByText('Copiar mensaje')).toBeInTheDocument();
     });
     it('downloads the order PDF and prevents an accidental second click while loading', async () => {
         let resolveDownload!: (value: { blob: Blob; filename: string }) => void;
