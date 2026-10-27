@@ -14,8 +14,6 @@ interface CustomerInfoFormProps {
     form: FormInstance;
     customer: Customer;
     loading: boolean;
-    commercialGroupOptions: { label: string; value: string }[];
-    groupsLoading: boolean;
     documentTypeOptions: { label: string; value: string }[];
     documentTypesLoading: boolean;
     onSubmit: (values: UpdateCustomerDto) => Promise<void>;
@@ -34,8 +32,6 @@ export const CustomerInfoForm = ({
     form,
     customer,
     loading,
-    commercialGroupOptions,
-    groupsLoading,
     documentTypeOptions,
     documentTypesLoading,
     onSubmit,
@@ -45,8 +41,6 @@ export const CustomerInfoForm = ({
     const [submitting, setSubmitting] = useState(false);
     const isDisabled = loading || submitting;
     const isReadOnly = !isEditing;
-
-    const commercialGroupName = customer.commercial_group?.name ?? null;
 
     useEffect(() => {
         if (customer) {
@@ -58,7 +52,6 @@ export const CustomerInfoForm = ({
                 company_name: customer.company_name ?? undefined,
                 document_type_id: customer.document_type.id,
                 document_number: customer.document_number,
-                commercial_group_id: customer.commercial_group?.id ?? undefined,
                 status: customer.status === 'active',
                 notes: customer.notes ?? undefined,
             });
@@ -78,7 +71,6 @@ export const CustomerInfoForm = ({
             company_name: (values.company_name as string) || null,
             document_type_id: values.document_type_id as string,
             document_number: normalizedDocNumber,
-            commercial_group_id: (values.commercial_group_id as string) || null,
             status: values.status ? 'active' : 'inactive',
             notes: (values.notes as string) || null,
         };
@@ -110,7 +102,6 @@ export const CustomerInfoForm = ({
                 company_name: customer.company_name ?? undefined,
                 document_type_id: customer.document_type.id,
                 document_number: customer.document_number,
-                commercial_group_id: customer.commercial_group?.id ?? undefined,
                 status: customer.status === 'active',
                 notes: customer.notes ?? undefined,
             });
@@ -233,23 +224,6 @@ export const CustomerInfoForm = ({
                             placeholder="Ingresá el número"
                             rules={requiredStringRules('El número de documento')}
                             disabled={isDisabled}
-                        />
-                    )}
-                </Col>
-                <Col {...colResponsive}>
-                    {isReadOnly ? (
-                        <Form.Item label="Grupo Comercial">
-                            <Text className="text-centra-text">{commercialGroupName ?? '—'}</Text>
-                        </Form.Item>
-                    ) : (
-                        <SelectField
-                            name="commercial_group_id"
-                            label="Grupo Comercial"
-                            placeholder="Seleccionar"
-                            options={commercialGroupOptions}
-                            allowClear
-                            disabled={isDisabled || groupsLoading}
-                            loading={groupsLoading}
                         />
                     )}
                 </Col>

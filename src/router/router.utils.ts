@@ -116,9 +116,6 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     if (matches(/^\/tienda\/usuarios$/)) {
         return hasStoreRole && hasFeatureAccess('multi_user') && hasPermission('store_users.view');
     }
-    if (matches(/^\/tienda\/clientes\/grupos$/)) {
-        return hasStoreRole && hasFeatureAccess('customers') && hasPermission('commercial_groups.view');
-    }
     if (matches(/^\/tienda\/clientes(?:\/[^/]+)?$/)) {
         return hasStoreRole && hasFeatureAccess('customers') && hasPermission('customers.view');
     }

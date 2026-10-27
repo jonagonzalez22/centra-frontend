@@ -13,8 +13,6 @@ import './CustomersCreatePage.css';
 interface CustomersCreatePageViewProps {
     form: FormInstance;
     loading: boolean;
-    commercialGroupOptions: { label: string; value: string }[];
-    groupsLoading: boolean;
     documentTypeOptions: { label: string; value: string }[];
     documentTypesLoading: boolean;
     onSubmit: (values: Record<string, unknown>) => Promise<void>;
@@ -32,8 +30,6 @@ const colResponsive = {
 export const CustomersCreatePageView = ({
     form,
     loading,
-    commercialGroupOptions,
-    groupsLoading,
     documentTypeOptions,
     documentTypesLoading,
     onSubmit,
@@ -149,17 +145,6 @@ export const CustomersCreatePageView = ({
                                 placeholder="Ingresá el número"
                                 rules={requiredStringRules('El número de documento')}
                                 disabled={loading}
-                            />
-                        </Col>
-                        <Col {...colResponsive}>
-                            <SelectField
-                                name="commercial_group_id"
-                                label="Grupo Comercial"
-                                placeholder="Seleccionar"
-                                options={commercialGroupOptions}
-                                allowClear
-                                disabled={loading || groupsLoading}
-                                loading={groupsLoading}
                             />
                         </Col>
                     </Row>

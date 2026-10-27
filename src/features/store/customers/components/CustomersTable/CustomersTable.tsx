@@ -43,17 +43,6 @@ export const CustomersTable = ({
             },
         },
         {
-            title: 'Grupo Comercial',
-            key: 'commercial_group',
-            responsive: ['md'] as ('md' | 'lg' | 'xl' | 'sm' | 'xs' | 'xxl' | 'xxxl')[],
-            render: (_: unknown, record: Customer) =>
-                record.commercial_group?.name ? (
-                    <Tag color="geekblue">{record.commercial_group.name}</Tag>
-                ) : (
-                    '—'
-                ),
-        },
-        {
             title: 'Estado',
             dataIndex: 'status',
             key: 'status',

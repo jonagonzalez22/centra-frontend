@@ -1,5 +1,4 @@
 import { useCustomers } from '@/features/store/customers/hooks/useCustomers';
-import { useCommercialGroups } from '@/features/store/commercial-groups/hooks/useCommercialGroups';
 import { CustomersPageView } from './CustomersPageView';
 
 const routeMetadata = {
@@ -13,7 +12,6 @@ const routeMetadata = {
 
 export const CustomersPage = () => {
     const customersState = useCustomers();
-    const { groups, loading: groupsLoading } = useCommercialGroups();
 
     return (
         <CustomersPageView
@@ -26,8 +24,6 @@ export const CustomersPage = () => {
             pagination={customersState.pagination}
             onRefetch={customersState.refetch}
             onDelete={customersState.deleteCustomer}
-            commercialGroups={groups}
-            groupsLoading={groupsLoading}
         />
     );
 };

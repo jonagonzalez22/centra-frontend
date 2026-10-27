@@ -4,16 +4,6 @@ export interface DocumentType {
     name: string;
 }
 
-export interface CustomerCommercialGroup {
-    id: string;
-    store_id: string;
-    name: string;
-    description: string | null;
-    settings: unknown;
-    created_at: string;
-    updated_at: string;
-}
-
 export interface Customer {
     id: string;
     customer_code: string;
@@ -23,7 +13,6 @@ export interface Customer {
     company_name: string | null;
     document_type: DocumentType;
     document_number: string;
-    commercial_group: CustomerCommercialGroup | null;
     status: 'active' | 'inactive';
     has_location: boolean;
     blocked_at: string | null;
@@ -41,7 +30,6 @@ export interface CreateCustomerDto {
     company_name: string | null;
     document_type_id: string;
     document_number: string;
-    commercial_group_id: string | null;
     status: 'active' | 'inactive';
     notes: string | null;
 }
@@ -53,7 +41,6 @@ export interface UpdateCustomerDto {
     company_name?: string | null;
     document_type_id?: string;
     document_number?: string;
-    commercial_group_id?: string | null;
     status?: 'active' | 'inactive';
     notes?: string | null;
 }
@@ -72,6 +59,5 @@ export interface CustomersFilters {
     page?: number;
     per_page?: number;
     status?: 'active' | 'inactive';
-    commercial_group_id?: string;
     location_status?: 'all' | 'with_location' | 'without_location';
 }

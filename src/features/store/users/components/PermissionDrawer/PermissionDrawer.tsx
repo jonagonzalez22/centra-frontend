@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { message, Spin } from 'antd';
-import { Shield, Store, User as UserIcon, Package, Tag, ShoppingCart, Truck, Wallet, ClipboardList, CreditCard, Globe, Settings, UsersRound } from 'lucide-react';
+import { Shield, Store, User as UserIcon, Package, Tag, ShoppingCart, Truck, Wallet, ClipboardList, CreditCard, Globe, Settings } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
 import { Checkbox } from '@/components/Checkbox';
@@ -41,7 +41,6 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
     Deliveries: <Truck size={16} />,
     Caja: <Wallet size={16} />,
     'Medios de pago': <CreditCard size={16} />,
-    'Grupos Comerciales': <UsersRound size={16} />,
     Geografía: <Globe size={16} />,
     Configuraciones: <Settings size={16} />,
 };

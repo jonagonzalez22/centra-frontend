@@ -26,7 +26,6 @@ import { PurchaseReceiptPage } from '@/pages/store/purchases/PurchaseReceiptPage
 import { CustomersPage } from '@/pages/store/customers/CustomersPage';
 import { CustomerShowPage } from '@/pages/store/customers/CustomerShowPage';
 import { CustomersCreatePage } from '@/pages/store/customers/CustomersCreatePage';
-import { CommercialGroupsPage } from '@/pages/store/commercial-groups/CommercialGroupsPage';
 import { ProductsPage } from '@/pages/store/products/ProductsPage';
 import { InventoryMovementsPage } from '@/pages/store/inventory/InventoryMovementsPage';
 import { StoreUsersPage } from '@/pages/store/users/StoreUsersPage';
@@ -188,10 +187,6 @@ export const router = createBrowserRouter([
                                         ],
                                     },
                                 ],
-                            },
-                            {
-                                element: <PermissionRoute permission="commercial_groups.view" redirectTo="/tienda/dashboard" />,
-                                children: [{ path: 'clientes/grupos', element: <CommercialGroupsPage /> }],
                             },
                         ],
                     },

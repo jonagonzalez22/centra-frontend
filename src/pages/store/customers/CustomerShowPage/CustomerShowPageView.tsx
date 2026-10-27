@@ -15,8 +15,6 @@ interface CustomerShowPageViewProps {
     customer: Customer;
     form: FormInstance;
     loading: boolean;
-    commercialGroupOptions: { label: string; value: string }[];
-    groupsLoading: boolean;
     documentTypeOptions: { label: string; value: string }[];
     documentTypesLoading: boolean;
     breadcrumbs: { label: string; path?: string }[];
@@ -29,8 +27,6 @@ export const CustomerShowPageView = ({
     customer,
     form,
     loading,
-    commercialGroupOptions,
-    groupsLoading,
     documentTypeOptions,
     documentTypesLoading,
     breadcrumbs,
@@ -49,8 +45,6 @@ export const CustomerShowPageView = ({
                     form={form}
                     customer={customer}
                     loading={loading}
-                    commercialGroupOptions={commercialGroupOptions}
-                    groupsLoading={groupsLoading}
                     documentTypeOptions={documentTypeOptions}
                     documentTypesLoading={documentTypesLoading}
                     onSubmit={onSubmit}

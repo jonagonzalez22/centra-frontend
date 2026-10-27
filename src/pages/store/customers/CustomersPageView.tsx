@@ -7,7 +7,6 @@ import { CustomersSearchBar } from '@/features/store/customers/components/Custom
 import { CustomersTable } from '@/features/store/customers/components/CustomersTable';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
 import type { Customer, CustomersFilters } from '@/features/store/customers/types/customer.types';
-import type { CommercialGroup } from '@/features/store/commercial-groups/types/commercialGroup.types';
 
 interface CustomersPageViewProps {
     title: string;
@@ -19,8 +18,6 @@ interface CustomersPageViewProps {
     pagination: { current: number; total: number; pageSize: number };
     onRefetch: (filters?: CustomersFilters) => void;
     onDelete: (id: string) => Promise<void>;
-    commercialGroups: CommercialGroup[];
-    groupsLoading: boolean;
 }
 
 export const CustomersPageView = ({
@@ -33,8 +30,6 @@ export const CustomersPageView = ({
     pagination,
     onRefetch,
     onDelete,
-    commercialGroups,
-    groupsLoading,
 }: CustomersPageViewProps) => {
     const handleTableChange = (page: number, pageSize: number) => {
         onRefetch({ page, per_page: pageSize });
@@ -72,8 +67,6 @@ export const CustomersPageView = ({
             <CustomersSearchBar
                 loading={loading}
                 refetch={onRefetch}
-                commercialGroups={commercialGroups}
-                groupsLoading={groupsLoading}
             />
 
             {error && (

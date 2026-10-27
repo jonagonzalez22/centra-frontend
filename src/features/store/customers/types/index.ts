@@ -1,6 +1,5 @@
 export type {
     Customer,
-    CustomerCommercialGroup,
     DocumentType,
     CreateCustomerDto,
     UpdateCustomerDto,

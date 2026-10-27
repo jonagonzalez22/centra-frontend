@@ -241,13 +241,6 @@ const menuItems: MenuItem[] = [
                 permission: 'customers.view',
                 role: 'STORE_USER',
             },
-            {
-                label: 'Grupos Comerciales',
-                key: '/tienda/clientes/grupos',
-                context: 'store',
-                permission: 'commercial_groups.view',
-                role: 'STORE_USER',
-            },
         ],
     },
     {

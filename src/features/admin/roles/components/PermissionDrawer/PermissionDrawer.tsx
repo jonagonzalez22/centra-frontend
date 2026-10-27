@@ -118,7 +118,6 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         orders: <ClipboardList size={16} />,
         clients: <UsersRound size={16} />,
         deliveries: <Truck size={16} />,
-        commercial_groups: <UsersRound size={16} />,
         customer_addresses: <MapPinHouse size={16} />,
         customer_contacts: <Phone size={16} />,
         customers: <Contact size={16} />,
