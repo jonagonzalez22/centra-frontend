@@ -79,7 +79,8 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     const hasRole = (allowed: UserRole[]) => roles.some((role) => allowed.includes(role));
     const hasPermission = (permission: string) => user.permissions.includes(permission);
     const hasStoreRole = hasRole(['STORE_ADMIN', 'STORE_USER', 'STORE_DRIVER']);
-    const hasFeatureAccess = (feature: Parameters<typeof hasFeature>[1]) => hasFeature(user, feature);
+    const hasFeatureAccess = (feature: Parameters<typeof hasFeature>[1]) =>
+        hasFeature(user, feature);
     const matches = (pattern: RegExp) => pattern.test(normalizedPath);
 
     if (normalizedPath === '/admin' || normalizedPath === '/admin/dashboard') {
@@ -94,7 +95,11 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     if (matches(/^\/admin\/planes$/)) {
         return hasRole(['SUPER_ADMIN', 'BACKOFFICE_USER']) && hasPermission('plans.view');
     }
-    if (matches(/^\/admin\/configuraciones\/(tipos-de-negocio|funcionalidades|roles|metodos-de-pago)$/)) {
+    if (
+        matches(
+            /^\/admin\/configuraciones\/(tipos-de-negocio|funcionalidades|roles|metodos-de-pago)$/
+        )
+    ) {
         return hasRole(['SUPER_ADMIN', 'BACKOFFICE_USER']) && hasPermission('settings.view');
     }
 
@@ -105,7 +110,9 @@ export function canAccessReturnPath(user: User, path: string): boolean {
         return roles.includes('STORE_DRIVER') && hasPermission('drivers.view');
     }
     if (matches(/^\/tienda\/logistica\/rutas(?:\/[^/]+(?:\/rendicion)?)?$/)) {
-        return hasStoreRole && hasFeatureAccess('deliveries') && hasPermission('logistics.routes.view');
+        return (
+            hasStoreRole && hasFeatureAccess('deliveries') && hasPermission('logistics.routes.view')
+        );
     }
     if (matches(/^\/tienda\/productos$/) || matches(/^\/tienda\/inventario\/movimientos$/)) {
         return hasStoreRole && hasFeatureAccess('inventory') && hasPermission('inventory.view');
@@ -129,7 +136,14 @@ export function canAccessReturnPath(user: User, path: string): boolean {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('orders.view');
     }
     if (matches(/^\/tienda\/configuraciones\/medios-de-pago$/)) {
-        return hasStoreRole && hasFeatureAccess('store_settings') && hasPermission('store_payment_methods.view');
+        return (
+            hasStoreRole &&
+            hasFeatureAccess('store_settings') &&
+            hasPermission('store_payment_methods.view')
+        );
+    }
+    if (matches(/^\/tienda\/configuraciones\/listas-de-precios$/)) {
+        return hasStoreRole && hasFeatureAccess('pos') && hasPermission('price_lists.view');
     }
 
     return false;

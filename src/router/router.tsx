@@ -35,6 +35,7 @@ import { SalesHistoryPage } from '@/pages/store/sales/SalesHistoryPage';
 import { OrdersPage } from '@/pages/store/orders';
 import { OrderEditPage } from '@/pages/store/orders/OrderEditPage';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
+import { PriceListsPage } from '@/pages/store/price-lists/PriceListsPage';
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
 import { RouteDetailPage } from '@/pages/store/logistics/RouteDetailPage';
@@ -126,25 +127,44 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="inventory" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="inventory.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="inventory.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [{ path: 'productos', element: <ProductsPage /> }],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="inventory.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [
-                                    { path: 'productos', element: <ProductsPage /> },
+                                    {
+                                        path: 'inventario/movimientos',
+                                        element: <InventoryMovementsPage />,
+                                    },
                                 ],
                             },
                             {
-                                element: <PermissionRoute permission="inventory.view" redirectTo="/tienda/dashboard" />,
-                                children: [
-                                    { path: 'inventario/movimientos', element: <InventoryMovementsPage /> },
-                                ],
+                                element: (
+                                    <PermissionRoute
+                                        permission="categories.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [{ path: 'categorias', element: <CategoriesPage /> }],
                             },
                             {
-                                element: <PermissionRoute permission="categories.view" redirectTo="/tienda/dashboard" />,
-                                children: [
-                                    { path: 'categorias', element: <CategoriesPage /> },
-                                ],
-                            },
-                            {
-                                element: <PermissionRoute permission="brands.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="brands.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [{ path: 'marcas', element: <BrandsPage /> }],
                             },
                         ],
@@ -153,11 +173,73 @@ export const router = createBrowserRouter([
                     {
                         element: <FeatureRoute feature="purchases" />,
                         children: [
-                            { element: <PermissionRoute permission="purchases.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'compras', element: <PurchasesPage /> }, { path: 'compras/:id', element: <PurchaseDetailPage /> }] },
-                            { element: <PermissionRoute permission="purchases.create" redirectTo="/tienda/compras" />, children: [{ path: 'compras/nueva', element: <PurchaseFormPage /> }] },
-                            { element: <PermissionRoute permission="purchases.edit" redirectTo="/tienda/compras" />, children: [{ path: 'compras/:id/editar', element: <PurchaseFormPage /> }] },
-                            { element: <PermissionRoute permission="purchases.view" redirectTo="/tienda/dashboard" />, children: [{ element: <PermissionRoute permission="purchases.receive" redirectTo="/tienda/compras" />, children: [{ path: 'compras/:id/recibir', element: <PurchaseReceiptPage /> }] }] },
-                            { element: <PermissionRoute permission="suppliers.view" redirectTo="/tienda/dashboard" />, children: [{ path: 'proveedores', element: <SuppliersPage /> }] },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="purchases.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'compras', element: <PurchasesPage /> },
+                                    { path: 'compras/:id', element: <PurchaseDetailPage /> },
+                                ],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="purchases.create"
+                                        redirectTo="/tienda/compras"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'compras/nueva', element: <PurchaseFormPage /> },
+                                ],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="purchases.edit"
+                                        redirectTo="/tienda/compras"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'compras/:id/editar', element: <PurchaseFormPage /> },
+                                ],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="purchases.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    {
+                                        element: (
+                                            <PermissionRoute
+                                                permission="purchases.receive"
+                                                redirectTo="/tienda/compras"
+                                            />
+                                        ),
+                                        children: [
+                                            {
+                                                path: 'compras/:id/recibir',
+                                                element: <PurchaseReceiptPage />,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="suppliers.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [{ path: 'proveedores', element: <SuppliersPage /> }],
+                            },
                         ],
                     },
 
@@ -165,7 +247,12 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="multi_user" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="store_users.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="store_users.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [{ path: 'usuarios', element: <StoreUsersPage /> }],
                             },
                         ],
@@ -175,15 +262,28 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="customers" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="customers.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="customers.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [
                                     { index: true, element: <Navigate to="clientes" replace /> },
                                     { path: 'clientes', element: <CustomersPage /> },
                                     { path: 'clientes/:id', element: <CustomerShowPage /> },
                                     {
-                                        element: <PermissionRoute permission="customers.create" redirectTo="/tienda/clientes" />,
+                                        element: (
+                                            <PermissionRoute
+                                                permission="customers.create"
+                                                redirectTo="/tienda/clientes"
+                                            />
+                                        ),
                                         children: [
-                                            { path: 'clientes/nuevo', element: <CustomersCreatePage /> },
+                                            {
+                                                path: 'clientes/nuevo',
+                                                element: <CustomersCreatePage />,
+                                            },
                                         ],
                                     },
                                 ],
@@ -196,9 +296,7 @@ export const router = createBrowserRouter([
                         children: [
                             {
                                 element: <PermissionRoute permission="cash.view" />,
-                                children: [
-                                    { path: 'caja', element: <CashPage /> },
-                                ],
+                                children: [{ path: 'caja', element: <CashPage /> }],
                             },
                         ],
                     },
@@ -207,8 +305,15 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="pos" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="sales_history.view" redirectTo="/tienda/dashboard" />,
-                                children: [{ path: 'ventas/historial', element: <SalesHistoryPage /> }],
+                                element: (
+                                    <PermissionRoute
+                                        permission="sales_history.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'ventas/historial', element: <SalesHistoryPage /> },
+                                ],
                             },
                             {
                                 element: <PermissionRoute permission="pos.view" />,
@@ -220,14 +325,21 @@ export const router = createBrowserRouter([
                                 ],
                             },
                             {
-                                element: <PermissionRoute permission="orders.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="orders.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [
                                     { path: 'ventas/pedidos', element: <OrdersPage /> },
                                     {
-                                        element: <PermissionRoute
-                                            permission="orders.edit"
-                                            redirectTo="/tienda/ventas/pedidos"
-                                        />,
+                                        element: (
+                                            <PermissionRoute
+                                                permission="orders.edit"
+                                                redirectTo="/tienda/ventas/pedidos"
+                                            />
+                                        ),
                                         children: [
                                             {
                                                 path: 'ventas/pedidos/:id/editar',
@@ -244,11 +356,19 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="deliveries" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="logistics.routes.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="logistics.routes.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [
                                     { path: 'logistica/rutas', element: <RoutesPage /> },
                                     { path: 'logistica/rutas/:id', element: <RouteDetailPage /> },
-                                    { path: 'logistica/rutas/:id/rendicion', element: <RouteReconciliationPage /> },
+                                    {
+                                        path: 'logistica/rutas/:id/rendicion',
+                                        element: <RouteReconciliationPage />,
+                                    },
                                 ],
                             },
                         ],
@@ -258,11 +378,32 @@ export const router = createBrowserRouter([
                         element: <FeatureRoute feature="store_settings" />,
                         children: [
                             {
-                                element: <PermissionRoute permission="store_payment_methods.view" />,
+                                element: (
+                                    <PermissionRoute permission="store_payment_methods.view" />
+                                ),
                                 children: [
                                     {
                                         path: 'configuraciones/medios-de-pago',
                                         element: <StorePaymentMethodsPage />,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        element: <FeatureRoute feature="pos" />,
+                        children: [
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="price_lists.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    {
+                                        path: 'configuraciones/listas-de-precios',
+                                        element: <PriceListsPage />,
                                     },
                                 ],
                             },
@@ -274,11 +415,22 @@ export const router = createBrowserRouter([
                         element: <ProtectedRoute allowedRoles={['STORE_DRIVER']} />,
                         children: [
                             {
-                                element: <PermissionRoute permission="drivers.view" redirectTo="/tienda/dashboard" />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="drivers.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
                                 children: [
                                     { path: 'conductor/rutas', element: <DriverRoutesPage /> },
-                                    { path: 'conductor/ruta/:routeId', element: <RouteSheetPage /> },
-                                    { path: 'conductor/parada/:routeId/:stopId', element: <StopDetailPage /> },
+                                    {
+                                        path: 'conductor/ruta/:routeId',
+                                        element: <RouteSheetPage />,
+                                    },
+                                    {
+                                        path: 'conductor/parada/:routeId/:stopId',
+                                        element: <StopDetailPage />,
+                                    },
                                 ],
                             },
                         ],

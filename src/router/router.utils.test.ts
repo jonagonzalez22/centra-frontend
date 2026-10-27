@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { canAccessReturnPath, getHomePath, getPageNavigation } from './router.utils';
+import {
+    canAccessReturnPath,
+    getHomePath,
+    getPageNavigation,
+} from './router.utils';
 import type { User } from '@/entities/User';
 
 const user = (overrides: Partial<User> = {}): User => ({
@@ -49,5 +53,33 @@ describe('router utils', () => {
         expect(canAccessReturnPath(user(), '/')).toBe(false);
         expect(canAccessReturnPath(user(), '/unknown')).toBe(false);
         expect(getHomePath(['STORE_ADMIN'])).toBe('/tienda');
+    });
+
+    test('protects each store settings route with its own feature and permission', () => {
+        const priceListsOnly = user({
+            roles: ['STORE_ADMIN'],
+            permissions: ['price_lists.view'],
+            features: [{ code: 'pos', limit: null }],
+        });
+
+        expect(
+            canAccessReturnPath(priceListsOnly, '/tienda/configuraciones/listas-de-precios')
+        ).toBe(true);
+        expect(
+            canAccessReturnPath(priceListsOnly, '/tienda/configuraciones/medios-de-pago')
+        ).toBe(false);
+
+        const paymentMethodsOnly = user({
+            roles: ['STORE_ADMIN'],
+            permissions: ['store_payment_methods.view'],
+            features: [{ code: 'store_settings', limit: null }],
+        });
+
+        expect(
+            canAccessReturnPath(paymentMethodsOnly, '/tienda/configuraciones/medios-de-pago')
+        ).toBe(true);
+        expect(
+            canAccessReturnPath(paymentMethodsOnly, '/tienda/configuraciones/listas-de-precios')
+        ).toBe(false);
     });
 });

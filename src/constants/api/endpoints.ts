@@ -26,7 +26,8 @@ export const API_ENDPOINTS = {
         },
         PRODUCTS: {
             URL: '/v1/store/products',
-            PURCHASE_PRICE_HISTORY: (productId: string) => `/v1/store/products/${productId}/purchase-price-history`,
+            PURCHASE_PRICE_HISTORY: (productId: string) =>
+                `/v1/store/products/${productId}/purchase-price-history`,
         },
         USERS: {
             URL: '/v1/store/users',
@@ -41,6 +42,9 @@ export const API_ENDPOINTS = {
         },
         PRODUCTS_SEARCH: {
             URL: '/v1/store/products/search',
+        },
+        PRICE_LISTS: {
+            URL: '/v1/store/price-lists',
         },
         CUSTOMERS: {
             URL: '/v1/store/customers',

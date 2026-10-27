@@ -115,6 +115,7 @@ const getResourceIcon = (resource: string): React.ReactNode => {
         pos: <ShoppingCart size={16} />,
         sales: <ShoppingCart size={16} />,
         sales_history: <ClipboardList size={16} />,
+        price_lists: <CreditCard size={16} />,
         orders: <ClipboardList size={16} />,
         clients: <UsersRound size={16} />,
         deliveries: <Truck size={16} />,

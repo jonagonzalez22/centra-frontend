@@ -165,6 +165,30 @@ describe('SidebarMenu', () => {
         expect(screen.queryByText('Inventario')).not.toBeInTheDocument();
     });
 
+    test('shows only Price Lists under Configuraciones with its own feature and permission', () => {
+        useStoreUser({ permissions: ['price_lists.view'], features: ['pos'] });
+        renderWithRouter(
+            <SidebarMenu
+                isMobile={false}
+                isOpen={false}
+                selectedKey="/tienda/configuraciones/listas-de-precios"
+            />
+        );
+
+        expect(screen.getByText('Configuraciones')).toBeInTheDocument();
+        expect(screen.getByText('Listas de precios')).toBeInTheDocument();
+        expect(screen.queryByText('Medios de pago')).not.toBeInTheDocument();
+    });
+
+    test('does not render Configuraciones when none of its children is available', () => {
+        useStoreUser({ permissions: [], features: [] });
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/dashboard" />
+        );
+
+        expect(screen.queryByText('Configuraciones')).not.toBeInTheDocument();
+    });
+
     test('shows Compras > Listado only with the purchases feature and purchases.view', async () => {
         const user = userEvent.setup();
         useStoreUser({ permissions: ['purchases.view'], features: ['purchases'] });

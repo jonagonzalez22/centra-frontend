@@ -1,0 +1,67 @@
+.priceListsFilters {
+    margin-bottom: 16px;
+}
+.priceListsFiltersRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+.priceListsFiltersRow > * {
+    min-width: 190px;
+}
+.priceListsFiltersRow > .ant-form-item {
+    margin-bottom: 0;
+}
+.priceListsFilterAction {
+    display: flex;
+    align-items: flex-end;
+}
+.priceListsActions,
+.priceListCardActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.priceListsMobile {
+    display: none;
+}
+.priceListCard {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.priceListCardDiscount {
+    margin-top: 4px;
+    color: #64748b;
+}
+.priceListsFormModal .ant-modal-body {
+    padding-block: 16px;
+}
+.priceListsFormModal .ant-form-item {
+    margin-bottom: 16px;
+}
+.priceListsFormModal .ant-form-item:last-child {
+    margin-bottom: 0;
+}
+.priceListsFormModal .ant-modal-footer {
+    margin-top: 16px;
+}
+@media (max-width: 767px) {
+    .priceListsDesktop {
+        display: none;
+    }
+    .priceListsMobile {
+        display: block;
+    }
+    .priceListsFiltersRow > * {
+        width: 100%;
+    }
+    .priceListsFilterAction {
+        align-items: flex-start;
+    }
+}

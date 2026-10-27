@@ -205,8 +205,22 @@ const menuItems: MenuItem[] = [
         feature: 'purchases',
         role: 'STORE_USER',
         children: [
-            { label: 'Listado', key: '/tienda/compras', context: 'store', feature: 'purchases', permission: 'purchases.view', role: 'STORE_USER' },
-            { label: 'Proveedores', key: '/tienda/proveedores', context: 'store', feature: 'purchases', permission: 'suppliers.view', role: 'STORE_USER' },
+            {
+                label: 'Listado',
+                key: '/tienda/compras',
+                context: 'store',
+                feature: 'purchases',
+                permission: 'purchases.view',
+                role: 'STORE_USER',
+            },
+            {
+                label: 'Proveedores',
+                key: '/tienda/proveedores',
+                context: 'store',
+                feature: 'purchases',
+                permission: 'suppliers.view',
+                role: 'STORE_USER',
+            },
         ],
     },
     {
@@ -248,7 +262,6 @@ const menuItems: MenuItem[] = [
         key: '/tienda/configuraciones/parent',
         icon: <Settings size={ICON_SIZE} />,
         context: 'store',
-        feature: 'store_settings',
         role: 'STORE_USER',
         children: [
             {
@@ -257,6 +270,14 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'store_settings',
                 permission: 'store_payment_methods.view',
+                role: 'STORE_USER',
+            },
+            {
+                label: 'Listas de precios',
+                key: '/tienda/configuraciones/listas-de-precios',
+                context: 'store',
+                feature: 'pos',
+                permission: 'price_lists.view',
                 role: 'STORE_USER',
             },
         ],

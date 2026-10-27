@@ -1,6 +1,19 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { message, Spin } from 'antd';
-import { Shield, Store, User as UserIcon, Package, Tag, ShoppingCart, Truck, Wallet, ClipboardList, CreditCard, Globe, Settings } from 'lucide-react';
+import {
+    Shield,
+    Store,
+    User as UserIcon,
+    Package,
+    Tag,
+    ShoppingCart,
+    Truck,
+    Wallet,
+    ClipboardList,
+    CreditCard,
+    Globe,
+    Settings,
+} from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
 import { Checkbox } from '@/components/Checkbox';
@@ -41,6 +54,7 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
     Deliveries: <Truck size={16} />,
     Caja: <Wallet size={16} />,
     'Medios de pago': <CreditCard size={16} />,
+    'Listas de precios': <CreditCard size={16} />,
     Geografía: <Globe size={16} />,
     Configuraciones: <Settings size={16} />,
 };
@@ -89,10 +103,12 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, user }: PermissionD
 
         Object.entries(catalog).forEach(([groupName, items]) => {
             if (Array.isArray(items)) {
-                const entries: PermissionEntry[] = items.map((item: PermissionCatalogGroupItem) => ({
-                    code: item.name,
-                    name: item.label,
-                }));
+                const entries: PermissionEntry[] = items.map(
+                    (item: PermissionCatalogGroupItem) => ({
+                        code: item.name,
+                        name: item.label,
+                    })
+                );
 
                 groups[groupName] = {
                     key: groupName,
