@@ -45,15 +45,30 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
-      <div className="lg:col-span-2 space-y-4">
-        <POSProductSearch />
-        <Card title="Productos">
+    // Desktop: viewport minus the 4rem app header and 3rem vertical content padding.
+    <div className="grid min-h-0 grid-cols-1 gap-4 lg:h-[calc(100vh-7rem)] lg:grid-cols-3">
+      <div className="flex min-h-0 flex-col gap-4 lg:col-span-2">
+        <div className="shrink-0">
+          <POSProductSearch />
+        </div>
+        <Card
+          title="Productos"
+          className="min-h-0 lg:flex lg:flex-1 lg:flex-col"
+          styles={{
+            body: {
+              display: 'flex',
+              flex: 1,
+              flexDirection: 'column',
+              minHeight: 0,
+              overflow: 'hidden',
+            },
+          }}
+        >
           <POSCart />
         </Card>
       </div>
 
-      <div className="lg:col-span-1 space-y-4">
+      <div className="space-y-4 lg:col-span-1 lg:self-start">
         <Card title="Configuración">
           <POSOperationConfig />
         </Card>

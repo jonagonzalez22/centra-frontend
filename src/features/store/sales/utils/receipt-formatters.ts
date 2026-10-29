@@ -18,3 +18,30 @@ export const formatCuit = (cuit: string): string => {
 
   return `${cuit.slice(0, 2)}-${cuit.slice(2, 10)}-${cuit.slice(10)}`;
 };
+
+/**
+ * The receipt API supplies these fields from the operation-item snapshot.
+ * This deliberately receives no current PriceList data.
+ */
+export const formatReceiptDiscountLabel = (
+  priceListName?: string | null,
+  discountPercentage?: number
+): string => {
+  if (priceListName && discountPercentage !== undefined) {
+    return `${priceListName} · ${new Intl.NumberFormat('es-AR', {
+      maximumFractionDigits: 2,
+    }).format(discountPercentage)}%`;
+  }
+
+  return priceListName ?? 'Descuento aplicado';
+};
+
+/**
+ * Only combines persisted monetary components for presentation. Commercial
+ * rounding is performed and stored by the backend.
+ */
+export const receiptItemFinalAmount = (
+  subtotal: number,
+  discountAmount: number,
+  taxAmount: number
+): number => Math.round((subtotal - discountAmount + taxAmount) * 100) / 100;

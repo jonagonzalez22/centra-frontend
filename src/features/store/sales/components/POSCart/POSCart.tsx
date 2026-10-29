@@ -1,12 +1,13 @@
 import { Button, Select, Table, message } from 'antd';
 import { Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import { QuantityInput } from '@/components/QuantityInput';
 import { usePOSStore } from '../../stores/usePOSStore';
 import type { POSItem } from '../../interfaces/sale.interface';
 import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit, isMultipleOfDecimalStrings, isPositiveDecimal } from '@/utils/quantity';
 import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
+import './POSCart.css';
 
 export const POSCart: React.FC = () => {
   const items = usePOSStore((s) => s.items);
@@ -15,6 +16,7 @@ export const POSCart: React.FC = () => {
   const priceLists = usePOSStore((s) => s.available_price_lists);
   const changeItemPriceList = usePOSStore((s) => s.changeItemPriceList);
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const changeQuantity = (item: POSItem, value: string | null) => {
     if (value === null) return;
@@ -108,7 +110,7 @@ export const POSCart: React.FC = () => {
       title: 'Cant.',
       dataIndex: 'quantity',
       key: 'quantity',
-      width: 150,
+      width: 170,
       render: (_, record) => {
         const canDecrease = compareDecimalStrings(record.quantity, record.sale_quantity_step) > 0;
         const nextQuantity = addDecimalStrings(record.quantity, record.sale_quantity_step);
@@ -136,7 +138,7 @@ export const POSCart: React.FC = () => {
           increaseDisabled={!canIncrease}
           unitSymbol={record.stock_measurement_unit_symbol}
           unitClassName="text-xs text-gray-500"
-          className="w-16 md:w-10 [&_.ant-input-number-input]:text-center"
+          className="w-20 [&_.ant-input-number-input]:text-center"
         />;
       },
     },
@@ -180,13 +182,17 @@ export const POSCart: React.FC = () => {
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={items}
-      rowKey="line_key"
-      pagination={false}
-      size="small"
-      scroll={{ x: 'max-content' }}
-    />
+    <div ref={scrollContainerRef} className="pos-cart-scroll min-h-0 lg:h-full lg:flex-1">
+      <Table
+        className="pos-cart-table"
+        columns={columns}
+        dataSource={items}
+        rowKey="line_key"
+        pagination={false}
+        size="small"
+        scroll={{ x: 'max-content' }}
+        sticky={{ getContainer: () => scrollContainerRef.current ?? document.body }}
+      />
+    </div>
   );
 };

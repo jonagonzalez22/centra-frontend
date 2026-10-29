@@ -29,6 +29,15 @@ const product = {
     stock_measurement_unit_symbol: 'u',
 };
 
+const liquidProduct = {
+    ...product,
+    id: 'bleach-1',
+    name: 'Cloro suelto',
+    commercial_available_quantity: '100.0000',
+    sale_quantity_step: '0.2500',
+    stock_measurement_unit_symbol: 'L',
+};
+
 const lists = [
     { id: 'wholesale-id', name: 'Mayorista', discount_percentage: '10.00', is_active: true, created_at: '', updated_at: '' },
     { id: 'distributor-id', name: 'Distribuidor', discount_percentage: '15.00', is_active: true, created_at: '', updated_at: '' },
@@ -42,9 +51,15 @@ beforeEach(() => {
 });
 
 test('shows the line selector with virtual Common and active lists and changes only that line', async () => {
-    render(<POSCart />);
+    const { container } = render(<POSCart />);
 
     const selectors = screen.getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
+    expect(container.querySelector('.pos-cart-scroll')).toHaveClass(
+        'min-h-0',
+        'lg:h-full',
+        'lg:flex-1'
+    );
+    expect(container.querySelector('.pos-cart-table')).toBeInTheDocument();
     expect(selectors).toHaveLength(1);
     expect(screen.getByRole('option', { name: 'Común' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Distribuidor · 15%' })).toBeInTheDocument();
@@ -96,4 +111,26 @@ test('merges a changed line into the matching line and updates operation totals 
     expect(screen.getByText('$75.000')).toBeInTheDocument();
     expect(screen.getByText('-$7.500')).toBeInTheDocument();
     expect(screen.getAllByText('$67.500')).toHaveLength(2);
+});
+
+test.each([
+    ['1.0000', '1'],
+    ['5.0000', '5'],
+    ['0.5000', '0,5'],
+    ['0.2500', '0,25'],
+    ['10.5000', '10,5'],
+    ['100.0000', '100'],
+])('renders the complete localized quantity %s as %s in the POS stepper', (quantity, displayedQuantity) => {
+    const store = usePOSStore.getState();
+    store.resetPOS();
+    store.setAvailablePriceLists(lists);
+    store.addItem(liquidProduct);
+    store.updateQuantity('bleach-1:common', quantity);
+
+    render(<POSCart />);
+
+    const input = screen.getByRole('spinbutton', { name: 'Cantidad de Cloro suelto' });
+    expect(input).toHaveValue(displayedQuantity);
+    expect(input.closest('.ant-input-number')).toHaveClass('w-20');
+    expect(screen.getByText('L')).toBeInTheDocument();
 });

@@ -159,6 +159,9 @@ export interface ReceiptItem {
   quantity: DecimalString;
   unit_price: number;
   subtotal: number;
+  price_list_id?: string | null;
+  price_list_name?: string | null;
+  discount_percentage?: number;
   discount_amount: number;
   tax_amount: number;
   measurement_unit?: HistoricalMeasurementUnit | null;

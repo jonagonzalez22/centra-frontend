@@ -90,6 +90,7 @@ test('omits the customer, discount and taxes when the receipt does not contain t
             receipt={{
                 ...receipt,
                 customer: null,
+                items: receipt.items.map((item) => ({ ...item, discount_amount: 0 })),
                 totals: { ...receipt.totals, discount: 0, tax: 0 },
             }}
         />
@@ -98,6 +99,64 @@ test('omits the customer, discount and taxes when the receipt does not contain t
     expect(screen.queryByText('Cliente:')).not.toBeInTheDocument();
     expect(screen.queryByText('Descuento')).not.toBeInTheDocument();
     expect(screen.queryByText('Impuestos')).not.toBeInTheDocument();
+});
+
+test('shows the persisted base, price-list discount and final amount for a discounted line', () => {
+    render(
+        <TicketReceipt
+            receipt={{
+                ...receipt,
+                items: [
+                    {
+                        product_name: 'Esponja cocina',
+                        quantity: '2.0000',
+                        unit_price: 600,
+                        subtotal: 1200,
+                        price_list_id: 'mayorista-historica',
+                        price_list_name: 'Mayorista',
+                        discount_percentage: 10,
+                        discount_amount: 120,
+                        tax_amount: 0,
+                    },
+                ],
+                totals: {
+                    subtotal: 1200,
+                    tax: 0,
+                    discount: 120,
+                    total: 1080,
+                    paid_amount: 1080,
+                    pending_amount: 0,
+                },
+            }}
+        />
+    );
+
+    expect(screen.getByText(/^2 x/)).toBeInTheDocument();
+    expect(screen.getByText('Mayorista · 10%')).toBeInTheDocument();
+    expect(screen.getAllByText(/120,00/)).toHaveLength(2);
+    expect(screen.getAllByText(/1.080,00/)).toHaveLength(2);
+});
+
+test('does not add a per-line discount row when the persisted discount is zero', () => {
+    render(
+        <TicketReceipt
+            receipt={{
+                ...receipt,
+                items: [
+                    {
+                        ...receipt.items[0],
+                        price_list_name: 'Mayorista',
+                        discount_percentage: 10,
+                        discount_amount: 0,
+                    },
+                ],
+                totals: { ...receipt.totals, discount: 0 },
+            }}
+        />
+    );
+
+    expect(screen.queryByText('Mayorista · 10%')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Total$/)).not.toBeInTheDocument();
 });
 
 test('keeps long product and payment labels separate from large monetary amounts', () => {

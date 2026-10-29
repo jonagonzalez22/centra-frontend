@@ -1,0 +1,8 @@
+@media (min-width: 1024px) {
+    .pos-cart-scroll {
+        height: 100%;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+}

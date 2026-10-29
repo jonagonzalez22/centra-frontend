@@ -1,7 +1,12 @@
 import { formatCurrencyWithCents } from '@/utils/formatters';
 import { formatQuantityWithUnit } from '@/utils/quantity';
 import type { ReceiptData } from '../../interfaces/sale.interface';
-import { formatCuit, formatReceiptOccurredAt } from '../../utils/receipt-formatters';
+import {
+    formatCuit,
+    formatReceiptDiscountLabel,
+    formatReceiptOccurredAt,
+    receiptItemFinalAmount,
+} from '../../utils/receipt-formatters';
 
 interface TicketReceiptProps {
     receipt: ReceiptData;
@@ -71,6 +76,33 @@ export const TicketReceipt: React.FC<TicketReceiptProps> = ({ receipt }) => {
                                 {formatCurrencyWithCents(item.subtotal)}
                             </span>
                         </div>
+                        {item.discount_amount > 0 && (
+                            <>
+                                <div className="ticket-receipt__item-line ticket-receipt__item-discount">
+                                    <span className="ticket-receipt__item-meta">
+                                        {formatReceiptDiscountLabel(
+                                            item.price_list_name,
+                                            item.discount_percentage
+                                        )}
+                                    </span>
+                                    <span className="ticket-receipt__item-subtotal">
+                                        -{formatCurrencyWithCents(item.discount_amount)}
+                                    </span>
+                                </div>
+                                <div className="ticket-receipt__item-line ticket-receipt__item-final">
+                                    <strong>Total</strong>
+                                    <strong>
+                                        {formatCurrencyWithCents(
+                                            receiptItemFinalAmount(
+                                                item.subtotal,
+                                                item.discount_amount,
+                                                item.tax_amount
+                                            )
+                                        )}
+                                    </strong>
+                                </div>
+                            </>
+                        )}
                     </div>
                 ))}
             </section>
