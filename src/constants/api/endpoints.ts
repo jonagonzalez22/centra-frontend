@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
         },
         PRICE_LISTS: {
             URL: '/v1/store/price-lists',
+            ACTIVE: '/v1/store/price-lists/active',
         },
         CUSTOMERS: {
             URL: '/v1/store/customers',
@@ -97,6 +98,9 @@ export const API_ENDPOINTS = {
             URL: '/v1/store/orders',
             EDITABILITY: (id: string) => `/v1/store/orders/${id}/editability`,
             PAYMENTS: (id: string) => `/v1/store/orders/${id}/payments`,
+            ITEMS: (id: string) => `/v1/store/orders/${id}/items`,
+            ITEM: (id: string, itemId: string) => `/v1/store/orders/${id}/items/${itemId}`,
+            ITEM_PRICE_LIST: (id: string, itemId: string) => `/v1/store/orders/${id}/items/${itemId}/price-list`,
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
             CANCEL_PENDING_DELIVERY: (id: string) =>

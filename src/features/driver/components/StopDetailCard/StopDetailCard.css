@@ -39,6 +39,12 @@
     opacity: 0.75;
 }
 
+.stopDetailCard--readonly {
+    border-color: #e8e8e8;
+    background-color: white;
+    box-shadow: none;
+}
+
 /* Info icon for not-loaded items — neutral, not tappable */
 .stopDetailCheckInfo {
     width: 32px;
@@ -241,6 +247,15 @@
 
 .stopDetailReasonSelect {
     width: 100%;
+}
+
+.stopDetailCardReason--readonly {
+    text-align: center;
+}
+
+.stopDetailPersistedReason {
+    font-size: 13px;
+    color: #595959;
 }
 
 .stopDetailReasonSelect .ant-select-selector {

@@ -26,6 +26,8 @@ export const StopDetailFooter = ({
 }: StopDetailFooterProps) => {
     const isPrimaryDisabled = !canDeliver || !canConfirm;
 
+    if (isCompleted) return null;
+
     return (
         <div className="stopDetailBottomBar">
             <div className="stopDetailButtonsRow">
@@ -43,7 +45,9 @@ export const StopDetailFooter = ({
                 )}
 
                 {/* Primary — "Entregar todo" / "Confirmar entrega parcial" */}
-                <div className={`stopDetailPrimaryWrapper ${isPrimaryDisabled ? 'stopDetailPrimaryWrapper--disabled' : ''}`}>
+                <div
+                    className={`stopDetailPrimaryWrapper ${isPrimaryDisabled ? 'stopDetailPrimaryWrapper--disabled' : ''}`}
+                >
                     <Button
                         type="primary"
                         size="large"
@@ -57,18 +61,16 @@ export const StopDetailFooter = ({
                 </div>
 
                 {/* Tertiary — "No se pudo entregar" */}
-                {!isCompleted && (
-                    <div className="stopDetailTertiaryWrapper">
-                        <button
-                            className="stopDetailFailedLink"
-                            onClick={onFailedDeliveryClick}
-                            disabled={!canDeliver}
-                            type="button"
-                        >
-                            No se pudo entregar
-                        </button>
-                    </div>
-                )}
+                <div className="stopDetailTertiaryWrapper">
+                    <button
+                        className="stopDetailFailedLink"
+                        onClick={onFailedDeliveryClick}
+                        disabled={!canDeliver}
+                        type="button"
+                    >
+                        No se pudo entregar
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -170,9 +170,13 @@ export const StopDetailPageView = ({
                     route_stop_item_id: item.route_stop_item_id,
                     quantity_delivered:
                         itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
-                    quantity_released_for_extra_sale: itemsState.quantitiesReleased[item.id] ?? '0.0000',
+                    quantity_released_for_extra_sale:
+                        itemsState.quantitiesReleased[item.id] ?? '0.0000',
                     rejection_reason_id:
-                        compareDecimalStrings(itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded, item.quantity_loaded) < 0
+                        compareDecimalStrings(
+                            itemsState.quantitiesDelivered[item.id] ?? item.quantity_loaded,
+                            item.quantity_loaded
+                        ) < 0
                             ? (itemsState.rejectionReasonsByItem[item.id] ?? null)
                             : null,
                 };
@@ -232,7 +236,7 @@ export const StopDetailPageView = ({
                     <div className="stopDetailProductsLabel">
                         Productos a entregar ({stop.items.length})
                     </div>
-                    {stop.items.length > 0 && (
+                    {!isCompleted && stop.items.length > 0 && (
                         <div className="stopDetailProgress">
                             {itemsState.progressCount.completed} de {itemsState.progressCount.total}{' '}
                             revisados

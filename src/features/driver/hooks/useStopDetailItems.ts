@@ -2,7 +2,14 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { StopDetailItem, RouteStopStatus } from '../interfaces/driver.interface';
 import type { RejectionReason } from '../services/driver.service';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, isMultipleOfDecimalStrings, minDecimalStrings, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
+import {
+    addDecimalStrings,
+    compareDecimalStrings,
+    isMultipleOfDecimalStrings,
+    minDecimalStrings,
+    normalizeDecimalString,
+    subtractDecimalStrings,
+} from '@/utils/quantity';
 
 // ── Types ────────────────────────────────────────────────────────────────────────
 
@@ -74,23 +81,36 @@ export const useStopDetailItems = (
     options: UseStopDetailItemsOptions
 ): UseStopDetailItemsReturn => {
     const { items, rejectionReasons, stopStatus, completing } = options;
+    const usesPersistedDelivery =
+        stopStatus === 'completed' || stopStatus === 'failed' || stopStatus === 'cancelled';
 
     // ── State ──────────────────────────────────────────────────────────────
-    const [quantitiesDelivered, setQuantitiesDelivered] = useState<Record<string, DecimalString>>(() => {
-        const initial: Record<string, DecimalString> = {};
-        if (items) {
-            items.forEach((item) => {
-                // quantity_loaded = 0 items stay at 0 (not loaded in depot — never editable)
-                initial[item.id] = item.quantity_loaded;
-            });
+    const [quantitiesDelivered, setQuantitiesDelivered] = useState<Record<string, DecimalString>>(
+        () => {
+            const initial: Record<string, DecimalString> = {};
+            if (items) {
+                items.forEach((item) => {
+                    initial[item.id] = usesPersistedDelivery
+                        ? item.quantity_delivered
+                        : item.quantity_loaded;
+                });
+            }
+            return initial;
         }
-        return initial;
-    });
+    );
 
     const [rejectionReasonsByItem, setRejectionReasonsByItem] = useState<Record<string, string>>(
         {}
     );
-    const [quantitiesReleased, setQuantitiesReleased] = useState<Record<string, DecimalString>>({});
+    const [quantitiesReleased, setQuantitiesReleased] = useState<Record<string, DecimalString>>(
+        () => {
+            if (!usesPersistedDelivery || !items) return {};
+
+            return Object.fromEntries(
+                items.map((item) => [item.id, item.quantity_released_for_extra_sale])
+            );
+        }
+    );
     const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(new Set());
     const [touchedReasonIds, setTouchedReasonIds] = useState<Set<string>>(new Set());
     const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
@@ -109,14 +129,30 @@ export const useStopDetailItems = (
             let hasNewItems = false;
             items.forEach((item) => {
                 if (!(item.id in next)) {
-                    // quantity_loaded = 0 items stay at 0 (not loaded in depot — never editable)
-                    next[item.id] = item.quantity_loaded;
+                    next[item.id] = usesPersistedDelivery
+                        ? item.quantity_delivered
+                        : item.quantity_loaded;
                     hasNewItems = true;
                 }
             });
             return hasNewItems ? next : prev;
         });
-    }, [items]);
+    }, [items, usesPersistedDelivery]);
+
+    useEffect(() => {
+        if (!items || !usesPersistedDelivery) return;
+        setQuantitiesReleased((prev) => {
+            const next = { ...prev };
+            let hasNewItems = false;
+            items.forEach((item) => {
+                if (!(item.id in next)) {
+                    next[item.id] = item.quantity_released_for_extra_sale;
+                    hasNewItems = true;
+                }
+            });
+            return hasNewItems ? next : prev;
+        });
+    }, [items, usesPersistedDelivery]);
 
     // Reset all item state when the set of items changes (navigating between stops)
     useEffect(() => {
@@ -232,12 +268,23 @@ export const useStopDetailItems = (
 
             const isNotLoaded = compareDecimalStrings(item.quantity_loaded, '0.0000') === 0;
             const originalQty =
-                compareDecimalStrings(item.quantity_loaded, '0.0000') > 0 ? item.quantity_loaded : item.quantity_planned;
-            const deliveredQty = isNotLoaded ? '0.0000' : (quantitiesDelivered[itemId] ?? originalQty);
+                compareDecimalStrings(item.quantity_loaded, '0.0000') > 0
+                    ? item.quantity_loaded
+                    : item.quantity_planned;
+            const deliveredQty = isNotLoaded
+                ? '0.0000'
+                : (quantitiesDelivered[itemId] ?? originalQty);
             const isReduced = !isNotLoaded && compareDecimalStrings(deliveredQty, originalQty) < 0;
-            const remainingQty = compareDecimalStrings(originalQty, deliveredQty) > 0 ? subtractDecimalStrings(originalQty, deliveredQty) : '0.0000';
-            const releasedQty = minDecimalStrings(quantitiesReleased[itemId] ?? '0.0000', remainingQty);
-            const isComplete = !isNotLoaded && compareDecimalStrings(deliveredQty, originalQty) === 0;
+            const remainingQty =
+                compareDecimalStrings(originalQty, deliveredQty) > 0
+                    ? subtractDecimalStrings(originalQty, deliveredQty)
+                    : '0.0000';
+            const releasedQty = minDecimalStrings(
+                quantitiesReleased[itemId] ?? '0.0000',
+                remainingQty
+            );
+            const isComplete =
+                !isNotLoaded && compareDecimalStrings(deliveredQty, originalQty) === 0;
             const isConfirmed = confirmedIds.has(itemId);
             const hasValidReason =
                 isReduced &&
@@ -261,10 +308,18 @@ export const useStopDetailItems = (
 
             // quantity_loaded = 0 items are never editable
             const step = item.sale_quantity_step ?? '1.0000';
-            const canDecrement = canDeliver && !isNotLoaded && compareDecimalStrings(deliveredQty, step) >= 0;
-            const canIncrement = canDeliver && !isNotLoaded && compareDecimalStrings(addDecimalStrings(deliveredQty, step), originalQty) <= 0;
-            const canDecrementReleased = canDeliver && isReduced && compareDecimalStrings(releasedQty, step) >= 0;
-            const canIncrementReleased = canDeliver && isReduced && compareDecimalStrings(addDecimalStrings(releasedQty, step), remainingQty) <= 0;
+            const canDecrement =
+                canDeliver && !isNotLoaded && compareDecimalStrings(deliveredQty, step) >= 0;
+            const canIncrement =
+                canDeliver &&
+                !isNotLoaded &&
+                compareDecimalStrings(addDecimalStrings(deliveredQty, step), originalQty) <= 0;
+            const canDecrementReleased =
+                canDeliver && isReduced && compareDecimalStrings(releasedQty, step) >= 0;
+            const canIncrementReleased =
+                canDeliver &&
+                isReduced &&
+                compareDecimalStrings(addDecimalStrings(releasedQty, step), remainingQty) <= 0;
             const selectedReason = rejectionReasons.find(
                 (reason) => reason.id === rejectionReasonsByItem[itemId]
             );
@@ -309,9 +364,21 @@ export const useStopDetailItems = (
         (itemId: string, value: DecimalString | number) => {
             const normalizedValue = normalizeDecimalString(value);
             const item = items?.find((candidate) => candidate.id === itemId);
-            if (!item || !isMultipleOfDecimalStrings(normalizedValue, item.sale_quantity_step ?? '1.0000') || compareDecimalStrings(normalizedValue, item.quantity_loaded) > 0) return;
+            if (
+                !item ||
+                !isMultipleOfDecimalStrings(normalizedValue, item.sale_quantity_step ?? '1.0000') ||
+                compareDecimalStrings(normalizedValue, item.quantity_loaded) > 0
+            )
+                return;
             // quantity_loaded = 0 items are never editable
-            if (items && compareDecimalStrings(items.find((i) => i.id === itemId)?.quantity_loaded ?? '0.0000', '0.0000') === 0) return;
+            if (
+                items &&
+                compareDecimalStrings(
+                    items.find((i) => i.id === itemId)?.quantity_loaded ?? '0.0000',
+                    '0.0000'
+                ) === 0
+            )
+                return;
 
             // Reset confirmation when quantity changes
             setConfirmedIds((prev) => {
@@ -325,9 +392,10 @@ export const useStopDetailItems = (
                 [itemId]: normalizedValue,
             }));
             if (item) {
-                const remaining = compareDecimalStrings(item.quantity_loaded, normalizedValue) > 0
-                    ? subtractDecimalStrings(item.quantity_loaded, normalizedValue)
-                    : '0.0000';
+                const remaining =
+                    compareDecimalStrings(item.quantity_loaded, normalizedValue) > 0
+                        ? subtractDecimalStrings(item.quantity_loaded, normalizedValue)
+                        : '0.0000';
                 setQuantitiesReleased((prev) => ({
                     ...prev,
                     [itemId]: minDecimalStrings(prev[itemId] ?? '0.0000', remaining),
@@ -343,13 +411,16 @@ export const useStopDetailItems = (
             if (!item) return;
             if (!isMultipleOfDecimalStrings(value, item.sale_quantity_step ?? '1.0000')) return;
             const delivered = quantitiesDelivered[itemId] ?? item.quantity_loaded;
-            const remaining = compareDecimalStrings(item.quantity_loaded, delivered) > 0
-                ? subtractDecimalStrings(item.quantity_loaded, delivered)
-                : '0.0000';
+            const remaining =
+                compareDecimalStrings(item.quantity_loaded, delivered) > 0
+                    ? subtractDecimalStrings(item.quantity_loaded, delivered)
+                    : '0.0000';
             setQuantitiesReleased((prev) => ({
                 ...prev,
                 [itemId]: minDecimalStrings(
-                    compareDecimalStrings(normalizeDecimalString(value), '0.0000') < 0 ? '0.0000' : normalizeDecimalString(value),
+                    compareDecimalStrings(normalizeDecimalString(value), '0.0000') < 0
+                        ? '0.0000'
+                        : normalizeDecimalString(value),
                     remaining
                 ),
             }));
@@ -394,10 +465,13 @@ export const useStopDetailItems = (
             });
             const item = items?.find((candidate) => candidate.id === itemId);
             const reason = rejectionReasons.find((candidate) => candidate.id === reasonId);
-            const delivered = item ? (quantitiesDelivered[itemId] ?? item.quantity_loaded) : '0.0000';
-            const remaining = item && compareDecimalStrings(item.quantity_loaded, delivered) > 0
-                ? subtractDecimalStrings(item.quantity_loaded, delivered)
+            const delivered = item
+                ? (quantitiesDelivered[itemId] ?? item.quantity_loaded)
                 : '0.0000';
+            const remaining =
+                item && compareDecimalStrings(item.quantity_loaded, delivered) > 0
+                    ? subtractDecimalStrings(item.quantity_loaded, delivered)
+                    : '0.0000';
             setQuantitiesReleased((prev) => ({
                 ...prev,
                 [itemId]: reason?.suggest_extra_sale ? remaining : '0.0000',

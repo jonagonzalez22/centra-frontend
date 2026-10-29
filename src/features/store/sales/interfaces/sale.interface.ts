@@ -1,14 +1,20 @@
 import type { Customer } from '@features/store/customers/types/customer.types';
 import type { DecimalString } from '@/types/decimal';
 import type { HistoricalMeasurementUnit } from '@/types/measurement-unit';
+import type { PriceList } from '@/features/store/price-lists/types/priceList.types';
 
 export interface POSItem {
+  line_key: string;
   product_id: string;
   name: string;
   sku: string;
   barcode: string | null;
   quantity: DecimalString;
   price: number;
+  price_list_id: string | null;
+  price_list_name: string | null;
+  discount_percentage: number;
+  discount_amount: number;
   subtotal: number;
   sale_quantity_step: DecimalString;
   commercial_available_quantity: DecimalString;
@@ -29,7 +35,8 @@ export interface CreateOperationDTO {
   items: Array<{
     product_id: string;
     quantity: DecimalString;
-    price: number;
+    price?: number;
+    price_list_id: string | null;
   }>;
   payments: POSPayment[];
 }
@@ -72,6 +79,9 @@ export interface SaleDetail extends SaleListItem {
     product_name: string;
     quantity: DecimalString;
     price: number;
+    price_list_id?: string | null;
+    price_list_name?: string | null;
+    discount_percentage?: DecimalString | number | null;
     subtotal: number;
     tax_amount: number;
     discount_amount: number;
@@ -185,12 +195,19 @@ export interface POSState {
   customer_display_name: string | null;
   requested_delivery_date: string | null;
   payments: POSPayment[];
+  selected_price_list_id: string | null;
+  selected_price_list_name: string | null;
+  selected_discount_percentage: number;
+  available_price_lists: PriceList[];
 }
 
 export interface POSActions {
   addItem: (payload: AddItemPayload) => void;
-  updateQuantity: (product_id: string, quantity: DecimalString) => void;
-  removeItem: (product_id: string) => void;
+  updateQuantity: (line_key: string, quantity: DecimalString) => void;
+  removeItem: (line_key: string) => void;
+  setSelectedPriceListId: (id: string | null, name?: string | null, percentage?: number) => void;
+  setAvailablePriceLists: (price_lists: PriceList[]) => void;
+  changeItemPriceList: (line_key: string, id: string | null, name: string | null, percentage: number) => void;
   setType: (type: 'sale' | 'order') => void;
   setCustomer: (customer: Customer | null) => void;
   setCustomerDisplayName: (name: string | null) => void;

@@ -24,6 +24,7 @@ import Tag from '@/components/Tag/Tag';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrencyWithCents } from '@/utils/formatters';
 import { formatQuantityWithUnit } from '@/utils/quantity';
+import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
 import { CancelSaleModal } from '@/features/store/sales/components/CancelSaleModal';
 import { SaleDetailHistory } from '@/features/store/sales/components/SaleDetailHistory';
 import { printTicketReceipt } from '@/features/store/sales/documents/ticket-print.service';
@@ -255,6 +256,31 @@ export const SalesHistoryPage = () => {
     const hasActiveFilters = Boolean(
         filters.operation_number || filters.date_from || filters.date_to || filters.status
     );
+    const renderProductDetails = (name: string, item: SaleDetail['items'][number]) => {
+        const rawPercentage = item.discount_percentage;
+        const hasPercentage = rawPercentage !== null
+            && rawPercentage !== undefined
+            && (item.price_list_id != null || Number(rawPercentage) > 0);
+        const percentage = hasPercentage
+            ? formatDiscountPercentage(String(rawPercentage))
+            : null;
+        const listLabel = item.price_list_name
+            ? `${item.price_list_name}${percentage ? ` · ${percentage}` : ''}`
+            : null;
+        const discount = Number(item.discount_amount ?? 0);
+        return (
+            <div className="min-w-[130px]">
+                <div>{name}</div>
+                {listLabel && <div className="text-xs text-gray-500">{listLabel}</div>}
+                <div className="mt-1 space-y-0.5 text-xs text-gray-500 md:hidden">
+                    <div>{formatQuantityWithUnit(item.quantity, item.stock_measurement_unit?.symbol)} · {formatCurrencyWithCents(item.price)} c/u</div>
+                    <div>Descuento: {discount > 0 ? `-${formatCurrencyWithCents(discount)}${hasPercentage ? ` (${percentage})` : ''}` : '—'}</div>
+                </div>
+            </div>
+        );
+    };
+    const renderNetSubtotal = (subtotal: number, item: SaleDetail['items'][number]) =>
+        formatCurrencyWithCents(Math.max(0, Number(subtotal) - Number(item.discount_amount ?? 0)));
     return (
         <>
             <div className="space-y-5">
@@ -350,6 +376,7 @@ export const SalesHistoryPage = () => {
                 open={!!detail || detailLoading}
                 onClose={() => setDetail(null)}
                 title={detail ? `Venta ${detail.operation_number}` : 'Detalle de venta'}
+                width="clamp(760px, 58vw, 960px)"
                 loading={detailLoading}
                 footer={
                     <div className="flex flex-wrap justify-end gap-2">
@@ -377,7 +404,7 @@ export const SalesHistoryPage = () => {
                     </div>
                 ) : (
                     detail && (
-                        <div className="space-y-5">
+                        <div className="min-w-0 max-w-full space-y-5 overflow-x-hidden">
                             <Descriptions column={1} size="small" bordered>
                                 <Descriptions.Item label="Estado">
                                     {statusLabel(detail.status)}
@@ -393,17 +420,49 @@ export const SalesHistoryPage = () => {
                                 </Descriptions.Item>
                             </Descriptions>
                             <h3 className="m-0 text-sm font-semibold">PRODUCTOS</h3>
-                            <AntTable
-                                size="small"
-                                rowKey="id"
-                                pagination={false}
-                                dataSource={detail.items}
-                                columns={[
-                                    { title: 'Producto', dataIndex: 'product_name' },
+                            <div className="min-w-0 max-w-full overflow-x-hidden md:overflow-x-auto" data-testid="sale-products-scroll">
+                                <AntTable
+                                    className="md:hidden"
+                                    size="small"
+                                    rowKey="id"
+                                    pagination={false}
+                                    dataSource={detail.items}
+                                    tableLayout="fixed"
+                                    columns={[
+                                        {
+                                            title: 'Producto',
+                                            dataIndex: 'product_name',
+                                            width: '68%',
+                                            render: renderProductDetails,
+                                        },
+                                        {
+                                            title: 'Subtotal',
+                                            dataIndex: 'subtotal',
+                                            align: 'right',
+                                            width: '32%',
+                                            render: renderNetSubtotal,
+                                        },
+                                    ]}
+                                />
+                                <AntTable
+                                    className="hidden md:block"
+                                    size="small"
+                                    rowKey="id"
+                                    pagination={false}
+                                    dataSource={detail.items}
+                                    scroll={{ x: 'max-content' }}
+                                    columns={[
+                                    {
+                                        title: 'Producto',
+                                        dataIndex: 'product_name',
+                                        width: 250,
+                                        render: renderProductDetails,
+                                    },
                                     {
                                         title: 'Cantidad',
                                         dataIndex: 'quantity',
                                         align: 'right',
+                                        width: 70,
                                         render: (quantity, item) =>
                                             formatQuantityWithUnit(
                                                 quantity,
@@ -414,16 +473,30 @@ export const SalesHistoryPage = () => {
                                         title: 'Precio unitario',
                                         dataIndex: 'price',
                                         align: 'right',
+                                        width: 115,
                                         render: formatCurrencyWithCents,
+                                    },
+                                    {
+                                        title: 'Descuento',
+                                        dataIndex: 'discount_amount',
+                                        align: 'right',
+                                        width: 105,
+                                        render: (amount) => {
+                                            const discount = Number(amount ?? 0);
+                                            if (discount <= 0) return '—';
+                                            return `-${formatCurrencyWithCents(discount)}`;
+                                        },
                                     },
                                     {
                                         title: 'Subtotal',
                                         dataIndex: 'subtotal',
                                         align: 'right',
-                                        render: formatCurrencyWithCents,
+                                        width: 115,
+                                        render: renderNetSubtotal,
                                     },
-                                ]}
-                            />
+                                    ]}
+                                />
+                            </div>
                             <Descriptions column={1} size="small" bordered>
                                 <Descriptions.Item label="Subtotal">
                                     {formatCurrencyWithCents(detail.subtotal)}

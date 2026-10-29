@@ -66,6 +66,9 @@ export interface OrderItem {
     subtotal: number;
     tax_amount: number;
     discount_amount: number;
+    price_list_id?: string | null;
+    price_list_name?: string | null;
+    discount_percentage?: number;
     stock_measurement_unit: HistoricalMeasurementUnit | null;
     sale_quantity_step: DecimalString | null;
 }

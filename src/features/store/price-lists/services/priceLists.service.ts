@@ -1,6 +1,7 @@
 import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
+import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type {
     PriceList,
     PriceListPayload,
@@ -9,6 +10,13 @@ import type {
 } from '../types/priceList.types';
 
 export const PriceListsService = {
+    getActive: async (): Promise<PriceList[]> => {
+        const { data } = await api.get<ApiListResponse<PriceListsResponse>>(
+            API_ENDPOINTS.STORE.PRICE_LISTS.ACTIVE
+        );
+        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        return data.data.items;
+    },
     getAll: async (filters: PriceListsFilters = {}): Promise<PriceListsResponse> => {
         const { is_active, ...rest } = filters;
         const { data } = await api.get<ApiListResponse<PriceListsResponse>>(

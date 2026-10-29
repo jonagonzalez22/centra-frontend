@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, test, expect } from 'vitest';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
@@ -53,6 +54,25 @@ describe('AppLayout', () => {
         renderWithRouter(<div>Dashboard</div>);
 
         expect(screen.getByText('Backoffice Admin')).toBeInTheDocument();
+    });
+
+    test('lets the main layout reclaim space when the desktop sidebar collapses', async () => {
+        const user = userEvent.setup();
+        const { container } = renderWithRouter(<div>Dashboard</div>);
+        const sidebar = container.querySelector('.sidebarMenuDesktopContainer');
+        const mainLayout = container.querySelector('.appMainLayout');
+
+        expect(sidebar).toHaveStyle({ width: '260px' });
+        expect(mainLayout).toHaveClass('appMainLayout');
+        expect((mainLayout as HTMLElement).style.width).toBe('');
+        expect((mainLayout as HTMLElement).style.marginLeft).toBe('');
+
+        await user.click(screen.getByRole('button', { name: 'Contraer menú lateral' }));
+
+        expect(sidebar).toHaveStyle({ width: '68px' });
+        expect(mainLayout).toBeInTheDocument();
+        expect((mainLayout as HTMLElement).style.width).toBe('');
+        expect((mainLayout as HTMLElement).style.marginLeft).toBe('');
     });
 
     test('renders children when provided', () => {

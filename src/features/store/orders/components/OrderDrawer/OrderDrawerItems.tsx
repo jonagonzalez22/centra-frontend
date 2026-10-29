@@ -1,6 +1,7 @@
 import { Empty, Spin } from 'antd';
 import { formatCurrency } from '@/utils/formatters';
 import { formatQuantityWithUnit } from '@/utils/quantity';
+import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
 import type { OrderItem } from '../../interfaces/order.interface';
 
 interface OrderDrawerItemsProps {
@@ -29,18 +30,31 @@ const OrderDrawerItems: React.FC<OrderDrawerItemsProps> = ({ items, loading }) =
                         <th className="text-left p-2 font-medium">Producto</th>
                         <th className="text-center p-2 font-medium">Cantidad</th>
                         <th className="text-right p-2 font-medium">Precio Unit.</th>
+                        <th className="text-right p-2 font-medium">Descuento</th>
                         <th className="text-right p-2 font-medium">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                     {items.map((item) => (
                         <tr key={item.id} className="border-t border-gray-100">
-                            <td className="p-2">{item.product_name}</td>
+                            <td className="p-2">
+                                <div>{item.product_name}</div>
+                                {item.price_list_id && item.price_list_name && (
+                                    <div className="text-xs text-gray-500">
+                                        {item.price_list_name} · {formatDiscountPercentage(String(item.discount_percentage ?? 0))}
+                                    </div>
+                                )}
+                            </td>
                             <td className="text-center p-2">
                                 {formatQuantityWithUnit(item.quantity, item.stock_measurement_unit?.symbol)}
                             </td>
                             <td className="text-right p-2">{formatCurrency(item.price)}</td>
-                            <td className="text-right p-2">{formatCurrency(item.subtotal)}</td>
+                            <td className="text-right p-2">
+                                {item.discount_amount > 0 ? `-${formatCurrency(item.discount_amount)}` : '—'}
+                            </td>
+                            <td className="text-right p-2">
+                                {formatCurrency(Math.max(0, item.subtotal - item.discount_amount))}
+                            </td>
                         </tr>
                     ))}
                 </tbody>

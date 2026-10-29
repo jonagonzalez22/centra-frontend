@@ -170,11 +170,94 @@ test.each([
 
     await user.click(await screen.findByRole('button', { name: 'Ver detalle de V-000028' }));
 
-    const productRow = (await screen.findByText('Silicona Transparente 280ml')).closest('tr');
+    const productRows = await screen.findAllByText('Silicona Transparente 280ml');
+    const productRow = productRows[0].closest('tr');
 
     expect(productRow).toHaveTextContent(displayedQuantity);
     expect(productRow).not.toHaveTextContent(quantity);
 }, 15_000);
+
+test('shows historical line price, snapshot discount and net subtotal without changing operation totals', async () => {
+    const user = userEvent.setup();
+    vi.mocked(SalesService.getSaleById).mockResolvedValue({
+        ...response.items[0],
+        subtotal: 5600,
+        discount: 360,
+        total: 5240,
+        items: [
+            {
+                id: 'common', product_name: 'Escobillón', quantity: '1', price: 3000,
+                subtotal: 3000, tax_amount: 0, discount_amount: 0,
+                price_list_id: null, price_list_name: null, discount_percentage: 0,
+            },
+            {
+                id: 'wholesale', product_name: 'Esponja cocina', quantity: '1', price: 600,
+                subtotal: 600, tax_amount: 0, discount_amount: 60,
+                price_list_id: 'wholesale-id', price_list_name: 'Mayorista', discount_percentage: '10.00',
+            },
+            {
+                id: 'distributor', product_name: 'Jabón Ariel', quantity: '1', price: 2000,
+                subtotal: 2000, tax_amount: 0, discount_amount: 300,
+                price_list_id: 'distributor-id', price_list_name: 'Distribuidor', discount_percentage: '15.00',
+            },
+            {
+                id: 'zero-list', product_name: 'Producto convenio', quantity: '1', price: 0,
+                subtotal: 0, tax_amount: 0, discount_amount: 0,
+                price_list_id: 'zero-id', price_list_name: 'Convenio Empresa X', discount_percentage: '0.00',
+            },
+            {
+                id: 'legacy', product_name: 'Producto legacy', quantity: '1', price: 1000,
+                subtotal: 1000, tax_amount: 0, discount_amount: 500,
+                price_list_id: null, price_list_name: null, discount_percentage: 0,
+            },
+        ],
+        payments: [],
+        history: [],
+    });
+    render(<MemoryRouter><SalesHistoryPage /></MemoryRouter>);
+    await user.click(await screen.findByRole('button', { name: 'Ver detalle de V-000028' }));
+
+    const wholesaleRows = await screen.findAllByText('Esponja cocina');
+    const wholesaleRow = wholesaleRows[0].closest('tr');
+    expect(wholesaleRow).toHaveTextContent('Mayorista · 10%');
+    expect(wholesaleRow).toHaveTextContent('-$ 60,00 (10%)');
+    expect(wholesaleRow).toHaveTextContent('$ 540,00');
+
+    const distributorRow = (await screen.findAllByText('Jabón Ariel'))[0].closest('tr');
+    expect(distributorRow).toHaveTextContent('-$ 300,00 (15%)');
+    expect(distributorRow).toHaveTextContent('$ 1.700,00');
+    const desktopDistributorRow = (await screen.findAllByText('Jabón Ariel'))[1].closest('tr');
+    const desktopDiscountCell = desktopDistributorRow?.querySelectorAll('td')[3];
+    expect(desktopDiscountCell).toHaveTextContent('-$ 300,00');
+    expect(desktopDiscountCell).not.toHaveTextContent('15%');
+
+    const commonRow = (await screen.findAllByText('Escobillón'))[0].closest('tr');
+    expect(commonRow).toHaveTextContent('—');
+    expect(commonRow).toHaveTextContent('$ 3.000,00');
+
+    const zeroListRow = (await screen.findAllByText('Producto convenio'))[0].closest('tr');
+    expect(zeroListRow).toHaveTextContent('Convenio Empresa X · 0%');
+    expect(zeroListRow).toHaveTextContent('—');
+
+    const legacyRow = (await screen.findAllByText('Producto legacy'))[0].closest('tr');
+    expect(legacyRow).toHaveTextContent('-$ 500,00');
+    expect(legacyRow).not.toHaveTextContent('(0%)');
+    expect(legacyRow).not.toHaveTextContent('Común');
+
+    expect(screen.getByText('$ 5.600,00')).toBeInTheDocument();
+    expect(screen.getByText('$ 360,00')).toBeInTheDocument();
+    expect(screen.getByText('$ 5.240,00')).toBeInTheDocument();
+    const productsScroll = screen.getByTestId('sale-products-scroll');
+    expect(productsScroll).toHaveClass('overflow-x-hidden', 'md:overflow-x-auto');
+    const [mobileTable, desktopTable] = productsScroll.querySelectorAll('.ant-table-wrapper');
+    expect(mobileTable).toHaveClass('md:hidden');
+    expect(mobileTable?.querySelectorAll('thead th')).toHaveLength(2);
+    expect(desktopTable).toHaveClass('hidden', 'md:block');
+    expect(desktopTable?.querySelectorAll('thead th')).toHaveLength(5);
+    expect(screen.getByRole('button', { name: 'Imprimir ticket' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Imprimir A4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument();
+});
 
 test('shows the standard drawer loader while the detail request is pending and clears it on resolution', async () => {
     const user = userEvent.setup();

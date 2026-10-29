@@ -3,7 +3,15 @@
 }
 
 .sidebarMenuBrand {
-    @apply p-6 text-xl font-bold text-white;
+    @apply flex items-center justify-between p-6 text-xl font-bold text-white;
+}
+
+.sidebarMenuBrandCollapsed {
+    @apply justify-center p-3;
+}
+
+.sidebarMenuToggle {
+    @apply flex h-8 w-8 items-center justify-center rounded text-base text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white;
 }
 
 .sidebarMenuNavigation {

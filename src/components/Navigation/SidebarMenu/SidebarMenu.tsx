@@ -1,4 +1,4 @@
-import { Layout, Menu, Drawer } from 'antd';
+import { Layout, Menu, Drawer, Tooltip } from 'antd';
 import React, { useLayoutEffect, useMemo, useState } from 'react';
 import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,8 @@ import {
     ShoppingCart,
     ClipboardList,
     MapPin,
+    PanelLeftClose,
+    PanelLeftOpen,
 } from 'lucide-react';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
@@ -26,6 +28,7 @@ type MenuContext = 'admin' | 'store' | 'both';
 type MenuItem = {
     label: string;
     key: string;
+    title?: string;
     icon?: React.ReactNode;
     feature?: FeatureCode;
     permission?: string;
@@ -42,6 +45,15 @@ interface SidebarMenuProps {
 }
 
 const ICON_SIZE = 16;
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'centra.sidebar.desktop-collapsed';
+
+const readDesktopCollapsedPreference = () => {
+    try {
+        return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === 'true';
+    } catch {
+        return false;
+    }
+};
 
 const menuItems: MenuItem[] = [
     {
@@ -317,7 +329,7 @@ function filterMenuItems(
         if (item.role === 'STORE_DRIVER' && !user.roles.includes('STORE_DRIVER')) return acc;
         if (item.role && !isStoreAdmin && !user.roles.includes(item.role as UserRole)) return acc;
 
-        const filtered: MenuItem = { ...item };
+        const filtered: MenuItem = { ...item, title: item.label };
 
         if (item.children && item.children.length > 0) {
             filtered.children = filterMenuItems(item.children, user, currentContext);
@@ -381,6 +393,19 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     const [openKeys, setOpenKeys] = useState<string[]>(() =>
         collectMatchingSubMenuKeys(menuItemPermissions, selectedKey)
     );
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(readDesktopCollapsedPreference);
+
+    const toggleDesktopCollapsed = () => {
+        setIsDesktopCollapsed((current) => {
+            const next = !current;
+            try {
+                window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(next));
+            } catch {
+                // Keep the in-memory preference when localStorage is unavailable.
+            }
+            return next;
+        });
+    };
 
     useLayoutEffect(() => {
         const relevantParents = collectMatchingSubMenuKeys(menuItemPermissions, selectedKey);
@@ -399,11 +424,29 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
     const menuContent = (
         <div className="sidebarMenuContent">
-            <div className="sidebarMenuBrand">CENTRA</div>
+            <div className={`sidebarMenuBrand${!isMobile && isDesktopCollapsed ? ' sidebarMenuBrandCollapsed' : ''}`}>
+                {(isMobile || !isDesktopCollapsed) && <span>CENTRA</span>}
+                {!isMobile && (
+                    <Tooltip title={isDesktopCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'} placement="right">
+                        <button
+                            type="button"
+                            className="sidebarMenuToggle"
+                            aria-label={isDesktopCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
+                            aria-expanded={!isDesktopCollapsed}
+                            aria-controls="sidebar-primary-navigation"
+                            onClick={toggleDesktopCollapsed}
+                        >
+                            {isDesktopCollapsed ? <PanelLeftOpen size={ICON_SIZE} /> : <PanelLeftClose size={ICON_SIZE} />}
+                        </button>
+                    </Tooltip>
+                )}
+            </div>
 
             <Menu
+                id="sidebar-primary-navigation"
                 theme="dark"
                 mode="inline"
+                inlineCollapsed={!isMobile && isDesktopCollapsed}
                 selectedKeys={[selectedKey]}
                 openKeys={openKeys}
                 onOpenChange={handleOpenChange}
@@ -430,7 +473,13 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     }
 
     return (
-        <Sider theme="dark" breakpoint="lg" width={260} className="sidebarMenuDesktopContainer">
+        <Sider
+            theme="dark"
+            width={260}
+            collapsedWidth={68}
+            collapsed={isDesktopCollapsed}
+            className="sidebarMenuDesktopContainer"
+        >
             {menuContent}
         </Sider>
     );

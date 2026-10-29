@@ -171,6 +171,7 @@ export interface StopDetailItem {
     quantity_loaded: DecimalString;
     quantity_delivered: DecimalString;
     quantity_released_for_extra_sale: DecimalString;
+    rejection_reason?: { id: string; label: string } | null;
     unit_price: number;
     is_extra: boolean;
     notes: string | null;

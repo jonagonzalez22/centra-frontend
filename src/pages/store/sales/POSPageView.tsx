@@ -25,7 +25,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
   const customer = usePOSStore((s) => s.customer);
   const requested_delivery_date = usePOSStore((s) => s.requested_delivery_date);
 
-  const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const total = items.reduce((sum, item) => sum + Math.max(0, Math.round(item.subtotal * (1 - item.discount_percentage / 100))), 0);
 
   const canCheckout = () => {
     if (items.length === 0) return false;

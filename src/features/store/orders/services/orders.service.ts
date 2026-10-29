@@ -2,6 +2,7 @@ import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
+import type { DecimalString } from '@/types/decimal';
 import type {
     OrderDetail,
     OrderEditability,
@@ -12,6 +13,31 @@ import type {
 } from '../interfaces/order.interface';
 
 export const OrdersService = {
+    addItem: async (id: string, payload: { product_id: string; quantity: DecimalString; price_list_id: string | null }): Promise<OrderDetail> => {
+        const { data } = await api.post<ApiListResponse<OrderDetail>>(API_ENDPOINTS.STORE.ORDERS.ITEMS(id), payload);
+        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        return data.data;
+    },
+    changeItemPriceList: async (id: string, itemId: string, price_list_id: string | null): Promise<OrderDetail> => {
+        const { data } = await api.patch<ApiListResponse<OrderDetail>>(API_ENDPOINTS.STORE.ORDERS.ITEM_PRICE_LIST(id, itemId), { price_list_id });
+        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        return data.data;
+    },
+    updateItemQuantity: async (id: string, itemId: string, quantity: DecimalString): Promise<OrderDetail> => {
+        const { data } = await api.patch<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.ITEM(id, itemId),
+            { quantity }
+        );
+        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        return data.data;
+    },
+    deleteItem: async (id: string, itemId: string): Promise<OrderDetail> => {
+        const { data } = await api.delete<ApiListResponse<OrderDetail>>(
+            API_ENDPOINTS.STORE.ORDERS.ITEM(id, itemId)
+        );
+        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        return data.data;
+    },
     getAll: async (filters: OrderFilters): Promise<PaginatedResponse<OrderListItem>> => {
         const params: Record<string, string | number | undefined> = {
             date: filters.date ?? undefined,

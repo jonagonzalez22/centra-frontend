@@ -1,7 +1,9 @@
 import { Select, Segmented, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { PriceListsService } from '@/features/store/price-lists/services/priceLists.service';
+import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
 import { usePOSStore } from '../../stores/usePOSStore';
 import { useCustomerSearch } from '../../hooks/useCustomerSearch';
 
@@ -17,6 +19,14 @@ export const POSOperationConfig: React.FC = () => {
   const setCustomer = usePOSStore((s) => s.setCustomer);
   const setCustomerDisplayName = usePOSStore((s) => s.setCustomerDisplayName);
   const setRequestedDeliveryDate = usePOSStore((s) => s.setRequestedDeliveryDate);
+  const selectedPriceListId = usePOSStore((s) => s.selected_price_list_id);
+  const setSelectedPriceListId = usePOSStore((s) => s.setSelectedPriceListId);
+  const priceLists = usePOSStore((s) => s.available_price_lists);
+  const setAvailablePriceLists = usePOSStore((s) => s.setAvailablePriceLists);
+
+  useEffect(() => {
+    PriceListsService.getActive().then(setAvailablePriceLists).catch(() => setAvailablePriceLists([]));
+  }, [setAvailablePriceLists]);
 
   const { query, setQuery, results, loading: customerLoading } = useCustomerSearch();
   const manualName = query.trim();
@@ -53,6 +63,22 @@ export const POSOperationConfig: React.FC = () => {
         block
         size="large"
       />
+
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Lista de precios</label>
+        <Select
+          value={selectedPriceListId ?? '__common__'}
+          onChange={(value) => {
+            const list = priceLists.find((candidate) => candidate.id === value);
+            setSelectedPriceListId(list?.id ?? null, list?.name ?? null, Number(list?.discount_percentage ?? 0));
+          }}
+          options={[
+            { value: '__common__', label: 'Común' },
+            ...priceLists.map((list) => ({ value: list.id, label: `${list.name} · ${formatDiscountPercentage(list.discount_percentage)}` })),
+          ]}
+          className="w-full"
+        />
+      </div>
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">

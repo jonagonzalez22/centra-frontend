@@ -17,6 +17,7 @@ type QuantityInputProps = {
     increaseAriaLabel?: string;
     decreaseDisabled?: boolean;
     increaseDisabled?: boolean;
+    disabled?: boolean;
     unitSymbol?: string | null;
     unitClassName?: string;
     className?: string;
@@ -40,6 +41,7 @@ export const QuantityInput = ({
     increaseAriaLabel = 'Aumentar cantidad',
     decreaseDisabled = false,
     increaseDisabled = false,
+    disabled = false,
     unitSymbol,
     unitClassName = 'text-sm text-gray-500',
     className = 'w-16 [&_.ant-input-number-input]:text-center',
@@ -52,7 +54,7 @@ export const QuantityInput = ({
                     styles={{ root: { boxShadow: 'none' } }}
                     aria-label={decreaseAriaLabel}
                     icon={<MinusOutlined />}
-                    disabled={decreaseDisabled}
+                    disabled={disabled || decreaseDisabled}
                     action={onDecrease}
                 />
             </Tooltip>
@@ -69,6 +71,7 @@ export const QuantityInput = ({
             precision={4}
             step={step}
             value={value}
+            disabled={disabled}
             formatter={(input) => input ? formatQuantityForDisplay(input) : ''}
             parser={(input) => input?.replace(',', '.') ?? ''}
             onChange={onChange}
@@ -82,7 +85,7 @@ export const QuantityInput = ({
                     styles={{ root: { boxShadow: 'none' } }}
                     aria-label={increaseAriaLabel}
                     icon={<PlusOutlined />}
-                    disabled={increaseDisabled}
+                    disabled={disabled || increaseDisabled}
                     action={onIncrease}
                 />
             </Tooltip>

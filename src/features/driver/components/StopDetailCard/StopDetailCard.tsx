@@ -56,66 +56,92 @@ export const StopDetailCard = ({
     } = data;
 
     const reasonSelectOptions = reasonOptions.map((r) => ({ label: r.label, value: r.id }));
+    const isReadOnly = !canDeliver;
 
     return (
-        <div className={`stopDetailCard stopDetailCard--${cardState}`}>
+        <div
+            className={`stopDetailCard ${isReadOnly ? 'stopDetailCard--readonly' : `stopDetailCard--${cardState}`}`}
+        >
             {/* ── Top right: indicator per card state ── */}
-            <div className="stopDetailCardCheck">
-                {isNotLoaded ? (
-                    <div className="stopDetailCheckInfo" title="No cargado en depósito">
-                        <InfoCircleOutlined />
-                    </div>
-                ) : isReduced ? (
-                    <div className="stopDetailCheckWarning" title="Cantidad reducida">
-                        <WarningOutlined />
-                    </div>
-                ) : isConfirmed ? (
-                    <button
-                        className="stopDetailCheckBtn stopDetailCheckBtn--confirmed"
-                        onClick={() => onToggleConfirm(item.id)}
-                        disabled={!canDeliver}
-                        title="Confirmado — tocar para desmarcar"
-                        type="button"
-                    >
-                        <CheckCircleFilled />
-                    </button>
-                ) : (
-                    <button
-                        className="stopDetailCheckBtn"
-                        onClick={() => onToggleConfirm(item.id)}
-                        disabled={!canDeliver}
-                        title="Tocar para confirmar"
-                        type="button"
-                    >
-                        <CheckCircleOutlined />
-                    </button>
-                )}
-            </div>
+            {!isReadOnly && (
+                <div className="stopDetailCardCheck">
+                    {isNotLoaded ? (
+                        <div className="stopDetailCheckInfo" title="No cargado en depósito">
+                            <InfoCircleOutlined />
+                        </div>
+                    ) : isReduced ? (
+                        <div className="stopDetailCheckWarning" title="Cantidad reducida">
+                            <WarningOutlined />
+                        </div>
+                    ) : isConfirmed ? (
+                        <button
+                            className="stopDetailCheckBtn stopDetailCheckBtn--confirmed"
+                            onClick={() => onToggleConfirm(item.id)}
+                            disabled={!canDeliver}
+                            title="Confirmado — tocar para desmarcar"
+                            type="button"
+                        >
+                            <CheckCircleFilled />
+                        </button>
+                    ) : (
+                        <button
+                            className="stopDetailCheckBtn"
+                            onClick={() => onToggleConfirm(item.id)}
+                            disabled={!canDeliver}
+                            title="Tocar para confirmar"
+                            type="button"
+                        >
+                            <CheckCircleOutlined />
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* ── Section 1: Stepper (hidden for not-loaded items) ── */}
             {!isNotLoaded && (
                 <div className="stopDetailCardStepper">
-                    <button
-                        className={`stopDetailStepperBtn ${!canDecrement ? 'stopDetailStepperBtn--disabled' : ''}`}
-                        disabled={!canDecrement}
-                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, `-${item.sale_quantity_step ?? '1.0000'}`))}
-                        type="button"
-                        aria-label={`Reducir cantidad entregada de ${item.product_name}`}
-                    >
-                        −
-                    </button>
+                    {!isReadOnly && (
+                        <button
+                            className={`stopDetailStepperBtn ${!canDecrement ? 'stopDetailStepperBtn--disabled' : ''}`}
+                            disabled={!canDecrement}
+                            onClick={() =>
+                                onSetQuantity(
+                                    item.id,
+                                    addDecimalStrings(
+                                        deliveredQty,
+                                        `-${item.sale_quantity_step ?? '1.0000'}`
+                                    )
+                                )
+                            }
+                            type="button"
+                            aria-label={`Reducir cantidad entregada de ${item.product_name}`}
+                        >
+                            −
+                        </button>
+                    )}
                     <span className="stopDetailStepperValue">
-                        {formatQuantityForDisplay(deliveredQty)}/{formatQuantityForDisplay(originalQty)}
+                        {formatQuantityForDisplay(deliveredQty)}/
+                        {formatQuantityForDisplay(originalQty)}
                     </span>
-                    <button
-                        className={`stopDetailStepperBtn ${!canIncrement ? 'stopDetailStepperBtn--disabled' : ''}`}
-                        disabled={!canIncrement}
-                        onClick={() => onSetQuantity(item.id, addDecimalStrings(deliveredQty, item.sale_quantity_step ?? '1.0000'))}
-                        type="button"
-                        aria-label={`Aumentar cantidad entregada de ${item.product_name}`}
-                    >
-                        +
-                    </button>
+                    {!isReadOnly && (
+                        <button
+                            className={`stopDetailStepperBtn ${!canIncrement ? 'stopDetailStepperBtn--disabled' : ''}`}
+                            disabled={!canIncrement}
+                            onClick={() =>
+                                onSetQuantity(
+                                    item.id,
+                                    addDecimalStrings(
+                                        deliveredQty,
+                                        item.sale_quantity_step ?? '1.0000'
+                                    )
+                                )
+                            }
+                            type="button"
+                            aria-label={`Aumentar cantidad entregada de ${item.product_name}`}
+                        >
+                            +
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -124,7 +150,9 @@ export const StopDetailCard = ({
                 <div className="stopDetailCardProductName">{item.product_name}</div>
                 <div className="stopDetailCardProductMeta">
                     {item.sku && <span>SKU: {item.sku}</span>}
-                    {item.stock_measurement_unit?.symbol && <span>Unidad: {item.stock_measurement_unit.symbol}</span>}
+                    {item.stock_measurement_unit?.symbol && (
+                        <span>Unidad: {item.stock_measurement_unit.symbol}</span>
+                    )}
                     {item.unit_price > 0 && (
                         <span className="stopDetailUnitPrice">
                             {formatCurrency(item.unit_price)}/u
@@ -140,9 +168,23 @@ export const StopDetailCard = ({
             </div>
 
             {/* ── Section 3: Rejection reason (only when reduced) ── */}
-            {isReduced && (
+            {isReduced && isReadOnly && (
+                <div className="stopDetailCardReason stopDetailCardReason--readonly">
+                    <div className="stopDetailRemaining">
+                        No entregado: {formatQuantityForDisplay(remainingQty)}
+                    </div>
+                    {item.rejection_reason && (
+                        <div className="stopDetailPersistedReason">
+                            {item.rejection_reason.label}
+                        </div>
+                    )}
+                </div>
+            )}
+            {isReduced && !isReadOnly && (
                 <div className="stopDetailCardReason">
-                    <div className="stopDetailRemaining">No entregado: {formatQuantityForDisplay(remainingQty)}</div>
+                    <div className="stopDetailRemaining">
+                        No entregado: {formatQuantityForDisplay(remainingQty)}
+                    </div>
                     <Select
                         className={`stopDetailReasonSelect ${showReasonError ? 'stopDetailReasonSelect--error' : ''}`}
                         placeholder="Motivo del rechazo"
@@ -167,17 +209,35 @@ export const StopDetailCard = ({
                                 <button
                                     className={`stopDetailStepperBtn ${!canDecrementReleased ? 'stopDetailStepperBtn--disabled' : ''}`}
                                     disabled={!canDecrementReleased}
-                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, `-${item.sale_quantity_step ?? '1.0000'}`))}
+                                    onClick={() =>
+                                        onSetReleasedQuantity(
+                                            item.id,
+                                            addDecimalStrings(
+                                                releasedQty,
+                                                `-${item.sale_quantity_step ?? '1.0000'}`
+                                            )
+                                        )
+                                    }
                                     type="button"
                                     aria-label={`Reducir disponibilidad de ${item.product_name}`}
                                 >
                                     −
                                 </button>
-                                <span className="stopDetailStepperValue">{formatQuantityForDisplay(releasedQty)}</span>
+                                <span className="stopDetailStepperValue">
+                                    {formatQuantityForDisplay(releasedQty)}
+                                </span>
                                 <button
                                     className={`stopDetailStepperBtn ${!canIncrementReleased ? 'stopDetailStepperBtn--disabled' : ''}`}
                                     disabled={!canIncrementReleased}
-                                    onClick={() => onSetReleasedQuantity(item.id, addDecimalStrings(releasedQty, item.sale_quantity_step ?? '1.0000'))}
+                                    onClick={() =>
+                                        onSetReleasedQuantity(
+                                            item.id,
+                                            addDecimalStrings(
+                                                releasedQty,
+                                                item.sale_quantity_step ?? '1.0000'
+                                            )
+                                        )
+                                    }
                                     type="button"
                                     aria-label={`Aumentar disponibilidad de ${item.product_name}`}
                                 >
@@ -185,7 +245,8 @@ export const StopDetailCard = ({
                                 </button>
                             </div>
                             <div className="stopDetailExtraSaleReleaseHelp">
-                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuánto producto puede reutilizarse.
+                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuánto
+                                producto puede reutilizarse.
                             </div>
                             {!selectedReasonSuggestsExtraSale && (
                                 <div className="stopDetailExtraSaleReleaseSuggestion">

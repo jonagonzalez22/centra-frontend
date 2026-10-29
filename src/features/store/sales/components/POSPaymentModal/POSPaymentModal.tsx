@@ -80,7 +80,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
     }
   }, [open, loadPaymentMethods]);
 
-  const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const total = items.reduce((sum, item) => sum + Math.max(0, Math.round(item.subtotal * (1 - item.discount_percentage / 100))), 0);
 
   const sumPayments = useMemo(
     () =>
@@ -170,6 +170,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
           product_id: i.product_id,
           quantity: i.quantity,
           price: i.price,
+          price_list_id: i.price_list_id,
         })),
         payments,
       });

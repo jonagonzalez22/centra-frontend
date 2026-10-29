@@ -57,6 +57,30 @@ test('sends pending balance filter to backend', async () => {
     });
 });
 
+test('adds items with the selected nullable price list', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: { status: 'success', data: { id: 'order-1' } } });
+    await OrdersService.addItem('order-1', {
+        product_id: 'product-1', quantity: '2.0000', price_list_id: null,
+    });
+    expect(api.post).toHaveBeenCalledWith('/v1/store/orders/order-1/items', {
+        product_id: 'product-1', quantity: '2.0000', price_list_id: null,
+    });
+});
+
+test('mutates a persisted item by operation item id for quantity, price list and deletion', async () => {
+    const response = { data: { status: 'success', data: { id: 'order-1' } } };
+    vi.mocked(api.patch).mockResolvedValue(response);
+    vi.mocked(api.delete).mockResolvedValue(response);
+
+    await OrdersService.updateItemQuantity('order-1', 'operation-item-1', '4.0000');
+    await OrdersService.changeItemPriceList('order-1', 'operation-item-1', 'list-1');
+    await OrdersService.deleteItem('order-1', 'operation-item-1');
+
+    expect(api.patch).toHaveBeenNthCalledWith(1, '/v1/store/orders/order-1/items/operation-item-1', { quantity: '4.0000' });
+    expect(api.patch).toHaveBeenNthCalledWith(2, '/v1/store/orders/order-1/items/operation-item-1/price-list', { price_list_id: 'list-1' });
+    expect(api.delete).toHaveBeenCalledWith('/v1/store/orders/order-1/items/operation-item-1');
+});
+
 test('posts a single payment to the order endpoint', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { status: 'success', data: { id: 'order-1' } } });
     await OrdersService.registerPayment('order-1', {

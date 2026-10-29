@@ -33,4 +33,12 @@ describe('PriceListsService', () => {
         expect(mockApi.put).toHaveBeenCalledWith('/v1/store/price-lists/1', payload);
         expect(mockApi.delete).toHaveBeenCalledWith('/v1/store/price-lists/1');
     });
+
+    test('loads active PriceLists from the operational selector endpoint', async () => {
+        const active = [{ id: 'list-1', name: 'Mayorista', discount_percentage: '10.00', is_active: true }];
+        mockApi.get.mockResolvedValue({ data: { status: 'success', data: { items: active } } });
+
+        await expect(PriceListsService.getActive()).resolves.toEqual(active);
+        expect(mockApi.get).toHaveBeenCalledWith('/v1/store/price-lists/active');
+    });
 });

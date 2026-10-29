@@ -43,10 +43,10 @@ const stop: StopDetail = {
             product_id: 'product-1',
             product_name: 'Pintura Látex',
             sku: 'P-1',
-            quantity_planned: "5.0000",
-            quantity_loaded: "5.0000",
-            quantity_delivered: "0.0000",
-            quantity_released_for_extra_sale: "0.0000",
+            quantity_planned: '5.0000',
+            quantity_loaded: '5.0000',
+            quantity_delivered: '0.0000',
+            quantity_released_for_extra_sale: '0.0000',
             unit_price: 100,
             is_extra: false,
             notes: null,
@@ -99,8 +99,8 @@ test('partial delivery payload contains the final released quantity', async () =
             items: [
                 {
                     route_stop_item_id: 'item-1',
-                    quantity_delivered: "3.0000",
-                    quantity_released_for_extra_sale: "1.0000",
+                    quantity_delivered: '3.0000',
+                    quantity_released_for_extra_sale: '1.0000',
                     rejection_reason_id: 'safe',
                 },
             ],
@@ -108,6 +108,29 @@ test('partial delivery payload contains the final released quantity', async () =
         },
         preview
     );
+});
+
+test('keeps delivery controls editable while the stop is pending', () => {
+    render(
+        <StopDetailPageView
+            stop={stop}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.getByLabelText('Reducir cantidad entregada de Pintura Látex')).toBeEnabled();
+    expect(
+        screen.getByLabelText('Aumentar cantidad entregada de Pintura Látex')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entregar todo' })).toBeInTheDocument();
 });
 
 test.each(['pending', 'arrived'] as const)(
@@ -153,3 +176,82 @@ test.each(['completed', 'failed', 'cancelled'] as const)(
         expect(screen.queryByRole('button', { name: 'Venta Extra' })).not.toBeInTheDocument();
     }
 );
+
+test('shows the persisted partial delivery after a stop is completed', () => {
+    render(
+        <StopDetailPageView
+            stop={{
+                ...stop,
+                status: 'completed',
+                items: [
+                    {
+                        ...stop.items[0],
+                        product_name: 'Esponja cocina',
+                        quantity_planned: '2.0000',
+                        quantity_loaded: '2.0000',
+                        quantity_delivered: '1.0000',
+                        quantity_released_for_extra_sale: '0.0000',
+                        rejection_reason: {
+                            id: 'customer-rejected',
+                            label: 'Mercadería rechazada por el cliente',
+                        },
+                    },
+                ],
+            }}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+    expect(screen.queryByText('2/2')).not.toBeInTheDocument();
+    expect(screen.queryByText('0 de 1 revisados')).not.toBeInTheDocument();
+    expect(screen.getByText('No entregado: 1')).toBeInTheDocument();
+    expect(screen.getByText('Mercadería rechazada por el cliente')).toBeInTheDocument();
+    expect(
+        screen.queryByLabelText('Reducir cantidad entregada de Esponja cocina')
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(
+        screen.queryByRole('button', { name: 'Confirmar entrega parcial' })
+    ).not.toBeInTheDocument();
+});
+
+test('keeps a completed full delivery at its persisted quantity', () => {
+    render(
+        <StopDetailPageView
+            stop={{
+                ...stop,
+                status: 'completed',
+                items: [
+                    {
+                        ...stop.items[0],
+                        quantity_planned: '2.0000',
+                        quantity_loaded: '2.0000',
+                        quantity_delivered: '2.0000',
+                    },
+                ],
+            }}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.getByText('2/2')).toBeInTheDocument();
+    expect(screen.queryByText('No entregado:')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Entregar todo' })).not.toBeInTheDocument();
+});

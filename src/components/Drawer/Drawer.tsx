@@ -6,7 +6,7 @@ interface DrawerProps {
     onClose: () => void;
     title: React.ReactNode;
     children: React.ReactNode;
-    width?: number;
+    width?: number | string;
     loading?: boolean;
     destroyOnClose?: boolean;
     extra?: React.ReactNode;

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
 import { SidebarMenu } from './SidebarMenu';
@@ -35,6 +35,7 @@ describe('SidebarMenu', () => {
     };
 
     beforeEach(() => {
+        window.localStorage.clear();
         mockUser = {
             id: 1,
             name: 'Test User',
@@ -70,21 +71,76 @@ describe('SidebarMenu', () => {
     };
 
     test('renders desktop sider when not mobile', () => {
-        renderWithRouter(
+        const { container } = renderWithRouter(
             <SidebarMenu isMobile={false} isOpen={false} selectedKey={'/admin/dashboard'} />
         );
 
         expect(screen.getByText(/CENTRA/i)).toBeInTheDocument();
         expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+        expect(container.querySelector('.sidebarMenuDesktopContainer')).toHaveStyle({ width: '260px' });
+        expect(screen.getByRole('button', { name: 'Contraer menú lateral' })).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByRole('button', { name: 'Contraer menú lateral' }).querySelector('svg'))
+            .toHaveClass('lucide-panel-left-close');
+    });
+
+    test('collapses and expands the desktop sidebar, persisting the selected state', async () => {
+        const user = userEvent.setup();
+        const view = renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/admin/dashboard" />
+        );
+        const sider = view.container.querySelector('.sidebarMenuDesktopContainer');
+
+        const collapseButton = screen.getByRole('button', { name: 'Contraer menú lateral' });
+        await user.hover(collapseButton);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('Contraer menú lateral');
+        await user.click(collapseButton);
+        expect(sider).toHaveStyle({ width: '68px' });
+        expect(screen.getByRole('button', { name: 'Expandir menú lateral' })).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.getByRole('button', { name: 'Expandir menú lateral' }).querySelector('svg'))
+            .toHaveClass('lucide-panel-left-open');
+        expect(window.localStorage.getItem('centra.sidebar.desktop-collapsed')).toBe('true');
+
+        view.unmount();
+        const reloaded = renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/admin/dashboard" />
+        );
+        expect(reloaded.container.querySelector('.sidebarMenuDesktopContainer')).toHaveStyle({ width: '68px' });
+
+        const expandButton = screen.getByRole('button', { name: 'Expandir menú lateral' });
+        await user.hover(expandButton);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('Expandir menú lateral');
+        await user.click(expandButton);
+        expect(reloaded.container.querySelector('.sidebarMenuDesktopContainer')).toHaveStyle({ width: '260px' });
+        expect(window.localStorage.getItem('centra.sidebar.desktop-collapsed')).toBe('false');
+    });
+
+    test('keeps the selected sales submenu reachable while collapsed', async () => {
+        const user = userEvent.setup();
+        useStoreUser();
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/ventas/pos" />
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Contraer menú lateral' }));
+        const salesTitle = screen.getByText('Ventas').closest('.ant-menu-submenu-title');
+        expect(salesTitle).toBeInTheDocument();
+        await user.hover(salesTitle!);
+
+        expect(await screen.findByText('Caja')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Caja').closest('.ant-menu-item')).toHaveClass('ant-menu-item-selected');
+        });
     });
 
     test('renders drawer when mobile and open', () => {
+        window.localStorage.setItem('centra.sidebar.desktop-collapsed', 'true');
         renderWithRouter(
             <SidebarMenu isMobile={true} isOpen={true} selectedKey={'/admin/dashboard'} />
         );
 
         expect(screen.getByText(/CENTRA/i)).toBeInTheDocument();
         expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /menú lateral/i })).not.toBeInTheDocument();
     });
 
     test('renders Configuraciones submenu for admin users with permission', () => {

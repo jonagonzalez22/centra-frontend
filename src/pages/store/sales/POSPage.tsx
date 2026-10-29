@@ -58,6 +58,7 @@ export const POSPage: React.FC = () => {
                     product_id: i.product_id,
                     quantity: i.quantity,
                     price: i.price,
+                    price_list_id: i.price_list_id,
                 })),
                 payments: [],
             });
