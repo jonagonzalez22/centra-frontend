@@ -21,7 +21,8 @@ interface Props {
     open: boolean;
     originalDate: string | null;
     draft: DeliveryDateDraft;
-    onApply: (draft: AppliedDeliveryDateDraft) => void;
+    saving: boolean;
+    onApply: (draft: AppliedDeliveryDateDraft) => Promise<void>;
     onClose: () => void;
 }
 
@@ -34,7 +35,14 @@ const reasonOptions: { label: string; value: DeliveryDateChangeReason }[] = [
     { label: 'Otro', value: 'other' },
 ];
 
-export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onClose }: Props) => {
+export const OrderDeliveryDateModal = ({
+    open,
+    originalDate,
+    draft,
+    saving,
+    onApply,
+    onClose,
+}: Props) => {
     const [requestedDeliveryDate, setRequestedDeliveryDate] = useState<string | null>(
         draft.requestedDeliveryDate
     );
@@ -58,11 +66,12 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
         return null;
     }, [clearsPendingChange, observation, originalDate, reason, requestedDeliveryDate]);
 
-    const handleApply = () => {
+    const handleApply = async () => {
         setSubmitted(true);
-        if (validationMessage || !requestedDeliveryDate || (!reason && !clearsPendingChange)) return;
+        if (validationMessage || !requestedDeliveryDate || (!reason && !clearsPendingChange))
+            return;
 
-        onApply({
+        await onApply({
             requestedDeliveryDate,
             reason: clearsPendingChange ? null : reason,
             observation: clearsPendingChange || reason !== 'other' ? '' : observation.trim(),
@@ -71,8 +80,14 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
 
     const footer = (
         <>
-            <Button variant="default" label="Cancelar" action={onClose} />
-            <Button variant="primary" label="Aplicar cambio" action={handleApply} />
+            <Button variant="default" label="Cancelar" action={onClose} disabled={saving} />
+            <Button
+                variant="primary"
+                label="Aplicar cambio"
+                action={handleApply}
+                loading={saving}
+                disabled={saving}
+            />
         </>
     );
 
@@ -83,6 +98,7 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
             title="Reprogramar fecha de entrega"
             width={480}
             footer={footer}
+            loading={saving}
         >
             <div className="space-y-4">
                 <div>
@@ -96,6 +112,7 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
                         format="DD/MM/YYYY"
                         className="w-full"
                         disabledDate={(current) => current.isBefore(dayjs().startOf('day'))}
+                        disabled={saving}
                     />
                 </div>
                 <div>
@@ -109,6 +126,7 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
                         options={reasonOptions}
                         className="w-full"
                         onChange={(value: DeliveryDateChangeReason) => setReason(value)}
+                        disabled={saving}
                     />
                 </div>
                 {reason === 'other' && (
@@ -122,6 +140,7 @@ export const OrderDeliveryDateModal = ({ open, originalDate, draft, onApply, onC
                             rows={3}
                             maxLength={1000}
                             showCount
+                            disabled={saving}
                         />
                     </div>
                 )}

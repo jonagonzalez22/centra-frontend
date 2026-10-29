@@ -46,14 +46,12 @@ interface Props {
     order: OrderDetail;
     editability: OrderEditability;
     draft: OrderProductDraftItem[];
-    isDirty: boolean;
     saving: boolean;
     busyItemIds: Record<string, boolean>;
     saveError: string | null;
     requestedDeliveryDate: string | null;
     deliveryDateReason: DeliveryDateChangeReason | null;
     deliveryDateObservation: string;
-    deliveryDateChanged: boolean;
     canCollect: boolean;
     availablePriceLists: PriceList[];
     selectedPriceListId: string | null;
@@ -69,23 +67,20 @@ interface Props {
         requestedDeliveryDate: string;
         reason: DeliveryDateChangeReason | null;
         observation: string;
-    }) => void;
+    }) => Promise<boolean>;
     onOpenPayment: () => void;
-    onSave: () => void;
 }
 
 export const OrderEditPageView = ({
     order,
     editability,
     draft,
-    isDirty,
     saving,
     busyItemIds,
     saveError,
     requestedDeliveryDate,
     deliveryDateReason,
     deliveryDateObservation,
-    deliveryDateChanged,
     canCollect,
     availablePriceLists,
     selectedPriceListId,
@@ -429,14 +424,6 @@ export const OrderEditPageView = ({
                         {saveError && (
                             <Alert className="mb-4" type="error" showIcon title={saveError} />
                         )}
-                        {isDirty && (
-                            <Alert
-                                className="mb-4"
-                                type="info"
-                                showIcon
-                                title="La fecha de entrega se guardará al confirmar los cambios."
-                            />
-                        )}
                         <div className="space-y-3">
                             {draft.map((item) => {
                                 const isBusy = Boolean(busyItemIds[item.operation_item_id]);
@@ -672,7 +659,6 @@ export const OrderEditPageView = ({
                             <Descriptions.Item label="Fecha de entrega">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span>{formatDateShort(requestedDeliveryDate)}</span>
-                                    {deliveryDateChanged && <Tag color="gold">Pendiente</Tag>}
                                     {editability.delivery_date_editable ? (
                                         <Tooltip title="Reprogramar fecha de entrega">
                                             <Button
@@ -736,8 +722,8 @@ export const OrderEditPageView = ({
                             <div className="mt-4 pt-3 border-t border-gray-200">
                                 <Tooltip
                                     title={
-                                        isDirty
-                                            ? 'Guardá los cambios del pedido antes de registrar un pago.'
+                                        saving || Object.values(busyItemIds).some(Boolean)
+                                            ? 'Esperá a que termine la actualización actual.'
                                             : undefined
                                     }
                                 >
@@ -747,9 +733,7 @@ export const OrderEditPageView = ({
                                             className="w-full"
                                             label="Agregar pago"
                                             disabled={
-                                                isDirty ||
-                                                saving ||
-                                                Object.values(busyItemIds).some(Boolean)
+                                                saving || Object.values(busyItemIds).some(Boolean)
                                             }
                                             action={onOpenPayment}
                                         />
@@ -771,10 +755,12 @@ export const OrderEditPageView = ({
                         reason: deliveryDateReason,
                         observation: deliveryDateObservation,
                     }}
+                    saving={saving}
                     onClose={() => setDeliveryDateModalOpen(false)}
-                    onApply={(deliveryDateDraft) => {
-                        onApplyDeliveryDateChange(deliveryDateDraft);
-                        setDeliveryDateModalOpen(false);
+                    onApply={async (deliveryDateDraft) => {
+                        if (await onApplyDeliveryDateChange(deliveryDateDraft)) {
+                            setDeliveryDateModalOpen(false);
+                        }
                     }}
                 />
             )}

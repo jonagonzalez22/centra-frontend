@@ -17,11 +17,9 @@ import type {
     DeliveryDateChangeReason,
     OrderDetail,
     OrderEditability,
-    UpdateOrderPayload,
 } from '@/features/store/orders/interfaces/order.interface';
 import type { CommercialProductDetail } from '@/features/store/orders/interfaces/commercial-product.interface';
 import { OrderEditPageView } from './OrderEditPageView';
-import { OrderEditUnsavedChangesModal } from './OrderEditUnsavedChangesModal';
 
 type LoadError = { status?: number; message?: string; response?: { status?: number } };
 type SaveError = LoadError & { errors?: Record<string, string[]> };
@@ -47,7 +45,6 @@ export const OrderEditPage = () => {
         null
     );
     const [deliveryDateObservation, setDeliveryDateObservation] = useState('');
-    const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
     const [paymentOpen, setPaymentOpen] = useState(false);
 
     const loadOrder = useCallback(async () => {
@@ -121,19 +118,9 @@ export const OrderEditPage = () => {
     }, []);
 
     const productDraft = useOrderProductDraft(order, editability);
-    const handleRequestedDeliveryDateChange = useCallback(
-        (date: string | null) => {
-            setRequestedDeliveryDate(date);
-
-            if (date === order?.requested_delivery_date) {
-                setDeliveryDateReason(null);
-                setDeliveryDateObservation('');
-            }
-        },
-        [order?.requested_delivery_date]
-    );
+    const isMutatingItems = Object.values(busyItemIds).some(Boolean);
     const handleApplyDeliveryDateChange = useCallback(
-        ({
+        async ({
             requestedDeliveryDate: date,
             reason,
             observation,
@@ -141,28 +128,67 @@ export const OrderEditPage = () => {
             requestedDeliveryDate: string;
             reason: DeliveryDateChangeReason | null;
             observation: string;
-        }) => {
-            handleRequestedDeliveryDateChange(date);
-            if (date === order?.requested_delivery_date || !reason) return;
+        }): Promise<boolean> => {
+            if (
+                !id ||
+                !order ||
+                !editability?.editable ||
+                saving ||
+                isMutatingItems ||
+                date === order.requested_delivery_date ||
+                !reason
+            ) {
+                return false;
+            }
 
-            setDeliveryDateReason(reason);
-            setDeliveryDateObservation(observation);
+            setSaving(true);
+            setSaveError(null);
+            try {
+                const updatedOrder = await OrdersService.update(id, {
+                    requested_delivery_date: date,
+                    reason,
+                    ...(reason === 'other' ? { observation } : {}),
+                });
+                setOrder(updatedOrder);
+                setRequestedDeliveryDate(updatedOrder.requested_delivery_date);
+                setDeliveryDateReason(null);
+                setDeliveryDateObservation('');
+                await refreshOrderAfterItemMutation(id, updatedOrder);
+                await refreshEditability(id);
+                message.success('Fecha de entrega actualizada.');
+                return true;
+            } catch (requestError) {
+                const apiError = requestError as SaveError & {
+                    response?: { data?: { message?: string; errors?: Record<string, string[]> } };
+                };
+                const errors = apiError.response?.data?.errors ?? apiError.errors;
+                const errorMessage =
+                    Object.values(errors ?? {})
+                        .flat()
+                        .join(' ') ||
+                    apiError.response?.data?.message ||
+                    apiError.message ||
+                    'No se pudo actualizar la fecha de entrega.';
+                setRequestedDeliveryDate(order.requested_delivery_date);
+                setDeliveryDateReason(null);
+                setDeliveryDateObservation('');
+                setSaveError(errorMessage);
+                message.error(errorMessage);
+                return false;
+            } finally {
+                setSaving(false);
+            }
         },
-        [handleRequestedDeliveryDateChange, order?.requested_delivery_date]
+        [
+            editability?.editable,
+            id,
+            isMutatingItems,
+            order,
+            refreshEditability,
+            refreshOrderAfterItemMutation,
+            saving,
+        ]
     );
-    const deliveryDateChanged = requestedDeliveryDate !== order?.requested_delivery_date;
-    const deliveryDateValidationMessage = !deliveryDateChanged
-        ? null
-        : !requestedDeliveryDate
-          ? 'La fecha de entrega es obligatoria.'
-          : !deliveryDateReason
-            ? 'Seleccioná un motivo para reprogramar la fecha.'
-            : deliveryDateReason === 'other' && !deliveryDateObservation.trim()
-              ? 'La observación es obligatoria cuando el motivo es otro.'
-              : null;
-    const isDirty = deliveryDateChanged;
-    const isMutatingItems = Object.values(busyItemIds).some(Boolean);
-
     const performItemMutation = useCallback(
         async (
             key: string,
@@ -266,82 +292,10 @@ export const OrderEditPage = () => {
         [order, performItemMutation]
     );
 
-    useEffect(() => {
-        if (!isDirty) return;
-
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            event.preventDefault();
-            event.returnValue = '';
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [isDirty]);
-
-    const requestNavigation = useCallback(
-        (navigation: () => void) => {
-            if (isDirty) {
-                setPendingNavigation(() => navigation);
-                return;
-            }
-
-            navigation();
-        },
-        [isDirty]
-    );
-    const handleBack = useCallback(
-        () => requestNavigation(() => navigate('/tienda/ventas/pedidos')),
-        [navigate, requestNavigation]
-    );
-    const handleContinueEditing = useCallback(() => {
-        setPendingNavigation(null);
-    }, []);
-    const handleLeaveWithoutSaving = useCallback(() => {
-        if (pendingNavigation) {
-            pendingNavigation();
-        }
-        setPendingNavigation(null);
-    }, [pendingNavigation]);
-
-    const handleSave = async () => {
-        if (
-            !id ||
-            !editability?.editable ||
-            !isDirty ||
-            isMutatingItems ||
-            deliveryDateValidationMessage
-        ) {
-            return;
-        }
-
-        const payload: UpdateOrderPayload = {};
-        if (deliveryDateChanged && requestedDeliveryDate && deliveryDateReason) {
-            payload.requested_delivery_date = requestedDeliveryDate;
-            payload.reason = deliveryDateReason;
-            if (deliveryDateReason === 'other') {
-                payload.observation = deliveryDateObservation.trim();
-            }
-        }
-
-        setSaving(true);
-        setSaveError(null);
-        try {
-            await OrdersService.update(id, payload);
-            await loadOrder();
-            message.success('Cambios del pedido guardados correctamente.');
-        } catch (requestError) {
-            const apiError = requestError as SaveError;
-            const errors = apiError.errors ? Object.values(apiError.errors).flat().join(' ') : '';
-            setSaveError(
-                errors || apiError.message || 'No se pudieron guardar los cambios del pedido.'
-            );
-        } finally {
-            setSaving(false);
-        }
-    };
+    const handleBack = useCallback(() => navigate('/tienda/ventas/pedidos'), [navigate]);
 
     const openPayment = useCallback(() => {
-        if (isDirty || saving || isMutatingItems) return;
+        if (saving || isMutatingItems) return;
 
         if (!cashSession || cashSession.status !== 'open') {
             message.warning('Debes abrir una caja antes de registrar cobros.');
@@ -349,7 +303,7 @@ export const OrderEditPage = () => {
         }
 
         setPaymentOpen(true);
-    }, [cashSession, isDirty, isMutatingItems, saving]);
+    }, [cashSession, isMutatingItems, saving]);
 
     const registerPayment = useCallback(
         async (payload: {
@@ -357,14 +311,14 @@ export const OrderEditPage = () => {
             amount: number;
             reference?: string;
         }) => {
-            if (!id || !order || isDirty || saving || isMutatingItems) return;
+            if (!id || !order || saving || isMutatingItems) return;
 
             await OrdersService.registerPayment(order.id, payload);
             setCashSession(await CashService.getCurrent());
             await loadOrder();
             message.success('Pago registrado exitosamente.');
         },
-        [id, isDirty, isMutatingItems, loadOrder, order, saving, setCashSession]
+        [id, isMutatingItems, loadOrder, order, saving, setCashSession]
     );
 
     if (loading) {
@@ -413,14 +367,12 @@ export const OrderEditPage = () => {
                 order={order}
                 editability={editability}
                 draft={productDraft}
-                isDirty={isDirty}
                 saving={saving}
                 busyItemIds={busyItemIds}
                 saveError={saveError}
                 requestedDeliveryDate={requestedDeliveryDate}
                 deliveryDateReason={deliveryDateReason}
                 deliveryDateObservation={deliveryDateObservation}
-                deliveryDateChanged={deliveryDateChanged}
                 canCollect={canCollect}
                 availablePriceLists={availablePriceLists}
                 selectedPriceListId={selectedPriceListId}
@@ -431,18 +383,12 @@ export const OrderEditPage = () => {
                 onChangeItemPriceList={handleChangeItemPriceList}
                 onApplyDeliveryDateChange={handleApplyDeliveryDateChange}
                 onOpenPayment={openPayment}
-                onSave={handleSave}
             />
             <RegisterOrderPaymentModal
                 open={paymentOpen}
                 pendingAmount={order.pending_amount ?? Math.max(0, order.total - order.paid_amount)}
                 onClose={() => setPaymentOpen(false)}
                 onSubmit={registerPayment}
-            />
-            <OrderEditUnsavedChangesModal
-                open={pendingNavigation !== null}
-                onContinueEditing={handleContinueEditing}
-                onLeaveWithoutSaving={handleLeaveWithoutSaving}
             />
         </div>
     );

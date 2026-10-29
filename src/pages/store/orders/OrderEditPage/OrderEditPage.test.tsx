@@ -123,6 +123,7 @@ vi.mock('@/features/store/orders/components/OrderStatusBadge', () => ({
 interface DatePickerProps {
     value?: Dayjs | null;
     onChange?: (date: Dayjs | null) => void;
+    disabled?: boolean;
 }
 
 interface SelectProps {
@@ -130,6 +131,7 @@ interface SelectProps {
     onChange?: (value: string) => void;
     options?: { label: string; value: string; disabled?: boolean }[];
     'aria-label'?: string;
+    disabled?: boolean;
 }
 
 vi.mock('antd', async () => {
@@ -138,20 +140,22 @@ vi.mock('antd', async () => {
 
     return {
         ...actual,
-        DatePicker: ({ value, onChange }: DatePickerProps) => (
+        DatePicker: ({ value, onChange, disabled }: DatePickerProps) => (
             <input
                 aria-label="Fecha de entrega"
                 value={value?.format('YYYY-MM-DD') ?? ''}
                 onChange={(event) =>
                     onChange?.(event.target.value ? dayjs(event.target.value) : null)
                 }
+                disabled={disabled}
             />
         ),
-        Select: ({ value, onChange, options, 'aria-label': ariaLabel }: SelectProps) => (
+        Select: ({ value, onChange, options, 'aria-label': ariaLabel, disabled }: SelectProps) => (
             <select
                 aria-label={ariaLabel}
                 value={value ?? ''}
                 onChange={(event) => onChange?.(event.target.value)}
+                disabled={disabled}
             >
                 <option value="">Seleccionar motivo</option>
                 {options?.map((option) => (
@@ -384,13 +388,58 @@ test('shows validation only after applying a changed date without a reason', asy
     expect(update).not.toHaveBeenCalled();
 });
 
-test('requires observation for other, applies locally, and preserves the pending draft on reopen', async () => {
+test('persists a delivery date change immediately and refreshes the order', async () => {
     getEditability.mockResolvedValue({
         ...editability,
         delivery_date_editable: true,
         delivery_date_block_reason: null,
         delivery_date_block_message: null,
     });
+
+    const updatedOrder = { ...order, requested_delivery_date: '2026-09-22' };
+    getById.mockResolvedValueOnce(order).mockResolvedValue(updatedOrder);
+    update.mockResolvedValue(updatedOrder);
+
+    render(<OrderEditPage />);
+    await screen.findByText('Editar pedido P-000123');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
+    fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
+        target: { value: '2026-09-22' },
+    });
+    fireEvent.change(screen.getByLabelText('Motivo de reprogramación'), {
+        target: { value: 'customer_requested_reschedule' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
+
+    await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('order-1', {
+            requested_delivery_date: '2026-09-22',
+            reason: 'customer_requested_reschedule',
+        })
+    );
+    await waitFor(() => expect(getById).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
+    expect(screen.getByLabelText('Fecha de entrega')).toHaveValue('2026-09-22');
+    expect(screen.queryByText('Pendiente')).not.toBeInTheDocument();
+});
+
+test('blocks the delivery date modal while its autosave is pending and re-enables it afterwards', async () => {
+    getEditability.mockResolvedValue({
+        ...editability,
+        delivery_date_editable: true,
+        delivery_date_block_reason: null,
+        delivery_date_block_message: null,
+    });
+
+    let rejectUpdate: (reason?: unknown) => void;
+    update.mockImplementation(
+        () =>
+            new Promise<OrderDetail>((_, reject) => {
+                rejectUpdate = reject;
+            })
+    );
 
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
@@ -402,35 +451,44 @@ test('requires observation for other, applies locally, and preserves the pending
     fireEvent.change(screen.getByLabelText('Motivo de reprogramación'), {
         target: { value: 'other' },
     });
-
-    expect(screen.getByLabelText('Observación de reprogramación')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-    expect(
-        screen.getByText('La observación es obligatoria cuando el motivo es otro.')
-    ).toBeInTheDocument();
-
     fireEvent.change(screen.getByLabelText('Observación de reprogramación'), {
         target: { value: 'El cliente solicitó otra fecha.' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
 
-    expect(update).not.toHaveBeenCalled();
-    expect(screen.getByText('Pendiente')).toBeInTheDocument();
+    await waitFor(() => expect(update).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    expect(screen.getByLabelText('Fecha de entrega')).toHaveValue('2026-09-22');
-    expect(screen.getByLabelText('Motivo de reprogramación')).toHaveValue('other');
-    expect(screen.getByLabelText('Observación de reprogramación')).toHaveValue(
-        'El cliente solicitó otra fecha.'
-    );
+    expect(screen.getByLabelText('Fecha de entrega')).toBeDisabled();
+    expect(screen.getByLabelText('Motivo de reprogramación')).toBeDisabled();
+    expect(screen.getByLabelText('Observación de reprogramación')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Aplicar cambio/ })).toBeDisabled();
+    expect(document.querySelector('.ant-modal-close')).not.toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(document.querySelector('.ant-modal-mask')!);
+    expect(screen.getByText('Reprogramar fecha de entrega')).toBeInTheDocument();
+
+    await act(async () => rejectUpdate!(new Error('No se pudo actualizar la fecha de entrega.')));
+
+    await waitFor(() => expect(screen.getByLabelText('Fecha de entrega')).toBeEnabled());
+    expect(screen.getByLabelText('Motivo de reprogramación')).toBeEnabled();
+    expect(screen.getByLabelText('Observación de reprogramación')).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Aplicar cambio/ })).toBeEnabled();
 });
 
-test('clears the pending date draft when it is restored to the persisted date', async () => {
+test('restores the persisted delivery date and shows the backend error when its update fails', async () => {
     getEditability.mockResolvedValue({
         ...editability,
         delivery_date_editable: true,
         delivery_date_block_reason: null,
         delivery_date_block_message: null,
+    });
+
+    update.mockRejectedValue({
+        message: 'Error de validación.',
+        errors: { requested_delivery_date: ['La fecha ya no puede modificarse.'] },
     });
 
     render(<OrderEditPage />);
@@ -444,43 +502,12 @@ test('clears the pending date draft when it is restored to the persisted date', 
         target: { value: 'customer_requested_reschedule' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-    expect(screen.getByText('Pendiente')).toBeInTheDocument();
 
+    expect(await screen.findByText('La fecha ya no puede modificarse.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
-        target: { value: '2026-09-20' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-
-    expect(screen.queryByText('Pendiente')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Fecha de entrega')).toHaveValue('2026-09-20');
 }, 10000);
-
-test('keeps a delivery date change pending without a global save action', async () => {
-    getEditability.mockResolvedValue({
-        ...editability,
-        delivery_date_editable: true,
-        delivery_date_block_reason: null,
-        delivery_date_block_message: null,
-    });
-
-    render(<OrderEditPage />);
-    await screen.findByText('Editar pedido P-000123');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
-        target: { value: '2026-09-22' },
-    });
-    fireEvent.change(screen.getByLabelText('Motivo de reprogramación'), {
-        target: { value: 'customer_requested_reschedule' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-    expect(update).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    expect(screen.getByLabelText('Fecha de entrega')).toHaveValue('2026-09-22');
-    expect(screen.getByLabelText('Motivo de reprogramación')).toHaveValue(
-        'customer_requested_reschedule'
-    );
-});
 
 test('persists item changes immediately without a global save action', async () => {
     getEditability.mockResolvedValue({
@@ -509,7 +536,12 @@ test('persists item changes immediately without a global save action', async () 
     await waitFor(() =>
         expect(updateItemQuantity).toHaveBeenCalledWith('order-1', 'line-1', '11.0000')
     );
-    expect(update).not.toHaveBeenCalled();
+    await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('order-1', {
+            requested_delivery_date: '2026-09-22',
+            reason: 'operational_issue',
+        })
+    );
 });
 
 test('quantity steppers update the persisted line through operation_item_id', async () => {
@@ -805,7 +837,7 @@ test('does not ask to confirm navigation after an item mutation is persisted', a
     expect(navigate).toHaveBeenCalledWith('/tienda/ventas/pedidos');
 });
 
-test('confirms pending delivery date changes before leaving', async () => {
+test('navigates directly after a delivery date change is persisted', async () => {
     getEditability.mockResolvedValue({
         ...editability,
         delivery_date_editable: true,
@@ -824,9 +856,10 @@ test('confirms pending delivery date changes before leaving', async () => {
         target: { value: 'customer_requested_reschedule' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
+    await waitFor(() => expect(update).toHaveBeenCalled());
     fireEvent.click(screen.getByRole('button', { name: /Volver a pedidos/ }));
 
-    expect(screen.getByText('Hay cambios sin guardar')).toBeInTheDocument();
+    expect(navigate).toHaveBeenCalledWith('/tienda/ventas/pedidos');
 }, 10000);
 
 test('does not use a product draft to decide whether navigation is blocked', async () => {
@@ -842,54 +875,6 @@ test('does not use a product draft to decide whether navigation is blocked', asy
     expect(screen.queryByText('Hay cambios sin guardar')).not.toBeInTheDocument();
     expect(navigate).toHaveBeenCalledWith('/tienda/ventas/pedidos');
 });
-
-test('registers beforeunload only while the editor has pending changes', async () => {
-    getEditability.mockResolvedValue({
-        ...editability,
-        delivery_date_editable: true,
-        delivery_date_block_reason: null,
-        delivery_date_block_message: null,
-    });
-    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-
-    render(<OrderEditPage />);
-    await screen.findByText('Editar pedido P-000123');
-
-    addEventListenerSpy.mockClear();
-    removeEventListenerSpy.mockClear();
-    expect(addEventListenerSpy.mock.calls.some(([eventName]) => eventName === 'beforeunload')).toBe(
-        false
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
-        target: { value: '2026-09-22' },
-    });
-    fireEvent.change(screen.getByLabelText('Motivo de reprogramación'), {
-        target: { value: 'customer_requested_reschedule' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-    await waitFor(() =>
-        expect(
-            addEventListenerSpy.mock.calls.some(([eventName]) => eventName === 'beforeunload')
-        ).toBe(true)
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
-    fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
-        target: { value: '2026-09-20' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
-    await waitFor(() =>
-        expect(
-            removeEventListenerSpy.mock.calls.some(([eventName]) => eventName === 'beforeunload')
-        ).toBe(true)
-    );
-
-    addEventListenerSpy.mockRestore();
-    removeEventListenerSpy.mockRestore();
-}, 10000);
 
 test('selector starts at Común, changes only the next product, and submits its price_list_id', async () => {
     commercialSearch.mockResolvedValue([
