@@ -34,6 +34,9 @@ export const useOrderProductDraft = (
 
     return order.items.map((line) => {
         const productState = editability?.items.find((item) => item.product_id === line.product_id);
+        const deliverySummaryItem = order.delivery_summary.items.find(
+            (item) => item.product_id === line.product_id
+        );
         const otherLinesQuantity = order.items
             .filter((other) => other.product_id === line.product_id && other.id !== line.id)
             .reduce((sum, other) => addDecimalStrings(sum, other.quantity), '0.0000' as DecimalString);
@@ -45,7 +48,7 @@ export const useOrderProductDraft = (
             line_key: line.id,
             product_id: line.product_id,
             name: line.product_name,
-            sku: null,
+            sku: deliverySummaryItem?.sku ?? null,
             original_quantity: line.quantity,
             quantity: line.quantity,
             minimum_quantity: maxDecimalStrings(subtractDecimalStrings(productMinimum, otherLinesQuantity), '0.0000'),

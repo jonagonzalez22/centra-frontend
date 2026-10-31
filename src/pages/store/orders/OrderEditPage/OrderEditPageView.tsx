@@ -222,8 +222,8 @@ export const OrderEditPageView = ({
     return (
         <div className="space-y-4">
             <div>
-                <h1 className="text-2xl font-bold m-0">Editar pedido {order.operation_number}</h1>
-                <p className="text-gray-500 mt-1">Gestioná los productos del pedido.</p>
+                <h1 className="m-0 text-xl font-bold sm:text-2xl">Editar pedido {order.operation_number}</h1>
+                <p className="mt-1 text-sm text-gray-500 sm:text-base">Gestioná los productos del pedido.</p>
             </div>
 
             {!editable && (
@@ -239,7 +239,10 @@ export const OrderEditPageView = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
-                    <Card title="Productos del pedido">
+                    <Card
+                        title="Productos del pedido"
+                        className="max-md:border-0 max-md:bg-transparent max-md:shadow-none max-md:[&_.ant-card-head]:min-h-0 max-md:[&_.ant-card-head]:border-b-0 max-md:[&_.ant-card-head]:px-0 max-md:[&_.ant-card-body]:px-0"
+                    >
                         {editable && (
                             <div className="mb-4 space-y-3">
                                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
@@ -394,12 +397,12 @@ export const OrderEditPageView = ({
                                             htmlFor="order-next-price-list"
                                             className="mb-1 block text-sm font-medium"
                                         >
-                                            Lista para agregar
+                                            Tipo de lista
                                         </label>
                                         <Select
                                             id="order-next-price-list"
-                                            aria-label="Lista para agregar"
-                                            className="w-full"
+                                            aria-label="Tipo de lista"
+                                            className="w-full max-lg:[&_.ant-select-selector]:min-h-11"
                                             value={selectedPriceListId ?? '__common__'}
                                             options={activePriceListOptions}
                                             onChange={(value) =>
@@ -425,6 +428,12 @@ export const OrderEditPageView = ({
                             <Alert className="mb-4" type="error" showIcon title={saveError} />
                         )}
                         <div className="space-y-3">
+                            {draft.length === 0 && (
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="Este pedido no tiene productos."
+                                />
+                            )}
                             {draft.map((item) => {
                                 const isBusy = Boolean(busyItemIds[item.operation_item_id]);
                                 const canRemove =
@@ -466,133 +475,104 @@ export const OrderEditPageView = ({
                                 return (
                                     <div
                                         key={item.operation_item_id}
-                                        className="border border-gray-200 rounded-lg p-4"
+                                        className="relative rounded-lg border border-gray-200 bg-white p-4"
                                     >
-                                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-                                            <div className="min-w-0">
-                                                <p className="font-semibold mb-1">{item.name}</p>
-                                                {item.sku && (
-                                                    <p className="text-xs text-gray-500 m-0">
-                                                        SKU: {item.sku}
-                                                    </p>
-                                                )}
-                                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                                                    <span>
-                                                        Precio: {formatCurrency(item.price)}
-                                                        {item.stock_measurement_unit_symbol
-                                                            ? `/${item.stock_measurement_unit_symbol}`
-                                                            : ''}
-                                                    </span>
-                                                    {item.discount_amount > 0 && (
-                                                        <span className="text-emerald-700">
-                                                            Descuento: -
-                                                            {formatCurrency(item.discount_amount)}
-                                                        </span>
+                                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(160px,220px)_auto_40px] xl:gap-x-4 xl:gap-y-1">
+                                            <div className="min-w-0 pr-12 xl:col-start-1 xl:row-start-1 xl:pr-0">
+                                                <div className="min-w-0">
+                                                    <p className="mb-1 text-sm font-semibold text-gray-900">{item.name}</p>
+                                                    {item.sku && (
+                                                        <p className="m-0 break-all text-xs text-gray-500">
+                                                            {item.sku}
+                                                        </p>
                                                     )}
-                                                    <span className="font-medium text-gray-900">
-                                                        Subtotal: {formatCurrency(netSubtotal)}
-                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-wrap items-center gap-3 xl:justify-end">
-                                                {editable ? (
+                                            {editable ? (
+                                                <div className="w-full xl:col-start-2 xl:row-span-2 xl:self-center">
+                                                    <label className="mb-1 block text-xs font-medium text-gray-600 xl:hidden">Lista de precios</label>
                                                     <Select
                                                         aria-label={`Lista de precios de ${item.name} · ${listLabel}`}
-                                                        className="w-full min-w-48 sm:w-56"
+                                                        className="w-full max-xl:[&_.ant-select-selector]:min-h-11"
                                                         value={item.price_list_id ?? '__common__'}
                                                         options={linePriceListOptions}
                                                         disabled={isBusy}
                                                         onChange={(value) =>
                                                             void onChangeItemPriceList(
                                                                 item.operation_item_id,
-                                                                value === '__common__'
-                                                                    ? null
-                                                                    : value
+                                                                value === '__common__' ? null : value
                                                             )
                                                         }
                                                     />
-                                                ) : (
-                                                    <span className="text-sm text-gray-500">
-                                                        {listLabel}
-                                                    </span>
-                                                )}
-                                                {editable && (
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm text-gray-500">{listLabel}</span>
+                                            )}
+                                            {editable && (
+                                                <div className="flex w-full justify-center xl:col-start-3 xl:row-span-2 xl:w-auto xl:self-center xl:justify-start max-xl:[&_.ant-space-compact_.ant-btn]:min-h-11 max-xl:[&_.ant-space-compact_.ant-btn]:min-w-11">
                                                     <QuantityInput
                                                         ariaLabel={`Cantidad de ${item.name} · ${listLabel}`}
-                                                        value={
-                                                            quantityInputs[
-                                                                item.operation_item_id
-                                                            ] ?? item.quantity
-                                                        }
+                                                        value={quantityInputs[item.operation_item_id] ?? item.quantity}
                                                         min={minimumEditableQuantity}
                                                         max={item.maximum_editable_quantity}
                                                         step={item.sale_quantity_step}
-                                                        onChange={(value) =>
-                                                            setQuantityInputs((current) => ({
-                                                                ...current,
-                                                                [item.operation_item_id]:
-                                                                    value ?? '',
-                                                            }))
-                                                        }
-                                                        onCommit={() =>
-                                                            void commitQuantityInput(item)
-                                                        }
-                                                        onDecrease={() =>
-                                                            void onQuantityChange(
-                                                                item.operation_item_id,
-                                                                addDecimalStrings(
-                                                                    item.quantity,
-                                                                    `-${item.sale_quantity_step}`
-                                                                )
-                                                            )
-                                                        }
-                                                        onIncrease={() =>
-                                                            void changeQuantity(
-                                                                item,
-                                                                addDecimalStrings(
-                                                                    item.quantity,
-                                                                    item.sale_quantity_step
-                                                                )
-                                                            )
-                                                        }
+                                                        className="w-24 [&_.ant-input-number-input]:text-center xl:w-16"
+                                                        unitClassName="shrink-0 text-sm font-medium text-gray-600"
+                                                        onChange={(value) => setQuantityInputs((current) => ({ ...current, [item.operation_item_id]: value ?? '' }))}
+                                                        onCommit={() => void commitQuantityInput(item)}
+                                                        onDecrease={() => void onQuantityChange(item.operation_item_id, addDecimalStrings(item.quantity, `-${item.sale_quantity_step}`))}
+                                                        onIncrease={() => void changeQuantity(item, addDecimalStrings(item.quantity, item.sale_quantity_step))}
                                                         decreaseAriaLabel={`Reducir cantidad de ${item.name} · ${listLabel}`}
                                                         increaseAriaLabel={`Aumentar cantidad de ${item.name} · ${listLabel}`}
-                                                        decreaseDisabled={
-                                                            isBusy ||
-                                                            compareDecimalStrings(
-                                                                addDecimalStrings(
-                                                                    item.quantity,
-                                                                    `-${item.sale_quantity_step}`
-                                                                ),
-                                                                minimumEditableQuantity
-                                                            ) < 0
-                                                        }
+                                                        decreaseDisabled={isBusy || compareDecimalStrings(addDecimalStrings(item.quantity, `-${item.sale_quantity_step}`), minimumEditableQuantity) < 0}
                                                         increaseDisabled={isBusy || !canIncrease}
                                                         disabled={isBusy}
-                                                        unitSymbol={
-                                                            item.stock_measurement_unit_symbol
-                                                        }
+                                                        unitSymbol={item.stock_measurement_unit_symbol}
                                                     />
+                                                </div>
+                                            )}
+                                            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-t border-gray-100 pt-3 text-sm text-gray-600 xl:col-start-1 xl:row-start-2 xl:flex-col xl:items-start xl:justify-center xl:gap-y-1 xl:border-0 xl:pt-0">
+                                                <span>
+                                                    <span className="block text-xs text-gray-500 xl:hidden">Precio unitario</span>
+                                                    <span className="hidden xl:inline">Precio: </span>
+                                                    <span className="mt-1 block font-medium text-gray-800 xl:mt-0 xl:inline">
+                                                        {formatCurrency(item.price)}
+                                                        {item.stock_measurement_unit_symbol
+                                                            ? `/${item.stock_measurement_unit_symbol}`
+                                                            : ''}
+                                                    </span>
+                                                </span>
+                                                {item.discount_amount > 0 && (
+                                                    <span className="order-3 w-full text-emerald-700 xl:order-none xl:w-auto">
+                                                        Descuento: -
+                                                        {formatCurrency(item.discount_amount)}
+                                                    </span>
                                                 )}
-                                                {canRemove && (
-                                                    <Popconfirm
-                                                        title="¿Quitar línea del pedido?"
-                                                        okText="Quitar"
-                                                        cancelText="Cancelar"
-                                                        onConfirm={() =>
-                                                            onRemoveProduct(item.operation_item_id)
-                                                        }
-                                                    >
-                                                        <Button
-                                                            variant="text"
-                                                            danger
-                                                            disabled={isBusy}
-                                                            aria-label={`Eliminar ${item.name} · ${listLabel}`}
-                                                            icon={<DeleteOutlined />}
-                                                        />
-                                                    </Popconfirm>
-                                                )}
+                                                <span className="text-right xl:text-left">
+                                                    <span className="block text-xs text-gray-500 xl:hidden">Subtotal</span>
+                                                    <span className="hidden xl:inline">Subtotal: </span>
+                                                    <span className="mt-1 block text-base font-semibold text-gray-900 xl:mt-0 xl:inline xl:text-sm">
+                                                        {formatCurrency(netSubtotal)}
+                                                    </span>
+                                                </span>
                                             </div>
+                                            {canRemove && (
+                                                <Popconfirm
+                                                    title="¿Quitar línea del pedido?"
+                                                    okText="Quitar"
+                                                    cancelText="Cancelar"
+                                                    onConfirm={() => onRemoveProduct(item.operation_item_id)}
+                                                >
+                                                    <Button
+                                                        variant="text"
+                                                        danger
+                                                        disabled={isBusy}
+                                                        aria-label={`Eliminar ${item.name} · ${listLabel}`}
+                                                        icon={<DeleteOutlined />}
+                                                        className="absolute right-4 top-4 min-h-10 min-w-10 shrink-0 xl:static xl:col-start-4 xl:row-span-2 xl:self-center xl:min-h-0 xl:min-w-0"
+                                                    />
+                                                </Popconfirm>
+                                            )}
                                         </div>
 
                                         {(compareDecimalStrings(item.delivered_quantity, '0.0000') >
@@ -643,7 +623,11 @@ export const OrderEditPageView = ({
 
                 <div className="space-y-4">
                     <Card title="Información del pedido">
-                        <Descriptions column={1} size="small">
+                        <Descriptions
+                            column={1}
+                            size="small"
+                            className="[&_.ant-descriptions-item-label]:pb-2 [&_.ant-descriptions-item-label]:text-gray-500 [&_.ant-descriptions-item-content]:break-words [&_.ant-descriptions-item-content]:pb-2"
+                        >
                             <Descriptions.Item label="Cliente">
                                 {order.customer.name}
                             </Descriptions.Item>
@@ -667,6 +651,7 @@ export const OrderEditPageView = ({
                                                 shape="square"
                                                 aria-label="Reprogramar fecha de entrega"
                                                 icon={<EditOutlined />}
+                                                className="relative before:absolute before:-inset-2 before:content-['']"
                                                 disabled={saving}
                                                 action={() => setDeliveryDateModalOpen(true)}
                                             />
@@ -685,7 +670,7 @@ export const OrderEditPageView = ({
                         </Descriptions>
                         {!editability.delivery_date_editable &&
                             editability.delivery_date_block_message && (
-                                <p className="text-xs text-amber-700 mt-3 mb-0">
+                                <p className="mb-0 mt-3 break-words text-xs text-amber-700">
                                     {editability.delivery_date_block_message}
                                 </p>
                             )}
@@ -693,27 +678,27 @@ export const OrderEditPageView = ({
 
                     <Card title="Resumen económico">
                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-4 text-gray-600">
                                 <span>Subtotal</span>
-                                <span>{formatCurrency(order.subtotal)}</span>
+                                <span className="shrink-0">{formatCurrency(order.subtotal)}</span>
                             </div>
                             {order.discount > 0 && (
-                                <div className="flex justify-between text-emerald-700">
+                                <div className="flex justify-between gap-4 text-emerald-700">
                                     <span>Descuentos</span>
-                                    <span>-{formatCurrency(order.discount)}</span>
+                                    <span className="shrink-0">-{formatCurrency(order.discount)}</span>
                                 </div>
                             )}
-                            <div className="border-t border-gray-200 pt-2 flex justify-between font-semibold">
+                            <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-base font-semibold">
                                 <span>Total</span>
-                                <span>{formatCurrency(order.total)}</span>
+                                <span className="shrink-0">{formatCurrency(order.total)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between gap-4 text-gray-600">
                                 <span>Pagado</span>
-                                <span>{formatCurrency(order.paid_amount)}</span>
+                                <span className="shrink-0">{formatCurrency(order.paid_amount)}</span>
                             </div>
-                            <div className="border-t border-gray-200 pt-2 flex justify-between font-semibold">
+                            <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 font-semibold">
                                 <span>Saldo pendiente</span>
-                                <span className={pendingAmount > 0 ? 'text-amber-600' : ''}>
+                                <span className={`shrink-0 ${pendingAmount > 0 ? 'text-amber-600' : ''}`}>
                                     {formatCurrency(pendingAmount)}
                                 </span>
                             </div>
@@ -730,8 +715,8 @@ export const OrderEditPageView = ({
                                     <span className="inline-block w-full">
                                         <Button
                                             variant="default"
-                                            className="w-full"
-                                            label="Agregar pago"
+                                            className="min-h-11 w-full"
+                                            label="Registrar pago"
                                             disabled={
                                                 saving || Object.values(busyItemIds).some(Boolean)
                                             }

@@ -6,3 +6,20 @@
     }
 
 }
+
+@media (max-width: 767px) {
+    .pos-cart-mobile .ant-space-compact .ant-btn,
+    .pos-cart-mobile .ant-input-number {
+        min-height: 44px;
+    }
+
+    .pos-cart-mobile .ant-space-compact .ant-btn {
+        min-width: 44px;
+    }
+
+    .pos-cart-mobile .ant-select-single .ant-select-selector {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+}

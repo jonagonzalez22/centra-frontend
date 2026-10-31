@@ -36,7 +36,6 @@ const STATUS_OPTIONS = [
 
 const OrderFilters: React.FC<OrderFiltersProps> = ({
     filters,
-    loading,
     onFilterChange,
     onReset,
 }) => {
@@ -71,7 +70,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         () =>
             debounce((values: OrderFiltersFormValues) => {
                 onFilterChange(buildFilters(values));
-            }, 400),
+            }, 300),
         [onFilterChange, buildFilters]
     );
 
@@ -85,7 +84,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     useEffect(() => () => debouncedSetFilters.cancel(), [debouncedSetFilters]);
 
     useEffect(() => {
-        form.setFieldsValue({
+        const nextValues = {
             date: filters.date ? dayjs(filters.date) : null,
             operation_number: filters.operation_number ?? '',
             customer_name: filters.customer_name ?? '',
@@ -97,7 +96,18 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                     : filters.has_pending_balance === false
                       ? 'paid'
                       : '',
-        });
+        };
+        const currentValues = form.getFieldsValue();
+        const isCurrentValue = currentValues.date?.format?.('YYYY-MM-DD') === nextValues.date?.format('YYYY-MM-DD')
+            && currentValues.operation_number === nextValues.operation_number
+            && currentValues.customer_name === nextValues.customer_name
+            && currentValues.locality === nextValues.locality
+            && currentValues.status === nextValues.status
+            && currentValues.collection_status === nextValues.collection_status;
+
+        if (!isCurrentValue) {
+            form.setFieldsValue(nextValues);
+        }
     }, [filters, form]);
 
     const handleReset = useCallback(() => {
@@ -136,7 +146,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                         format="DD/MM/YYYY"
                         style={{ width: '100%' }}
                         allowClear
-                        disabled={loading}
                     />
                 </Form.Item>
 
@@ -145,7 +154,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                     label="Nº de pedido"
                     placeholder="Buscar por número"
                     allowClear
-                    disabled={loading}
                 />
 
                 <InputField
@@ -153,7 +161,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                     label="Cliente"
                     placeholder="Buscar por cliente"
                     allowClear
-                    disabled={loading}
                 />
 
                 <InputField
@@ -161,7 +168,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                     label="Localidad"
                     placeholder="Buscar por localidad"
                     allowClear
-                    disabled={loading}
                 />
 
                 <SelectField
@@ -170,7 +176,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                     placeholder="Seleccionar"
                     options={STATUS_OPTIONS}
                     allowClear
-                    disabled={loading}
                 />
 
                 <SelectField
@@ -183,7 +188,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                         { label: 'Sin saldo pendiente', value: 'paid' },
                     ]}
                     allowClear
-                    disabled={loading}
                 />
 
                 <div className="orderFiltersActions">
@@ -191,7 +195,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
                         variant="default"
                         label="Limpiar"
                         action={handleReset}
-                        disabled={loading || !hasActiveFilters}
+                        disabled={!hasActiveFilters}
                     />
                 </div>
             </div>

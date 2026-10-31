@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Modal, Select, InputNumber, Input, Button, message as antMessage, Alert } from 'antd';
+import { Modal, Drawer, Grid, Select, InputNumber, Input, Button, message as antMessage, Alert } from 'antd';
 import { Plus, Trash2 } from 'lucide-react';
 import { SalesService } from '../../services/sales.service';
 import { usePOSStore } from '../../stores/usePOSStore';
@@ -47,6 +47,8 @@ function parseInputNumber(value: string | undefined): number {
 }
 
 export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose, onSuccess }) => {
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
   const items = usePOSStore((s) => s.items);
   const type = usePOSStore((s) => s.type);
   const customer = usePOSStore((s) => s.customer);
@@ -81,6 +83,8 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
   }, [open, loadPaymentMethods]);
 
   const total = items.reduce((sum, item) => sum + Math.max(0, Math.round(item.subtotal * (1 - item.discount_percentage / 100))), 0);
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const discount = items.reduce((sum, item) => sum + item.discount_amount, 0);
 
   const sumPayments = useMemo(
     () =>
@@ -198,75 +202,17 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
     }
   };
 
-  return (
-    <Modal
-      open={open}
-      onCancel={onClose}
-      title={type === 'order' ? 'Registrar seña' : 'Registrar pago'}
-      width={520}
-      closable={!submitting}
-      maskClosable={!submitting}
-      keyboard={!submitting}
-      footer={
-        <div className="flex justify-between items-center">
-          <div className="text-sm space-y-0.5">
-            <div>
-              <span className="text-gray-500">Total: </span>
-              <span className="font-bold">{formatCurrency(total)}</span>
-            </div>
-            {type === 'order' && sumPayments > 0 ? (
-              change > 0 ? (
-                <div className="text-green-600 font-medium">
-                  Vuelto: {formatCurrency(change)}
-                </div>
-              ) : displayRemaining > 0 ? (
-                <div className="text-blue-600">
-                  Seña: {formatCurrency(sumPayments)} · Restante:{' '}
-                  {formatCurrency(displayRemaining)}
-                </div>
-              ) : (
-                <div className="text-green-600">Total cubierto</div>
-              )
-            ) : type === 'sale' ? (
-              change > 0 ? (
-                <div className="text-green-600 font-medium">
-                  Vuelto: {formatCurrency(change)}
-                </div>
-              ) : displayRemaining > 0 ? (
-                <div className="text-red-500">
-                  Falta: {formatCurrency(displayRemaining)}
-                </div>
-              ) : (
-                <div className="text-green-600">Cubierto</div>
-              )
-            ) : null}
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={onClose} disabled={submitting}>
-              Cancelar
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              loading={submitting}
-              disabled={!isValid}
-            >
-              {type === 'order' ? 'Registrar seña' : `Cobrar ${formatCurrency(total)}`}
-            </Button>
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-3">
+  const paymentForm = (
+    <div className="space-y-3">
         {error && <Alert type="error" message={error} showIcon closable />}
 
-        <div className="text-sm text-gray-500 mb-1">
+        {!isMobile && <div className="text-sm text-gray-500 mb-1">
           {items.length} producto{items.length !== 1 && 's'} ·{' '}
           {type === 'order' ? 'Total del pedido' : 'Total a cobrar'}:{' '}
           <span className="font-bold">{formatCurrency(total)}</span>
-        </div>
+        </div>}
 
-        <div className="space-y-2 max-h-80 overflow-y-auto">
+        <div className={isMobile ? 'space-y-2' : 'space-y-2 max-h-80 overflow-y-auto'}>
           {rows.map((row) => {
             const method = findMethod(row.store_payment_method_id);
             const isCash = !!method && method.code === CASH_CODE;
@@ -312,6 +258,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
                   <div className="flex gap-2">
                     <InputNumber<number>
                       placeholder="Monto"
+                      inputMode="decimal"
                       value={row.amount}
                       onChange={(val) => updateRow(row.id, 'amount', val)}
                       min={0.01}
@@ -357,7 +304,104 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
         >
           Agregar otro medio de pago
         </Button>
+    </div>
+  );
+
+  const paymentSummary = (
+    <section className="space-y-1.5 rounded-lg bg-gray-50 p-3 text-sm" aria-label="Resumen del pago">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Resumen</div>
+      <div className="flex justify-between gap-4"><span className="text-gray-600">Subtotal</span><span className="font-medium">{formatCurrency(subtotal)}</span></div>
+      {discount > 0 && <div className="flex justify-between gap-4"><span className="text-gray-600">Descuentos</span><span className="font-medium text-emerald-700">-{formatCurrency(discount)}</span></div>}
+      <div className="flex justify-between gap-4 border-t border-gray-200 pt-2"><span className="font-semibold text-gray-800">Total</span><span className="font-bold text-gray-900">{formatCurrency(total)}</span></div>
+      <div className="flex justify-between gap-4"><span className="text-gray-600">Ingresado</span><span className="font-medium">{formatCurrency(sumPayments)}</span></div>
+      {type === 'order' ? (
+        change > 0 ? (
+          <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-green-600"><span>Vuelto</span><span className="font-medium">{formatCurrency(change)}</span></div>
+        ) : displayRemaining > 0 ? (
+          <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-blue-600"><span>Restante</span><span className="font-medium">{formatCurrency(displayRemaining)}</span></div>
+        ) : (
+          <div className="border-t border-gray-200 pt-2 text-green-600">Total cubierto</div>
+        )
+      ) : change > 0 ? (
+        <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-green-600"><span>Vuelto</span><span className="font-medium">{formatCurrency(change)}</span></div>
+      ) : displayRemaining > 0 ? (
+        <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-red-500"><span>Falta</span><span className="font-medium">{formatCurrency(displayRemaining)}</span></div>
+      ) : (
+        <div className="border-t border-gray-200 pt-2 text-green-600">Cubierto</div>
+      )}
+    </section>
+  );
+
+  const desktopFooter = (
+    <div className="flex justify-between items-center">
+      <div className="text-sm space-y-0.5">
+        <div><span className="text-gray-500">Total: </span><span className="font-bold">{formatCurrency(total)}</span></div>
+        {type === 'order' && sumPayments > 0 ? (
+          change > 0 ? <div className="text-green-600 font-medium">Vuelto: {formatCurrency(change)}</div>
+            : displayRemaining > 0 ? <div className="text-blue-600">Seña: {formatCurrency(sumPayments)} · Restante: {formatCurrency(displayRemaining)}</div>
+              : <div className="text-green-600">Total cubierto</div>
+        ) : type === 'sale' ? (
+          change > 0 ? <div className="text-green-600 font-medium">Vuelto: {formatCurrency(change)}</div>
+            : displayRemaining > 0 ? <div className="text-red-500">Falta: {formatCurrency(displayRemaining)}</div>
+              : <div className="text-green-600">Cubierto</div>
+        ) : null}
       </div>
+      <div className="flex gap-2">
+        <Button onClick={onClose} disabled={submitting}>Cancelar</Button>
+        <Button type="primary" onClick={handleSubmit} loading={submitting} disabled={!isValid}>
+          {type === 'order' ? 'Registrar seña' : `Cobrar ${formatCurrency(total)}`}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const mobileFooter = (
+    <div className="flex flex-col gap-2 min-[360px]:flex-row" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <Button onClick={onClose} disabled={submitting} size="large" className="min-h-11 min-[360px]:flex-1">Cancelar</Button>
+      <Button type="primary" onClick={handleSubmit} loading={submitting} disabled={!isValid} size="large" className="min-h-11 min-[360px]:flex-[1.4]">
+        {type === 'order' ? 'Registrar seña' : `Cobrar ${formatCurrency(total)}`}
+      </Button>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        title={type === 'order' ? 'Registrar seña' : 'Registrar pago'}
+        placement="bottom"
+        height="min(88dvh, 720px)"
+        open={open}
+        onClose={onClose}
+        closable={!submitting}
+        maskClosable={!submitting}
+        keyboard={!submitting}
+        rootClassName="md:hidden"
+        footer={mobileFooter}
+        styles={{ body: { paddingBottom: '24px' } }}
+      >
+        <div className="mb-5">
+          <div className="text-sm text-gray-500">{items.length} producto{items.length !== 1 && 's'}</div>
+          <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500">{type === 'order' ? 'Total del pedido' : 'Total a cobrar'}</div>
+          <div className="mt-1 text-3xl font-bold text-centra-primary">{formatCurrency(total)}</div>
+        </div>
+        {paymentForm}
+        <div className="mt-4">{paymentSummary}</div>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Modal
+      open={open}
+      onCancel={onClose}
+      title={type === 'order' ? 'Registrar seña' : 'Registrar pago'}
+      width={520}
+      closable={!submitting}
+      maskClosable={!submitting}
+      keyboard={!submitting}
+      footer={desktopFooter}
+    >
+      {paymentForm}
     </Modal>
   );
 };

@@ -3,13 +3,17 @@ import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { PriceListsService } from '@/features/store/price-lists/services/priceLists.service';
-import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
 import { usePOSStore } from '../../stores/usePOSStore';
 import { useCustomerSearch } from '../../hooks/useCustomerSearch';
+import { POSGlobalPriceListSelect } from './POSGlobalPriceListSelect';
 
 const MANUAL_OPTION_PREFIX = '__manual_customer_name__:';
 
-export const POSOperationConfig: React.FC = () => {
+interface POSOperationConfigProps {
+  loadPriceLists?: boolean;
+}
+
+export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPriceLists = true }) => {
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
   const type = usePOSStore((s) => s.type);
   const customer = usePOSStore((s) => s.customer);
@@ -19,14 +23,12 @@ export const POSOperationConfig: React.FC = () => {
   const setCustomer = usePOSStore((s) => s.setCustomer);
   const setCustomerDisplayName = usePOSStore((s) => s.setCustomerDisplayName);
   const setRequestedDeliveryDate = usePOSStore((s) => s.setRequestedDeliveryDate);
-  const selectedPriceListId = usePOSStore((s) => s.selected_price_list_id);
-  const setSelectedPriceListId = usePOSStore((s) => s.setSelectedPriceListId);
-  const priceLists = usePOSStore((s) => s.available_price_lists);
   const setAvailablePriceLists = usePOSStore((s) => s.setAvailablePriceLists);
 
   useEffect(() => {
+    if (!loadPriceLists) return;
     PriceListsService.getActive().then(setAvailablePriceLists).catch(() => setAvailablePriceLists([]));
-  }, [setAvailablePriceLists]);
+  }, [loadPriceLists, setAvailablePriceLists]);
 
   const { query, setQuery, results, loading: customerLoading } = useCustomerSearch();
   const manualName = query.trim();
@@ -66,18 +68,7 @@ export const POSOperationConfig: React.FC = () => {
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Lista de precios</label>
-        <Select
-          value={selectedPriceListId ?? '__common__'}
-          onChange={(value) => {
-            const list = priceLists.find((candidate) => candidate.id === value);
-            setSelectedPriceListId(list?.id ?? null, list?.name ?? null, Number(list?.discount_percentage ?? 0));
-          }}
-          options={[
-            { value: '__common__', label: 'Común' },
-            ...priceLists.map((list) => ({ value: list.id, label: `${list.name} · ${formatDiscountPercentage(list.discount_percentage)}` })),
-          ]}
-          className="w-full"
-        />
+        <POSGlobalPriceListSelect />
       </div>
 
       <div>

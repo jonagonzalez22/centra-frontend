@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { usePOSStore } from '../../stores/usePOSStore';
 import { POSCart } from './POSCart';
@@ -50,19 +50,34 @@ beforeEach(() => {
     usePOSStore.getState().addItem(product);
 });
 
+test('shows the shared empty state when the cart has no products', () => {
+    usePOSStore.getState().resetPOS();
+
+    render(<POSCart />);
+
+    expect(screen.getByText('No hay productos en el carrito')).toBeInTheDocument();
+    expect(screen.getByText('Buscá un producto para comenzar la venta.')).toBeInTheDocument();
+    expect(screen.queryByTestId('pos-cart-mobile')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pos-cart-desktop')).not.toBeInTheDocument();
+});
+
 test('shows the line selector with virtual Common and active lists and changes only that line', async () => {
     const { container } = render(<POSCart />);
 
-    const selectors = screen.getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
+    const mobileCart = screen.getByTestId('pos-cart-mobile');
+    const desktopCart = screen.getByTestId('pos-cart-desktop');
+    const selectors = within(mobileCart).getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
     expect(container.querySelector('.pos-cart-scroll')).toHaveClass(
         'min-h-0',
         'lg:h-full',
         'lg:flex-1'
     );
     expect(container.querySelector('.pos-cart-table')).toBeInTheDocument();
+    expect(mobileCart).toHaveClass('md:hidden');
+    expect(desktopCart).toHaveClass('hidden', 'md:block');
     expect(selectors).toHaveLength(1);
-    expect(screen.getByRole('option', { name: 'Común' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Distribuidor · 15%' })).toBeInTheDocument();
+    expect(within(mobileCart).getByRole('option', { name: 'Común' })).toBeInTheDocument();
+    expect(within(mobileCart).getByRole('option', { name: 'Distribuidor · 15%' })).toBeInTheDocument();
     fireEvent.change(selectors[0], { target: { value: 'wholesale-id' } });
 
     expect(usePOSStore.getState().items[0]).toMatchObject({
@@ -77,8 +92,9 @@ test('shows the line selector with virtual Common and active lists and changes o
 test('offers a real zero percent list as a distinct option from Common', async () => {
     render(<POSCart />);
 
-    const selectors = screen.getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
-    expect(screen.getByRole('option', { name: 'Común' })).toBeInTheDocument();
+    const mobileCart = screen.getByTestId('pos-cart-mobile');
+    const selectors = within(mobileCart).getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
+    expect(within(mobileCart).getByRole('option', { name: 'Común' })).toBeInTheDocument();
     fireEvent.change(selectors[0], { target: { value: 'zero-id' } });
 
     expect(usePOSStore.getState().items[0]).toMatchObject({
@@ -101,7 +117,8 @@ test('merges a changed line into the matching line and updates operation totals 
     store.addItem(product);
 
     render(<><POSCart /><POSTotals /></>);
-    const lineSelectors = screen.getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
+    const mobileCart = screen.getByTestId('pos-cart-mobile');
+    const lineSelectors = within(mobileCart).getAllByRole('combobox', { name: 'Lista de precios de Papel higiénico' });
     fireEvent.change(lineSelectors[1], { target: { value: 'wholesale-id' } });
 
     expect(usePOSStore.getState().items).toHaveLength(1);
@@ -109,8 +126,8 @@ test('merges a changed line into the matching line and updates operation totals 
         line_key: 'paper-1:wholesale-id', quantity: '3.0000', subtotal: 75000, discount_amount: 7500,
     });
     expect(screen.getByText('$75.000')).toBeInTheDocument();
-    expect(screen.getByText('-$7.500')).toBeInTheDocument();
-    expect(screen.getAllByText('$67.500')).toHaveLength(2);
+    expect(screen.getAllByText('-$7.500')).toHaveLength(2);
+    expect(screen.getAllByText('$67.500')).toHaveLength(3);
 });
 
 test.each([
@@ -129,8 +146,34 @@ test.each([
 
     render(<POSCart />);
 
-    const input = screen.getByRole('spinbutton', { name: 'Cantidad de Cloro suelto' });
+    const mobileCart = screen.getByTestId('pos-cart-mobile');
+    const input = within(mobileCart).getByRole('spinbutton', { name: 'Cantidad de Cloro suelto' });
     expect(input).toHaveValue(displayedQuantity);
-    expect(input.closest('.ant-input-number')).toHaveClass('w-20');
-    expect(screen.getByText('L')).toBeInTheDocument();
+    expect(input.closest('.ant-input-number')).toHaveClass('w-24');
+    expect(within(mobileCart).getByText('L')).toBeInTheDocument();
+});
+
+test('keeps all POS actions and commercial information available in the mobile product card', () => {
+    render(<POSCart />);
+
+    const mobileCart = screen.getByTestId('pos-cart-mobile');
+    expect(within(mobileCart).getByText('Papel higiénico')).toBeInTheDocument();
+    expect(within(mobileCart).getByText('PAP-1')).toBeInTheDocument();
+    expect(within(mobileCart).getByText('Lista de precios')).toBeInTheDocument();
+    expect(within(mobileCart).getByText('Precio unitario')).toBeInTheDocument();
+    expect(within(mobileCart).getByText('Subtotal')).toBeInTheDocument();
+
+    fireEvent.click(within(mobileCart).getByRole('button', { name: 'Aumentar cantidad de Papel higiénico' }));
+    expect(usePOSStore.getState().items[0].quantity).toBe('2.0000');
+
+    fireEvent.change(
+        within(mobileCart).getByRole('combobox', { name: 'Lista de precios de Papel higiénico' }),
+        { target: { value: 'wholesale-id' } }
+    );
+    expect(within(screen.getByTestId('pos-cart-mobile')).getByText('Descuento')).toBeInTheDocument();
+    expect(within(screen.getByTestId('pos-cart-mobile')).getByText('-$5.000')).toBeInTheDocument();
+    expect(within(screen.getByTestId('pos-cart-mobile')).getByText('$45.000')).toBeInTheDocument();
+
+    fireEvent.click(within(screen.getByTestId('pos-cart-mobile')).getByRole('button', { name: 'Eliminar Papel higiénico' }));
+    expect(screen.getByText('No hay productos en el carrito')).toBeInTheDocument();
 });

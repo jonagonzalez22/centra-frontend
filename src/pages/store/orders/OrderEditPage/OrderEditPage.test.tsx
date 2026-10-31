@@ -213,7 +213,20 @@ const order = {
     delivery_summary: {
         has_pending_delivery: false,
         pending_delivery_quantity: '0.0000',
-        items: [],
+        items: [
+            {
+                product_id: 'product-1',
+                product_name: 'Producto A',
+                sku: 'SKU-A',
+                ordered_quantity: '10.0000',
+                delivered_quantity: '0.0000',
+                pending_quantity: '10.0000',
+                planned_active_quantity: '0.0000',
+                unassigned_pending_quantity: '10.0000',
+                stock_measurement_unit: { code: 'unit', symbol: 'u' },
+                sale_quantity_step: '1.0000',
+            },
+        ],
     },
 } satisfies OrderDetail;
 
@@ -294,6 +307,8 @@ test('loads the order and editability, then shows read-only restrictions', async
     expect(getById).toHaveBeenCalledWith('order-1');
     expect(getEditability).toHaveBeenCalledWith('order-1');
     expect(screen.getByText('Producto A')).toBeInTheDocument();
+    expect(screen.getByText('SKU-A')).toBeInTheDocument();
+    expect(screen.getByText('Lista de precios')).toBeInTheDocument();
     expect(screen.getByText('Entregadas: 4')).toBeInTheDocument();
     expect(screen.getByText('Comprometidas: 3')).toBeInTheDocument();
     expect(screen.getByText('Cantidad mínima: 7')).toBeInTheDocument();
@@ -668,6 +683,10 @@ test('enforces minimum quantity locally and allows removing a product with minim
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
+    expect(screen.getByRole('button', { name: 'Eliminar Producto A · Común' })).toHaveClass(
+        'min-h-10',
+        'min-w-10'
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar Producto A · Común' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Quitar' }));
 
@@ -710,12 +729,12 @@ test('shows the payment action only to users who can collect and when there is a
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    expect(screen.getByRole('button', { name: 'Agregar pago' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
 
     can.mockReturnValue(false);
     render(<OrderEditPage />);
     await screen.findAllByText('Editar pedido P-000123');
-    expect(screen.getAllByRole('button', { name: 'Agregar pago' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Registrar pago' })).toHaveLength(1);
 });
 
 test('disables payment while an item request or delivery date change is pending', async () => {
@@ -733,7 +752,7 @@ test('disables payment while an item request or delivery date change is pending'
     fireEvent.click(
         screen.getByRole('button', { name: 'Aumentar cantidad de Producto A · Común' })
     );
-    expect(screen.getByRole('button', { name: 'Agregar pago' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Reprogramar fecha de entrega' }));
     fireEvent.change(screen.getByLabelText('Fecha de entrega'), {
         target: { value: '2026-09-22' },
@@ -743,14 +762,14 @@ test('disables payment while an item request or delivery date change is pending'
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar cambio' }));
 
-    expect(screen.getByRole('button', { name: 'Agregar pago' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
 }, 10000);
 
 test('opens the existing payment flow only with a clean persisted order', async () => {
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar pago' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar pago' }));
 
     expect(screen.getByRole('dialog', { name: 'Registrar pago' })).toBeInTheDocument();
     expect(screen.getByText('Saldo para cobrar: 800')).toBeInTheDocument();
@@ -764,7 +783,7 @@ test('refreshes persisted economic data after a successful payment', async () =>
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar pago' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar pago' }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar pago' }));
 
     await waitFor(() =>
@@ -776,7 +795,7 @@ test('refreshes persisted economic data after a successful payment', async () =>
     await waitFor(() => expect(getById).toHaveBeenCalledTimes(2));
     expect(setCashSession).toHaveBeenCalled();
     expect(screen.getAllByText('$ 1.000')).toHaveLength(3);
-    expect(screen.queryByRole('button', { name: 'Agregar pago' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Registrar pago' })).not.toBeInTheDocument();
 });
 
 test('does not offer payment when the order has no pending balance', async () => {
@@ -785,7 +804,7 @@ test('does not offer payment when the order has no pending balance', async () =>
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    expect(screen.queryByRole('button', { name: 'Agregar pago' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Registrar pago' })).not.toBeInTheDocument();
 });
 
 test('keeps the payment modal closed when there is no open cash session', async () => {
@@ -793,7 +812,7 @@ test('keeps the payment modal closed when there is no open cash session', async 
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar pago' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar pago' }));
 
     expect(screen.queryByRole('dialog', { name: 'Registrar pago' })).not.toBeInTheDocument();
 });
@@ -883,13 +902,13 @@ test('selector starts at Común, changes only the next product, and submits its 
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    const nextList = screen.getByRole('combobox', { name: 'Lista para agregar' });
+    const nextList = screen.getByRole('combobox', { name: 'Tipo de lista' });
     const existingLineList = screen.getByRole('combobox', {
         name: 'Lista de precios de Producto A · Común',
     });
     expect(nextList).toHaveValue('__common__');
     expect(existingLineList).toHaveValue('__common__');
-    expect(screen.getByText('Lista para agregar')).toBeInTheDocument();
+    expect(screen.getByText('Tipo de lista')).toBeInTheDocument();
     expect(screen.queryByText('Para próximos productos')).not.toBeInTheDocument();
     expect(screen.queryByText(/^Descuento:/)).not.toBeInTheDocument();
 
@@ -1036,7 +1055,7 @@ test('renders an inactive list snapshot without offering it as an active selecti
         name: 'Mayorista anterior · 10% · Inactiva',
     });
     expect(inactiveOption).toBeDisabled();
-    expect(screen.getByRole('combobox', { name: 'Lista para agregar' })).not.toHaveDisplayValue(
+    expect(screen.getByRole('combobox', { name: 'Tipo de lista' })).not.toHaveDisplayValue(
         'Mayorista anterior · 10% · Inactiva'
     );
 });
@@ -1219,21 +1238,24 @@ test('shows the line price with its snapshot unit without changing the authorita
     await screen.findByText('Editar pedido P-000123');
 
     const lineTexts = screen
-        .getAllByText(/^Precio:/)
-        .map((element) => element.textContent?.replace(/\s/g, ''));
+        .getAllByText('Precio unitario')
+        .map((element) => element.parentElement?.textContent?.replace(/\s/g, ''));
     expect(lineTexts).toEqual(
         expect.arrayContaining([
-            'Precio:$600/u',
-            'Precio:$2.000/L',
-            'Precio:$3.000/kg',
-            'Precio:$1.500/m',
+            'Preciounitario$600/u',
+            'Preciounitario$2.000/L',
+            'Preciounitario$3.000/kg',
+            'Preciounitario$1.500/m',
         ])
     );
     expect(
         screen
             .getByText('Detergente suelto')
             .parentElement?.parentElement?.textContent?.replace(/\s/g, '')
-    ).toContain('Subtotal:$1.000');
+    ).toContain('Subtotal$1.000');
+    expect(
+        screen.getByRole('spinbutton', { name: /Cantidad de Detergente suelto/ }).closest('.ant-input-number')
+    ).toHaveClass('w-24');
     expect(screen.getByText(/Descuento: -/)).toHaveClass('text-emerald-700');
 });
 

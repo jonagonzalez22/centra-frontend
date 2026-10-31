@@ -88,3 +88,27 @@ test('opening and closing the drawer preserves active filters', () => {
         expect.objectContaining({ status: 'delivered', has_pending_balance: true })
     );
 });
+
+test('keeps results from the most recent filter request when responses arrive out of order', async () => {
+    let resolveFirst: ((value: typeof emptyPage) => void) | undefined;
+    let resolveSecond: ((value: typeof emptyPage) => void) | undefined;
+    vi.mocked(OrdersService.getAll)
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve; }))
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveSecond = resolve; }));
+
+    useOrdersStore.setState({
+        filters: { operation_number: 'P-1', page: 1, per_page: 20 },
+        pagination: { current: 1, total: 0, perPage: 20 },
+        orders: [],
+    });
+    const firstRequest = useOrdersStore.getState().fetchOrders();
+
+    useOrdersStore.setState({ filters: { operation_number: 'P-2', page: 1, per_page: 20 } });
+    const secondRequest = useOrdersStore.getState().fetchOrders();
+    resolveSecond?.({ ...emptyPage, items: [{ id: 'latest' }] });
+    await secondRequest;
+    resolveFirst?.({ ...emptyPage, items: [{ id: 'stale' }] });
+    await firstRequest;
+
+    expect(useOrdersStore.getState().orders).toEqual([{ id: 'latest' }]);
+});

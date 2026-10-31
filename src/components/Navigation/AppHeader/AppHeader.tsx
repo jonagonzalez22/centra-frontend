@@ -40,6 +40,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleM
                     <Button
                         type="text"
                         icon={<MenuOutlined />}
+                        aria-label="Abrir menú"
                         onClick={onToggleMenu}
                         className="appHeaderMobileMenuButton"
                     />

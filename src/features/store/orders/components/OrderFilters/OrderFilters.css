@@ -17,3 +17,18 @@
 .orderFiltersActions {
     @apply flex gap-2 items-end;
 }
+
+@media (max-width: 767px) {
+    .orderFiltersRow {
+        @apply flex-col items-stretch gap-3;
+    }
+
+    .orderFiltersRow > .ant-form-item,
+    .orderFiltersActions {
+        @apply w-full min-w-0;
+    }
+
+    .orderFiltersActions .ant-btn {
+        @apply w-full;
+    }
+}

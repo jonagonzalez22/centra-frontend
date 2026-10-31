@@ -14,6 +14,8 @@ const INITIAL_FILTERS: OrderFilters = {
     per_page: 20,
 };
 
+let latestOrdersRequest = 0;
+
 export const useOrdersStore = create<OrdersState>()((set, get) => ({
     orders: [],
     selectedOrder: null,
@@ -25,6 +27,7 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
 
     fetchOrders: async () => {
         const { filters, pagination } = get();
+        const requestId = ++latestOrdersRequest;
         set({ loading: true });
         try {
             const result = await OrdersService.getAll({
@@ -32,6 +35,7 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
                 page: pagination.current,
                 per_page: 20,
             });
+            if (requestId !== latestOrdersRequest) return;
             set({
                 orders: result.items,
                 pagination: {
@@ -41,10 +45,13 @@ export const useOrdersStore = create<OrdersState>()((set, get) => ({
                 },
             });
         } catch (err) {
+            if (requestId !== latestOrdersRequest) return;
             const apiError = err as { message?: string };
             message.error(apiError.message || 'Error al cargar los pedidos.');
         } finally {
-            set({ loading: false });
+            if (requestId === latestOrdersRequest) {
+                set({ loading: false });
+            }
         }
     },
 

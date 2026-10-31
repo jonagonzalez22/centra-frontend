@@ -17,21 +17,24 @@ export interface AppLayoutProps {
 export const AppLayout = ({ title, children }: AppLayoutProps) => {
     const location = useLocation();
     const screens = Grid.useBreakpoint();
-    const isMobile = screens.xs === true && screens.md === false;
+    // The desktop sidebar needs the `lg` width, not merely the `md` minimum.
+    // Below Ant Design's lg breakpoint (992px), use the existing Drawer/menu
+    // pattern so a persisted desktop preference cannot squeeze page content.
+    const isCompactNavigation = screens.lg !== true;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <Layout className="appLayout">
             <SidebarMenu
-                isMobile={isMobile}
-                isOpen={isMobile && isMenuOpen}
+                isMobile={isCompactNavigation}
+                isOpen={isCompactNavigation && isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 selectedKey={location.pathname}
             />
             <Layout className="appMainLayout">
                 <AppHeader
                     title={title}
-                    isMobile={isMobile}
+                    isMobile={isCompactNavigation}
                     onToggleMenu={() => setIsMenuOpen(true)}
                 />
                 <Content className="appMainContent">{children ? children : <Outlet />}</Content>

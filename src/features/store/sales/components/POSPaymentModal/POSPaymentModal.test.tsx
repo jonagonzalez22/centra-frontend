@@ -33,6 +33,19 @@ beforeEach(() => {
       account_details: null,
       sort_order: 0,
     },
+    {
+      id: 'transfer-global',
+      store_payment_method_id: 'transfer-store',
+      name: 'Transferencia',
+      code: 'transfer',
+      icon: null,
+      is_active: true,
+      is_enabled: true,
+      custom_name: null,
+      requires_reference: false,
+      account_details: null,
+      sort_order: 1,
+    },
   ]);
   vi.mocked(SalesService.createOperation).mockResolvedValue({
     id: 'sale-1',
@@ -58,4 +71,37 @@ test('resets the POS and reports the created sale to its parent after payment su
 
   await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(expect.objectContaining({ id: 'sale-1' })));
   expect(usePOSStore.getState().items).toEqual([]);
+});
+
+test('uses the mobile payment drawer summary and keeps its actions separate from multiple payment rows', async () => {
+  const user = userEvent.setup();
+  const onClose = vi.fn();
+  render(<POSPaymentModal open onClose={onClose} onSuccess={vi.fn()} />);
+
+  await waitFor(() => expect(SalesService.getPaymentMethods).toHaveBeenCalled());
+  expect(screen.getByText('Total a cobrar')).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Resumen del pago' })).toHaveTextContent('Total');
+  expect(screen.getByRole('region', { name: 'Resumen del pago' })).toHaveTextContent('Ingresado');
+  expect(screen.getByRole('region', { name: 'Resumen del pago' })).toHaveTextContent('Falta');
+  expect(screen.getByRole('region', { name: 'Resumen del pago' })).not.toHaveTextContent('Descuentos');
+  expect(screen.getByRole('button', { name: /Cobrar/ })).toBeDisabled();
+
+  await user.click(screen.getByRole('button', { name: 'Agregar otro medio de pago' }));
+  expect(screen.getAllByRole('combobox')).toHaveLength(2);
+
+  await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test('shows the persisted line discount in the mobile payment summary', async () => {
+  usePOSStore.getState().changeItemPriceList('product-1:common', 'wholesale', 'Mayorista', 10);
+  render(<POSPaymentModal open onClose={vi.fn()} onSuccess={vi.fn()} />);
+
+  await waitFor(() => expect(SalesService.getPaymentMethods).toHaveBeenCalled());
+  const summary = screen.getByRole('region', { name: 'Resumen del pago' });
+  expect(summary).toHaveTextContent('Subtotal');
+  expect(summary).toHaveTextContent('Descuentos');
+  expect(summary).toHaveTextContent('Total');
+  expect(summary).toHaveTextContent('100');
+  expect(summary).toHaveTextContent('900');
 });

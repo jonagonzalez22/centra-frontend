@@ -1,10 +1,28 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, test, expect } from 'vitest';
+import { beforeEach, describe, test, expect, vi } from 'vitest';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 
+const breakpoints = vi.hoisted(() => ({ screens: { xs: true, sm: true, md: true, lg: true } }));
+
+vi.mock('antd', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('antd')>();
+    return {
+        ...actual,
+        Grid: {
+            ...actual.Grid,
+            useBreakpoint: () => breakpoints.screens,
+        },
+    };
+});
+
 describe('AppLayout', () => {
+    beforeEach(() => {
+        breakpoints.screens = { xs: true, sm: true, md: true, lg: true };
+        window.localStorage.clear();
+    });
+
     const renderWithRouter = (content: React.ReactNode, initialPath = '/admin') => {
         return render(
             <MemoryRouter initialEntries={[initialPath]}>
@@ -73,6 +91,46 @@ describe('AppLayout', () => {
         expect(mainLayout).toBeInTheDocument();
         expect((mainLayout as HTMLElement).style.width).toBe('');
         expect((mainLayout as HTMLElement).style.marginLeft).toBe('');
+    });
+
+    test('uses the existing compact navigation pattern below the desktop sidebar breakpoint', () => {
+        breakpoints.screens = { xs: true, sm: true, md: true, lg: false };
+        const { container } = render(
+            <MemoryRouter>
+                <AppLayout title="Mi Tienda"><div>Contenido</div></AppLayout>
+            </MemoryRouter>
+        );
+
+        expect(container.querySelector('.sidebarMenuDesktopContainer')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /abrir menú/i })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /menú lateral/i })).not.toBeInTheDocument();
+    });
+
+    test('updates navigation mode after a live viewport resize without losing desktop behavior', () => {
+        const view = render(
+            <MemoryRouter>
+                <AppLayout title="Mi Tienda"><div>Contenido</div></AppLayout>
+            </MemoryRouter>
+        );
+
+        expect(view.container.querySelector('.sidebarMenuDesktopContainer')).toBeInTheDocument();
+        breakpoints.screens = { xs: true, sm: true, md: true, lg: false };
+        view.rerender(
+            <MemoryRouter>
+                <AppLayout title="Mi Tienda"><div>Contenido</div></AppLayout>
+            </MemoryRouter>
+        );
+        expect(view.container.querySelector('.sidebarMenuDesktopContainer')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /abrir menú/i })).toBeInTheDocument();
+
+        breakpoints.screens = { xs: true, sm: true, md: true, lg: true };
+        view.rerender(
+            <MemoryRouter>
+                <AppLayout title="Mi Tienda"><div>Contenido</div></AppLayout>
+            </MemoryRouter>
+        );
+        expect(view.container.querySelector('.sidebarMenuDesktopContainer')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /abrir menú/i })).not.toBeInTheDocument();
     });
 
     test('renders children when provided', () => {

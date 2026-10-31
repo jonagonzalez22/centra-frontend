@@ -52,6 +52,7 @@ export const QuantityInput = ({
                 <Button
                     variant="primary"
                     styles={{ root: { boxShadow: 'none' } }}
+                    className="disabled:!border-gray-300 disabled:!bg-gray-100 disabled:!text-gray-400 disabled:!opacity-100"
                     aria-label={decreaseAriaLabel}
                     icon={<MinusOutlined />}
                     disabled={disabled || decreaseDisabled}
