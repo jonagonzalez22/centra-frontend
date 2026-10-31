@@ -1,0 +1,22 @@
+.received-payment-filter-chip .ant-tag-close-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-inline-start: 4px;
+    border-radius: 50%;
+    background: var(--received-payment-chip-close-bg);
+    color: var(--received-payment-chip-close-color);
+}
+
+.received-payment-filter-chip .ant-tag-close-icon:hover,
+.received-payment-filter-chip .ant-tag-close-icon:focus-visible {
+    background: var(--received-payment-chip-close-hover);
+    color: var(--received-payment-chip-close-color);
+}
+
+.received-payment-filter-chip .ant-tag-close-icon:focus-visible {
+    outline: 2px solid var(--received-payment-chip-close-focus);
+    outline-offset: 1px;
+}

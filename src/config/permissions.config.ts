@@ -28,6 +28,7 @@ export const PREFIX_TO_CONTEXT: Record<string, PermissionContext> = {
     cash: 'store',
     orders: 'store',
     store_payment_methods: 'store',
+    payments: 'store',
 };
 
 export const MODULE_DISPLAY_NAMES: Record<string, string> = {
@@ -58,6 +59,7 @@ export const MODULE_DISPLAY_NAMES: Record<string, string> = {
     payment_methods: 'Métodos de Pago',
     orders: 'Pedidos',
     store_payment_methods: 'Métodos de Pago de Tienda',
+    payments: 'Pagos recibidos',
 };
 
 export const getPermissionContext = (permissionCode: string): PermissionContext => {

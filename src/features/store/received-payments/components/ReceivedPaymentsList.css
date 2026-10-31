@@ -1,0 +1,27 @@
+.received-payments-table .ant-table-sticky-holder::before {
+    content: '';
+    display: block;
+    height: 14px;
+    background: var(--received-payments-layout-bg);
+}
+
+.received-payments-table .ant-table-sticky-holder {
+    background: var(--received-payments-layout-bg);
+    overflow: hidden;
+}
+
+.received-payments-table .ant-table-sticky-holder .ant-table-thead > tr > th:first-child {
+    border-start-start-radius: 0;
+}
+
+.received-payments-table .ant-table-sticky-holder .ant-table-thead > tr > th:last-child {
+    border-start-end-radius: 0;
+}
+
+/* Ant applies the table radius to these container layers as well as the cells. */
+.received-payments-table .ant-table-sticky-holder .ant-table-container,
+.received-payments-table .ant-table-sticky-holder .ant-table-content,
+.received-payments-table .ant-table-sticky-holder .ant-table-content > table {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+}

@@ -43,6 +43,7 @@ import { RouteReconciliationPage } from '@/pages/store/logistics/RouteReconcilia
 import { DriverRoutesPage } from '@/pages/driver/routes/DriverRoutesPage';
 import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
 import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
+import { ReceivedPaymentsPage } from '@/pages/store/received-payments/ReceivedPaymentsPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -348,6 +349,21 @@ export const router = createBrowserRouter([
                                         ],
                                     },
                                 ],
+                            },
+                        ],
+                    },
+
+                    {
+                        element: (
+                            <PermissionRoute
+                                permission="payments.view"
+                                redirectTo="/tienda/dashboard"
+                            />
+                        ),
+                        children: [
+                            {
+                                path: 'ventas/pagos-recibidos',
+                                element: <ReceivedPaymentsPage />,
                             },
                         ],
                     },

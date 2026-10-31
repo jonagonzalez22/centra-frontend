@@ -80,6 +80,10 @@ export const API_ENDPOINTS = {
             LIST: { URL: '/v1/store/payment-methods' },
             UPDATE: (paymentMethodId: string) => `/v1/store/payment-methods/${paymentMethodId}`,
         },
+        RECEIVED_PAYMENTS: {
+            URL: '/v1/store/received-payments',
+            FILTER_OPTIONS: '/v1/store/received-payments/filter-options',
+        },
         OPERATIONS: {
             URL: '/v1/store/operations',
             RECEIPT: (id: string) => `/v1/store/operations/${id}/receipt`,
@@ -100,7 +104,8 @@ export const API_ENDPOINTS = {
             PAYMENTS: (id: string) => `/v1/store/orders/${id}/payments`,
             ITEMS: (id: string) => `/v1/store/orders/${id}/items`,
             ITEM: (id: string, itemId: string) => `/v1/store/orders/${id}/items/${itemId}`,
-            ITEM_PRICE_LIST: (id: string, itemId: string) => `/v1/store/orders/${id}/items/${itemId}/price-list`,
+            ITEM_PRICE_LIST: (id: string, itemId: string) =>
+                `/v1/store/orders/${id}/items/${itemId}/price-list`,
             RESCHEDULE: (id: string) => `/v1/store/operations/${id}/reschedule`,
             CANCEL: (id: string) => `/v1/store/operations/${id}/cancel`,
             CANCEL_PENDING_DELIVERY: (id: string) =>

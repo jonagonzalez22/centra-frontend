@@ -166,6 +166,13 @@ const menuItems: MenuItem[] = [
                 permission: 'sales_history.view',
                 role: 'STORE_USER',
             },
+            {
+                label: 'Pagos recibidos',
+                key: '/tienda/ventas/pagos-recibidos',
+                context: 'store',
+                permission: 'payments.view',
+                role: 'STORE_USER',
+            },
         ],
     },
     {
