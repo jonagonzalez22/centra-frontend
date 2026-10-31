@@ -105,9 +105,9 @@ test('keeps results from the most recent filter request when responses arrive ou
 
     useOrdersStore.setState({ filters: { operation_number: 'P-2', page: 1, per_page: 20 } });
     const secondRequest = useOrdersStore.getState().fetchOrders();
-    resolveSecond?.({ ...emptyPage, items: [{ id: 'latest' }] });
+    resolveSecond?.({ ...emptyPage, items: [{ id: 'latest' } as never] });
     await secondRequest;
-    resolveFirst?.({ ...emptyPage, items: [{ id: 'stale' }] });
+    resolveFirst?.({ ...emptyPage, items: [{ id: 'stale' } as never] });
     await firstRequest;
 
     expect(useOrdersStore.getState().orders).toEqual([{ id: 'latest' }]);
