@@ -1,5 +1,7 @@
 export const CENTRA_TOKENS = {
   colorPrimary: '#093764',
+  colorPrimaryElevated: '#072f57',
+  colorPrimaryHover: '#0c477e',
   colorSecondary: '#4F46E5',
   colorSuccess: '#52c41a',
   colorWarning: '#faad14',

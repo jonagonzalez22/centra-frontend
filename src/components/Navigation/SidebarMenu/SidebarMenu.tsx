@@ -430,7 +430,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     };
 
     const menuContent = (
-        <div className="sidebarMenuContent">
+        <div className="sidebarMenuContent flex h-full min-h-0 flex-1 flex-col bg-centra-primary">
             <div className={`sidebarMenuBrand${!isMobile && isDesktopCollapsed ? ' sidebarMenuBrandCollapsed' : ''}`}>
                 {(isMobile || !isDesktopCollapsed) && <span>CENTRA</span>}
                 {!isMobile && (
@@ -459,7 +459,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 onOpenChange={handleOpenChange}
                 items={menuItemPermissions}
                 onClick={handleMenuClick}
-                className="sidebarMenuNavigation"
+                className="sidebarMenuNavigation min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
             />
         </div>
     );
@@ -470,7 +470,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                 placement="left"
                 onClose={onClose}
                 open={isOpen}
-                styles={{ body: { padding: 0 } }}
+                styles={{ body: { padding: 0, display: 'flex', minHeight: 0, overflow: 'hidden' } }}
                 width={260}
                 closable={false}
             >
@@ -485,7 +485,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
             width={260}
             collapsedWidth={68}
             collapsed={isDesktopCollapsed}
-            className="sidebarMenuDesktopContainer"
+            className="sidebarMenuDesktopContainer h-dvh"
         >
             {menuContent}
         </Sider>

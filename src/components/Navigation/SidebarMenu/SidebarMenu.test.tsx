@@ -83,6 +83,28 @@ describe('SidebarMenu', () => {
             .toHaveClass('lucide-panel-left-close');
     });
 
+    test('keeps the desktop navigation in a shrinkable, internally scrollable area', () => {
+        const { container } = renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/admin/dashboard" />
+        );
+
+        expect(container.querySelector('.sidebarMenuDesktopContainer')).toHaveClass('h-dvh');
+        expect(container.querySelector('.sidebarMenuContent')).toHaveClass(
+            'flex',
+            'h-full',
+            'min-h-0',
+            'flex-1',
+            'flex-col'
+        );
+        expect(container.querySelector('#sidebar-primary-navigation')).toHaveClass(
+            'sidebarMenuNavigation',
+            'min-h-0',
+            'flex-1',
+            'overflow-x-hidden',
+            'overflow-y-auto'
+        );
+    });
+
     test('collapses and expands the desktop sidebar, persisting the selected state', async () => {
         const user = userEvent.setup();
         const view = renderWithRouter(
@@ -141,6 +163,16 @@ describe('SidebarMenu', () => {
         expect(screen.getByText(/CENTRA/i)).toBeInTheDocument();
         expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /menú lateral/i })).not.toBeInTheDocument();
+        expect(document.body.querySelector('.ant-drawer-body')).toHaveStyle({
+            display: 'flex',
+            minHeight: '0px',
+            overflow: 'hidden',
+        });
+        expect(document.body.querySelector('#sidebar-primary-navigation')).toHaveClass(
+            'min-h-0',
+            'flex-1',
+            'overflow-y-auto'
+        );
     });
 
     test('renders Configuraciones submenu for admin users with permission', () => {

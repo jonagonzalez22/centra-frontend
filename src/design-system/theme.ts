@@ -17,6 +17,12 @@ export const centraTheme = {
       borderRadius: CENTRA_TOKENS.borderRadius,
     },
 
+    Menu: {
+      darkPopupBg: CENTRA_TOKENS.colorPrimaryElevated,
+      darkItemHoverBg: CENTRA_TOKENS.colorPrimaryHover,
+      darkItemSelectedBg: CENTRA_TOKENS.colorPrimary,
+    },
+
     Input: {
       activeBorderColor: CENTRA_TOKENS.colorPrimary,
       hoverBorderColor: CENTRA_TOKENS.colorPrimary,
