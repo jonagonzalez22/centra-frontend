@@ -1,8 +1,12 @@
-import { Empty, Pagination, Skeleton, Table, theme } from 'antd';
+import { EyeOutlined, UndoOutlined } from '@ant-design/icons';
+import { Empty, Pagination, Skeleton, Table, theme, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { Button } from '@/components/Button';
 import Tag from '@/components/Tag/Tag';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
+import { paymentReversalBlockMessage } from '../constants/payment-reversal-reasons';
 import type { ReceivedPayment } from '../interfaces/received-payment.interface';
 import './ReceivedPaymentsList.css';
 
@@ -27,6 +31,7 @@ export const ReceivedPaymentsList = ({
     hasFilters,
     onPageChange,
     onOpen,
+    onReverse,
 }: {
     payments: ReceivedPayment[];
     loading: boolean;
@@ -36,8 +41,10 @@ export const ReceivedPaymentsList = ({
     hasFilters: boolean;
     onPageChange: (page: number) => void;
     onOpen: (payment: ReceivedPayment) => void;
+    onReverse: (payment: ReceivedPayment) => void;
 }) => {
     const { token } = theme.useToken();
+    const { can } = usePermissions();
     const columns: ColumnsType<ReceivedPayment> = [
         {
             title: 'Fecha y hora',
@@ -80,6 +87,60 @@ export const ReceivedPaymentsList = ({
             key: 'responsible',
             render: (_, payment) => receivedPaymentCollectorName(payment),
         },
+        {
+            title: 'Acciones',
+            key: 'actions',
+            width: 104,
+            onHeaderCell: () => ({ className: 'received-payments-actions-header' }),
+            onCell: () => ({ className: 'received-payments-actions-cell' }),
+            align: 'center',
+            render: (_, payment) => {
+                const canReverse = can('payments.reverse');
+                const reversalAllowed = payment.reversal.allowed;
+
+                return (
+                    <div className="flex items-center justify-center gap-1">
+                        <Tooltip title="Ver detalle">
+                            <Button
+                                variant="text"
+                                aria-label="Ver detalle"
+                                action={() => onOpen(payment)}
+                            >
+                                <EyeOutlined />
+                            </Button>
+                        </Tooltip>
+                        {canReverse &&
+                            (reversalAllowed ? (
+                                <Tooltip title="Anular pago">
+                                    <Button
+                                        variant="text"
+                                        danger
+                                        aria-label="Anular pago"
+                                        action={() => onReverse(payment)}
+                                    >
+                                        <UndoOutlined />
+                                    </Button>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip
+                                    title={paymentReversalBlockMessage(payment.reversal.reason)}
+                                >
+                                    <span className="inline-flex cursor-not-allowed">
+                                        <Button
+                                            variant="text"
+                                            danger
+                                            aria-label="Anular pago"
+                                            disabled
+                                        >
+                                            <UndoOutlined />
+                                        </Button>
+                                    </span>
+                                </Tooltip>
+                            ))}
+                    </div>
+                );
+            },
+        },
     ];
     const empty = (
         <Empty
@@ -107,18 +168,7 @@ export const ReceivedPaymentsList = ({
                     pagination={false}
                     sticky={{ offsetHeader: 0 }}
                     locale={{ emptyText: empty }}
-                    onRow={(payment) => ({
-                        onClick: () => onOpen(payment),
-                        tabIndex: 0,
-                        onKeyDown: (event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault();
-                                onOpen(payment);
-                            }
-                        },
-                        className:
-                            'cursor-pointer hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-centra-primary',
-                    })}
+                    onRow={() => ({ className: 'hover:bg-gray-50' })}
                 />
             </div>
             <div className="md:hidden space-y-3">

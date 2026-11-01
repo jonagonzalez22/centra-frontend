@@ -1,8 +1,11 @@
-import { Descriptions, Divider } from 'antd';
+import { Alert, Descriptions, Divider } from 'antd';
+import { Button } from '@/components/Button';
 import Drawer from '@/components/Drawer/Drawer';
 import Tag from '@/components/Tag/Tag';
+import { usePermissions } from '@/hooks/usePermissions';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
+import { paymentReversalDrawerMessage } from '../constants/payment-reversal-reasons';
 import type { ReceivedPayment } from '../interfaces/received-payment.interface';
 
 const value = (content: React.ReactNode) => content || '—';
@@ -11,14 +14,38 @@ export const ReceivedPaymentDrawer = ({
     payment,
     open,
     onClose,
+    onReverse = () => undefined,
 }: {
     payment: ReceivedPayment | null;
     open: boolean;
     onClose: () => void;
+    onReverse?: (payment: ReceivedPayment) => void;
 }) => {
+    const { can } = usePermissions();
     const route = payment?.route;
+    const canReverse = can('payments.reverse') && payment?.reversal.allowed === true;
+    const showReversalContext =
+        can('payments.reverse') &&
+        payment?.status !== 'reversed' &&
+        payment?.reversal.allowed === false;
+
     return (
-        <Drawer open={open} onClose={onClose} title="Detalle del pago">
+        <Drawer
+            open={open}
+            onClose={onClose}
+            title="Detalle del pago"
+            footer={
+                canReverse ? (
+                    <div className="flex justify-end">
+                        <Button
+                            variant="danger"
+                            label="Anular pago"
+                            action={() => payment && onReverse(payment)}
+                        />
+                    </div>
+                ) : undefined
+            }
+        >
             {payment && (
                 <div>
                     <h3 className="text-base font-semibold mt-0">Pago</h3>
@@ -84,6 +111,19 @@ export const ReceivedPaymentDrawer = ({
                                 </Descriptions.Item>
                             </Descriptions>
                         </>
+                    )}
+                    {showReversalContext && (
+                        <Alert
+                            className="mt-4"
+                            type={
+                                payment.reversal.reason === 'cash_session_closed' ||
+                                payment.reversal.reason === 'cash_session_not_operational'
+                                    ? 'warning'
+                                    : 'info'
+                            }
+                            showIcon
+                            message={paymentReversalDrawerMessage(payment.reversal.reason)}
+                        />
                     )}
                     {payment.origin === 'route_collection' && route && (
                         <>

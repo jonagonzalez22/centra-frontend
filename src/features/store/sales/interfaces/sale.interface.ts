@@ -88,7 +88,7 @@ export interface SaleDetail extends SaleListItem {
     stock_measurement_unit?: HistoricalMeasurementUnit | null;
     sale_quantity_step?: DecimalString | null;
   }>;
-  payments: Array<{ id: string; amount: number; store_payment_method?: { name: string | null } | null }>;
+  payments: Array<{ id: string; amount: number; status?: 'active' | 'reversed'; store_payment_method?: { name: string | null } | null }>;
   history: SaleHistoryEvent[];
 }
 
@@ -180,6 +180,7 @@ export interface ReceiptTotals {
 export interface ReceiptPayment {
   method_name: string | null;
   amount: number;
+  status?: 'active' | 'reversed';
 }
 
 export interface ReceiptData {

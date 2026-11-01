@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
         RECEIVED_PAYMENTS: {
             URL: '/v1/store/received-payments',
             FILTER_OPTIONS: '/v1/store/received-payments/filter-options',
+            REVERSE: (paymentId: string) => `/v1/store/received-payments/${paymentId}/reverse`,
         },
         OPERATIONS: {
             URL: '/v1/store/operations',

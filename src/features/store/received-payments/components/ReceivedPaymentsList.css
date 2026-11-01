@@ -25,3 +25,13 @@
     border-start-start-radius: 0;
     border-start-end-radius: 0;
 }
+.received-payments-table .received-payments-actions-header,
+.received-payments-table .received-payments-actions-cell {
+    min-width: 104px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.received-payments-table .received-payments-actions-header {
+    white-space: nowrap !important;
+}

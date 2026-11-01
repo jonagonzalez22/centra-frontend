@@ -7,6 +7,17 @@ export type ReceivedPaymentOrigin =
 
 export type ReceivedPaymentStatus = 'active' | 'reversed';
 
+export type PaymentReversalBlockReason =
+    | 'already_reversed'
+    | 'pos_sale'
+    | 'route_collection'
+    | 'route_collection_linked'
+    | 'cash_session_closed'
+    | 'cash_session_not_operational'
+    | 'operation_cancelled'
+    | 'operation_closed'
+    | 'origin_not_reversible';
+
 export interface ReceivedPaymentUser {
     id: string;
     name: string;
@@ -24,6 +35,7 @@ export interface ReceivedPayment {
     operation: { id: string; operation_number: string; type: string } | null;
     customer: { id: string | null; display_name: string | null };
     origin: ReceivedPaymentOrigin;
+    reversal: { allowed: boolean; reason: PaymentReversalBlockReason | null };
     registered_by: ReceivedPaymentUser | null;
     reversed_by: ReceivedPaymentUser | null;
     route: {
@@ -57,6 +69,18 @@ export interface ReceivedPaymentsResponse {
     per_page: number;
     current_page: number;
     last_page: number;
+}
+
+export type PaymentReversalReasonCode =
+    | 'payment_error'
+    | 'duplicate_payment'
+    | 'wrong_amount'
+    | 'wrong_payment_method'
+    | 'other';
+
+export interface ReversePaymentPayload {
+    reason_code: PaymentReversalReasonCode;
+    reason_note?: string;
 }
 
 export interface ReceivedPaymentMethodFilterOption {

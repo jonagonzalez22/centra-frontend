@@ -5,7 +5,9 @@ import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
 import type {
     ReceivedPaymentsFilters,
     ReceivedPaymentFilterOptions,
+    ReceivedPayment,
     ReceivedPaymentsResponse,
+    ReversePaymentPayload,
 } from '../interfaces/received-payment.interface';
 
 export const ReceivedPaymentsService = {
@@ -30,6 +32,24 @@ export const ReceivedPaymentsService = {
         const { data } = await api.get<ApiListResponse<ReceivedPaymentsResponse>>(
             API_ENDPOINTS.STORE.RECEIVED_PAYMENTS.URL,
             { params }
+        );
+        if (data.status === 'error') {
+            throw {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            } as ApiError;
+        }
+        return data.data;
+    },
+
+    reversePayment: async (
+        paymentId: string,
+        payload: ReversePaymentPayload,
+    ): Promise<ReceivedPayment> => {
+        const { data } = await api.post<ApiListResponse<ReceivedPayment>>(
+            API_ENDPOINTS.STORE.RECEIVED_PAYMENTS.REVERSE(paymentId),
+            payload,
         );
         if (data.status === 'error') {
             throw {

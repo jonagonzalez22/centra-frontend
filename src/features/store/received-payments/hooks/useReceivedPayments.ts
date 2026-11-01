@@ -27,6 +27,7 @@ export const useReceivedPayments = () => {
                 total: result.total,
                 perPage: result.per_page,
             });
+            return result;
         } catch (error) {
             if (currentRequest !== requestId.current) return;
             message.error(
@@ -45,6 +46,7 @@ export const useReceivedPayments = () => {
         setFiltersState((current) => ({ ...current, ...changes, page: changes.page ?? 1 }));
     }, []);
     const resetFilters = useCallback(() => setFiltersState(INITIAL_FILTERS), []);
+    const refreshPayments = useCallback(() => fetchPayments(filters), [fetchPayments, filters]);
 
-    return { payments, filters, loading, pagination, setFilters, resetFilters };
+    return { payments, filters, loading, pagination, setFilters, resetFilters, refreshPayments };
 };

@@ -43,6 +43,36 @@ describe('OrderDrawerHistory', () => {
         expect(screen.getByText(/\$ 10\.000.*Efectivo/)).toBeInTheDocument();
     });
 
+    test('shows a payment reversal with its available payment detail', () => {
+        render(
+            <OrderDrawerHistory
+                loading={false}
+                history={[
+                    entry({
+                        type: 'payment_reversed',
+                        title: 'Pago anulado',
+                        details: {
+                            reason_code: 'duplicate_payment',
+                            reason_note: 'Registro duplicado',
+                            payment: {
+                                payment_id: 'payment-1',
+                                amount: 10000,
+                                payment_method_name: 'Efectivo',
+                                reference: 'REF-1',
+                                origin: 'manual_collection',
+                            },
+                        },
+                    }),
+                ]}
+            />
+        );
+
+        expect(screen.getByText('Pago anulado')).toBeInTheDocument();
+        expect(screen.getByText(/\$ 10\.000.*Efectivo.*REF-1/)).toBeInTheDocument();
+        expect(screen.getByText('Motivo: Pago duplicado')).toBeInTheDocument();
+        expect(screen.getByText('Observación: Registro duplicado')).toBeInTheDocument();
+    });
+
     test('renders creation and route assignment as a compact timeline', () => {
         render(
             <OrderDrawerHistory

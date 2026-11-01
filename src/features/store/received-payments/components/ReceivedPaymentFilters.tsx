@@ -266,9 +266,9 @@ export const ReceivedPaymentFilters = ({
                             background: token.colorPrimary,
                             borderColor: token.colorPrimary,
                             color: token.colorTextLightSolid,
-                        '--received-payment-chip-close-bg': token.colorTextLightSolid,
-                        '--received-payment-chip-close-color': token.colorPrimary,
-                        '--received-payment-chip-close-hover': token.colorPrimaryBg,
+                            '--received-payment-chip-close-bg': token.colorTextLightSolid,
+                            '--received-payment-chip-close-color': token.colorPrimary,
+                            '--received-payment-chip-close-hover': token.colorPrimaryBg,
                             '--received-payment-chip-close-focus': token.colorTextLightSolid,
                         } as React.CSSProperties
                     }
@@ -351,34 +351,41 @@ export const ReceivedPaymentFilters = ({
             onValuesChange={(changed) => debouncedChange(changed)}
             className="mb-6"
         >
-            <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2 lg:grid-cols-4">
-                <FilterFields advanced={false} options={options} />
-            </div>
-            <div className="-mt-1 flex items-center gap-2">
-                <Button
-                    variant="default"
-                    label={`Más filtros${secondaryCount > 0 ? ` ${secondaryCount}` : ''}`}
-                    icon={<Filter size={16} />}
-                    aria-expanded={desktopOpen}
-                    action={() => setDesktopOpen(true)}
-                >
-                    <span>Más filtros</span>
-                    {secondaryCount > 0 && (
-                        <span className="ml-2 rounded-full bg-centra-primary px-2 py-0.5 text-xs text-white">
-                            {secondaryCount}
-                        </span>
-                    )}
-                </Button>
-                <Button
-                    variant="default"
-                    label="Limpiar"
-                    action={() => {
-                        debouncedChange.cancel();
-                        desktopForm.resetFields();
-                        onReset();
-                    }}
-                    disabled={appliedCount === 0}
-                />
+            <div className="received-payment-desktop-toolbar">
+                <div className="received-payment-primary-filters">
+                    <FilterFields advanced={false} options={options} />
+                </div>
+                <div className="received-payment-filter-actions">
+                    <div className="ant-form-item-label" aria-hidden="true">
+                        <label>&nbsp;</label>
+                    </div>
+                    <div className="received-payment-filter-actions-controls">
+                        <Button
+                            variant="default"
+                            label={`Más filtros${secondaryCount > 0 ? ` ${secondaryCount}` : ''}`}
+                            icon={<Filter size={16} />}
+                            aria-expanded={desktopOpen}
+                            action={() => setDesktopOpen(true)}
+                        >
+                            <span>Más filtros</span>
+                            {secondaryCount > 0 && (
+                                <span className="ml-2 rounded-full bg-centra-primary px-2 py-0.5 text-xs text-white">
+                                    {secondaryCount}
+                                </span>
+                            )}
+                        </Button>
+                        <Button
+                            variant="default"
+                            label="Limpiar"
+                            action={() => {
+                                debouncedChange.cancel();
+                                desktopForm.resetFields();
+                                onReset();
+                            }}
+                            disabled={appliedCount === 0}
+                        />
+                    </div>
+                </div>
             </div>
             <Drawer
                 open={desktopOpen}

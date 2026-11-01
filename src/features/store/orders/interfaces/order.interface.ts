@@ -76,6 +76,7 @@ export interface OrderItem {
 export interface OrderPayment {
     id: string;
     amount: number;
+    status?: 'active' | 'reversed';
     reference: string | null;
     payment_details: unknown | null;
     created_at: string | null;

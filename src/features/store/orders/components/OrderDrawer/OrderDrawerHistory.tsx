@@ -36,6 +36,10 @@ const REASON_LABELS: Record<string, string> = {
     out_of_stock: 'Sin stock',
     pricing_error: 'Error de precio',
     duplicate_order: 'Pedido duplicado',
+    payment_error: 'Pago registrado por error',
+    duplicate_payment: 'Pago duplicado',
+    wrong_amount: 'Importe incorrecto',
+    wrong_payment_method: 'Medio de pago incorrecto',
     other: 'Otro',
 };
 
@@ -188,12 +192,23 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
     const isDelivery = (event.details.items?.length ?? 0) > 0;
     const isRemainingCancellation = event.type === 'remaining_delivery_cancelled';
 
-    if (event.type === 'payment_registered' && event.details.payment) {
+    if (
+        (event.type === 'payment_registered' || event.type === 'payment_reversed') &&
+        event.details.payment
+    ) {
         const payment = event.details.payment;
         return (
             <div className="mt-1 text-xs text-gray-600">
-                {formatCurrency(payment.amount)} · {payment.payment_method_name}
-                {payment.reference && ` · Ref. ${payment.reference}`}
+                <div>
+                    {formatCurrency(payment.amount)} · {payment.payment_method_name}
+                    {payment.reference && ` · Ref. ${payment.reference}`}
+                </div>
+                {event.type === 'payment_reversed' && event.details.reason_code && (
+                    <div>Motivo: {REASON_LABELS[event.details.reason_code] ?? '—'}</div>
+                )}
+                {event.type === 'payment_reversed' && event.details.reason_note && (
+                    <div>Observación: {event.details.reason_note}</div>
+                )}
             </div>
         );
     }
