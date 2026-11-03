@@ -83,6 +83,27 @@ describe('SidebarMenu', () => {
             .toHaveClass('lucide-panel-left-close');
     });
 
+    test('muestra Informes solo cuando la feature reports está disponible', async () => {
+        useStoreUser({ features: ['reports'] });
+        const user = userEvent.setup();
+        const { rerender } = renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/informes/resumen" />
+        );
+
+        expect(screen.getByText('Informes')).toBeInTheDocument();
+        await user.click(screen.getByText('Informes'));
+        expect(screen.getByText('Resumen')).toBeInTheDocument();
+
+        useStoreUser({ features: ['pos'] });
+        rerender(
+            <MemoryRouter>
+                <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/dashboard" />
+                <Location />
+            </MemoryRouter>
+        );
+        expect(screen.queryByText('Informes')).not.toBeInTheDocument();
+    });
+
     test('keeps the desktop navigation in a shrinkable, internally scrollable area', () => {
         const { container } = renderWithRouter(
             <SidebarMenu isMobile={false} isOpen={false} selectedKey="/admin/dashboard" />

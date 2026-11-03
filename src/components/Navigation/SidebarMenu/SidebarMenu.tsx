@@ -16,6 +16,7 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
 } from 'lucide-react';
+import { BarChartOutlined } from '@ant-design/icons';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
@@ -171,6 +172,23 @@ const menuItems: MenuItem[] = [
                 key: '/tienda/ventas/pagos-recibidos',
                 context: 'store',
                 permission: 'payments.view',
+                role: 'STORE_USER',
+            },
+        ],
+    },
+    {
+        label: 'Informes',
+        key: '/tienda/informes/parent',
+        icon: <BarChartOutlined />,
+        context: 'store',
+        feature: 'reports',
+        role: 'STORE_USER',
+        children: [
+            {
+                label: 'Resumen',
+                key: '/tienda/informes/resumen',
+                context: 'store',
+                feature: 'reports',
                 role: 'STORE_USER',
             },
         ],

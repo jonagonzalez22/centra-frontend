@@ -44,6 +44,7 @@ import { DriverRoutesPage } from '@/pages/driver/routes/DriverRoutesPage';
 import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
 import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
 import { ReceivedPaymentsPage } from '@/pages/store/received-payments/ReceivedPaymentsPage';
+import { ReportsSummaryPage } from '@/pages/store/reports/ReportsSummaryPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -299,6 +300,14 @@ export const router = createBrowserRouter([
                                 element: <PermissionRoute permission="cash.view" />,
                                 children: [{ path: 'caja', element: <CashPage /> }],
                             },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="reports" />,
+                        children: [
+                            { path: 'informes', element: <Navigate to="resumen" replace /> },
+                            { path: 'informes/resumen', element: <ReportsSummaryPage /> },
                         ],
                     },
 
