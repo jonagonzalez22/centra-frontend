@@ -3,11 +3,18 @@ import dayjs from 'dayjs';
 import userEvent from '@testing-library/user-event';
 import { ReportsSummaryPage } from './ReportsSummaryPage';
 import { useReportsSummary } from '@/features/store/reports/hooks/useReportsSummary';
+import { useReportsAnalytics } from '@/features/store/reports/hooks/useReportsAnalytics';
+import { useAuthStore } from '@/store/useAuthStore.store';
 
 vi.mock('@/features/store/reports/hooks/useReportsSummary');
+vi.mock('@/features/store/reports/hooks/useReportsAnalytics');
+vi.mock('@/store/useAuthStore.store');
 
 const mockUseReportsSummary = vi.mocked(useReportsSummary);
+const mockUseReportsAnalytics = vi.mocked(useReportsAnalytics);
+const mockUseAuthStore = vi.mocked(useAuthStore);
 const refetch = vi.fn();
+const analyticsRefetch = vi.fn();
 
 const summary = {
     period: {
@@ -19,7 +26,7 @@ const summary = {
         pos_sales: { amount: 10000, count: 4, average_ticket: 2500 },
         orders_taken: { amount: 18000, count: 3 },
         deliveries_completed: { count: 7 },
-        collected: { amount: 12000 },
+        collected: { amount: 12000, channels: { pos_amount: 10000, orders_amount: 2000 } },
     },
     current: {
         pending_balance: { amount: 5000 },
@@ -41,12 +48,30 @@ const queryResult = (overrides = {}) => ({
     ...overrides,
 });
 
+const analyticsResult = (overrides = {}) => ({
+    data: {
+        period: summary.period,
+        payments_series: [{ date: '2026-11-01', collected_amount: 12000 }],
+        orders_series: [{ date: '2026-11-01', orders_taken_count: 3, deliveries_count: 2 }],
+        payment_methods: [{ payment_method_id: 'cash', name: 'Efectivo', amount: 12000, count: 3 }],
+    },
+    isLoading: false,
+    isError: false,
+    isFetching: false,
+    refetch: analyticsRefetch,
+    ...overrides,
+});
+
 describe('ReportsSummaryPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseReportsSummary.mockReturnValue(
             queryResult() as unknown as ReturnType<typeof useReportsSummary>
         );
+        mockUseReportsAnalytics.mockReturnValue(
+            analyticsResult() as unknown as ReturnType<typeof useReportsAnalytics>
+        );
+        mockUseAuthStore.mockReturnValue({ features: [{ code: 'pos' }, { code: 'deliveries' }] } as never);
     });
 
     it('muestra los valores del período y la situación actual en secciones distintas', () => {
@@ -201,6 +226,55 @@ describe('ReportsSummaryPage', () => {
         expect(
             screen.getByText(/Cantidad de pedidos registrados durante el período/)
         ).toBeInTheDocument();
+    });
+
+    it('muestra los bloques simplificados de análisis y pagos', () => {
+        render(<ReportsSummaryPage />);
+
+        expect(screen.getByRole('heading', { name: 'Análisis del período' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Pagos recibidos' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Actividad de pedidos' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Medios de pago' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Canales del negocio' })).not.toBeInTheDocument();
+        expect(screen.getByText('Efectivo')).toBeInTheDocument();
+    });
+
+    it('muestra un estado vacío para medios de pago sin ocultar las series', () => {
+        mockUseReportsAnalytics.mockReturnValue(
+            analyticsResult({
+                data: {
+                    ...analyticsResult().data,
+                    payment_methods: [],
+                },
+            }) as unknown as ReturnType<typeof useReportsAnalytics>
+        );
+        render(<ReportsSummaryPage />);
+
+        expect(screen.getByText('No hubo pagos registrados en este período.')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Pagos recibidos' })).toBeInTheDocument();
+    });
+
+    it('oculta pedidos cuando el circuito no está disponible', () => {
+        mockUseAuthStore.mockReturnValue({ features: [] } as never);
+        render(<ReportsSummaryPage />);
+
+        expect(screen.getByRole('heading', { name: 'Pagos recibidos' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Actividad de pedidos' })).not.toBeInTheDocument();
+    });
+
+    it('muestra análisis y conserva el resumen cuando analytics falla', async () => {
+        mockUseReportsAnalytics.mockReturnValue(
+            analyticsResult({ data: undefined, isError: true }) as unknown as ReturnType<
+                typeof useReportsAnalytics
+            >
+        );
+        const user = userEvent.setup();
+        render(<ReportsSummaryPage />);
+
+        expect(screen.getByText('Ventas de mostrador')).toBeInTheDocument();
+        expect(screen.getByText('No pudimos cargar el análisis del período.')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Reintentar' }));
+        expect(analyticsRefetch).toHaveBeenCalledOnce();
     });
 
     it('muestra skeletons durante la carga', () => {

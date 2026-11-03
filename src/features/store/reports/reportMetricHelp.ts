@@ -2,11 +2,11 @@ export const reportMetricHelp = {
     pos_sales:
         'Total vendido en mostrador durante el período. No incluye pedidos ni ventas anuladas.',
     orders_taken:
-        'Cantidad de pedidos registrados durante el período. Debajo se muestra el importe total de esos pedidos.',
+        'Cantidad de pedidos registrados durante el período.',
     deliveries_completed:
         'Entregas de mercadería realizadas durante el período, sean parciales o completas.',
-    collected: 'Importe total de pagos recibidos durante el período. No incluye pagos anulados.',
-    average_sale: 'Importe promedio de cada venta de mostrador confirmada durante el período.',
+    collected: 'Dinero efectivamente cobrado durante el período. Incluye pagos de mostrador y pedidos. No incluye pagos anulados.',
+    average_sale: 'Importe promedio de cada venta de mostrador confirmada durante el período. No incluye pedidos.',
     pending_balance:
         'Importe que actualmente queda pendiente de cobro. No depende del período seleccionado.',
     inventory_alerts: 'Productos con stock bajo o sin disponibilidad para la venta.',

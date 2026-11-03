@@ -9,7 +9,7 @@ import {
     TruckOutlined,
     WarningOutlined,
 } from '@ant-design/icons';
-import { Alert, Breadcrumb, DatePicker, Popover, Select, Skeleton } from 'antd';
+import { Alert, Breadcrumb, DatePicker, Popover, Select, Skeleton, Tooltip } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import React from 'react';
@@ -20,7 +20,11 @@ import {
     type ReportMetricHelpKey,
 } from '@/features/store/reports/reportMetricHelp';
 import { useReportsSummary } from '@/features/store/reports/hooks/useReportsSummary';
-import { formatCurrency } from '@/utils/formatters';
+import { useReportsAnalytics } from '@/features/store/reports/hooks/useReportsAnalytics';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import { hasFeature } from '@/utils/features';
+import { formatCompactCurrency } from '@/utils/formatters';
+import { ReportsAnalyticsSection } from './ReportsAnalyticsSection';
 import './ReportsSummaryPage.css';
 
 type QuickPeriod = 'today' | 'yesterday' | 'week' | 'month' | 'previous_month';
@@ -90,8 +94,8 @@ const MetricCard = ({
     loading,
 }: {
     label: string;
-    value: string | number;
-    detail: string;
+    value: React.ReactNode;
+    detail: React.ReactNode;
     icon: React.ElementType;
     metric: ReportMetricHelpKey;
     loading: boolean;
@@ -114,13 +118,37 @@ const MetricCard = ({
     </Card>
 );
 
+const CompactMoney = ({ value }: { value: number }) => {
+    const formatted = formatCompactCurrency(value);
+    const amount = <span aria-label={formatted.exact}>{formatted.display}</span>;
+
+    return formatted.compact ? (
+        <Tooltip title={formatted.exact} trigger={['hover', 'click']}>
+            <span className="reportsSummaryCompactAmount">{amount}</span>
+        </Tooltip>
+    ) : amount;
+};
+
+const ChannelBreakdown = ({ pos, orders, showOrders }: { pos: number; orders: number; showOrders: boolean }) => {
+    if (!showOrders) return null;
+    const total = pos + orders;
+    const percentage = (amount: number) => (total === 0 ? 0 : Math.round((amount / total) * 100));
+
+    return <div className="reportsSummaryChannelBreakdown"><div><span>Mostrador</span><small>{percentage(pos)}%</small><strong><CompactMoney value={pos} /></strong></div><div><span>Pedidos</span><small>{percentage(orders)}%</small><strong><CompactMoney value={orders} /></strong></div></div>;
+};
+
 export const ReportsSummaryPage = () => {
+    const user = useAuthStore((state) => state.user);
     const initialRange = React.useMemo(() => rangeForQuickPeriod('month'), []);
     const [appliedRange, setAppliedRange] = React.useState<DateRange>(initialRange);
     const [selection, setSelection] = React.useState<PeriodSelection>('month');
     const [lastCustomRange, setLastCustomRange] = React.useState<DateRange>(initialRange);
     const [draftRange, setDraftRange] = React.useState<DateRange>(initialRange);
     const { data, isLoading, isError, refetch, isFetching } = useReportsSummary({
+        date_from: appliedRange[0].format('YYYY-MM-DD'),
+        date_to: appliedRange[1].format('YYYY-MM-DD'),
+    });
+    const analytics = useReportsAnalytics({
         date_from: appliedRange[0].format('YYYY-MM-DD'),
         date_to: appliedRange[1].format('YYYY-MM-DD'),
     });
@@ -225,7 +253,7 @@ export const ReportsSummaryPage = () => {
                         <div className="reportsSummaryMetricsGrid">
                             <MetricCard
                                 label="Ventas de mostrador"
-                                value={formatCurrency(data?.metrics.pos_sales.amount ?? 0)}
+                                value={<CompactMoney value={data?.metrics.pos_sales.amount ?? 0} />}
                                 detail={`${data?.metrics.pos_sales.count ?? 0} operaciones`}
                                 icon={ShopOutlined}
                                 metric="pos_sales"
@@ -233,15 +261,15 @@ export const ReportsSummaryPage = () => {
                             />
                             <MetricCard
                                 label="Pagos recibidos"
-                                value={formatCurrency(data?.metrics.collected.amount ?? 0)}
-                                detail="Total cobrado en el período"
+                                value={<CompactMoney value={data?.metrics.collected.amount ?? 0} />}
+                                detail={<ChannelBreakdown pos={data?.metrics.collected.channels?.pos_amount ?? 0} orders={data?.metrics.collected.channels?.orders_amount ?? 0} showOrders={hasFeature(user, 'pos')} />}
                                 icon={MoneyCollectOutlined}
                                 metric="collected"
                                 loading={isLoading}
                             />
                             <MetricCard
-                                label="Promedio por venta"
-                                value={formatCurrency(data?.metrics.pos_sales.average_ticket ?? 0)}
+                                label="Promedio en mostrador"
+                                value={<CompactMoney value={data?.metrics.pos_sales.average_ticket ?? 0} />}
                                 detail="Por venta de mostrador"
                                 icon={CalculatorOutlined}
                                 metric="average_sale"
@@ -250,7 +278,7 @@ export const ReportsSummaryPage = () => {
                             <MetricCard
                                 label="Pedidos tomados"
                                 value={data?.metrics.orders_taken.count ?? 0}
-                                detail={`${formatCurrency(data?.metrics.orders_taken.amount ?? 0)} en pedidos`}
+                                detail="En el período"
                                 icon={FileAddOutlined}
                                 metric="orders_taken"
                                 loading={isLoading}
@@ -278,7 +306,7 @@ export const ReportsSummaryPage = () => {
                         <div className="reportsSummaryCurrentGrid">
                             <MetricCard
                                 label="Saldo pendiente"
-                                value={formatCurrency(data?.current.pending_balance.amount ?? 0)}
+                                value={<CompactMoney value={data?.current.pending_balance.amount ?? 0} />}
                                 detail="Pendiente de cobro"
                                 icon={AccountBookOutlined}
                                 metric="pending_balance"
@@ -366,6 +394,14 @@ export const ReportsSummaryPage = () => {
                             )}
                         </Card>
                     </section>
+                    <ReportsAnalyticsSection
+                        data={analytics.data}
+                        loading={analytics.isLoading}
+                        error={analytics.isError}
+                        retry={() => analytics.refetch()}
+                        retrying={analytics.isFetching}
+                        ordersAvailable={hasFeature(user, 'pos')}
+                    />
                 </>
             )}
         </main>

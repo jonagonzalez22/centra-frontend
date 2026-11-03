@@ -96,6 +96,30 @@
     @apply mt-5 block break-words text-2xl font-semibold leading-tight text-centra-text sm:text-3xl;
 }
 
+.reportsSummaryCompactAmount {
+    @apply cursor-help;
+}
+
+.reportsSummaryChannelBreakdown {
+    @apply mt-3 space-y-1.5 text-sm;
+}
+
+.reportsSummaryChannelBreakdown > div {
+    @apply grid grid-cols-[minmax(0,1fr)_2.5rem_auto] items-center gap-2;
+}
+
+.reportsSummaryChannelBreakdown span {
+    @apply truncate text-gray-600;
+}
+
+.reportsSummaryChannelBreakdown small {
+    @apply text-right text-gray-500;
+}
+
+.reportsSummaryChannelBreakdown strong {
+    @apply text-right tabular-nums text-centra-text;
+}
+
 .reportsSummaryMetricDetail {
     @apply mt-2 block text-sm text-gray-500;
 }
@@ -137,6 +161,149 @@
 
 .reportsSummaryAttention {
     @apply pt-2;
+}
+
+.reportsAnalytics {
+    @apply space-y-4 pt-2;
+}
+
+.reportsAnalyticsGrid {
+    @apply grid grid-cols-1 gap-4 lg:grid-cols-2;
+}
+
+.reportsAnalyticsWide {
+    @apply lg:col-span-2;
+}
+
+.reportsAnalyticsCard .ant-card-body {
+    @apply p-5;
+}
+
+.reportsAnalyticsTitle {
+    @apply m-0 inline-flex items-center gap-1 text-lg font-semibold text-centra-text;
+}
+
+.reportsAnalyticsCard p {
+    @apply m-0 mt-1 text-sm text-gray-500;
+}
+
+.reportsAnalyticsChart {
+    @apply mt-4 h-72 w-full;
+}
+
+.reportsAnalyticsDonut {
+    @apply mt-2 h-48 w-full;
+}
+
+.reportsAnalyticsTooltip {
+    @apply flex min-w-40 flex-col gap-1 rounded-lg border border-gray-200 bg-white p-3 text-xs shadow-sm;
+}
+
+.reportsAnalyticsTooltip strong {
+    @apply mb-1 text-gray-700;
+}
+
+.reportsAnalyticsTooltip span {
+    @apply flex items-center gap-1.5 text-gray-600;
+}
+
+.reportsAnalyticsTooltip i,
+.reportsAnalyticsBreakdown i {
+    @apply inline-block h-2.5 w-2.5 shrink-0 rounded-sm;
+}
+
+.reportsAnalyticsBreakdown {
+    @apply mt-3 space-y-2;
+}
+
+.reportsAnalyticsBreakdown > div {
+    @apply grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm;
+}
+
+.reportsAnalyticsBreakdown span {
+    @apply truncate text-gray-600;
+}
+
+.reportsAnalyticsBreakdown strong {
+    @apply tabular-nums text-centra-text;
+}
+
+.reportsAnalyticsBreakdown small {
+    @apply w-9 text-right text-gray-500;
+}
+
+.reportsAnalyticsChannels {
+    @apply mt-5 space-y-4;
+}
+
+.reportsAnalyticsChannels > div {
+    @apply grid grid-cols-[5.5rem_minmax(0,1fr)_2.5rem_5.5rem] items-center gap-2 text-sm;
+}
+
+.reportsAnalyticsChannels span {
+    @apply text-gray-600;
+}
+
+.reportsAnalyticsChannels > div > div {
+    @apply h-2 overflow-hidden rounded bg-gray-100;
+}
+
+.reportsAnalyticsChannels i {
+    @apply block h-full rounded bg-centra-primary;
+}
+
+.reportsAnalyticsChannels small {
+    @apply text-right text-gray-500;
+}
+
+.reportsAnalyticsChannels b {
+    @apply text-right tabular-nums text-centra-text;
+}
+
+.reportsAnalyticsEmpty {
+    @apply flex min-h-48 items-center justify-center text-center text-sm text-gray-500;
+}
+
+.reportsAnalyticsProducts {
+    @apply mt-5 space-y-3;
+}
+
+.reportsAnalyticsProducts > div {
+    @apply grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-x-3 gap-y-1 text-sm;
+}
+
+.reportsAnalyticsProducts span {
+    @apply truncate text-gray-600;
+}
+
+.reportsAnalyticsProducts > div > div {
+    @apply col-span-2 h-2 overflow-hidden rounded bg-gray-100;
+}
+
+.reportsAnalyticsProducts i {
+    @apply block h-full rounded bg-centra-primary;
+}
+
+.reportsAnalyticsProducts strong {
+    @apply text-right tabular-nums text-centra-text;
+}
+
+.reportsAnalyticsProducts em {
+    @apply hidden;
+}
+
+.reportsAnalyticsLoading .ant-card-body {
+    @apply p-5;
+}
+
+@media (max-width: 639px) {
+    .reportsAnalyticsChart {
+        height: 16rem;
+    }
+
+    .reportsAnalyticsChart .recharts-legend-item-text {
+        font-size: 12px;
+    }
 }
 
 .reportsSummaryAttentionCard {

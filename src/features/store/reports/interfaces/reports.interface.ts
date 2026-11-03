@@ -21,6 +21,7 @@ export interface DeliveriesCompletedMetric {
 
 export interface CollectedMetric {
     amount: number;
+    channels: { pos_amount: number; orders_amount: number };
 }
 
 export interface InventoryAlerts {
@@ -53,3 +54,30 @@ export interface ReportsSummaryParams {
     date_from: string;
     date_to: string;
 }
+
+export interface PaymentsSeriesPoint {
+    date: string;
+    collected_amount: number;
+}
+
+export interface OrdersSeriesPoint {
+    date: string;
+    orders_taken_count: number;
+    deliveries_count: number;
+}
+
+export interface PaymentMethodAnalytics {
+    payment_method_id: string;
+    name: string;
+    amount: number;
+    count: number;
+}
+
+export interface ReportsAnalytics {
+    period: ReportPeriod;
+    payments_series: PaymentsSeriesPoint[];
+    orders_series: OrdersSeriesPoint[];
+    payment_methods: PaymentMethodAnalytics[];
+}
+
+export type ReportsAnalyticsParams = ReportsSummaryParams;

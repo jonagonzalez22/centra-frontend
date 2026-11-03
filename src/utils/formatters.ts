@@ -43,6 +43,20 @@ export const formatCurrency = (value: number): string => {
     }).format(value);
 };
 
+export const formatCompactCurrency = (value: number): { display: string; exact: string; compact: boolean } => {
+    const exact = formatCurrency(value);
+    if (Math.abs(value) < 1_000_000) return { display: exact, exact, compact: false };
+
+    const millions = value / 1_000_000;
+    const maximumFractionDigits = Math.abs(millions) < 10 ? 2 : 1;
+
+    return {
+        display: `$ ${new Intl.NumberFormat('es-AR', { maximumFractionDigits }).format(millions)} M`,
+        exact,
+        compact: true,
+    };
+};
+
 export const formatCurrencyWithCents = (value: number): string => {
     return new Intl.NumberFormat('es-AR', {
         style: 'currency',

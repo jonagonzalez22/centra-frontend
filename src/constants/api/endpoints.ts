@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
         },
         REPORTS: {
             SUMMARY: { URL: '/v1/store/reports/summary' },
+            ANALYTICS: { URL: '/v1/store/reports/analytics' },
         },
         OPERATIONS: {
             URL: '/v1/store/operations',
