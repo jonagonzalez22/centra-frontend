@@ -261,7 +261,7 @@
 }
 
 .reportsAnalyticsEmpty {
-    @apply flex min-h-48 items-center justify-center text-center text-sm text-gray-500;
+    @apply flex min-h-32 items-center justify-center py-3 text-center text-sm text-gray-500;
 }
 
 .reportsAnalyticsProducts {

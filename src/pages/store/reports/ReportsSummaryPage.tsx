@@ -11,7 +11,6 @@ import {
 } from '@ant-design/icons';
 import { Alert, Breadcrumb, DatePicker, Popover, Select, Skeleton, Tooltip } from 'antd';
 import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
 import React from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -25,11 +24,10 @@ import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
 import { formatCompactCurrency } from '@/utils/formatters';
 import { ReportsAnalyticsSection } from './ReportsAnalyticsSection';
+import { rangeForQuickPeriod, type DateRange, type QuickPeriod } from './reportsPeriod';
 import './ReportsSummaryPage.css';
 
-type QuickPeriod = 'today' | 'yesterday' | 'week' | 'month' | 'previous_month';
 type PeriodSelection = QuickPeriod | 'custom';
-type DateRange = [Dayjs, Dayjs];
 
 const quickPeriodOptions: { label: string; value: QuickPeriod }[] = [
     { label: 'Hoy', value: 'today' },
@@ -43,26 +41,6 @@ const periodOptions: { label: string; value: PeriodSelection }[] = [
     ...quickPeriodOptions,
     { label: 'Personalizado', value: 'custom' },
 ];
-
-const rangeForQuickPeriod = (period: QuickPeriod): DateRange => {
-    const now = dayjs();
-    switch (period) {
-        case 'today':
-            return [now, now];
-        case 'yesterday': {
-            const yesterday = now.subtract(1, 'day');
-            return [yesterday, yesterday];
-        }
-        case 'week':
-            return [now.startOf('week'), now.endOf('week')];
-        case 'previous_month': {
-            const previous = now.subtract(1, 'month');
-            return [previous.startOf('month'), previous.endOf('month')];
-        }
-        case 'month':
-            return [now.startOf('month'), now.endOf('month')];
-    }
-};
 
 const MetricHelp = ({ metric }: { metric: ReportMetricHelpKey }) => (
     <Popover
@@ -126,15 +104,42 @@ const CompactMoney = ({ value }: { value: number }) => {
         <Tooltip title={formatted.exact} trigger={['hover', 'click']}>
             <span className="reportsSummaryCompactAmount">{amount}</span>
         </Tooltip>
-    ) : amount;
+    ) : (
+        amount
+    );
 };
 
-const ChannelBreakdown = ({ pos, orders, showOrders }: { pos: number; orders: number; showOrders: boolean }) => {
+const ChannelBreakdown = ({
+    pos,
+    orders,
+    showOrders,
+}: {
+    pos: number;
+    orders: number;
+    showOrders: boolean;
+}) => {
     if (!showOrders) return null;
     const total = pos + orders;
     const percentage = (amount: number) => (total === 0 ? 0 : Math.round((amount / total) * 100));
 
-    return <div className="reportsSummaryChannelBreakdown"><div><span>Mostrador</span><small>{percentage(pos)}%</small><strong><CompactMoney value={pos} /></strong></div><div><span>Pedidos</span><small>{percentage(orders)}%</small><strong><CompactMoney value={orders} /></strong></div></div>;
+    return (
+        <div className="reportsSummaryChannelBreakdown">
+            <div>
+                <span>Mostrador</span>
+                <small>{percentage(pos)}%</small>
+                <strong>
+                    <CompactMoney value={pos} />
+                </strong>
+            </div>
+            <div>
+                <span>Pedidos</span>
+                <small>{percentage(orders)}%</small>
+                <strong>
+                    <CompactMoney value={orders} />
+                </strong>
+            </div>
+        </div>
+    );
 };
 
 export const ReportsSummaryPage = () => {
@@ -177,6 +182,8 @@ export const ReportsSummaryPage = () => {
     const attention = data?.current.attention;
     const hasOutOfStock = (inventory?.out_of_stock_count ?? 0) > 0;
     const hasLowStock = (inventory?.low_stock_count ?? 0) > 0;
+    const collectedAmount = data?.metrics.collected.amount ?? 0;
+    const posSalesCount = data?.metrics.pos_sales.count ?? 0;
 
     return (
         <main className="reportsSummaryPage">
@@ -261,16 +268,40 @@ export const ReportsSummaryPage = () => {
                             />
                             <MetricCard
                                 label="Pagos recibidos"
-                                value={<CompactMoney value={data?.metrics.collected.amount ?? 0} />}
-                                detail={<ChannelBreakdown pos={data?.metrics.collected.channels?.pos_amount ?? 0} orders={data?.metrics.collected.channels?.orders_amount ?? 0} showOrders={hasFeature(user, 'pos')} />}
+                                value={<CompactMoney value={collectedAmount} />}
+                                detail={
+                                    collectedAmount === 0 ? (
+                                        'Sin pagos en el período'
+                                    ) : (
+                                        <ChannelBreakdown
+                                            pos={data?.metrics.collected.channels?.pos_amount ?? 0}
+                                            orders={
+                                                data?.metrics.collected.channels?.orders_amount ?? 0
+                                            }
+                                            showOrders={hasFeature(user, 'pos')}
+                                        />
+                                    )
+                                }
                                 icon={MoneyCollectOutlined}
                                 metric="collected"
                                 loading={isLoading}
                             />
                             <MetricCard
                                 label="Promedio en mostrador"
-                                value={<CompactMoney value={data?.metrics.pos_sales.average_ticket ?? 0} />}
-                                detail="Por venta de mostrador"
+                                value={
+                                    posSalesCount === 0 ? (
+                                        '—'
+                                    ) : (
+                                        <CompactMoney
+                                            value={data?.metrics.pos_sales.average_ticket ?? 0}
+                                        />
+                                    )
+                                }
+                                detail={
+                                    posSalesCount === 0
+                                        ? 'Sin ventas de mostrador'
+                                        : 'Por venta de mostrador'
+                                }
                                 icon={CalculatorOutlined}
                                 metric="average_sale"
                                 loading={isLoading}
@@ -306,7 +337,11 @@ export const ReportsSummaryPage = () => {
                         <div className="reportsSummaryCurrentGrid">
                             <MetricCard
                                 label="Saldo pendiente"
-                                value={<CompactMoney value={data?.current.pending_balance.amount ?? 0} />}
+                                value={
+                                    <CompactMoney
+                                        value={data?.current.pending_balance.amount ?? 0}
+                                    />
+                                }
                                 detail="Pendiente de cobro"
                                 icon={AccountBookOutlined}
                                 metric="pending_balance"
