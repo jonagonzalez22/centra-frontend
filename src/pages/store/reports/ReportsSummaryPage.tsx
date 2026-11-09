@@ -113,27 +113,30 @@ const ChannelBreakdown = ({
     pos,
     orders,
     showOrders,
+    percentages,
 }: {
     pos: number;
     orders: number;
     showOrders: boolean;
+    percentages?: { pos: number; orders: number };
 }) => {
     if (!showOrders) return null;
     const total = pos + orders;
-    const percentage = (amount: number) => (total === 0 ? 0 : Math.round((amount / total) * 100));
+    const percentage = (channel: 'pos' | 'orders', amount: number) =>
+        percentages?.[channel] ?? (total === 0 ? 0 : Math.round((amount / total) * 100));
 
     return (
         <div className="reportsSummaryChannelBreakdown">
             <div>
                 <span>Mostrador</span>
-                <small>{percentage(pos)}%</small>
+                <small>{percentage('pos', pos)}%</small>
                 <strong>
                     <CompactMoney value={pos} />
                 </strong>
             </div>
             <div>
                 <span>Pedidos</span>
-                <small>{percentage(orders)}%</small>
+                <small>{percentage('orders', orders)}%</small>
                 <strong>
                     <CompactMoney value={orders} />
                 </strong>
@@ -184,6 +187,9 @@ export const ReportsSummaryPage = () => {
     const hasLowStock = (inventory?.low_stock_count ?? 0) > 0;
     const collectedAmount = data?.metrics.collected.amount ?? 0;
     const posSalesCount = data?.metrics.pos_sales.count ?? 0;
+    const realizedSales = data?.metrics.realized_sales;
+    const realizedSalesAmount = realizedSales?.amount ?? 0;
+    const ordersAvailable = hasFeature(user, 'deliveries');
 
     return (
         <main className="reportsSummaryPage">
@@ -259,11 +265,25 @@ export const ReportsSummaryPage = () => {
                         </div>
                         <div className="reportsSummaryMetricsGrid">
                             <MetricCard
-                                label="Ventas de mostrador"
-                                value={<CompactMoney value={data?.metrics.pos_sales.amount ?? 0} />}
-                                detail={`${data?.metrics.pos_sales.count ?? 0} operaciones`}
+                                label="Ventas realizadas"
+                                value={<CompactMoney value={realizedSalesAmount} />}
+                                detail={
+                                    realizedSalesAmount === 0 ? (
+                                        'Sin ventas en el período'
+                                    ) : (
+                                        <ChannelBreakdown
+                                            pos={realizedSales?.channels.pos.amount ?? 0}
+                                            orders={realizedSales?.channels.orders.amount ?? 0}
+                                            showOrders={ordersAvailable}
+                                            percentages={{
+                                                pos: realizedSales?.channels.pos.percentage ?? 0,
+                                                orders: realizedSales?.channels.orders.percentage ?? 0,
+                                            }}
+                                        />
+                                    )
+                                }
                                 icon={ShopOutlined}
-                                metric="pos_sales"
+                                metric="realized_sales"
                                 loading={isLoading}
                             />
                             <MetricCard
@@ -435,7 +455,7 @@ export const ReportsSummaryPage = () => {
                         error={analytics.isError}
                         retry={() => analytics.refetch()}
                         retrying={analytics.isFetching}
-                        ordersAvailable={hasFeature(user, 'pos')}
+                        ordersAvailable={ordersAvailable}
                     />
                 </>
             )}

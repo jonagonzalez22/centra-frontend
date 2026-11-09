@@ -10,6 +10,14 @@ export interface PosSalesMetric {
     average_ticket: number;
 }
 
+export interface RealizedSalesMetric {
+    amount: number;
+    channels: {
+        pos: { amount: number; percentage: number };
+        orders: { amount: number; percentage: number };
+    };
+}
+
 export interface OrdersTakenMetric {
     amount: number;
     count: number;
@@ -43,6 +51,7 @@ export interface ReportsSummary {
     period: ReportPeriod;
     metrics: {
         pos_sales: PosSalesMetric;
+        realized_sales: RealizedSalesMetric;
         orders_taken: OrdersTakenMetric;
         deliveries_completed: DeliveriesCompletedMetric;
         collected: CollectedMetric;
@@ -66,6 +75,19 @@ export interface OrdersSeriesPoint {
     deliveries_count: number;
 }
 
+export interface RealizedSalesSeriesPoint {
+    date: string;
+    pos_amount: number;
+    orders_amount: number;
+    total_amount: number;
+}
+
+export interface TopProductAnalytics {
+    product_id: string;
+    name: string;
+    operations_count: number;
+}
+
 export interface PaymentMethodAnalytics {
     payment_method_id: string;
     name: string;
@@ -75,9 +97,11 @@ export interface PaymentMethodAnalytics {
 
 export interface ReportsAnalytics {
     period: ReportPeriod;
+    realized_sales_series: RealizedSalesSeriesPoint[];
     payments_series: PaymentsSeriesPoint[];
     orders_series: OrdersSeriesPoint[];
     payment_methods: PaymentMethodAnalytics[];
+    top_products: TopProductAnalytics[];
 }
 
 export type ReportsAnalyticsParams = ReportsSummaryParams;

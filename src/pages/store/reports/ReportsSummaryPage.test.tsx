@@ -25,6 +25,13 @@ const summary = {
     },
     metrics: {
         pos_sales: { amount: 10000, count: 4, average_ticket: 2500 },
+        realized_sales: {
+            amount: 18000,
+            channels: {
+                pos: { amount: 10000, percentage: 56 },
+                orders: { amount: 8000, percentage: 44 },
+            },
+        },
         orders_taken: { amount: 18000, count: 3 },
         deliveries_completed: { count: 7 },
         collected: { amount: 12000, channels: { pos_amount: 10000, orders_amount: 2000 } },
@@ -53,8 +60,12 @@ const analyticsResult = (overrides = {}) => ({
     data: {
         period: summary.period,
         payments_series: [{ date: '2026-11-01', collected_amount: 12000 }],
+        realized_sales_series: [
+            { date: '2026-11-01', pos_amount: 10000, orders_amount: 8000, total_amount: 18000 },
+        ],
         orders_series: [{ date: '2026-11-01', orders_taken_count: 3, deliveries_count: 2 }],
         payment_methods: [{ payment_method_id: 'cash', name: 'Efectivo', amount: 12000, count: 3 }],
+        top_products: [{ product_id: 'product-1', name: 'Producto', operations_count: 12 }],
     },
     isLoading: false,
     isError: false,
@@ -140,9 +151,16 @@ describe('ReportsSummaryPage', () => {
             screen.getByText('Resumen', { selector: '.ant-breadcrumb-link' })
         ).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Actividad del período' })).toBeInTheDocument();
-        expect(screen.getByText('Ventas de mostrador')).toBeInTheDocument();
+        expect(screen.getAllByText('Ventas realizadas')).not.toHaveLength(0);
+        const realizedSalesCard = screen
+            .getByRole('button', { name: 'Ayuda sobre realized_sales' })
+            .closest('.reportsSummaryCard');
+        expect(within(realizedSalesCard as HTMLElement).getByText('56%')).toBeInTheDocument();
+        expect(within(realizedSalesCard as HTMLElement).getByText('44%')).toBeInTheDocument();
+        expect(within(realizedSalesCard as HTMLElement).getByText('Mostrador')).toBeInTheDocument();
+        expect(within(realizedSalesCard as HTMLElement).getByText('Pedidos')).toBeInTheDocument();
         expect(screen.getAllByText(/10\.000/)).not.toHaveLength(0);
-        expect(screen.getByText('4 operaciones')).toBeInTheDocument();
+        expect(screen.getByText('Por venta de mostrador')).toBeInTheDocument();
         expect(screen.getByText('Pedidos tomados')).toBeInTheDocument();
         const ordersCard = screen.getByText('Pedidos tomados').closest('.reportsSummaryCard');
         expect(ordersCard).not.toBeNull();
@@ -155,6 +173,28 @@ describe('ReportsSummaryPage', () => {
         expect(screen.getByText('Saldo pendiente')).toBeInTheDocument();
         expect(screen.getByText('Bajo stock')).toBeInTheDocument();
         expect(screen.getByText('Sin stock')).toBeInTheDocument();
+    });
+
+    it('muestra productos más elegidos con frecuencia de ventas y pluralización', () => {
+        mockUseReportsAnalytics.mockReturnValue(
+            analyticsResult({
+                data: {
+                    ...analyticsResult().data,
+                    top_products: [
+                        { product_id: 'first', name: 'Esponja cocina', operations_count: 12 },
+                        { product_id: 'second', name: 'Jabón Ariel', operations_count: 1 },
+                    ],
+                },
+            }) as unknown as ReturnType<typeof useReportsAnalytics>
+        );
+
+        render(<ReportsSummaryPage />);
+
+        expect(screen.getByRole('heading', { name: 'Productos más elegidos' })).toBeInTheDocument();
+        expect(screen.getByText('Productos presentes en más ventas durante el período.')).toBeInTheDocument();
+        expect(screen.getByText('12 ventas')).toBeInTheDocument();
+        expect(screen.getByText('1 venta')).toBeInTheDocument();
+        expect(screen.queryByText('No hubo productos vendidos en este período.')).not.toBeInTheDocument();
     });
 
     it('consulta Este mes por defecto sin mostrar campos personalizados', () => {
@@ -198,6 +238,13 @@ describe('ReportsSummaryPage', () => {
                     ...summary,
                     metrics: {
                         pos_sales: { amount: 0, count: 0, average_ticket: 0 },
+                        realized_sales: {
+                            amount: 0,
+                            channels: {
+                                pos: { amount: 0, percentage: 0 },
+                                orders: { amount: 0, percentage: 0 },
+                            },
+                        },
                         orders_taken: { amount: 0, count: 0 },
                         deliveries_completed: { count: 0 },
                         collected: { amount: 0 },
@@ -227,7 +274,7 @@ describe('ReportsSummaryPage', () => {
         expect(within(averageCard as HTMLElement).queryByText(/\$.*0/)).not.toBeInTheDocument();
         expect(screen.queryByText('Mostrador')).not.toBeInTheDocument();
         expect(screen.queryByText('Pedidos')).not.toBeInTheDocument();
-        expect(screen.getByText('0 operaciones')).toBeInTheDocument();
+        expect(screen.getByText('Sin ventas en el período')).toBeInTheDocument();
         expect(screen.getAllByText('0')).not.toHaveLength(0);
         expect(screen.getByText('Sin alertas de stock')).toBeInTheDocument();
     });
@@ -301,9 +348,9 @@ describe('ReportsSummaryPage', () => {
         expect(screen.getByRole('heading', { name: 'Requiere atención' })).toBeInTheDocument();
         expect(screen.getByText('Pedidos con entrega parcial')).toBeInTheDocument();
         expect(screen.getByText('Rutas pendientes de conciliación')).toBeInTheDocument();
-        await user.click(screen.getByRole('button', { name: 'Ayuda sobre pos_sales' }));
+        await user.click(screen.getByRole('button', { name: 'Ayuda sobre realized_sales' }));
         expect(
-            screen.getByText(/Total vendido en mostrador durante el período/)
+            screen.getByText(/Valor total de las ventas concretadas durante el período/)
         ).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Ayuda sobre orders_taken' }));
         expect(
@@ -352,7 +399,12 @@ describe('ReportsSummaryPage', () => {
                         { date: '2026-11-01', orders_taken_count: 0, deliveries_count: 0 },
                         { date: '2026-11-02', orders_taken_count: 0, deliveries_count: 0 },
                     ],
+                    realized_sales_series: [
+                        { date: '2026-11-01', pos_amount: 0, orders_amount: 0, total_amount: 0 },
+                        { date: '2026-11-02', pos_amount: 0, orders_amount: 0, total_amount: 0 },
+                    ],
                     payment_methods: [],
+                    top_products: [],
                 },
             }) as unknown as ReturnType<typeof useReportsAnalytics>
         );
@@ -384,12 +436,16 @@ describe('ReportsSummaryPage', () => {
                 data: {
                     ...analyticsResult().data,
                     payments_series: [{ date: '2026-11-01', collected_amount: 0 }],
+                    realized_sales_series: [
+                        { date: '2026-11-01', pos_amount: 0, orders_amount: 0, total_amount: 0 },
+                    ],
                     orders_series: [
                         { date: '2026-11-01', orders_taken_count: 0, deliveries_count: 0 },
                     ],
                     payment_methods: [
                         { payment_method_id: 'cash', name: 'Efectivo', amount: 300, count: 1 },
                     ],
+                    top_products: [],
                 },
             }) as unknown as ReturnType<typeof useReportsAnalytics>
         );
@@ -405,6 +461,7 @@ describe('ReportsSummaryPage', () => {
         ).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Medios de pago' })).toBeInTheDocument();
         expect(screen.getByText('Efectivo')).toBeInTheDocument();
+        expect(screen.getByText('No hubo productos vendidos en este período.')).toBeInTheDocument();
     });
 
     it('conserva los gráficos si una serie tiene al menos un día con actividad', () => {
@@ -469,8 +526,8 @@ describe('ReportsSummaryPage', () => {
     it('mantiene el breakdown de pagos cuando hay importe cobrado', () => {
         render(<ReportsSummaryPage />);
 
-        expect(screen.getByText('Mostrador')).toBeInTheDocument();
-        expect(screen.getByText('Pedidos')).toBeInTheDocument();
+        expect(screen.getAllByText('Mostrador')).not.toHaveLength(0);
+        expect(screen.getAllByText('Pedidos')).not.toHaveLength(0);
         expect(screen.queryByText('Sin pagos en el período')).not.toBeInTheDocument();
     });
 
@@ -493,7 +550,7 @@ describe('ReportsSummaryPage', () => {
         const user = userEvent.setup();
         render(<ReportsSummaryPage />);
 
-        expect(screen.getByText('Ventas de mostrador')).toBeInTheDocument();
+        expect(screen.getByText('Ventas realizadas')).toBeInTheDocument();
         expect(screen.getByText('No pudimos cargar el análisis del período.')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Reintentar' }));
         expect(analyticsRefetch).toHaveBeenCalledOnce();

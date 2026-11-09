@@ -47,6 +47,27 @@ const AnalyticsEmpty = ({ description }: { description: string }) => (
     </div>
 );
 
+const RealizedSalesTooltip = ({
+    active,
+    payload,
+    label,
+}: {
+    active?: boolean;
+    payload?: { payload: { total_amount: number; pos_amount: number; orders_amount: number } }[];
+    label?: string | number;
+}) => {
+    if (!active || !payload?.length) return null;
+    const point = payload[0].payload;
+    return (
+        <div className="reportsAnalyticsTooltip">
+            <strong>{dayjs(String(label)).format('DD/MM/YYYY')}</strong>
+            <span>Total: {formatCurrency(point.total_amount)}</span>
+            <span>Mostrador: {formatCurrency(point.pos_amount)}</span>
+            <span>Pedidos: {formatCurrency(point.orders_amount)}</span>
+        </div>
+    );
+};
+
 export const ReportsAnalyticsSection = ({
     data,
     loading,
@@ -91,8 +112,15 @@ export const ReportsAnalyticsSection = ({
         ) ?? false;
     const hasPaymentMethodsActivity =
         data?.payment_methods.some((method) => method.amount > 0) ?? false;
+    const hasRealizedSalesActivity =
+        data?.realized_sales_series?.some((point) => point.total_amount !== 0) ?? false;
+    const hasTopProducts = (data?.top_products?.length ?? 0) > 0;
     const isAnalyticsEmpty =
-        !hasPaymentsActivity && !hasOrdersActivity && !hasPaymentMethodsActivity;
+        !hasRealizedSalesActivity &&
+        !hasPaymentsActivity &&
+        !hasOrdersActivity &&
+        !hasPaymentMethodsActivity &&
+        !hasTopProducts;
 
     return (
         <section className="reportsAnalytics" aria-labelledby="analytics-heading">
@@ -114,6 +142,39 @@ export const ReportsAnalyticsSection = ({
                 </Card>
             ) : (
                 <div className="reportsAnalyticsGrid">
+                    <Card className="reportsAnalyticsCard reportsAnalyticsWide">
+                        <Heading
+                            title="Ventas realizadas"
+                            help="Incluye ventas de mostrador confirmadas y mercadería efectivamente entregada de pedidos."
+                        />
+                        <p>Valor vendido durante el período.</p>
+                        {hasRealizedSalesActivity ? (
+                            <div className="reportsAnalyticsChart">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={data?.realized_sales_series}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        <XAxis dataKey="date" tickFormatter={formatDate} minTickGap={28} />
+                                        <YAxis
+                                            tickFormatter={(value) => formatCurrency(value)}
+                                            width={72}
+                                        />
+                                        <Tooltip content={<RealizedSalesTooltip />} />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="total_amount"
+                                            name="Ventas realizadas"
+                                            stroke={colors[0]}
+                                            strokeWidth={2}
+                                            dot={false}
+                                            activeDot={{ r: 4 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <AnalyticsEmpty description="No hubo ventas realizadas en este período." />
+                        )}
+                    </Card>
                     <Card className="reportsAnalyticsCard reportsAnalyticsWide">
                         <Heading
                             title="Pagos recibidos"
@@ -194,7 +255,7 @@ export const ReportsAnalyticsSection = ({
                             )}
                         </Card>
                     )}
-                    <Card className="reportsAnalyticsCard reportsAnalyticsWide">
+                    <Card className="reportsAnalyticsCard">
                         <Heading
                             title="Medios de pago"
                             help="Distribución del dinero cobrado durante el período."
@@ -250,6 +311,35 @@ export const ReportsAnalyticsSection = ({
                                     ))}
                                 </div>
                             </>
+                        )}
+                    </Card>
+                    <Card className="reportsAnalyticsCard">
+                        <Heading
+                            title="Productos más elegidos"
+                            help="Ordena los productos según la cantidad de ventas distintas en las que estuvieron presentes. Una misma venta cuenta una sola vez por producto."
+                        />
+                        <p>Productos presentes en más ventas durante el período.</p>
+                        {!hasTopProducts ? (
+                            <AnalyticsEmpty description="No hubo productos vendidos en este período." />
+                        ) : (
+                            <div className="reportsAnalyticsProducts">
+                                {data?.top_products.map((product) => {
+                                    const maximum = data.top_products[0]?.operations_count ?? 0;
+                                    const width = maximum > 0 ? (product.operations_count / maximum) * 100 : 0;
+                                    return (
+                                        <div key={product.product_id}>
+                                            <span title={product.name}>{product.name}</span>
+                                            <strong>
+                                                {product.operations_count}{' '}
+                                                {product.operations_count === 1 ? 'venta' : 'ventas'}
+                                            </strong>
+                                            <div>
+                                                <i style={{ width: `${width}%` }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </Card>
                 </div>
