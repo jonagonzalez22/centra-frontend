@@ -21,7 +21,13 @@ const product = (overrides: Partial<Product> = {}): Product => ({
     available_stock: '10.0000',
     stock_min: '0.0000',
     stock_measurement_unit_id: 'unit-1',
-    stock_measurement_unit: { id: 'unit-1', code: 'l', name: 'Litro', symbol: 'L', category: 'volume' },
+    stock_measurement_unit: {
+        id: 'unit-1',
+        code: 'l',
+        name: 'Litro',
+        symbol: 'L',
+        category: 'volume',
+    },
     stock_source_product: null,
     stock_consumption_quantity: null,
     sale_quantity_step: '1.0000',
@@ -35,9 +41,8 @@ const product = (overrides: Partial<Product> = {}): Product => ({
     ...overrides,
 });
 
-const renderModal = (item = product()) => render(
-    <StockAdjustmentModal open onClose={vi.fn()} product={item} />,
-);
+const renderModal = (item = product()) =>
+    render(<StockAdjustmentModal open onClose={vi.fn()} product={item} />);
 
 describe('StockAdjustmentModal', () => {
     beforeEach(() => {
@@ -74,11 +79,15 @@ describe('StockAdjustmentModal', () => {
         const concept = screen.getByRole('textbox', { name: 'Motivo / Concepto' });
 
         fireEvent.submit(form as HTMLFormElement);
-        await waitFor(() => expect(screen.getByText('El concepto es obligatorio.')).toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.getByText('El concepto es obligatorio.')).toBeInTheDocument()
+        );
 
         fireEvent.change(concept, { target: { value: 'Producción interna de cloro' } });
 
-        await waitFor(() => expect(screen.queryByText('El concepto es obligatorio.')).not.toBeInTheDocument());
+        await waitFor(() =>
+            expect(screen.queryByText('El concepto es obligatorio.')).not.toBeInTheDocument()
+        );
     });
 
     it('submits the written concept and preserves exact decimal payloads', async () => {
@@ -87,17 +96,104 @@ describe('StockAdjustmentModal', () => {
 
         fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Tipo de Ajuste' }));
         fireEvent.click(await screen.findByText('Entrada'));
-        fireEvent.change(screen.getByRole('spinbutton', { name: 'Cantidad del ajuste' }), { target: { value: '0.1250' } });
-        fireEvent.change(screen.getByRole('textbox', { name: 'Motivo / Concepto' }), { target: { value: 'Producción interna de cloro' } });
+        fireEvent.change(screen.getByRole('spinbutton', { name: 'Cantidad del ajuste' }), {
+            target: { value: '0.1250' },
+        });
+        fireEvent.change(screen.getByRole('textbox', { name: 'Motivo / Concepto' }), {
+            target: { value: 'Producción interna de cloro' },
+        });
 
         await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled());
         fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 
-        await waitFor(() => expect(InventoryMovementsService.create).toHaveBeenCalledWith({
-            product_id: 'product-1',
-            type: 'input',
-            quantity: '0.1250',
-            concept: 'Producción interna de cloro',
-        }));
+        await waitFor(() =>
+            expect(InventoryMovementsService.create).toHaveBeenCalledWith({
+                product_id: 'product-1',
+                type: 'input',
+                quantity: '0.1250',
+                concept: 'Producción interna de cloro',
+            })
+        );
+    }, 10000);
+
+    it('shows the optional unit cost only for a positive inventory input', async () => {
+        renderModal();
+
+        expect(
+            screen.queryByRole('spinbutton', { name: 'Precio de costo de las unidades ingresadas' })
+        ).not.toBeInTheDocument();
+
+        fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Tipo de Ajuste' }));
+        fireEvent.click(await screen.findByText('Entrada'));
+        fireEvent.change(screen.getByRole('spinbutton', { name: 'Cantidad del ajuste' }), {
+            target: { value: '1' },
+        });
+
+        expect(
+            await screen.findByRole('spinbutton', {
+                name: 'Precio de costo de las unidades ingresadas',
+            })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Informalo si conocés el costo de esta mercadería.')
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('checkbox', { name: 'Actualizar el precio de costo del producto' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not show unit cost for an output', async () => {
+        renderModal();
+
+        fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Tipo de Ajuste' }));
+        fireEvent.click(await screen.findByText('Salida'));
+        fireEvent.change(screen.getByRole('spinbutton', { name: 'Cantidad del ajuste' }), {
+            target: { value: '1' },
+        });
+
+        expect(
+            screen.queryByRole('spinbutton', { name: 'Precio de costo de las unidades ingresadas' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('parses grouped monetary input, enables the product-cost checkbox, and sends a normalized payload', async () => {
+        vi.mocked(InventoryMovementsService.create).mockResolvedValue({} as never);
+        renderModal();
+
+        fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Tipo de Ajuste' }));
+        fireEvent.click(await screen.findByText('Entrada'));
+        fireEvent.change(screen.getByRole('spinbutton', { name: 'Cantidad del ajuste' }), {
+            target: { value: '2' },
+        });
+        fireEvent.change(
+            await screen.findByRole('spinbutton', {
+                name: 'Precio de costo de las unidades ingresadas',
+            }),
+            { target: { value: '1.200' } }
+        );
+        fireEvent.click(
+            await screen.findByRole('checkbox', {
+                name: 'Actualizar el precio de costo del producto',
+            })
+        );
+        fireEvent.change(screen.getByRole('textbox', { name: 'Motivo / Concepto' }), {
+            target: { value: 'Ingreso con costo' },
+        });
+
+        expect(
+            screen.getByText('Usa este importe como nuevo costo del producto.')
+        ).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+
+        await waitFor(() =>
+            expect(InventoryMovementsService.create).toHaveBeenCalledWith({
+                product_id: 'product-1',
+                type: 'input',
+                quantity: '2.0000',
+                concept: 'Ingreso con costo',
+                unit_cost: '1200.00',
+                update_product_cost: true,
+            })
+        );
     }, 10000);
 });

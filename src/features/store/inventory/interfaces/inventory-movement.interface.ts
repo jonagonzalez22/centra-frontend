@@ -34,6 +34,8 @@ export interface CreateStockMovementDto {
     type: MovementType;
     quantity: DecimalString;
     concept: string;
+    unit_cost?: string;
+    update_product_cost?: boolean;
 }
 
 export interface InventoryMovementsFilters {

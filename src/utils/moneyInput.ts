@@ -26,5 +26,14 @@ export const formatMoneyInput = (value: string | number | undefined) => {
 export const parseMoneyInput = (value: string | undefined) => {
     const rawValue = value?.replace(/[^\d,.-]/g, '') ?? '';
 
-    return rawValue.includes(',') ? rawValue.replace(/\./g, '').replace(',', '.') : rawValue;
+    if (rawValue.includes(',')) {
+        return rawValue.replace(/\./g, '').replace(',', '.');
+    }
+
+    const dotGroups = rawValue.split('.');
+    if (dotGroups.length > 1 && dotGroups.slice(1).every((group) => group.length === 3)) {
+        return dotGroups.join('');
+    }
+
+    return rawValue;
 };

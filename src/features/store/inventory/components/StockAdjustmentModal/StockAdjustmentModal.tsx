@@ -6,13 +6,23 @@ import Card from '@/components/Card/Card';
 import Modal from '@/components/Modal/Modal';
 import SelectField from '@/components/SelectField/SelectField';
 import Input from '@/components/Input/Input';
+import { Checkbox } from '@/components/Checkbox';
 import { InventoryMovementsService } from '../../services/inventoryMovements.service';
 import type { Product } from '@/features/store/products/interfaces/product.interface';
 import type { CreateStockMovementDto } from '../../interfaces/inventory-movement.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import './StockAdjustmentModal.css';
 import type { DecimalString } from '@/types/decimal';
-import { addDecimalStrings, compareDecimalStrings, formatQuantityForDisplay, formatQuantityWithUnit, isZeroDecimal, normalizeDecimalString, subtractDecimalStrings } from '@/utils/quantity';
+import { formatMoneyInput, normalizeMoneyInput, parseMoneyInput } from '@/utils/moneyInput';
+import {
+    addDecimalStrings,
+    compareDecimalStrings,
+    formatQuantityForDisplay,
+    formatQuantityWithUnit,
+    isZeroDecimal,
+    normalizeDecimalString,
+    subtractDecimalStrings,
+} from '@/utils/quantity';
 
 interface StockAdjustmentModalProps {
     open: boolean;
@@ -25,6 +35,8 @@ interface AdjustmentFormValues {
     type: 'input' | 'output' | 'adjustment';
     quantity: DecimalString;
     concept: string;
+    unit_cost?: string;
+    update_product_cost?: boolean;
 }
 
 const TYPE_OPTIONS = [
@@ -51,6 +63,7 @@ export const StockAdjustmentModal = ({
 
     const typeValue = Form.useWatch('type', form);
     const quantityValue = Form.useWatch('quantity', form);
+    const unitCostValue = Form.useWatch('unit_cost', form);
 
     const stockResultante = useMemo(() => {
         if (!typeValue || !quantityValue || isZeroDecimal(quantityValue)) {
@@ -73,11 +86,18 @@ export const StockAdjustmentModal = ({
     const stockIncreased = compareDecimalStrings(stockResultante, product.available_stock) > 0;
     const stockDecreased = compareDecimalStrings(stockResultante, product.available_stock) < 0;
 
-    const isSaveDisabled = loading || !isStockResultanteValid || !quantityValue || isZeroDecimal(quantityValue);
+    const isSaveDisabled =
+        loading || !isStockResultanteValid || !quantityValue || isZeroDecimal(quantityValue);
 
     const quantityMin = typeValue === 'adjustment' ? undefined : '1';
     const quantityMax = undefined;
     const measurementUnitSymbol = product.stock_measurement_unit?.symbol;
+    const isPositiveManualInput =
+        (typeValue === 'input' || typeValue === 'adjustment') &&
+        !!quantityValue &&
+        compareDecimalStrings(quantityValue, '0.0000') > 0;
+    const hasUnitCost =
+        unitCostValue !== undefined && unitCostValue !== null && unitCostValue !== '';
 
     useEffect(() => {
         if (open) {
@@ -85,14 +105,29 @@ export const StockAdjustmentModal = ({
         }
     }, [open, form]);
 
+    useEffect(() => {
+        if (!isPositiveManualInput || !hasUnitCost) {
+            form.setFieldValue('update_product_cost', false);
+        }
+    }, [form, hasUnitCost, isPositiveManualInput]);
+
     const handleSubmit = async (values: AdjustmentFormValues) => {
         setLoading(true);
         try {
+            const normalizedUnitCost = values.unit_cost
+                ? normalizeMoneyInput(values.unit_cost)
+                : null;
             const dto: CreateStockMovementDto = {
                 product_id: product.id,
                 type: values.type,
                 quantity: normalizeDecimalString(values.quantity),
                 concept: values.concept,
+                ...(normalizedUnitCost !== null
+                    ? {
+                          unit_cost: normalizedUnitCost,
+                          update_product_cost: values.update_product_cost === true,
+                      }
+                    : {}),
             };
             const response = await InventoryMovementsService.create(dto);
             notification.success({ message: 'Stock actualizado correctamente.' });
@@ -158,7 +193,9 @@ export const StockAdjustmentModal = ({
                 <div className="stockAdjustmentCardRow">
                     <div className="stockAdjustmentCardItem">
                         <span className="stockAdjustmentCardLabel">Stock Actual</span>
-                        <span className="stockAdjustmentCardValue">{formatQuantityWithUnit(product.available_stock, measurementUnitSymbol)}</span>
+                        <span className="stockAdjustmentCardValue">
+                            {formatQuantityWithUnit(product.available_stock, measurementUnitSymbol)}
+                        </span>
                     </div>
                     <span className="stockAdjustmentCardArrow">→</span>
                     <div className="stockAdjustmentCardItem">
@@ -213,23 +250,66 @@ export const StockAdjustmentModal = ({
                             max={quantityMax}
                             precision={4}
                             step="1"
-                            formatter={(value) => value ? formatQuantityForDisplay(value) : ''}
+                            formatter={(value) => (value ? formatQuantityForDisplay(value) : '')}
                             parser={parseFormattedQuantity}
                         />
-                        {measurementUnitSymbol && <span className="stockAdjustmentQuantityUnit">{measurementUnitSymbol}</span>}
+                        {measurementUnitSymbol && (
+                            <span className="stockAdjustmentQuantityUnit">
+                                {measurementUnitSymbol}
+                            </span>
+                        )}
                     </div>
                 </Form.Item>
 
                 <Form.Item
                     name="concept"
                     label="Motivo / Concepto"
-                    rules={[{ required: true, whitespace: true, message: 'El concepto es obligatorio.' }]}
+                    rules={[
+                        {
+                            required: true,
+                            whitespace: true,
+                            message: 'El concepto es obligatorio.',
+                        },
+                    ]}
                     validateTrigger={['onBlur', 'onChange']}
                 >
-                    <Input
-                        placeholder="Ej: Reposición por faltante, Ajuste de inventario..."
-                    />
+                    <Input placeholder="Ej: Reposición por faltante, Ajuste de inventario..." />
                 </Form.Item>
+
+                {isPositiveManualInput && (
+                    <>
+                        <Form.Item
+                            name="unit_cost"
+                            label="Precio de costo de las unidades ingresadas"
+                            extra="Informalo si conocés el costo de esta mercadería."
+                        >
+                            <InputNumber<string>
+                                stringMode
+                                aria-label="Precio de costo de las unidades ingresadas"
+                                placeholder="0,00"
+                                className="w-full"
+                                min="0"
+                                precision={2}
+                                step="1"
+                                prefix="$"
+                                inputMode="decimal"
+                                formatter={formatMoneyInput}
+                                parser={parseMoneyInput}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="update_product_cost"
+                            valuePropName="checked"
+                            hidden={!hasUnitCost}
+                            extra="Usa este importe como nuevo costo del producto."
+                        >
+                            <Checkbox disabled={!hasUnitCost}>
+                                Actualizar el precio de costo del producto
+                            </Checkbox>
+                        </Form.Item>
+                    </>
+                )}
             </Form>
         </Modal>
     );
