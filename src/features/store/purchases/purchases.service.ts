@@ -121,6 +121,7 @@ export interface PurchaseDraftPayload {
 }
 export interface CreatePurchaseReceiptPayload {
     notes?: string | null;
+    update_reference_cost?: boolean;
     items: Array<{ purchase_item_id: string; quantity: string }>;
 }
 

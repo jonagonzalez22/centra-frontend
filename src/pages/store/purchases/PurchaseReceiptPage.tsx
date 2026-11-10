@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Breadcrumb, Input, InputNumber, Popconfirm, Table, message } from 'antd';
+import { Alert, Breadcrumb, Checkbox, Input, InputNumber, Popconfirm, Table, message } from 'antd';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/Button';
 import { formatQuantityForDisplay, compareDecimalStrings, isPositiveDecimal, normalizeDecimalString } from '@/utils/quantity';
@@ -20,6 +20,7 @@ export const PurchaseReceiptPage = () => {
     const [purchase, setPurchase] = useState<PurchaseDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [notes, setNotes] = useState('');
+    const [updateReferenceCost, setUpdateReferenceCost] = useState(false);
     const [quantities, setQuantities] = useState<Record<string, string>>({});
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
@@ -100,6 +101,7 @@ export const PurchaseReceiptPage = () => {
         try {
             await PurchasesService.createReceipt(purchase.id, {
                 notes: notes.trim() || null,
+                update_reference_cost: updateReferenceCost,
                 items: suppliedItems.map((item) => ({ purchase_item_id: item.id, quantity: normalizeDecimalString(quantities[item.id]) })),
             });
             message.success('Recepción registrada correctamente.');
@@ -152,6 +154,12 @@ export const PurchaseReceiptPage = () => {
                 { title: 'Recibir ahora', render: (_, item) => <div><InputNumber<string> stringMode controls={false} aria-label={`Recibir ahora ${item.product_name}`} className="w-32" min="0.0001" max={item.quantity_pending} precision={4} value={quantities[item.id] ?? ''} formatter={(value) => value ? formatQuantityForDisplay(value) : ''} parser={(value) => value?.replace(',', '.') ?? ''} onChange={(value) => setQuantity(item.id, value)} onBlur={() => normalizeInput(item.id)} onPressEnter={() => normalizeInput(item.id)} status={errors[item.id] ? 'error' : undefined} disabled={submitting} /><span className="ml-2 text-sm text-gray-500">{item.measurement_unit_symbol}</span>{errors[item.id] && <div className="mt-1 text-xs text-red-600">{errors[item.id]}</div>}</div> },
             ]}
         />
+        <div className="mt-5 max-w-2xl rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <Checkbox checked={updateReferenceCost} onChange={(event) => setUpdateReferenceCost(event.target.checked)} disabled={submitting}>
+                Actualizar el precio de costo de los productos con esta recepción
+            </Checkbox>
+            <p className="mb-0 mt-2 text-sm text-gray-500">Usa el precio de esta compra como nuevo costo del producto. Los precios de venta no se modificarán.</p>
+        </div>
         <div className="mt-5 max-w-2xl"><label htmlFor="receipt-notes" className="mb-1 block text-sm font-medium">Notas de recepción <span className="font-normal text-gray-500">(opcional)</span></label><Input.TextArea id="receipt-notes" rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} disabled={submitting} /></div>
         <div className="mt-6 flex flex-wrap justify-end gap-2"><Button variant="default" label="Cancelar" action={() => navigate(`/tienda/compras/${purchase.id}`)} disabled={submitting} /><Popconfirm title="¿Confirmar recepción?" description="Esta operación ingresará físicamente los productos al inventario y generará movimientos de stock. La recepción no podrá editarse ni eliminarse." okText="Confirmar recepción" cancelText="Cancelar" onConfirm={() => void submit()} okButtonProps={{ loading: submitting, disabled: !canConfirm }}><Button label="Confirmar recepción" loading={submitting} disabled={!canConfirm} /></Popconfirm></div>
     </div>;
