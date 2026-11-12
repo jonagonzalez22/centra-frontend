@@ -34,6 +34,7 @@ export interface OrderListItem {
     delivery_address: Pick<OrderDeliveryAddress, 'locality' | 'street' | 'full_address'> | null;
     branch_id: string | null;
     route_ids: string[];
+    has_pending_route_collection?: boolean;
     has_pending_delivery: boolean;
     pending_delivery_items_count: number;
 }
@@ -215,6 +216,7 @@ export interface OrderDetail {
     events: OrderEvent[];
     history: OrderHistoryEntry[];
     route_ids: string[];
+    has_pending_route_collection?: boolean;
     delivery_summary: DeliverySummary;
 }
 

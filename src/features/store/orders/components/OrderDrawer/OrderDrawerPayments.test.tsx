@@ -8,6 +8,7 @@ test('shows individual payment traceability and total paid', () => {
             paidAmount={10000}
             pendingAmount={5600}
             canCollect
+            hasPendingRouteCollection={false}
             onRegisterPayment={vi.fn()}
             payments={[
                 {
@@ -34,4 +35,23 @@ test('shows individual payment traceability and total paid', () => {
     expect(screen.getByText('Pago posterior en tienda')).toBeInTheDocument();
     expect(screen.getByText('Registrado por Jonathan')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeInTheDocument();
+});
+
+test('disables manual collection while a route collection is pending reconciliation', () => {
+    render(
+        <OrderDrawerPayments
+            loading={false}
+            paidAmount={0}
+            pendingAmount={5600}
+            canCollect
+            hasPendingRouteCollection
+            onRegisterPayment={vi.fn()}
+            payments={[]}
+        />
+    );
+
+    expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
+    expect(
+        screen.getByText('Hay una cobranza de ruta pendiente de conciliación.')
+    ).toBeInTheDocument();
 });

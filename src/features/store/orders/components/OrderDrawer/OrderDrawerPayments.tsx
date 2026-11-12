@@ -1,4 +1,4 @@
-import { Empty, Spin } from 'antd';
+import { Empty, Spin, Tooltip } from 'antd';
 import { Button } from '@/components/Button';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import type { OrderPayment } from '../../interfaces/order.interface';
@@ -10,6 +10,7 @@ interface OrderDrawerPaymentsProps {
     pendingAmount: number;
     loading: boolean;
     canCollect: boolean;
+    hasPendingRouteCollection: boolean;
     onRegisterPayment: () => void;
 }
 
@@ -19,6 +20,7 @@ const OrderDrawerPayments: React.FC<OrderDrawerPaymentsProps> = ({
     pendingAmount,
     loading,
     canCollect,
+    hasPendingRouteCollection,
     onRegisterPayment,
 }) => {
     if (loading) {
@@ -69,7 +71,24 @@ const OrderDrawerPayments: React.FC<OrderDrawerPaymentsProps> = ({
             )}
             {pendingAmount > 0 && canCollect && (
                 <div className="flex justify-end pt-1 pb-2">
-                    <Button variant="primary" label="Registrar pago" action={onRegisterPayment} />
+                    {hasPendingRouteCollection ? (
+                        <Tooltip title="Primero conciliá o rechazá la cobranza pendiente para registrar un nuevo pago.">
+                            <span>
+                                <Button
+                                    variant="primary"
+                                    label="Registrar pago"
+                                    disabled
+                                />
+                            </span>
+                        </Tooltip>
+                    ) : (
+                        <Button variant="primary" label="Registrar pago" action={onRegisterPayment} />
+                    )}
+                    {hasPendingRouteCollection && (
+                        <div className="w-full mt-2 text-xs text-amber-700 text-right">
+                            Hay una cobranza de ruta pendiente de conciliación.
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -422,6 +422,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                             pendingAmount={order.pending_amount}
                             loading={false}
                             canCollect={canCollect}
+                            hasPendingRouteCollection={!!order.has_pending_route_collection}
                             onRegisterPayment={openPayment}
                         />
                     </div>
