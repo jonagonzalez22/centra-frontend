@@ -18,6 +18,15 @@ export interface RealizedSalesMetric {
     };
 }
 
+export interface GrossProfitMetric {
+    sales_amount: number;
+    known_cost_amount: number;
+    amount: number | null;
+    margin_percentage: number | null;
+    status: 'complete' | 'partial' | 'unavailable';
+    has_missing_costs: boolean;
+}
+
 export interface OrdersTakenMetric {
     amount: number;
     count: number;
@@ -52,6 +61,7 @@ export interface ReportsSummary {
     metrics: {
         pos_sales: PosSalesMetric;
         realized_sales: RealizedSalesMetric;
+        gross_profit: GrossProfitMetric;
         orders_taken: OrdersTakenMetric;
         deliveries_completed: DeliveriesCompletedMetric;
         collected: CollectedMetric;

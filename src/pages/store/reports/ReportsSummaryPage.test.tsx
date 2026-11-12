@@ -32,6 +32,14 @@ const summary = {
                 orders: { amount: 8000, percentage: 44 },
             },
         },
+        gross_profit: {
+            sales_amount: 18000,
+            known_cost_amount: 12600,
+            amount: 5400,
+            margin_percentage: 30,
+            status: 'complete' as const,
+            has_missing_costs: false,
+        },
         orders_taken: { amount: 18000, count: 3 },
         deliveries_completed: { count: 7 },
         collected: { amount: 12000, channels: { pos_amount: 10000, orders_amount: 2000 } },
@@ -152,6 +160,8 @@ describe('ReportsSummaryPage', () => {
         ).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Actividad del período' })).toBeInTheDocument();
         expect(screen.getAllByText('Ventas realizadas')).not.toHaveLength(0);
+        const grossProfitCard = screen.getByText('Ganancia bruta').closest('.reportsSummaryCard');
+        expect(within(grossProfitCard as HTMLElement).getByText('Margen bruto: 30%')).toBeInTheDocument();
         const realizedSalesCard = screen
             .getByRole('button', { name: 'Ayuda sobre realized_sales' })
             .closest('.reportsSummaryCard');
@@ -169,10 +179,69 @@ describe('ReportsSummaryPage', () => {
         expect(within(ordersCard as HTMLElement).getByText('En el período')).toBeInTheDocument();
         expect(screen.getAllByText('Pagos recibidos')).not.toHaveLength(0);
         expect(screen.getByText('7')).toBeInTheDocument();
+        expect(document.querySelectorAll('.reportsSummaryMetricsGrid > .reportsSummaryCard')).toHaveLength(6);
         expect(screen.getByRole('heading', { name: 'Estado actual' })).toBeInTheDocument();
         expect(screen.getByText('Saldo pendiente')).toBeInTheDocument();
         expect(screen.getByText('Bajo stock')).toBeInTheDocument();
         expect(screen.getByText('Sin stock')).toBeInTheDocument();
+    });
+
+    it('muestra ganancia negativa, margen y señal de cálculo parcial', async () => {
+        const user = userEvent.setup();
+        mockUseReportsSummary.mockReturnValue(
+            queryResult({
+                data: {
+                    ...summary,
+                    metrics: {
+                        ...summary.metrics,
+                        gross_profit: {
+                            sales_amount: 10000,
+                            known_cost_amount: 12000,
+                            amount: -2000,
+                            margin_percentage: -20,
+                            status: 'partial' as const,
+                            has_missing_costs: true,
+                        },
+                    },
+                },
+            }) as unknown as ReturnType<typeof useReportsSummary>
+        );
+
+        render(<ReportsSummaryPage />);
+
+        const card = screen.getByText('Ganancia bruta').closest('.reportsSummaryCard') as HTMLElement;
+        expect(within(card).getByText('Margen bruto: -20%')).toBeInTheDocument();
+        await user.click(within(card).getByRole('button', { name: 'Cálculo parcial' }));
+        expect(
+            await screen.findByText('Falta el costo de algunos productos vendidos.')
+        ).toBeInTheDocument();
+    });
+
+    it('muestra margen no aplicable sin ventas y cálculo parcial sin importe si no hay costo', () => {
+        mockUseReportsSummary.mockReturnValue(
+            queryResult({
+                data: {
+                    ...summary,
+                    metrics: {
+                        ...summary.metrics,
+                        realized_sales: { ...summary.metrics.realized_sales, amount: 0 },
+                        gross_profit: {
+                            sales_amount: 0,
+                            known_cost_amount: 0,
+                            amount: 0,
+                            margin_percentage: null,
+                            status: 'complete' as const,
+                            has_missing_costs: false,
+                        },
+                    },
+                },
+            }) as unknown as ReturnType<typeof useReportsSummary>
+        );
+
+        render(<ReportsSummaryPage />);
+
+        const card = screen.getByText('Ganancia bruta').closest('.reportsSummaryCard') as HTMLElement;
+        expect(within(card).getByText('Margen bruto: —')).toBeInTheDocument();
     });
 
     it('muestra productos más elegidos con frecuencia de ventas y pluralización', () => {

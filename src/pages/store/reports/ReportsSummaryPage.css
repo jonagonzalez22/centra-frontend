@@ -58,10 +58,6 @@
     .reportsSummaryMetricsGrid > * {
         grid-column: span 2;
     }
-
-    .reportsSummaryMetricsGrid > :nth-child(n + 4) {
-        grid-column: span 3;
-    }
 }
 
 .reportsSummaryCurrent {
@@ -122,6 +118,18 @@
 
 .reportsSummaryMetricDetail {
     @apply mt-2 block text-sm text-gray-500;
+}
+
+.reportsSummaryProfitDetail {
+    @apply flex flex-wrap items-center gap-2;
+}
+
+.reportsSummaryPartial {
+    @apply inline-flex w-fit items-center rounded bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800;
+}
+
+button.reportsSummaryPartial {
+    @apply cursor-pointer border-0 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-700;
 }
 
 .reportsSummaryStockItems {

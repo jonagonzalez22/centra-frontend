@@ -3,6 +3,8 @@ export const reportMetricHelp = {
         'Total vendido en mostrador durante el período. No incluye pedidos ni ventas anuladas.',
     realized_sales:
         'Valor total de las ventas concretadas durante el período. Incluye ventas de mostrador confirmadas y mercadería efectivamente entregada de pedidos.',
+    gross_profit: 'Ventas realizadas menos el costo de los productos vendidos.',
+    gross_margin: 'Porcentaje de las ventas que representa la ganancia bruta.',
     orders_taken:
         'Cantidad de pedidos registrados durante el período.',
     deliveries_completed:

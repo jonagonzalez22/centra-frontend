@@ -12,6 +12,31 @@
 
 .sidebarMenuNavigation {
     @apply border-none bg-centra-primary [&_.ant-menu-title-content]:flex [&_.ant-menu-title-content]:justify-start;
+
+    /* The Menu is the sole scroll region in both the desktop Sider and the
+       compact-navigation Drawer. Keep its native scrollbar inside the blue
+       surface instead of inheriting a light browser track. */
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.65) transparent;
+}
+
+.sidebarMenuNavigation::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebarMenuNavigation::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebarMenuNavigation::-webkit-scrollbar-thumb {
+    background: rgb(148 163 184 / 0.65);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+}
+
+.sidebarMenuNavigation::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(203 213 225 / 0.82);
 }
 
 .sidebarMenuDesktopContainer {

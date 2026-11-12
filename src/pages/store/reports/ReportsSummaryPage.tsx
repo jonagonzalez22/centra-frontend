@@ -189,6 +189,7 @@ export const ReportsSummaryPage = () => {
     const posSalesCount = data?.metrics.pos_sales.count ?? 0;
     const realizedSales = data?.metrics.realized_sales;
     const realizedSalesAmount = realizedSales?.amount ?? 0;
+    const grossProfit = data?.metrics.gross_profit;
     const ordersAvailable = hasFeature(user, 'deliveries');
 
     return (
@@ -284,6 +285,57 @@ export const ReportsSummaryPage = () => {
                                 }
                                 icon={ShopOutlined}
                                 metric="realized_sales"
+                                loading={isLoading}
+                            />
+                            <MetricCard
+                                label="Ganancia bruta"
+                                value={
+                                    grossProfit?.amount === null ? (
+                                        '—'
+                                    ) : (
+                                        <CompactMoney value={grossProfit?.amount ?? 0} />
+                                    )
+                                }
+                                detail={
+                                    realizedSalesAmount === 0 ? (
+                                        'Margen bruto: —'
+                                    ) : grossProfit?.status === 'unavailable' ? (
+                                        <Popover
+                                            content="Falta el costo de algunos productos vendidos."
+                                            trigger="click"
+                                            placement="top"
+                                        >
+                                            <button type="button" className="reportsSummaryPartial">
+                                                Cálculo parcial
+                                            </button>
+                                        </Popover>
+                                    ) : (
+                                        <span className="reportsSummaryProfitDetail">
+                                            <span>
+                                                Margen bruto:{' '}
+                                                {grossProfit?.margin_percentage === null
+                                                    ? '—'
+                                                    : `${grossProfit?.margin_percentage}%`}
+                                            </span>
+                                            {grossProfit?.status === 'partial' && (
+                                                <Popover
+                                                    content="Falta el costo de algunos productos vendidos."
+                                                    trigger="click"
+                                                    placement="top"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="reportsSummaryPartial"
+                                                    >
+                                                        Cálculo parcial
+                                                    </button>
+                                                </Popover>
+                                            )}
+                                        </span>
+                                    )
+                                }
+                                icon={AccountBookOutlined}
+                                metric="gross_profit"
                                 loading={isLoading}
                             />
                             <MetricCard
