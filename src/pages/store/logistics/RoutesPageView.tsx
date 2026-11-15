@@ -1,4 +1,4 @@
-import { Alert, Breadcrumb, Tag, Tooltip } from 'antd';
+import { Alert, Breadcrumb, Empty, Pagination, Skeleton, Tag, Tooltip } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined, EyeOutlined, DollarOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
@@ -51,6 +51,71 @@ interface RoutesPageViewProps {
     navigate: (path: string) => void;
 }
 
+const routeNumber = (id: string) => `#${id.substring(0, 8).toUpperCase()}`;
+
+const RouteStatusTag = ({ status }: { status: string }) => (
+    <Tag color={statusColors[status] || 'default'}>{statusLabels[status] || status}</Tag>
+);
+
+/**
+ * Keeps the action availability shared between the table and the compact card view.
+ * Reconciliation deliberately mirrors the existing list rule: awaiting reconciliation only.
+ */
+const RouteActions = ({
+    route,
+    onView,
+    navigate,
+    variant,
+}: {
+    route: DeliveryRoute;
+    onView: (route: DeliveryRoute) => void;
+    navigate: (path: string) => void;
+    variant: 'table' | 'card';
+}) => {
+    const canReconcile = route.status === 'awaiting_reconciliation';
+    const reconcile = () => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`);
+
+    if (variant === 'card') {
+        return (
+            <div
+                className={`routesPageCardActions${canReconcile ? ' routesPageCardActions--split' : ''}`}
+            >
+                <CanDo permission="logistics.routes.view">
+                    <Button
+                        className="routesPageCardAction"
+                        variant="link"
+                        label="Ver detalle"
+                        icon={<EyeOutlined aria-hidden />}
+                        action={() => onView(route)}
+                    />
+                </CanDo>
+                {canReconcile && (
+                    <Button
+                        className="routesPageCardAction routesPageCardActionPrimary"
+                        variant="link"
+                        label="Conciliar"
+                        icon={<DollarOutlined aria-hidden />}
+                        action={reconcile}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <>
+            {canReconcile && (
+                <Tooltip title="Rendir Ruta">
+                    <Button variant="link" size="small" icon={<DollarOutlined />} action={reconcile} />
+                </Tooltip>
+            )}
+            <CanDo permission="logistics.routes.view">
+                <ActionButton icon={<EyeOutlined />} label="Ver detalle" action={() => onView(route)} />
+            </CanDo>
+        </>
+    );
+};
+
 export const RoutesPageView = ({
     title,
     description,
@@ -66,8 +131,6 @@ export const RoutesPageView = ({
     onView,
     navigate,
 }: RoutesPageViewProps) => {
-    const routeNumber = (id: string) => `#${id.substring(0, 8).toUpperCase()}`;
-
     const columns = [
         {
             title: 'Número de Ruta',
@@ -111,7 +174,7 @@ export const RoutesPageView = ({
             key: 'stops',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
-                return route.stops?.length ?? 0;
+                return route.operational_stops_count ?? route.stops?.length ?? 0;
             },
         },
         {
@@ -120,11 +183,7 @@ export const RoutesPageView = ({
             key: 'status',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const status = (record?.status as string) || '';
-                return (
-                    <Tag color={statusColors[status] || 'default'}>
-                        {statusLabels[status] || status}
-                    </Tag>
-                );
+                return <RouteStatusTag status={status} />;
             },
         },
         {
@@ -133,30 +192,19 @@ export const RoutesPageView = ({
             width: 120,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
-                return (
-                    <>
-                        {route.status === 'awaiting_reconciliation' && (
-                            <Tooltip title="Rendir Ruta">
-                                <Button
-                                    variant="link"
-                                    size="small"
-                                    icon={<DollarOutlined />}
-                                    action={() => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)}
-                                />
-                            </Tooltip>
-                        )}
-                        <CanDo permission="logistics.routes.view">
-                            <ActionButton
-                                icon={<EyeOutlined />}
-                                label="Ver detalle"
-                                action={() => onView(route)}
-                            />
-                        </CanDo>
-                    </>
-                );
+                return <RouteActions route={route} onView={onView} navigate={navigate} variant="table" />;
             },
         },
     ];
+
+    const empty = <Empty description="No hay datos" />;
+    const changePage = (page: number, pageSize: number) => {
+        if (pageSize !== pagination.pageSize) {
+            setPerPage(pageSize);
+        } else {
+            setPage(page);
+        }
+    };
 
     return (
         <div className="routesPage">
@@ -194,25 +242,67 @@ export const RoutesPageView = ({
                 <Alert className="routesPageAlert" type="error" description={error} showIcon />
             )}
 
-            <Table
-                columns={columns}
-                dataSource={items as unknown as Record<string, unknown>[]}
-                loading={loading}
-                pagination={{
-                    current: pagination.current,
-                    total: pagination.total,
-                    pageSize: pagination.pageSize,
-                    onChange: (page, pageSize) => {
-                        if (pageSize !== pagination.pageSize) {
-                            setPerPage(pageSize);
-                        } else {
-                            setPage(page);
-                        }
-                    },
-                }}
-                scroll={{ x: 'max-content' }}
-                size="small"
-            />
+            <div className="routesPageTable">
+                <Table
+                    columns={columns}
+                    dataSource={items as unknown as Record<string, unknown>[]}
+                    loading={loading}
+                    emptyText={empty}
+                    pagination={{
+                        current: pagination.current,
+                        total: pagination.total,
+                        pageSize: pagination.pageSize,
+                        onChange: changePage,
+                    }}
+                    scroll={{ x: 'max-content' }}
+                    size="small"
+                />
+            </div>
+
+            <div className="routesPageMobileList" data-testid="routes-mobile-list">
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, index) => (
+                        <div className="routesPageCard" key={index}>
+                            <Skeleton active paragraph={{ rows: 2 }} />
+                        </div>
+                    ))
+                ) : items.length === 0 ? (
+                    <div className="routesPageMobileEmpty">{empty}</div>
+                ) : (
+                    items.map((route) => {
+                        const stops = route.operational_stops_count ?? route.stops?.length ?? 0;
+                        return (
+                            <article className="routesPageCard" key={route.id}>
+                                <header className="routesPageCardHeader">
+                                    <h2 className="routesPageCardNumber">{routeNumber(route.id)}</h2>
+                                    <RouteStatusTag status={route.status} />
+                                </header>
+                                <p className="routesPageCardMetadata">
+                                    {formatDateShort(route.operational_date)} · {stops}{' '}
+                                    {stops === 1 ? 'parada' : 'paradas'}
+                                </p>
+                                <RouteActions
+                                    route={route}
+                                    onView={onView}
+                                    navigate={navigate}
+                                    variant="card"
+                                />
+                            </article>
+                        );
+                    })
+                )}
+                {!loading && pagination.total > pagination.pageSize && (
+                    <div className="routesPageMobilePagination">
+                        <Pagination
+                            current={pagination.current}
+                            total={pagination.total}
+                            pageSize={pagination.pageSize}
+                            showSizeChanger={false}
+                            onChange={changePage}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

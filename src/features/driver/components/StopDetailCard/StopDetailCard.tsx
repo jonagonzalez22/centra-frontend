@@ -57,6 +57,9 @@ export const StopDetailCard = ({
 
     const reasonSelectOptions = reasonOptions.map((r) => ({ label: r.label, value: r.id }));
     const isReadOnly = !canDeliver;
+    const undeliveredQuantityLabel = `${formatQuantityForDisplay(remainingQty)} ${
+        Number(remainingQty) === 1 ? 'unidad no entregada' : 'unidades no entregadas'
+    }`;
 
     return (
         <div
@@ -97,7 +100,29 @@ export const StopDetailCard = ({
                 </div>
             )}
 
-            {/* ── Section 1: Stepper (hidden for not-loaded items) ── */}
+            {/* ── Product detail ── */}
+            <div className="stopDetailCardDetail">
+                <div className="stopDetailCardProductName">{item.product_name}</div>
+                <div className="stopDetailCardProductMeta">
+                    {item.sku && <span>SKU: {item.sku}</span>}
+                    {item.stock_measurement_unit?.symbol && (
+                        <span>Unidad: {item.stock_measurement_unit.symbol}</span>
+                    )}
+                    {item.unit_price > 0 && (
+                        <span className="stopDetailUnitPrice">
+                            {formatCurrency(item.unit_price)}/u
+                        </span>
+                    )}
+                    {item.is_extra && (
+                        <Tag color="orange" className="stopDetailExtraTag">
+                            Extra
+                        </Tag>
+                    )}
+                    {isNotLoaded && <Tag className="stopDetailNotLoadedTag">No cargado</Tag>}
+                </div>
+            </div>
+
+            {/* ── Delivered quantity (hidden for not-loaded items) ── */}
             {!isNotLoaded && (
                 <div className="stopDetailCardStepper">
                     {!isReadOnly && (
@@ -145,33 +170,12 @@ export const StopDetailCard = ({
                 </div>
             )}
 
-            {/* ── Section 2: Product detail ── */}
-            <div className="stopDetailCardDetail">
-                <div className="stopDetailCardProductName">{item.product_name}</div>
-                <div className="stopDetailCardProductMeta">
-                    {item.sku && <span>SKU: {item.sku}</span>}
-                    {item.stock_measurement_unit?.symbol && (
-                        <span>Unidad: {item.stock_measurement_unit.symbol}</span>
-                    )}
-                    {item.unit_price > 0 && (
-                        <span className="stopDetailUnitPrice">
-                            {formatCurrency(item.unit_price)}/u
-                        </span>
-                    )}
-                    {item.is_extra && (
-                        <Tag color="orange" className="stopDetailExtraTag">
-                            Extra
-                        </Tag>
-                    )}
-                    {isNotLoaded && <Tag className="stopDetailNotLoadedTag">No cargado</Tag>}
-                </div>
-            </div>
-
             {/* ── Section 3: Rejection reason (only when reduced) ── */}
             {isReduced && isReadOnly && (
                 <div className="stopDetailCardReason stopDetailCardReason--readonly">
                     <div className="stopDetailRemaining">
-                        No entregado: {formatQuantityForDisplay(remainingQty)}
+                        <WarningOutlined aria-hidden="true" />
+                        <span>{undeliveredQuantityLabel}</span>
                     </div>
                     {item.rejection_reason && (
                         <div className="stopDetailPersistedReason">
@@ -183,8 +187,10 @@ export const StopDetailCard = ({
             {isReduced && !isReadOnly && (
                 <div className="stopDetailCardReason">
                     <div className="stopDetailRemaining">
-                        No entregado: {formatQuantityForDisplay(remainingQty)}
+                        <WarningOutlined aria-hidden="true" />
+                        <span>{undeliveredQuantityLabel}</span>
                     </div>
+                    <div className="stopDetailReasonLabel">Motivo</div>
                     <Select
                         className={`stopDetailReasonSelect ${showReasonError ? 'stopDetailReasonSelect--error' : ''}`}
                         placeholder="Motivo del rechazo"
@@ -194,6 +200,7 @@ export const StopDetailCard = ({
                         options={reasonSelectOptions}
                         disabled={!canDeliver}
                         allowClear
+                        aria-label="Motivo del rechazo"
                         popupMatchSelectWidth={false}
                     />
                     {showReasonError && (
@@ -204,6 +211,10 @@ export const StopDetailCard = ({
                         <div className="stopDetailExtraSaleRelease">
                             <div className="stopDetailExtraSaleReleaseLabel">
                                 Disponible para Venta Extra
+                            </div>
+                            <div className="stopDetailExtraSaleReleaseHelp">
+                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuánto
+                                producto puede reutilizarse.
                             </div>
                             <div className="stopDetailCardStepper">
                                 <button
@@ -243,10 +254,6 @@ export const StopDetailCard = ({
                                 >
                                     +
                                 </button>
-                            </div>
-                            <div className="stopDetailExtraSaleReleaseHelp">
-                                Máximo: {formatQuantityForDisplay(remainingQty)}. Indicá cuánto
-                                producto puede reutilizarse.
                             </div>
                             {!selectedReasonSuggestsExtraSale && (
                                 <div className="stopDetailExtraSaleReleaseSuggestion">

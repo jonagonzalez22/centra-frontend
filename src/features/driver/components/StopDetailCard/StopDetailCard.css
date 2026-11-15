@@ -236,6 +236,8 @@
 /* ── Section 3: Rejection reason ── */
 .stopDetailCardReason {
     width: 100%;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f0;
 }
 
 .stopDetailRemaining {
@@ -243,6 +245,22 @@
     font-size: 13px;
     font-weight: 600;
     color: #595959;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.stopDetailRemaining .anticon {
+    color: #dc2626;
+}
+
+.stopDetailReasonLabel {
+    margin-bottom: 6px;
+    color: #595959;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
 }
 
 .stopDetailReasonSelect {
@@ -310,4 +328,44 @@
 
 .stopDetailExtraSaleReleaseSuggestion {
     color: #92400e;
+}
+
+@media (max-width: 767px) {
+    .stopDetailCard--reduced {
+        border-color: #fca5a5;
+        background-color: #fffafa;
+        box-shadow: 0 0 0 1px rgba(252, 165, 165, 0.12);
+    }
+
+    .stopDetailReasonSelect .ant-select-selector {
+        min-height: 40px !important;
+        height: auto !important;
+        padding-block: 7px !important;
+    }
+
+    .stopDetailReasonSelect .ant-select-selection-item {
+        overflow: visible !important;
+        padding-right: 22px !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        line-height: 1.4 !important;
+    }
+
+    .stopDetailExtraSaleRelease {
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .stopDetailExtraSaleReleaseLabel {
+        font-size: 12px;
+        font-weight: 600;
+        color: #595959;
+    }
+
+    .stopDetailExtraSaleRelease .stopDetailCardStepper {
+        align-self: center;
+    }
 }

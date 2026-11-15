@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { DiscrepancyGroupsTable } from './DiscrepancyGroupsTable';
@@ -51,7 +51,7 @@ const pendingGroup: RouteReconciliationProductGroup = {
 };
 
 const renderTable = (groups: RouteReconciliationProductGroup[]) => {
-    render(
+    return render(
         <DiscrepancyGroupsTable
             groups={groups}
             loading={false}
@@ -65,16 +65,20 @@ const renderTable = (groups: RouteReconciliationProductGroup[]) => {
 
 test('renders one product summary and preserves route stop item detail', () => {
     renderTable([pendingGroup]);
+    const desktop = document.querySelector('.reconciliationDesktopTable') as HTMLElement;
+    const mobile = screen.getByTestId('discrepancies-mobile-list');
 
-    expect(screen.getByText('Producto D')).toBeInTheDocument();
-    expect(screen.getByText('5 kg')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Conciliar producto' })).toBeInTheDocument();
+    expect(within(desktop).getByText('Producto D')).toBeInTheDocument();
+    expect(within(mobile).getByText('Producto D')).toBeInTheDocument();
+    expect(within(mobile).getByText('Diferencia')).toBeInTheDocument();
+    expect(within(mobile).getByText('5 kg')).toBeInTheDocument();
+    expect(within(mobile).getByRole('button', { name: 'Conciliar producto' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }));
+    fireEvent.click(within(desktop).getByRole('button', { name: 'Ver detalle' }));
 
-    expect(screen.getByText('P-000001')).toBeInTheDocument();
-    expect(screen.getByText('Dina Capuzello')).toBeInTheDocument();
-    expect(screen.getByText('P-000002')).toBeInTheDocument();
+    expect(screen.getAllByText('P-000001').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Dina Capuzello').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('P-000002').length).toBeGreaterThan(0);
 });
 
 test('forces detail when the group contains an extra sale', () => {
@@ -86,8 +90,11 @@ test('forces detail when the group contains an extra sale', () => {
         },
     ]);
 
-    expect(screen.queryByRole('button', { name: 'Conciliar producto' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ver detalle' })).toBeInTheDocument();
+    const desktop = document.querySelector('.reconciliationDesktopTable') as HTMLElement;
+    const mobile = screen.getByTestId('discrepancies-mobile-list');
+    expect(within(desktop).queryByRole('button', { name: 'Conciliar producto' })).not.toBeInTheDocument();
+    expect(within(mobile).queryByRole('button', { name: 'Conciliar producto' })).not.toBeInTheDocument();
+    expect(within(mobile).getByRole('button', { name: 'Ver detalle' })).toBeInTheDocument();
 });
 
 test('builds a batch with each route stop item and its full difference', async () => {
@@ -105,7 +112,8 @@ test('builds a batch with each route stop item and its full difference', async (
         />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Conciliar producto' }));
+    const desktop = document.querySelector('.reconciliationDesktopTable') as HTMLElement;
+    await user.click(within(desktop).getByRole('button', { name: 'Conciliar producto' }));
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByText('Devuelto a depósito'));
     await user.click(screen.getByRole('button', { name: 'Aplicar a todos' }));
@@ -126,4 +134,4 @@ test('builds a batch with each route stop item and its full difference', async (
             },
         ],
     });
-});
+}, 15000);

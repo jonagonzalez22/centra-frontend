@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { StopDetailFooter } from './StopDetailFooter';
 
@@ -31,5 +31,30 @@ describe('StopDetailFooter extra sale visibility', () => {
     test('does not render Venta Extra for a resolved stop', () => {
         renderFooter(true, true);
         expect(screen.queryByRole('button', { name: 'Venta Extra' })).not.toBeInTheDocument();
+    });
+
+    test('keeps the partial-delivery CTA and failed-delivery action available', () => {
+        const onPrimaryClick = vi.fn();
+        const onFailedDeliveryClick = vi.fn();
+
+        render(
+            <StopDetailFooter
+                canDeliver
+                canConfirm
+                completing={false}
+                isCompleted={false}
+                buttonLabel="Confirmar entrega parcial"
+                onPrimaryClick={onPrimaryClick}
+                onFailedDeliveryClick={onFailedDeliveryClick}
+                onExtraSaleClick={vi.fn()}
+                showExtraSale={false}
+            />
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Confirmar entrega parcial' }));
+        fireEvent.click(screen.getByRole('button', { name: 'No se pudo entregar' }));
+
+        expect(onPrimaryClick).toHaveBeenCalledOnce();
+        expect(onFailedDeliveryClick).toHaveBeenCalledOnce();
     });
 });

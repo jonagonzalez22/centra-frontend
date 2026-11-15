@@ -94,6 +94,89 @@
     margin: 0 0 1rem 0;
 }
 
+.reconciliationMobileList {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .reconciliationDesktopTable {
+        display: none;
+    }
+
+    .reconciliationMobileList {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .reconciliationMobileCard {
+        border: 1px solid #f0f0f0;
+        border-radius: 0.5rem;
+        padding: 0.875rem;
+        background: #fff;
+    }
+
+    .reconciliationMobileCardHeader,
+    .reconciliationMobileActions,
+    .reconciliationMobileDetailRows span,
+    .reconciliationMobileAmounts span {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .reconciliationMobileAmounts,
+    .reconciliationMobileDetailRows {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.875rem;
+        font-size: 0.875rem;
+        color: #595959;
+    }
+
+    .reconciliationMobileAmounts b,
+    .reconciliationMobileDetailRows b {
+        color: #262626;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    .reconciliationMobileActions {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f5f5f5;
+        min-height: 36px;
+    }
+
+    .reconciliationMobileActions--split > * {
+        flex: 1;
+    }
+
+    .reconciliationMobileActions .ant-btn,
+    .reconciliationMobileActions button {
+        min-height: 36px;
+        white-space: normal;
+    }
+
+    .routeReconciliationPage .ant-tabs-nav-wrap {
+        overflow: visible;
+    }
+
+    .routeReconciliationPage .ant-tabs-nav-list {
+        width: 100%;
+    }
+
+    .routeReconciliationPage .ant-tabs-tab {
+        flex: 1;
+        justify-content: center;
+        margin: 0 !important;
+        padding-inline: 0.25rem;
+        text-align: center;
+        white-space: normal;
+    }
+}
+
 @media (max-width: 768px) {
     .routeReconciliationHeaderTop {
         flex-direction: column;

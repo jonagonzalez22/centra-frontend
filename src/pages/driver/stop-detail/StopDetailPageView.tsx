@@ -60,6 +60,10 @@ const STOP_STATUS_LABELS: Record<RouteStopStatus, string> = {
     cancelled: 'Cancelado',
 };
 
+const COLLECTION_STATUS_LABELS: Record<string, string> = {
+    declared: 'Pendiente',
+};
+
 // ── Component ───────────────────────────────────────────────────────────────────
 
 export const StopDetailPageView = ({
@@ -136,7 +140,8 @@ export const StopDetailPageView = ({
     // ── Derived ────────────────────────────────────────────────────────────
     const isCompleted =
         stop.status === 'completed' || stop.status === 'failed' || stop.status === 'cancelled';
-    const hasPendingCollections = stop.collections.some((c) => c.status === 'declared');
+    const hasVisiblePaymentInfo =
+        collectionPreview.loading || collectionPreview.error !== null || collectionPreview.preview !== null;
     const buttonLabel =
         itemsState.touchedItemIds.size === 0 && itemsState.deliveryState.allFull
             ? 'Entregar todo'
@@ -209,16 +214,20 @@ export const StopDetailPageView = ({
             </div>
 
             <div className="stopDetailPageContent pb-40">
-                {/* Payment info */}
-                <div className="stopDetailPaymentLabel">Información de pago</div>
-                <OrderBalanceSummary
-                    order={stop.order}
-                    variant="full"
-                    collectionPreview={collectionPreview.preview}
-                    previewLoading={collectionPreview.loading}
-                    previewError={collectionPreview.error}
-                    onRetryPreview={collectionPreview.retry}
-                />
+                {hasVisiblePaymentInfo && (
+                    <>
+                        <div className="stopDetailPaymentLabel">Información de pago</div>
+                        <OrderBalanceSummary
+                            order={stop.order}
+                            variant="full"
+                            collectionPreview={collectionPreview.preview}
+                            previewLoading={collectionPreview.loading}
+                            previewError={collectionPreview.error}
+                            onRetryPreview={collectionPreview.retry}
+                            hideVerifiedPaid
+                        />
+                    </>
+                )}
 
                 {/* Notes */}
                 {stop.notes && (
@@ -281,14 +290,6 @@ export const StopDetailPageView = ({
                         <div className="stopDetailSectionTitle">
                             Cobros declarados ({stop.collections.length})
                         </div>
-                        {hasPendingCollections && (
-                            <Alert
-                                message="Los cobros declarados se encuentran pendientes de verificación y no están descontados del saldo a cobrar."
-                                type="info"
-                                showIcon
-                                className="stopDetailCollectionsNotice"
-                            />
-                        )}
                         <div className="stopDetailCollectionsList">
                             {stop.collections.map((col) => (
                                 <div key={col.id} className="stopDetailCollectionRow">
@@ -297,7 +298,7 @@ export const StopDetailPageView = ({
                                             {col.method}
                                         </div>
                                         <div className="stopDetailCollectionStatus">
-                                            {col.status}
+                                            {COLLECTION_STATUS_LABELS[col.status] ?? col.status}
                                         </div>
                                     </div>
                                     <div className="stopDetailCollectionAmount">

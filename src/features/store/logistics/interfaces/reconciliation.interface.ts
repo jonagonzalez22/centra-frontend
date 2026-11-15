@@ -91,6 +91,8 @@ export type CollectionGroupStatus = 'pending' | 'verified' | 'rejected' | 'parti
 export interface RouteReconciliationCollectionGroup {
     store_payment_method_id: string;
     payment_method_name: string;
+    payment_method_custom_name?: string | null;
+    payment_method_visible_name?: string | null;
     collection_count: number;
     total_amount: number;
     declared_count: number;

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { CollectionsTable } from './CollectionsTable';
@@ -27,18 +27,23 @@ test('shows one grouped row and opens its individual collection detail', async (
     const user = userEvent.setup();
     render(<CollectionsTable groups={[group]} loading={false} actionLoading={false} onVerify={vi.fn()} onVerifyGroup={vi.fn()} onReject={vi.fn()} readOnly={false} />);
 
-    expect(screen.getAllByText('Efectivo')).toHaveLength(1);
+    const desktop = document.querySelector('.reconciliationDesktopTable') as HTMLElement;
+    const mobile = screen.getByTestId('collections-mobile-list');
+    expect(within(desktop).getByText('Efectivo')).toBeInTheDocument();
+    expect(within(mobile).getByText('Efectivo')).toBeInTheDocument();
+    expect(within(mobile).getByText('Declarado')).toBeInTheDocument();
+    expect(within(mobile).getByText('Pendiente')).toBeInTheDocument();
     expect(screen.queryByText('P-1')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /rechazar efectivo/i })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Ver detalle de Efectivo' }));
-    expect(await screen.findByText('P-1')).toBeInTheDocument();
-    expect(screen.getByText('P-2')).toBeInTheDocument();
+    expect((await screen.findAllByText('P-1')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('P-2').length).toBeGreaterThan(0);
     expect(screen.queryByRole('columnheader', { name: 'Detalle' })).not.toBeInTheDocument();
     expect(screen.getByText('Declarado por: Chofer')).toBeInTheDocument();
     expect(screen.getByText('Fecha: 08/09/2026')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Referencia' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Fecha' })).toBeInTheDocument();
-    expect(screen.getByText('TRANSFERENCIA-CON-REFERENCIA-MUY-LARGA')).toBeInTheDocument();
+    expect(screen.getAllByText('TRANSFERENCIA-CON-REFERENCIA-MUY-LARGA')).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: 'Verificar cobro' })).toHaveLength(1);
     expect(screen.getByRole('button', { name: 'Rechazar cobro' })).toBeInTheDocument();
 
@@ -60,4 +65,24 @@ test('does not present one declarant as common when the group has several', asyn
 
     expect(await screen.findByText('Declarado por: Múltiples declarantes')).toBeInTheDocument();
     expect(screen.queryByText('Declarado por: Chofer')).not.toBeInTheDocument();
+});
+
+test('uses the configured visible payment method name and falls back to the base name', async () => {
+    const user = userEvent.setup();
+    const visibleNameGroup = {
+        ...group,
+        payment_method_name: 'QR / Billetera',
+        payment_method_custom_name: 'Mercado pago',
+    };
+
+    render(<CollectionsTable groups={[visibleNameGroup]} loading={false} actionLoading={false} onVerify={vi.fn()} onVerifyGroup={vi.fn()} onReject={vi.fn()} readOnly={false} />);
+
+    const desktop = document.querySelector('.reconciliationDesktopTable') as HTMLElement;
+    const mobile = screen.getByTestId('collections-mobile-list');
+    expect(within(desktop).getByText('Mercado pago')).toBeInTheDocument();
+    expect(within(mobile).getByText('Mercado pago')).toBeInTheDocument();
+    expect(screen.queryByText('QR / Billetera')).not.toBeInTheDocument();
+
+    await user.click(within(desktop).getByRole('button', { name: 'Verificar Mercado pago' }));
+    expect(await screen.findByText('Verificar cobranzas de Mercado pago')).toBeInTheDocument();
 });

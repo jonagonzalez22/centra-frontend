@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { beforeEach } from 'vitest';
 import { StopDetailPageView } from './StopDetailPageView';
 import type { StopDetail } from '@/features/driver/interfaces/driver.interface';
 
@@ -12,14 +13,20 @@ const preview = {
     amount_to_collect_now: 300,
 };
 
+let activePreview: typeof preview | null = preview;
+
 vi.mock('@/features/driver/hooks/useCollectionPreview', () => ({
     useCollectionPreview: () => ({
-        preview,
+        preview: activePreview,
         loading: false,
         error: null,
         retry: vi.fn(),
     }),
 }));
+
+beforeEach(() => {
+    activePreview = preview;
+});
 
 const stop: StopDetail = {
     id: 'stop-1',
@@ -133,6 +140,87 @@ test('keeps delivery controls editable while the stop is pending', () => {
     expect(screen.getByRole('button', { name: 'Entregar todo' })).toBeInTheDocument();
 });
 
+test('keeps declared collections concrete while hiding internal payment verification details', () => {
+    render(
+        <StopDetailPageView
+            stop={{
+                ...stop,
+                items: [{ ...stop.items[0], stock_measurement_unit: { symbol: 'u' } }],
+                collections: [
+                    {
+                        id: 'collection-1',
+                        method: 'QR / Billetera',
+                        amount: 2500,
+                        status: 'declared',
+                        declared_at: null,
+                    },
+                ],
+            }}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.queryByText('Pagado confirmado')).not.toBeInTheDocument();
+    expect(
+        screen.queryByText(/Los cobros declarados se encuentran pendientes de verificación/)
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/Cobros declarados/)).toBeInTheDocument();
+    const collection = screen.getByText('QR / Billetera').closest(
+        '.stopDetailCollectionRow'
+    ) as HTMLElement | null;
+    expect(collection).not.toBeNull();
+    expect(within(collection!).getByText('Pendiente')).toBeInTheDocument();
+    expect(within(collection!).getByText(/2.500/)).toBeInTheDocument();
+    expect(screen.getByText('Pintura Látex')).toBeInTheDocument();
+    expect(screen.getByText('5/5')).toBeInTheDocument();
+    expect(screen.getByText('SKU: P-1')).toBeInTheDocument();
+    expect(screen.getByText('Unidad: u')).toBeInTheDocument();
+    expect(screen.getByText(/100\/u/)).toBeInTheDocument();
+});
+
+test('omits the payment section entirely when the preview has no visible content', () => {
+    activePreview = null;
+    render(
+        <StopDetailPageView
+            stop={{
+                ...stop,
+                collections: [
+                    {
+                        id: 'collection-1',
+                        method: 'Efectivo',
+                        amount: 2500,
+                        status: 'declared',
+                        declared_at: null,
+                    },
+                ],
+            }}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.queryByText('Información de pago')).not.toBeInTheDocument();
+    expect(document.querySelector('.orderBalanceFull')).not.toBeInTheDocument();
+    expect(screen.getByText(/Productos a entregar/)).toBeInTheDocument();
+    expect(screen.getByText(/Cobros declarados/)).toBeInTheDocument();
+    expect(screen.getByText('Efectivo')).toBeInTheDocument();
+});
+
 test.each(['pending', 'arrived'] as const)(
     'shows Venta Extra for an actionable %s stop with surplus',
     (status) => {
@@ -213,7 +301,7 @@ test('shows the persisted partial delivery after a stop is completed', () => {
     expect(screen.getByText('1/2')).toBeInTheDocument();
     expect(screen.queryByText('2/2')).not.toBeInTheDocument();
     expect(screen.queryByText('0 de 1 revisados')).not.toBeInTheDocument();
-    expect(screen.getByText('No entregado: 1')).toBeInTheDocument();
+    expect(screen.getByText('1 unidad no entregada')).toBeInTheDocument();
     expect(screen.getByText('Mercadería rechazada por el cliente')).toBeInTheDocument();
     expect(
         screen.queryByLabelText('Reducir cantidad entregada de Esponja cocina')

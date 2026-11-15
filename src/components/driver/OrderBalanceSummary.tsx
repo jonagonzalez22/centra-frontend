@@ -17,6 +17,7 @@ interface OrderBalanceSummaryProps {
     previewLoading?: boolean;
     previewError?: string | null;
     onRetryPreview?: () => void;
+    hideVerifiedPaid?: boolean;
 }
 
 export const OrderBalanceSummary = ({
@@ -26,6 +27,7 @@ export const OrderBalanceSummary = ({
     previewLoading = false,
     previewError,
     onRetryPreview,
+    hideVerifiedPaid = false,
 }: OrderBalanceSummaryProps) => {
     const [expanded, setExpanded] = useState(false);
 
@@ -113,14 +115,16 @@ export const OrderBalanceSummary = ({
                                     )}
                                 </span>
                             </div>
-                            <div className="orderBalanceFullRow">
-                                <span className="orderBalanceFullLabel">Pagado confirmado</span>
-                                <span className="orderBalanceFullValue orderBalanceFullValue--paid">
-                                    {formatCurrencyWithCents(
-                                        collectionPreview.verified_paid_amount
-                                    )}
-                                </span>
-                            </div>
+                            {!hideVerifiedPaid && (
+                                <div className="orderBalanceFullRow">
+                                    <span className="orderBalanceFullLabel">Pagado confirmado</span>
+                                    <span className="orderBalanceFullValue orderBalanceFullValue--paid">
+                                        {formatCurrencyWithCents(
+                                            collectionPreview.verified_paid_amount
+                                        )}
+                                    </span>
+                                </div>
+                            )}
                             <div className="orderBalanceFullRow">
                                 <span className="orderBalanceFullLabel">
                                     Cobros en verificación
@@ -149,7 +153,7 @@ export const OrderBalanceSummary = ({
                     )}
                 </>
             )}
-            {!collectionPreview && !previewLoading && !previewError && (
+            {!hideVerifiedPaid && !collectionPreview && !previewLoading && !previewError && (
                 <div className="orderBalanceFullRow">
                     <span className="orderBalanceFullLabel">Pagado confirmado</span>
                     <span className="orderBalanceFullValue orderBalanceFullValue--paid">

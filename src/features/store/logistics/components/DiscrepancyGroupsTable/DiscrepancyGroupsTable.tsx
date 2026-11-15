@@ -154,14 +154,26 @@ export const DiscrepancyGroupsTable = ({
 
     return (
         <>
-            <Table
+            <div className="reconciliationDesktopTable"><Table
                 columns={columns}
                 dataSource={groups.map((group) => ({ ...group, id: group.product_id })) as unknown as Record<string, unknown>[]}
                 loading={loading}
                 pagination={false}
                 scroll={{ x: 'max-content' }}
                 size="small"
-            />
+            /></div>
+            <div className="reconciliationMobileList" data-testid="discrepancies-mobile-list">
+                {groups.map((group) => {
+                    const status = statusConfig[group.status];
+                    return <article className="reconciliationMobileCard" key={group.product_id}>
+                        <div className="reconciliationMobileCardHeader"><strong>{group.product_name}</strong><Tag color={status.color}>{status.label}</Tag></div>
+                        <div className="reconciliationMobileDetailRows"><span>Diferencia <b>{formatQuantityWithUnit(group.total_difference, group.stock_measurement_unit?.symbol)}</b></span><span>Pedidos <b>{group.affected_orders_count}</b></span></div>
+                        <div className={`reconciliationMobileActions${!readOnly && group.can_batch_resolve ? ' reconciliationMobileActions--split' : ''}`}><Button size="small" variant="default" label="Ver detalle" icon={<EyeOutlined />} aria-label="Ver detalle" action={() => setDetailProductId(group.product_id)} />
+                            {!readOnly && group.can_batch_resolve && <Button size="small" label="Conciliar producto" icon={<CheckOutlined />} aria-label="Conciliar producto" loading={actionLoading === 'resolve-discrepancies-batch'} action={() => openBatchModal(group)} />}
+                        </div>
+                    </article>;
+                })}
+            </div>
 
             <Drawer
                 title={detailGroup?.product_name ?? 'Detalle de discrepancias'}

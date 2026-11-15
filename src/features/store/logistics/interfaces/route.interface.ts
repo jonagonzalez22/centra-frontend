@@ -92,6 +92,7 @@ export interface DeliveryRoute {
     vehicle: RouteVehicle | null;
     driver: RouteDriver | null;
     stops: RouteStop[];
+    operational_stops_count?: number;
     created_at: string;
     updated_at: string;
 }

@@ -24,6 +24,20 @@
     margin: 0 0 0.75rem 0;
 }
 
+.routeDetailHeaderTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.routeDetailMobileStatus,
+.routeDetailStopsMobile,
+.routeDetailOrdersMobile {
+    display: none;
+}
+
 .routeDetailSection {
     background: #fff;
     padding: 1.5rem;
@@ -74,4 +88,228 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .routeDetailPageWrapper {
+        padding: 0;
+    }
+
+    .routeDetailPage {
+        gap: 1rem;
+    }
+
+    .routeDetailHeader,
+    .routeDetailSection {
+        padding: 1rem;
+    }
+
+    .routeDetailMobileStatus {
+        display: inline-block;
+    }
+
+    .routeDetailHeader .ant-descriptions-view table,
+    .routeDetailHeader .ant-descriptions-row {
+        display: block;
+        width: 100%;
+    }
+
+    .routeDetailHeader .ant-descriptions-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding-block: 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .routeDetailHeader .ant-descriptions-item.routeDetailDesktopStatus {
+        display: none;
+    }
+
+    .routeDetailHeader .ant-descriptions-item:last-child {
+        border-bottom: 0;
+    }
+
+    .routeDetailHeader .ant-descriptions-item-label,
+    .routeDetailHeader .ant-descriptions-item-content {
+        padding-bottom: 0;
+    }
+
+    .routeDetailHeader .ant-descriptions-item-content {
+        justify-content: flex-end;
+        text-align: right;
+        min-width: 0;
+    }
+
+    .routeDetailHeader .ant-picker {
+        width: min(100%, 11rem) !important;
+        margin-top: 0;
+    }
+
+    .routeDetailStopsDesktop,
+    .routeDetailOrdersDesktop {
+        display: none;
+    }
+
+    .routeDetailStopsMobile,
+    .routeDetailOrdersMobile {
+        display: block;
+    }
+
+    .routeDetailStopsMobile,
+    .routeDetailOrdersMobile {
+        margin-top: 1rem;
+    }
+
+    .routeDetailMobileListCard,
+    .routeDetailMobileOrderCard {
+        display: flex;
+        gap: 0.75rem;
+        width: 100%;
+        border: 1px solid #f0f0f0;
+        border-radius: 0.5rem;
+        padding: 0.875rem;
+        background: #fff;
+    }
+
+    .routeDetailMobileListCard {
+        display: block;
+    }
+
+    .routeDetailMobileListCard + .routeDetailMobileListCard,
+    .routeDetailMobileOrderCard + .routeDetailMobileOrderCard {
+        margin-top: 0.75rem;
+    }
+
+    .routeDetailMobileListCardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .routeDetailMobileListCardTitle {
+        margin-top: 0.75rem;
+        font-weight: 600;
+    }
+
+    .routeDetailMobileListCardText,
+    .routeDetailMobileOrderContent span {
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    .routeDetailMobileListCardText + .routeDetailMobileListCardText {
+        margin-top: 0.25rem;
+    }
+
+    .routeDetailMobileListCardActions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 0.5rem;
+    }
+
+    .routeDetailMobileListCardActions .ant-btn {
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    .routeDetailMobileStopDetails {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.875rem;
+    }
+
+    .routeDetailMobileStopDetails > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .routeDetailMobileStopDetails span {
+        color: #666;
+    }
+
+    .routeDetailPlannedActions .ant-col {
+        min-width: 0;
+    }
+
+    .routeDetailPlannedActions .ant-btn {
+        min-width: 0;
+        padding-inline: 8px;
+    }
+
+    .routeDetailHeader .routeDetailPlannedActions .ant-btn span:last-child {
+        overflow: visible;
+        text-overflow: clip;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+
+    .routeDetailLoadedActions .ant-col {
+        min-width: 0;
+    }
+
+    .routeDetailLoadedActions .ant-btn {
+        min-width: 0;
+        padding-inline: 8px;
+    }
+
+    .routeDetailHeader .routeDetailLoadedActions .ant-btn span:last-child {
+        overflow: visible;
+        text-overflow: clip;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+
+    .routeDetailLoadedActions .routeDetailLoadedAdjustAction.ant-btn-primary {
+        background: #fff !important;
+        border-color: #093764 !important;
+        color: #093764 !important;
+    }
+
+    .routeDetailLoadedActions .routeDetailLoadedDispatchAction.ant-btn-primary {
+        background: #093764 !important;
+        border-color: #093764 !important;
+        color: #fff !important;
+    }
+
+    .routeDetailMobileSelectAll {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    .routeDetailMobileOrderCard {
+        align-items: flex-start;
+    }
+
+    .routeDetailMobileExceptionalOrderCard {
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .routeDetailMobileOrderContent {
+        display: flex;
+        min-width: 0;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .routeDetailEmptyHint {
+        color: #666;
+        font-size: 0.875rem;
+    }
 }

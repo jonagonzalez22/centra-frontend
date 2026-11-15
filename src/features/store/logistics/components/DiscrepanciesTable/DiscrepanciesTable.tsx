@@ -205,14 +205,31 @@ export const DiscrepanciesTable = ({
 
     return (
         <>
-            <Table
+            <div className="reconciliationDesktopTable"><Table
                 columns={columns}
                 dataSource={discrepancies.map((item) => ({ ...item, id: item.route_stop_item_id })) as unknown as Record<string, unknown>[]}
                 loading={loading}
                 pagination={false}
                 scroll={{ x: 'max-content' }}
                 size="small"
-            />
+            /></div>
+            <div className="reconciliationMobileList reconciliationMobileList--detail" data-testid="discrepancy-detail-mobile-list">
+                {discrepancies.map((item) => {
+                    const unresolved = !item.discrepancy?.resolution_type;
+                    const isLoading = actionLoading === item.route_stop_item_id;
+                    return <article className="reconciliationMobileCard" key={item.route_stop_item_id}>
+                        <div className="reconciliationMobileCardHeader"><strong>Pedido {item.order_number ?? '—'}</strong>{getResolutionTag(item)}</div>
+                        <div className="reconciliationMobileDetailRows">
+                            <span>Cliente <b>{item.customer_name ?? '—'}</b></span>
+                            <span>Producto <b>{item.product_name}</b></span>
+                            <span>Cargado <b>{formatQuantityWithUnit(item.quantity_loaded, item.stock_measurement_unit?.symbol)}</b></span>
+                            <span>Entregado <b>{formatQuantityWithUnit(item.quantity_delivered, item.stock_measurement_unit?.symbol)}</b></span>
+                            <span>Diferencia <b>{getDifferenceTag(item.difference, item.stock_measurement_unit?.symbol)}</b></span>
+                        </div>
+                        {!readOnly && unresolved && <div className="reconciliationMobileActions"><Popconfirm title="¿Resolver esta discrepancia?" description="Se abrirá un formulario para indicar la resolución." onConfirm={() => openResolveModal(item)} okText="Resolver" cancelText="Cancelar"><AntButton type="primary" size="small" icon={<CheckOutlined />} loading={isLoading}>Resolver</AntButton></Popconfirm></div>}
+                    </article>;
+                })}
+            </div>
 
             {selectedItem && (
                 <ResolveDiscrepancyModal

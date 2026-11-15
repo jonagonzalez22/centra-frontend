@@ -123,8 +123,8 @@
     font-size: 11px;
     font-weight: 600;
     color: #8c8c8c;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .stopDetailProgress {
@@ -155,8 +155,8 @@
     font-size: 11px;
     font-weight: 600;
     color: #8c8c8c;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: 0;
     margin-bottom: 14px;
 }
 
@@ -338,8 +338,8 @@
 .stopDetailStepperValue {
     min-width: 52px;
     text-align: center;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     color: #093764;
     padding: 0 8px;
 }
@@ -366,6 +366,10 @@
     flex-wrap: wrap;
     font-size: 12px;
     color: #999;
+}
+
+.stopDetailUnitPrice {
+    color: #8c8c8c;
 }
 
 .stopDetailExtraTag {
@@ -399,6 +403,28 @@
 
 .stopDetailReasonSelect--error:focus-within .ant-select-selector {
     box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+@media (max-width: 767px) {
+    .stopDetailCard--reduced {
+        border-color: #fca5a5;
+        background-color: #fffafa;
+        box-shadow: 0 0 0 1px rgba(252, 165, 165, 0.12);
+    }
+
+    .stopDetailReasonSelect .ant-select-selector {
+        min-height: 40px !important;
+        height: auto !important;
+        padding-block: 7px !important;
+    }
+
+    .stopDetailReasonSelect .ant-select-selection-item {
+        overflow: visible !important;
+        padding-right: 22px !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
+        line-height: 1.4 !important;
+    }
 }
 
 .stopDetailReasonError {
@@ -471,7 +497,7 @@
 .stopDetailButtonsRow {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 /* ── Each action wrapper: equal width on both mobile and desktop ── */
@@ -549,6 +575,7 @@
 /* Plain text link — no border, no background, smallest font */
 .stopDetailTertiaryWrapper {
     display: flex;
+    margin-top: 2px;
 }
 
 .stopDetailFailedLink {
@@ -605,6 +632,10 @@
         flex-direction: row;
         gap: 10px;
         align-items: stretch;
+    }
+
+    .stopDetailTertiaryWrapper {
+        margin-top: 0;
     }
 
     .stopDetailSecondaryWrapper,

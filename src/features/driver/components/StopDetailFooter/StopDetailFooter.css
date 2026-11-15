@@ -24,7 +24,7 @@
 .stopDetailButtonsRow {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 /* ── Each action wrapper: equal width on both mobile and desktop ── */
@@ -101,6 +101,7 @@
 /* ── Tertiary — "No se pudo entregar" ── */
 .stopDetailTertiaryWrapper {
     display: flex;
+    margin-top: 2px;
 }
 
 .stopDetailFailedLink {
@@ -146,6 +147,10 @@
         flex-direction: row;
         gap: 10px;
         align-items: stretch;
+    }
+
+    .stopDetailTertiaryWrapper {
+        margin-top: 0;
     }
 
     .stopDetailSecondaryWrapper,

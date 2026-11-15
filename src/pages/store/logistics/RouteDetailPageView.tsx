@@ -17,6 +17,8 @@ import {
     Row,
     Col,
     message,
+    Checkbox,
+    Empty,
 } from 'antd';
 import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined, WhatsAppOutlined, DollarOutlined } from '@ant-design/icons';
 
@@ -68,6 +70,7 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
+    pending: 'Pendiente',
     draft: 'Borrador',
     planned: 'Planificada',
     loaded: 'Cargada',
@@ -133,6 +136,7 @@ export const RouteDetailPageView = ({
     const [loadModalOpen, setLoadModalOpen] = useState(false);
     const [adjustmentOpen, setAdjustmentOpen] = useState(false);
     const [notifiedStops, setNotifiedStops] = useState<Set<string>>(new Set());
+    const [activeOrderTab, setActiveOrderTab] = useState('daily');
 
     const navigate = useNavigate();
 
@@ -175,6 +179,13 @@ export const RouteDetailPageView = ({
     const hasActiveStops = activeStops.length > 0;
     const hasDepartureTime = !!route.departure_time;
     const canPlan = isDraft && hasActiveStops && hasDepartureTime;
+    const planDisabledReason = !hasDepartureTime && !hasActiveStops
+        ? 'Seleccioná una hora de salida y agregá al menos una parada para planificar la ruta.'
+        : !hasDepartureTime
+            ? 'Seleccioná una hora de salida para planificar la ruta.'
+            : !hasActiveStops
+                ? 'Agregá al menos una parada para planificar la ruta.'
+                : '';
     const hasPolyline = !!route.encoded_polyline;
     const allowReorder =
         (isDraft || route.status === 'planned') && activeStops.length > 1;
@@ -467,6 +478,31 @@ export const RouteDetailPageView = ({
         onChange: (keys) => setSelectedDailyIds(keys as string[]),
     };
 
+    const toggleDailyOrder = (orderId: string, selected: boolean) => {
+        setSelectedDailyIds((current) =>
+            selected
+                ? [...new Set([...current, orderId])]
+                : current.filter((id) => id !== orderId)
+        );
+    };
+
+    const visibleDailyOrderIds = dailyOrders.map((order) => order.id);
+    const selectedVisibleDailyIds = selectedDailyIds.filter((id) =>
+        visibleDailyOrderIds.includes(id)
+    );
+    const allDailySelected =
+        visibleDailyOrderIds.length > 0 &&
+        selectedVisibleDailyIds.length === visibleDailyOrderIds.length;
+    const dailySelectionIndeterminate =
+        selectedVisibleDailyIds.length > 0 && !allDailySelected;
+    const toggleAllDailyOrders = (selected: boolean) => {
+        setSelectedDailyIds((current) =>
+            selected
+                ? [...new Set([...current, ...visibleDailyOrderIds])]
+                : current.filter((id) => !visibleDailyOrderIds.includes(id))
+        );
+    };
+
     const handleAddDailyStops = async () => {
         if (selectedDailyIds.length === 0) return;
         setAddingDaily(true);
@@ -523,9 +559,15 @@ export const RouteDetailPageView = ({
 
     return (
         <div className="routeDetailPage">
-            <div className="routeDetailHeader">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div className="routeDetailHeader" data-testid="route-detail-main-card">
+                <div className="routeDetailHeaderTop">
                     <h1 className="routeDetailTitle">{routeNum}</h1>
+                    <Tag
+                        className="routeDetailMobileStatus"
+                        color={statusColors[route.status] || 'default'}
+                    >
+                        {statusLabels[route.status] || route.status}
+                    </Tag>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         {route.status === 'awaiting_reconciliation' && (
                             <Button
@@ -605,7 +647,7 @@ export const RouteDetailPageView = ({
                     <Descriptions.Item label="Vehículo">
                         <Text strong>{route.vehicle?.name || '—'}</Text>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Estado">
+                    <Descriptions.Item label="Estado" className="routeDetailDesktopStatus">
                         <Tag color={statusColors[route.status] || 'default'}>
                             {statusLabels[route.status] || route.status}
                         </Tag>
@@ -615,7 +657,7 @@ export const RouteDetailPageView = ({
 
                 {/* ── Acciones: planned ── */}
                 {route.status === 'planned' && (
-                    <Row gutter={[8, 8]} style={{ marginTop: 12 }}>
+                    <Row className="routeDetailPlannedActions" gutter={[8, 8]} style={{ marginTop: 12 }}>
                         {hasPolyline && (
                             <Col xs={12} md={7}>
                                 <Button
@@ -665,7 +707,7 @@ export const RouteDetailPageView = ({
 
                 {/* ── Acciones: loaded ── */}
                 {route.status === 'loaded' && (
-                    <Row gutter={[8, 8]} align="middle" style={{ marginTop: 12 }}>
+                    <Row className="routeDetailLoadedActions" gutter={[8, 8]} align="middle" style={{ marginTop: 12 }}>
                         {hasPolyline && (
                             <Col xs={12} md={6}>
                                 <Button
@@ -684,7 +726,7 @@ export const RouteDetailPageView = ({
                                 <Button
                                     variant="default"
                                     size="middle"
-                                    label="Hoja de Carga"
+                                    label="Hoja de carga"
                                     icon={<FileTextOutlined />}
                                     action={() => setLoadModalOpen(true)}
                                     block
@@ -697,7 +739,8 @@ export const RouteDetailPageView = ({
                                 <Button
                                     variant="primary"
                                     size="middle"
-                                    label="Ajustar Productos por Parada"
+                                    className="routeDetailLoadedAdjustAction"
+                                    label="Ajustar productos por parada"
                                     icon={<EyeOutlined />}
                                     action={() => setAdjustmentOpen(true)}
                                     block
@@ -717,7 +760,8 @@ export const RouteDetailPageView = ({
                                     <Button
                                         variant="primary"
                                         size="middle"
-                                        label="Despachar Ruta"
+                                        className="routeDetailLoadedDispatchAction"
+                                        label="Despachar ruta"
                                         icon={<TruckOutlined />}
                                         block
                                         style={{
@@ -798,11 +842,7 @@ export const RouteDetailPageView = ({
                         />
                     ) : (
                         <Tooltip
-                            title={
-                                !hasDepartureTime
-                                    ? 'Defina la hora de salida para planificar la ruta'
-                                    : ''
-                            }
+                            title={planDisabledReason}
                         >
                             <span>
                                 <Button variant="primary" label="Planificar Ruta" disabled />
@@ -814,36 +854,133 @@ export const RouteDetailPageView = ({
 
             <div className="routeDetailSection">
                 <h2 className="routeDetailSectionTitle">Paradas de la Ruta</h2>
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                >
-                    <SortableContext
-                        items={activeStops.map((s) => s.id)}
-                        strategy={verticalListSortingStrategy}
+                <div className="routeDetailStopsDesktop">
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
                     >
-                        <AntTable
-                            columns={stopsColumns}
-                            dataSource={activeStops as unknown as Record<string, unknown>[]}
-                            pagination={false}
-                            scroll={{ x: 'max-content' }}
-                            size="small"
-                            loading={reordering}
-                            rowKey="id"
-                            components={{
-                                body: {
-                                    row: SortableRow,
-                                },
-                            }}
-                            onRow={(record) =>
-                                ({
-                                    id: (record as Record<string, unknown>).id as string,
-                                } as Record<string, unknown>)
-                            }
-                        />
-                    </SortableContext>
-                </DndContext>
+                        <SortableContext
+                            items={activeStops.map((s) => s.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <AntTable
+                                columns={stopsColumns}
+                                dataSource={activeStops as unknown as Record<string, unknown>[]}
+                                pagination={false}
+                                scroll={{ x: 'max-content' }}
+                                size="small"
+                                loading={reordering}
+                                rowKey="id"
+                                components={{
+                                    body: {
+                                        row: SortableRow,
+                                    },
+                                }}
+                                onRow={(record) =>
+                                    ({
+                                        id: (record as Record<string, unknown>).id as string,
+                                    } as Record<string, unknown>)
+                                }
+                            />
+                        </SortableContext>
+                    </DndContext>
+                </div>
+                <div className="routeDetailStopsMobile" data-testid="route-stops-mobile">
+                    {activeStops.length === 0 ? (
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description="No hay datos"
+                        >
+                            <span className="routeDetailEmptyHint">
+                                Aún no se han asignado paradas a esta ruta.
+                            </span>
+                        </Empty>
+                    ) : (
+                        activeStops.map((stop) => {
+                            const notified = stop.notified_at || notifiedStops.has(stop.id);
+                            const address = stop.order?.address;
+                            return (
+                                <article className="routeDetailMobileListCard" key={stop.id}>
+                                    <div className="routeDetailMobileListCardHeader">
+                                        <strong>Parada {stop.sequence}</strong>
+                                        <Tag color={statusColors[stop.status] || 'default'}>
+                                            {statusLabels[stop.status] || stop.status}
+                                        </Tag>
+                                    </div>
+                                    <div className="routeDetailMobileListCardTitle">
+                                        {stop.order?.operation_number || '—'}
+                                    </div>
+                                    <div className="routeDetailMobileListCardText">
+                                        {stop.order?.customer?.name || '—'}
+                                    </div>
+                                    {address && (
+                                        <div className="routeDetailMobileListCardText">
+                                            {address.street} {address.number}
+                                            {address.locality ? `, ${address.locality}` : ''}
+                                        </div>
+                                    )}
+                                    {isPlanned && (
+                                        <div className="routeDetailMobileStopDetails">
+                                            <div>
+                                                <span>Llegada estimada</span>
+                                                <strong>
+                                                    {stop.notification_window_start &&
+                                                    stop.notification_window_end
+                                                        ? `${stop.notification_window_start} – ${stop.notification_window_end}`
+                                                        : 'Sin ETA'}
+                                                </strong>
+                                            </div>
+                                            <div>
+                                                <span>Tramo</span>
+                                                <strong>
+                                                    {stop.travel_duration_seconds
+                                                        ? `${Math.round(stop.travel_duration_seconds / 60)} min`
+                                                        : '--'}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="routeDetailMobileListCardActions">
+                                        <AntButton
+                                            type="text"
+                                            icon={
+                                                <WhatsAppOutlined
+                                                    style={{
+                                                        color: notified ? '#b7eb8f' : '#25D366',
+                                                        fontSize: 18,
+                                                    }}
+                                                />
+                                            }
+                                            onClick={() => handleWhatsApp(stop)}
+                                            aria-label="Notificar WhatsApp"
+                                        />
+                                        {isDraft && (
+                                            <CanDo permission="logistics.routes.manage">
+                                                <Popconfirm
+                                                    title="¿Quitar parada?"
+                                                    description="El pedido volverá a estar disponible."
+                                                    onConfirm={() => handleRemoveStop(stop.id)}
+                                                    okText="Quitar"
+                                                    cancelText="Cancelar"
+                                                    okButtonProps={{ danger: true }}
+                                                >
+                                                    <AntButton
+                                                        type="text"
+                                                        danger
+                                                        icon={<DeleteOutlined />}
+                                                        loading={removingStopId === stop.id}
+                                                        aria-label="Quitar parada"
+                                                    />
+                                                </Popconfirm>
+                                            </CanDo>
+                                        )}
+                                    </div>
+                                </article>
+                            );
+                        })
+                    )}
+                </div>
             </div>
 
             {route.requires_recalculation && (
@@ -890,6 +1027,11 @@ export const RouteDetailPageView = ({
                 <div className="routeDetailSection">
                     <Tabs
                         defaultActiveKey="daily"
+                        activeKey={activeOrderTab}
+                        onChange={(key) => {
+                            setActiveOrderTab(key);
+                            if (key !== 'daily') setSelectedDailyIds([]);
+                        }}
                         items={[
                             {
                                 key: 'daily',
@@ -912,17 +1054,59 @@ export const RouteDetailPageView = ({
                                                 action={handleAddDailyStops}
                                             />
                                         </div>
-                                        <Table
-                                            columns={dailyColumns}
-                                            dataSource={
-                                                dailyOrders as unknown as Record<string, unknown>[]
-                                            }
-                                            rowSelection={dailyRowSelection}
-                                            loading={dailyOrdersLoading}
-                                            pagination={false}
-                                            scroll={{ x: 'max-content' }}
-                                            size="small"
-                                        />
+                                        <div className="routeDetailOrdersDesktop">
+                                            <Table
+                                                columns={dailyColumns}
+                                                dataSource={
+                                                    dailyOrders as unknown as Record<string, unknown>[]
+                                                }
+                                                rowSelection={dailyRowSelection}
+                                                loading={dailyOrdersLoading}
+                                                pagination={false}
+                                                scroll={{ x: 'max-content' }}
+                                                size="small"
+                                            />
+                                        </div>
+                                        <div className="routeDetailOrdersMobile" data-testid="daily-orders-mobile">
+                                            {dailyOrdersLoading ? (
+                                                <Spin />
+                                            ) : dailyOrders.length === 0 ? (
+                                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No hay datos" />
+                                            ) : (
+                                                <>
+                                                    <div className="routeDetailMobileSelectAll">
+                                                        <Checkbox
+                                                            checked={allDailySelected}
+                                                            indeterminate={dailySelectionIndeterminate}
+                                                            onChange={(event) =>
+                                                                toggleAllDailyOrders(event.target.checked)
+                                                            }
+                                                        >
+                                                            Seleccionar todos
+                                                        </Checkbox>
+                                                        <span>
+                                                            {selectedVisibleDailyIds.length} seleccionados
+                                                        </span>
+                                                    </div>
+                                                    {dailyOrders.map((order) => (
+                                                        <article className="routeDetailMobileOrderCard" key={order.id}>
+                                                            <Checkbox
+                                                                checked={selectedDailyIds.includes(order.id)}
+                                                                onChange={(event) =>
+                                                                    toggleDailyOrder(order.id, event.target.checked)
+                                                                }
+                                                                aria-label={`Seleccionar ${order.id}`}
+                                                            />
+                                                            <span className="routeDetailMobileOrderContent">
+                                                                <strong>{order.operation_number}</strong>
+                                                                <span>{order.address?.locality ?? '—'}</span>
+                                                                <span>{formatDateShort(order.requested_delivery_date)}</span>
+                                                            </span>
+                                                        </article>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 ),
                             },
@@ -935,19 +1119,53 @@ export const RouteDetailPageView = ({
                                             Pedidos con una fecha de entrega diferente a la fecha
                                             operativa de esta ruta.
                                         </p>
-                                        <Table
-                                            columns={exceptionalColumns}
-                                            dataSource={
-                                                exceptionalOrders as unknown as Record<
-                                                    string,
-                                                    unknown
-                                                >[]
-                                            }
-                                            loading={exceptionalOrdersLoading}
-                                            pagination={false}
-                                            scroll={{ x: 'max-content' }}
-                                            size="small"
-                                        />
+                                        <div className="routeDetailOrdersDesktop">
+                                            <Table
+                                                columns={exceptionalColumns}
+                                                dataSource={
+                                                    exceptionalOrders as unknown as Record<
+                                                        string,
+                                                        unknown
+                                                    >[]
+                                                }
+                                                loading={exceptionalOrdersLoading}
+                                                pagination={false}
+                                                scroll={{ x: 'max-content' }}
+                                                size="small"
+                                            />
+                                        </div>
+                                        <div className="routeDetailOrdersMobile" data-testid="exceptional-orders-mobile">
+                                            {exceptionalOrdersLoading ? (
+                                                <Spin />
+                                            ) : exceptionalOrders.length === 0 ? (
+                                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No hay datos" />
+                                            ) : (
+                                                exceptionalOrders.map((order) => (
+                                                    <article
+                                                        className="routeDetailMobileOrderCard routeDetailMobileExceptionalOrderCard"
+                                                        key={order.id}
+                                                    >
+                                                        <div className="routeDetailMobileOrderContent">
+                                                            <strong>{order.operation_number}</strong>
+                                                            <span>{order.address?.locality ?? '—'}</span>
+                                                            <span>
+                                                                {order.requested_delivery_date
+                                                                    ? formatDateShort(order.requested_delivery_date)
+                                                                    : 'Sin fecha pactada'}
+                                                            </span>
+                                                        </div>
+                                                        <Button
+                                                            variant="default"
+                                                            label="Asignar excepcional"
+                                                            action={() => {
+                                                                setSelectedExceptionalOrder(order);
+                                                                setExceptionalModalOpen(true);
+                                                            }}
+                                                        />
+                                                    </article>
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 ),
                             },
