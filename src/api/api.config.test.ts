@@ -1,10 +1,27 @@
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import api from './api.config';
 import { ApiError } from '@/interfaces/ApiErrors.interface';
+import {
+    activateSession,
+    clearActiveSession,
+    getCurrentSessionGeneration,
+    registerSessionInvalidator,
+} from '@/security/sessionContext';
+
+type InterceptorHandler = {
+    fulfilled?: (value: unknown) => unknown;
+    rejected?: (reason: unknown) => Promise<unknown>;
+};
+
+const responseErrorHandler = () => {
+    const handlers = (api.interceptors.response as unknown as { handlers: InterceptorHandler[] }).handlers;
+    return handlers.find((handler) => handler.rejected)?.rejected;
+};
 
 describe('API Config', () => {
     beforeEach(() => {
         localStorage.clear();
+        clearActiveSession('logout');
     });
 
     afterEach(() => {
@@ -95,6 +112,22 @@ describe('API Config', () => {
 
             expect(error.status).toBe(401);
             expect(error.message).toBe('Unauthorized');
+        });
+
+        test('does not invalidate the session for a 403 permission denial', async () => {
+            const invalidator = vi.fn();
+            registerSessionInvalidator(invalidator);
+            const generation = activateSession({ userId: 1, storeId: 10, token: 'token-a' });
+            const handler = responseErrorHandler();
+            if (!handler) throw new Error('Response error interceptor was not registered');
+
+            await expect(handler({
+                response: { status: 403, data: { message: 'Forbidden' } },
+                config: { centraSessionGeneration: generation },
+            })).rejects.toMatchObject({ status: 403 });
+
+            expect(invalidator).not.toHaveBeenCalled();
+            expect(getCurrentSessionGeneration()).toBe(generation);
         });
 
         test('ApiError should handle network errors (status 0)', () => {

@@ -5,6 +5,7 @@ import { SalesService } from '../services/sales.service';
 import { usePOSStore } from '../stores/usePOSStore';
 import type { ProductSearchItem } from '../interfaces/product-search.interface';
 import { isPositiveDecimal } from '@/utils/quantity';
+import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
 
 export function useProductSearch() {
   const [query, setQuery] = useState('');
@@ -26,19 +27,22 @@ export function useProductSearch() {
 
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
+      const sessionGeneration = getCurrentSessionGeneration();
       setLoading(true);
       setActiveIndex(-1);
       try {
         const products = await CommercialProductsService.search({ q: query });
+        if (!isCurrentSession(sessionGeneration)) return;
         setResults(products
           .filter((product) => isPositiveDecimal(product.commercial_available_quantity))
           .map((product) => ({ ...product, sku: product.sku ?? '' })));
         setShowDropdown(true);
       } catch {
+        if (!isCurrentSession(sessionGeneration)) return;
         setResults([]);
         setShowDropdown(true);
       } finally {
-        setLoading(false);
+        if (isCurrentSession(sessionGeneration)) setLoading(false);
       }
     }, 300);
 
@@ -47,9 +51,11 @@ export function useProductSearch() {
 
   const addProductToCart = useCallback(
     async (productId: string) => {
+      const sessionGeneration = getCurrentSessionGeneration();
       setSearchingFull(true);
       try {
         const product = await SalesService.getProductById(productId);
+        if (!isCurrentSession(sessionGeneration)) return;
         if (!isPositiveDecimal(product.commercial_available_quantity)) {
           message.error('Producto sin stock disponible.');
           return;
@@ -65,9 +71,10 @@ export function useProductSearch() {
           stock_measurement_unit_symbol: product.stock_measurement_unit?.symbol ?? null,
         });
       } catch {
+        if (!isCurrentSession(sessionGeneration)) return;
         message.error('Error al obtener el producto.');
       } finally {
-        setSearchingFull(false);
+        if (isCurrentSession(sessionGeneration)) setSearchingFull(false);
       }
     },
     [addItem]
@@ -75,9 +82,11 @@ export function useProductSearch() {
 
   const tryBarcodeLookup = useCallback(
     async (code: string) => {
+      const sessionGeneration = getCurrentSessionGeneration();
       setSearchingFull(true);
       try {
         const product = await SalesService.searchByBarcode(code);
+        if (!isCurrentSession(sessionGeneration)) return false;
         if (!product) {
           message.error('Producto no encontrado.');
           return false;
@@ -102,10 +111,11 @@ export function useProductSearch() {
         setActiveIndex(-1);
         return true;
       } catch {
+        if (!isCurrentSession(sessionGeneration)) return false;
         message.error('Error al buscar código de barras.');
         return false;
       } finally {
-        setSearchingFull(false);
+        if (isCurrentSession(sessionGeneration)) setSearchingFull(false);
       }
     },
     [addItem]

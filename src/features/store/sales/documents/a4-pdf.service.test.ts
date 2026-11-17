@@ -60,7 +60,7 @@ test('loads the pdfmake virtual fonts and generates an A4 PDF blob', async () =>
     expect(createPdf).toHaveBeenCalledWith(
         expect.objectContaining({
             pageSize: 'A4',
-            pageMargins: [45, 52, 45, 54],
+            pageMargins: [32, 30, 32, 26],
         })
     );
     expect(getBlob).toHaveBeenCalledOnce();

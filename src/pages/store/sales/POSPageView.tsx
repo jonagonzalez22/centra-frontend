@@ -12,6 +12,7 @@ import { usePOSStore } from '@features/store/sales/stores/usePOSStore';
 interface POSPageViewProps {
   onCheckout: () => void;
   onRegisterOrder: () => void;
+  canCreateOperations: boolean;
   registerDepositNow: boolean;
   setRegisterDepositNow: (value: boolean) => void;
 }
@@ -19,6 +20,7 @@ interface POSPageViewProps {
 export const POSPageView: React.FC<POSPageViewProps> = ({
   onCheckout,
   onRegisterOrder,
+  canCreateOperations,
   registerDepositNow,
   setRegisterDepositNow,
 }) => {
@@ -115,7 +117,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
           variant="primary"
           label={type === 'order' ? 'Registrar pedido' : `Cobrar $${total.toLocaleString('es-AR')}`}
           action={handleAction}
-          disabled={!canCheckout()}
+          disabled={!canCreateOperations || !canCheckout()}
           block
           size="large"
         />}
@@ -157,7 +159,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
             variant="primary"
             label={type === 'order' ? 'Registrar pedido' : 'Cobrar'}
             action={handleAction}
-            disabled={!canCheckout()}
+            disabled={!canCreateOperations || !canCheckout()}
             size="large"
             className="shrink-0"
           />

@@ -7,8 +7,15 @@ import { SuppliersService } from '@/features/store/suppliers/suppliers.service';
 import { SupplierProductsService } from '@/features/store/suppliers/supplierProducts.service';
 
 vi.mock('@/features/store/purchases/purchases.service', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/features/store/purchases/purchases.service')>()), PurchasesService: { getAll: vi.fn(), getById: vi.fn(), create: vi.fn(), update: vi.fn(), order: vi.fn(), cancel: vi.fn() } }));
-vi.mock('@/features/store/suppliers/suppliers.service', () => ({ SuppliersService: { getAll: vi.fn() } }));
-vi.mock('@/features/store/suppliers/supplierProducts.service', () => ({ SupplierProductsService: { getAll: vi.fn(), getCandidates: vi.fn(), update: vi.fn(), bulkCreate: vi.fn() } }));
+vi.mock('@/features/store/suppliers/suppliers.service', () => {
+    const getAll = vi.fn();
+    return { SuppliersService: { getAll, getOperationalOptions: getAll } };
+});
+vi.mock('@/features/store/suppliers/supplierProducts.service', () => {
+    const getAll = vi.fn();
+    const getCandidates = vi.fn();
+    return { SupplierProductsService: { getAll, getCandidates, getPurchaseOptions: getAll, getPurchaseCandidates: getCandidates, update: vi.fn(), bulkCreate: vi.fn() } };
+});
 
 let canEditSupplierProducts = true;
 vi.mock('@/hooks/usePermissions', () => ({ usePermissions: () => ({ can: (permission: string) => permission !== 'suppliers.edit' || canEditSupplierProducts }) }));
@@ -139,7 +146,7 @@ describe('PurchaseFormPage', () => {
         expect(screen.getAllByRole('spinbutton', { name: /Cantidad de Cloro granel/ })).toHaveLength(1);
     }, 20000);
 
-    it('searches all valid products and associates an unassociated product before adding it', async () => {
+    it('searches all valid products and adds an unassociated product without associating it', async () => {
         const user = userEvent.setup();
         renderForm();
         await user.type(screen.getByRole('combobox', { name: 'Proveedor' }), 'Lim');
@@ -150,10 +157,10 @@ describe('PurchaseFormPage', () => {
         const productInput = screen.getByRole('combobox', { name: 'Buscar producto' });
         await user.type(productInput, 'Papel');
         await waitFor(() => expect(SupplierProductsService.getCandidates).toHaveBeenCalledWith('supplier-1', expect.objectContaining({ search: 'Papel', include_associated: 1 })));
-        expect(await screen.findByText('No asociado')).toBeInTheDocument();
+        expect(await screen.findByText('Disponible')).toBeInTheDocument();
         fireEvent.click(option('Papel higiénico'));
 
-        await waitFor(() => expect(SupplierProductsService.bulkCreate).toHaveBeenCalledWith('supplier-1', ['product-4']));
+        expect(SupplierProductsService.bulkCreate).not.toHaveBeenCalled();
         expect(await screen.findByRole('spinbutton', { name: 'Cantidad de Papel higiénico' })).toHaveValue('1');
         const paperCard = screen.getByTestId('purchase-mobile-line-product-4');
         expect(within(paperCard).getByRole('button', { name: 'Agregar código proveedor de Papel higiénico' })).toBeInTheDocument();
@@ -405,7 +412,7 @@ describe('PurchaseFormPage', () => {
         expect(screen.getByText('3 productos seleccionados')).toBeInTheDocument();
     }, 45000);
 
-    it('associates only missing global bulk selections before adding all selected lines', async () => {
+    it('adds global bulk selections without creating supplier associations', async () => {
         const user = userEvent.setup();
         renderForm();
         await user.type(screen.getByRole('combobox', { name: 'Proveedor' }), 'Lim');
@@ -419,13 +426,27 @@ describe('PurchaseFormPage', () => {
         await waitFor(() => expect(SupplierProductsService.getCandidates).toHaveBeenCalledWith('supplier-1', expect.objectContaining({ include_associated: 1 })));
         await user.click(screen.getByRole('checkbox', { name: 'Cloro granel' }));
         await user.click(screen.getByRole('checkbox', { name: 'Papel higiénico' }));
-        expect(screen.getByText('Los productos no asociados se vincularán automáticamente a este proveedor.')).toBeInTheDocument();
+        expect(screen.getByText('Podés agregar productos no asociados al proveedor. Esto no modificará su catálogo de productos.')).toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Agregar 2 productos' }));
-        await waitFor(() => expect(SupplierProductsService.bulkCreate).toHaveBeenCalledWith('supplier-1', ['product-4']));
+        expect(SupplierProductsService.bulkCreate).not.toHaveBeenCalled();
         expect(await screen.findByRole('spinbutton', { name: 'Cantidad de Papel higiénico' })).toHaveValue('1');
         expect(screen.getByRole('spinbutton', { name: 'Cantidad de Cloro granel' })).toHaveValue('1');
         expect(screen.getByText('CL-55')).toBeInTheDocument();
         expect(screen.getByText(/Cloro proveedor/)).toBeInTheDocument();
+    }, 30000);
+
+    it('shows an authorization error instead of an empty result when the purchase catalog request fails', async () => {
+        const user = userEvent.setup();
+        vi.mocked(SupplierProductsService.getCandidates).mockRejectedValueOnce(new Error('403'));
+        renderForm();
+        await user.type(screen.getByRole('combobox', { name: 'Proveedor' }), 'Lim');
+        await waitFor(() => expect(SuppliersService.getAll).toHaveBeenCalledWith({ search: 'Lim', is_active: true }));
+        fireEvent.click(option('Limpieza Clorito'));
+        await user.click(screen.getByRole('button', { name: /Agregar varios/ }));
+        await user.click(screen.getByText('Todos los productos'));
+
+        expect(await screen.findByText('No se pudieron cargar los productos.')).toBeInTheDocument();
+        expect(screen.queryByText('No encontramos productos con esa búsqueda.')).not.toBeInTheDocument();
     }, 30000);
 
     it('shows existing draft products as unavailable in the bulk selector and cancel does not change them', async () => {

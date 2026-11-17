@@ -32,7 +32,7 @@ test('shows individual payment traceability and total paid', () => {
     expect(screen.getByText('$ 5.600')).toBeInTheDocument();
     expect(screen.getByText('Efectivo')).toBeInTheDocument();
     expect(screen.getByText('Referencia: ABC123')).toBeInTheDocument();
-    expect(screen.getByText('Pago posterior en tienda')).toBeInTheDocument();
+    expect(screen.getByText('Pago de pedido')).toBeInTheDocument();
     expect(screen.getByText('Registrado por Jonathan')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeInTheDocument();
 });

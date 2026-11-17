@@ -13,6 +13,12 @@ export const BrandsService = {
         const { data } = await api.get<ApiListResponse<{ items: ProductBrand[] }>>(API_ENDPOINTS.STORE.BRANDS.URL, { params: queryParams });
         return data.data.items;
     },
+    getOperationalOptions: async () => {
+        const { data } = await api.get<ApiListResponse<{ items: ProductBrand[] }>>(
+            API_ENDPOINTS.STORE.BRANDS.OPERATIONAL_OPTIONS
+        );
+        return data.data.items;
+    },
     create: async (payload: Pick<ProductBrand, 'name' | 'is_active'>) => (await api.post<ApiListResponse<ProductBrand>>(API_ENDPOINTS.STORE.BRANDS.URL, payload)).data.data,
     update: async (id: string, payload: Partial<Pick<ProductBrand, 'name' | 'is_active'>>) => (await api.put<ApiListResponse<ProductBrand>>(`${API_ENDPOINTS.STORE.BRANDS.URL}/${id}`, payload)).data.data,
     delete: async (id: string) => { await api.delete(`${API_ENDPOINTS.STORE.BRANDS.URL}/${id}`); },

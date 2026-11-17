@@ -82,7 +82,23 @@ describe('PurchaseDocumentsSection', () => {
     it('requires invoice amount and renders a successful create', async () => {
         vi.mocked(PurchasesService.createDocument).mockResolvedValueOnce(doc);
         renderSection();
-        fireEvent.click(screen.getByRole('button', { name: 'Agregar documento' }));
+        const RealDate = Date;
+        const fixedDate = new RealDate('2026-10-24T12:00:00-03:00');
+        vi.stubGlobal(
+            'Date',
+            new Proxy(RealDate, {
+                construct(target, args) {
+                    return args.length === 0
+                        ? new target(fixedDate)
+                        : Reflect.construct(target, args);
+                },
+            })
+        );
+        try {
+            fireEvent.click(screen.getByRole('button', { name: 'Agregar documento' }));
+        } finally {
+            vi.unstubAllGlobals();
+        }
         fireEvent.change(screen.getByLabelText('Número'), { target: { value: 'A 0001-00001234' } });
         fireEvent.click(screen.getByRole('button', { name: 'Guardar documento' }));
         await waitFor(() =>

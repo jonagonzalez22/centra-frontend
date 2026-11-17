@@ -10,8 +10,8 @@ vi.mock('@/features/store/cash/services/cash.service', () => ({
 }));
 
 vi.mock('./POSPageView', () => ({
-  POSPageView: ({ onCheckout }: { onCheckout: () => void }) => (
-    <button onClick={onCheckout}>Abrir cobro</button>
+  POSPageView: ({ onCheckout, canCreateOperations }: { onCheckout: () => void; canCreateOperations: boolean }) => (
+    <button disabled={!canCreateOperations} onClick={onCheckout}>Abrir cobro</button>
   ),
 }));
 
@@ -43,7 +43,7 @@ beforeEach(() => {
       store: { id: 'store-1', name: 'Tienda', business_type: 'ferreteria' },
       roles: ['STORE_USER'],
       is_active: true,
-      permissions: [],
+      permissions: ['pos.create'],
       features: [],
       cash_session: { id: 'cash-1', status: 'open', business_date: '2026-09-19' },
     },
@@ -73,4 +73,14 @@ test('opens the post-sale modal with the operation reference and allows closing 
 
   await user.click(screen.getByRole('button', { name: 'Cerrar éxito' }));
   await waitFor(() => expect(screen.queryByText('Venta lista: V-000123')).not.toBeInTheDocument());
+});
+
+test('does not enable checkout when pos.create is absent', async () => {
+  useAuthStore.setState((state) => ({
+    user: state.user ? { ...state.user, permissions: [] } : null,
+  }));
+
+  render(<POSPage />);
+
+  expect(await screen.findByRole('button', { name: 'Abrir cobro' })).toBeDisabled();
 });

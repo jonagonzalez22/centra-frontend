@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { Dayjs } from 'dayjs';
 import { vi } from 'vitest';
 import { OrderEditPage } from './OrderEditPage';
@@ -231,6 +231,13 @@ const order = {
 } satisfies OrderDetail;
 
 afterEach(() => cleanup());
+
+const economicSummary = () => {
+    const card = screen.getByText('Resumen económico').closest('.ant-card');
+    if (!(card instanceof HTMLElement)) throw new Error('No se encontró el resumen económico.');
+
+    return within(card);
+};
 
 const editability = {
     order_id: 'order-1',
@@ -794,7 +801,13 @@ test('refreshes persisted economic data after a successful payment', async () =>
     );
     await waitFor(() => expect(getById).toHaveBeenCalledTimes(2));
     expect(setCashSession).toHaveBeenCalled();
-    expect(screen.getAllByText('$ 1.000')).toHaveLength(3);
+    const summary = economicSummary();
+    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 1.000');
+    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 1.000');
+    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 1.000');
+    expect(summary.getByText('Saldo pendiente').parentElement).toHaveTextContent(
+        'Saldo pendiente$ 0'
+    );
     expect(screen.queryByRole('button', { name: 'Registrar pago' })).not.toBeInTheDocument();
 });
 
@@ -1237,25 +1250,20 @@ test('shows the line price with its snapshot unit without changing the authorita
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    const lineTexts = screen
-        .getAllByText('Precio unitario')
-        .map((element) => element.parentElement?.textContent?.replace(/\s/g, ''));
-    expect(lineTexts).toEqual(
-        expect.arrayContaining([
-            'Preciounitario$600/u',
-            'Preciounitario$2.000/L',
-            'Preciounitario$3.000/kg',
-            'Preciounitario$1.500/m',
-        ])
-    );
-    expect(
-        screen
-            .getByText('Detergente suelto')
-            .parentElement?.parentElement?.textContent?.replace(/\s/g, '')
-    ).toContain('Subtotal$1.000');
-    expect(
-        screen.getByRole('spinbutton', { name: /Cantidad de Detergente suelto/ }).closest('.ant-input-number')
-    ).toHaveClass('w-24');
+    expect(screen.getByText('$ 600/u')).toBeInTheDocument();
+    expect(screen.getByText('$ 2.000/L')).toBeInTheDocument();
+    expect(screen.getByText('$ 3.000/kg')).toBeInTheDocument();
+    expect(screen.getByText('$ 1.500/m')).toBeInTheDocument();
+    const detergentQuantity = screen.getByRole('spinbutton', {
+        name: /Cantidad de Detergente suelto/,
+    });
+    const detergentLine = detergentQuantity.closest('.relative.rounded-lg');
+    if (!(detergentLine instanceof HTMLElement)) {
+        throw new Error('No se encontró la línea de Detergente suelto.');
+    }
+    expect(within(detergentLine).getByText('Subtotal')).toBeInTheDocument();
+    expect(within(detergentLine).getByText('$ 1.000')).toBeInTheDocument();
+    expect(detergentQuantity.closest('.ant-input-number')).toHaveClass('w-24');
     expect(screen.getByText(/Descuento: -/)).toHaveClass('text-emerald-700');
 });
 
@@ -1272,20 +1280,13 @@ test('shows the authoritative economic summary and no global save button', async
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    expect(screen.getByText('Subtotal').parentElement?.textContent?.replace(/\s/g, '')).toBe(
-        'Subtotal$45.350'
-    );
-    expect(screen.getByText('Descuentos').parentElement?.textContent?.replace(/\s/g, '')).toBe(
-        'Descuentos-$1.300'
-    );
-    expect(screen.getByText('Total').parentElement?.textContent?.replace(/\s/g, '')).toBe(
-        'Total$44.050'
-    );
-    expect(screen.getByText('Pagado').parentElement?.textContent?.replace(/\s/g, '')).toBe(
-        'Pagado$0'
-    );
-    expect(screen.getByText('Saldo pendiente').parentElement?.textContent?.replace(/\s/g, '')).toBe(
-        'Saldopendiente$44.050'
+    const summary = economicSummary();
+    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 45.350');
+    expect(summary.getByText('Descuentos').parentElement).toHaveTextContent('Descuentos-$ 1.300');
+    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 44.050');
+    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 0');
+    expect(summary.getByText('Saldo pendiente').parentElement).toHaveTextContent(
+        'Saldo pendiente$ 44.050'
     );
     expect(screen.queryByRole('button', { name: 'Guardar cambios' })).not.toBeInTheDocument();
 });

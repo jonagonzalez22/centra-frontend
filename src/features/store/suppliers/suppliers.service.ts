@@ -1,4 +1,5 @@
 import api from '@/api/api.config';
+import { API_ENDPOINTS } from '@/constants/api/endpoints';
 export type Supplier = {
     id: string;
     business_name: string;
@@ -12,6 +13,7 @@ export type Supplier = {
     created_at: string;
     updated_at: string;
 };
+export type SupplierOperationalOption = Pick<Supplier, 'id' | 'business_name'>;
 export const SuppliersService = {
     getAll: async (p: { search?: string; is_active?: boolean } = {}) => {
         const { is_active, ...rest } = p;
@@ -23,6 +25,14 @@ export const SuppliersService = {
             },
         });
         return data.data.items as Supplier[];
+    },
+    getOperationalOptions: async (
+        params: { search?: string; is_active?: boolean } = {}
+    ): Promise<SupplierOperationalOption[]> => {
+        const { data } = await api.get(API_ENDPOINTS.STORE.SUPPLIERS.OPERATIONAL_OPTIONS, {
+            params: { search: params.search },
+        });
+        return data.data.items as SupplierOperationalOption[];
     },
     getById: async (id: string) => {
         const { data } = await api.get(`/v1/store/suppliers/${id}`);

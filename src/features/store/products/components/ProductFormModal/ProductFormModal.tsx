@@ -4,13 +4,20 @@ import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
 import { ProductForm } from '../ProductForm';
 import { useProductForm, buildInitialValuesFromProduct } from '../../hooks/useProductForm';
-import { useProductsContext } from '../../context/ProductsContext';
 import { ProductsService } from '../../services/products.service';
+import { CategoriesService } from '@/features/store/categories/services/categories.service';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { MeasurementUnit, Product, ProductSourceCandidate, CreateProductDto } from '../../interfaces/product.interface';
 import type { ProductBrand } from '../../interfaces/product.interface';
+import type { Category } from '@/features/store/categories/interfaces/category.interface';
 import { BrandsService } from '@/features/store/brands/services/brands.service';
-import { SuppliersService, type Supplier } from '@/features/store/suppliers/suppliers.service';
+import {
+    SuppliersService,
+    type SupplierOperationalOption,
+} from '@/features/store/suppliers/suppliers.service';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import { hasFeature } from '@/utils/features';
 import './ProductFormModal.css';
 
 interface ProductFormModalProps {
@@ -22,7 +29,8 @@ interface ProductFormModalProps {
 
 export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductFormModalProps) => {
     const [form] = Form.useForm();
-    const { categories, categoriesLoading } = useProductsContext();
+    const [operationalCategories, setOperationalCategories] = useState<Category[]>([]);
+    const [operationalCategoriesLoading, setOperationalCategoriesLoading] = useState(false);
     const { loading, createProduct, updateProduct } = useProductForm({ onSuccess });
     const [skuGenerating, setSkuGenerating] = useState(false);
     const [measurementUnits, setMeasurementUnits] = useState<MeasurementUnit[]>([]);
@@ -30,12 +38,32 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     const [sourceProducts, setSourceProducts] = useState<ProductSourceCandidate[]>([]);
     const [brands, setBrands] = useState<ProductBrand[]>([]);
     const [brandsLoading, setBrandsLoading] = useState(false);
-    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [suppliers, setSuppliers] = useState<SupplierOperationalOption[]>([]);
     const [suppliersLoading, setSuppliersLoading] = useState(false);
     const sourceSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const { can } = usePermissions();
+    const user = useAuthStore((state) => state.user);
 
     const isEditing = !!product;
+    const canManageSupplierAssociations = hasFeature(user, 'purchases') && can('suppliers.edit');
     const title = isEditing ? 'Editar Producto' : 'Crear Producto';
+
+    useEffect(() => {
+        if (!open) return;
+        let mounted = true;
+        setOperationalCategoriesLoading(true);
+        CategoriesService.getOperationalOptions({ include_inactive: isEditing })
+            .then((options) => { if (mounted) setOperationalCategories(options); })
+            .catch((err) => {
+                if (mounted) {
+                    const apiError = err as ApiError;
+                    message.error(apiError.message || 'No se pudieron cargar las categorías.');
+                    setOperationalCategories([]);
+                }
+            })
+            .finally(() => { if (mounted) setOperationalCategoriesLoading(false); });
+        return () => { mounted = false; };
+    }, [isEditing, open]);
 
     useEffect(() => {
         if (open) {
@@ -82,7 +110,7 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
         if (!open) return;
         let mounted = true;
         setBrandsLoading(true);
-        BrandsService.getAll({ per_page: 100, is_active: true })
+        BrandsService.getOperationalOptions()
             .then((activeBrands) => {
                 if (!mounted) return;
                 const current = product?.brand;
@@ -96,11 +124,11 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
     }, [open, product?.brand]);
 
     useEffect(() => {
-        if (!open || isEditing) return;
+        if (!open || isEditing || !canManageSupplierAssociations) return;
 
         let mounted = true;
         setSuppliersLoading(true);
-        SuppliersService.getAll({ is_active: true })
+        SuppliersService.getOperationalOptions()
             .then((activeSuppliers) => {
                 if (mounted) setSuppliers(activeSuppliers);
             })
@@ -118,7 +146,7 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
         return () => {
             mounted = false;
         };
-    }, [isEditing, open]);
+    }, [canManageSupplierAssociations, isEditing, open]);
 
     const handleSearchSourceProducts = useCallback((query: string) => {
         clearTimeout(sourceSearchTimeoutRef.current);
@@ -232,12 +260,13 @@ export const ProductFormModal = ({ open, onClose, onSuccess, product }: ProductF
                 formId="productForm"
                 form={form}
                 loading={loading}
-                categories={categories}
-                categoriesLoading={categoriesLoading}
+                categories={operationalCategories}
+                categoriesLoading={operationalCategoriesLoading}
                 brands={brands}
                 brandsLoading={brandsLoading}
                 suppliers={suppliers}
                 suppliersLoading={suppliersLoading}
+                canManageSupplierAssociations={canManageSupplierAssociations}
                 measurementUnits={measurementUnits}
                 measurementUnitsLoading={measurementUnitsLoading}
                 sourceProducts={sourceProducts}

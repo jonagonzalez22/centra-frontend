@@ -1,5 +1,19 @@
 import { ApiError } from '@/interfaces/ApiErrors.interface';
 import axios from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import {
+    getSessionForRequest,
+    handleUnauthorizedResponse,
+} from '@/security/sessionContext';
+
+type SessionAwareRequestConfig = {
+    centraSessionGeneration?: number;
+};
+
+export type CentraRequestConfig = InternalAxiosRequestConfig & {
+    centraPublicAuth?: boolean;
+    centraSessionGeneration?: number;
+};
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -9,12 +23,24 @@ const api = axios.create({
     },
 });
 
-api.interceptors.request.use((config) => {
-    const raw = localStorage.getItem('centra-auth-storage');
-    const token = raw ? JSON.parse(raw)?.state?.token : null;
-    if (token) {
+api.interceptors.request.use((config: CentraRequestConfig) => {
+    if (config.centraPublicAuth) {
+        // Public auth endpoints must never inherit a credential from a previous
+        // identity, but remain callable while there is no active session.
+        delete config.headers.Authorization;
+        delete config.centraSessionGeneration;
+        return config;
+    }
+
+    const { session, blocked } = getSessionForRequest();
+    if (blocked) {
+        return Promise.reject(new Error('La identidad activa cambió en otra pestaña.'));
+    }
+
+    if (session) {
         config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${session.token}`;
+        (config as SessionAwareRequestConfig).centraSessionGeneration = session.generation;
     }
 
     return config;
@@ -31,8 +57,9 @@ api.interceptors.response.use(
             };
 
             if (error.response.status === 401) {
-                localStorage.removeItem('centra-auth-storage');
-                window.location.href = '/login';
+                const requestGeneration = (error.config as SessionAwareRequestConfig | undefined)
+                    ?.centraSessionGeneration;
+                handleUnauthorizedResponse(requestGeneration);
             }
 
             return Promise.reject(apiError);

@@ -57,7 +57,7 @@ test('loads and renders individual payment traceability with historical fallback
     expect(await screen.findByText('P-000023')).toBeInTheDocument();
     expect(screen.getByText('$ 8.800')).toBeInTheDocument();
     expect(screen.getByText('12345678')).toBeInTheDocument();
-    expect(screen.getByText('Pago posterior en tienda')).toBeInTheDocument();
+    expect(screen.getByText('Pago de pedido')).toBeInTheDocument();
     expect(screen.getByText('Jonathan')).toBeInTheDocument();
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
     expect(screen.getByText('No informado')).toBeInTheDocument();

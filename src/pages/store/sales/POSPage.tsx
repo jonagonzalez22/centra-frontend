@@ -9,9 +9,12 @@ import type { OperationResponse } from '@features/store/sales/interfaces/sale.in
 import { usePOSStore } from '@features/store/sales/stores/usePOSStore';
 import { formatCurrency } from '@/utils/formatters';
 import { CashService } from '@/features/store/cash/services/cash.service';
+import { usePermissions } from '@/hooks/usePermissions';
+import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
 
 export const POSPage: React.FC = () => {
     const { user, setCashSession } = useAuthStore();
+    const { can } = usePermissions();
     const cashSession = user?.cash_session ?? null;
     const [checkingCash, setCheckingCash] = useState(true);
     const [cashError, setCashError] = useState<string | null>(null);
@@ -21,17 +24,20 @@ export const POSPage: React.FC = () => {
 
     useEffect(() => {
         let active = true;
+        const sessionGeneration = getCurrentSessionGeneration();
         CashService.getCurrent()
             .then((session) => {
-                if (!active) return;
+                if (!active || !isCurrentSession(sessionGeneration)) return;
                 setCashSession(session);
                 setCashError(null);
             })
             .catch((error: { message?: string }) => {
-                if (active) setCashError(error.message || 'No se pudo validar la caja actual.');
+                if (active && isCurrentSession(sessionGeneration)) {
+                    setCashError(error.message || 'No se pudo validar la caja actual.');
+                }
             })
             .finally(() => {
-                if (active) setCheckingCash(false);
+                if (active && isCurrentSession(sessionGeneration)) setCheckingCash(false);
             });
         return () => {
             active = false;
@@ -45,6 +51,7 @@ export const POSPage: React.FC = () => {
     const handleDirectOrder = useCallback(async () => {
         const state = usePOSStore.getState();
         const { type, customer, customer_display_name, requested_delivery_date, items, resetPOS } = state;
+        const sessionGeneration = getCurrentSessionGeneration();
 
         try {
             await SalesService.createOperation({
@@ -63,10 +70,13 @@ export const POSPage: React.FC = () => {
                 payments: [],
             });
 
+            if (!isCurrentSession(sessionGeneration)) return;
+
             const total = items.reduce((sum, item) => sum + item.subtotal, 0);
             antMessage.success(`Pedido registrado. Saldo pendiente: ${formatCurrency(total)}`);
             resetPOS();
         } catch (err) {
+            if (!isCurrentSession(sessionGeneration)) return;
             const apiError = err as { message?: string };
             antMessage.error(apiError.message || 'Error al registrar el pedido.');
         }
@@ -117,6 +127,7 @@ export const POSPage: React.FC = () => {
             <POSPageView
                 onCheckout={handleCheckout}
                 onRegisterOrder={handleDirectOrder}
+                canCreateOperations={can('pos.create')}
                 registerDepositNow={registerDepositNow}
                 setRegisterDepositNow={setRegisterDepositNow}
             />

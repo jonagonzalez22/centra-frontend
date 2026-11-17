@@ -233,7 +233,7 @@ export const PurchaseDetailPage = () => {
                             <Button
                                 variant="default"
                                 label="Descargar PDF"
-                                icon={<DownloadOutlined />}
+                                icon={<DownloadOutlined aria-hidden />}
                                 action={() => void downloadPdf()}
                                 loading={downloadingPdf}
                                 disabled={downloadingPdf}

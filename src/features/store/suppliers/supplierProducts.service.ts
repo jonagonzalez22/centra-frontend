@@ -79,6 +79,20 @@ export interface SupplierProductsBulkResponse {
 }
 
 export const SupplierProductsService = {
+    getPurchaseOptions: async (
+        supplierId: string,
+        params: { search?: string; page?: number; per_page?: number } = {}
+    ) => {
+        const { data } = await api.get(`/v1/store/purchases/suppliers/${supplierId}/products`, { params });
+        return data.data as SupplierProductsListResponse;
+    },
+    getPurchaseCandidates: async (
+        supplierId: string,
+        params: { search?: string; page?: number; per_page?: number; include_associated?: 0 | 1 } = {}
+    ) => {
+        const { data } = await api.get(`/v1/store/purchases/suppliers/${supplierId}/products/candidates`, { params });
+        return data.data as SupplierProductCandidatesResponse;
+    },
     getAll: async (
         supplierId: string,
         params: { search?: string; page?: number; per_page?: number } = {}

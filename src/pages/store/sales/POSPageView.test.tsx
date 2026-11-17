@@ -58,6 +58,7 @@ test('keeps mobile controls separate from the desktop panel, opens the drawer, a
     <POSPageView
       onCheckout={onCheckout}
       onRegisterOrder={vi.fn()}
+      canCreateOperations
       registerDepositNow={false}
       setRegisterDepositNow={vi.fn()}
     />
@@ -94,6 +95,7 @@ test('hides totals and checkout controls while the cart is empty and restores th
     <POSPageView
       onCheckout={vi.fn()}
       onRegisterOrder={vi.fn()}
+      canCreateOperations
       registerDepositNow={false}
       setRegisterDepositNow={vi.fn()}
     />
@@ -112,4 +114,24 @@ test('hides totals and checkout controls while the cart is empty and restores th
   act(() => usePOSStore.getState().removeItem('paper-1:common'));
   expect(screen.queryByText('Detalle de totales')).not.toBeInTheDocument();
   expect(screen.queryByTestId('pos-mobile-checkout')).not.toBeInTheDocument();
+});
+
+test('disables operation registration without pos.create while preserving catalog access', () => {
+  const onCheckout = vi.fn();
+  render(
+    <POSPageView
+      onCheckout={onCheckout}
+      onRegisterOrder={vi.fn()}
+      canCreateOperations={false}
+      registerDepositNow={false}
+      setRegisterDepositNow={vi.fn()}
+    />
+  );
+
+  // Without cart items only the desktop action is rendered; the mobile action
+  // intentionally appears with the mobile checkout panel once there are items.
+  const checkoutButton = screen.getByRole('button', { name: 'Cobrar' });
+  expect(checkoutButton).toBeDisabled();
+  fireEvent.click(checkoutButton);
+  expect(onCheckout).not.toHaveBeenCalled();
 });

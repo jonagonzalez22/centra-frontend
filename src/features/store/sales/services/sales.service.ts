@@ -2,7 +2,7 @@ import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
-import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { CommercialPaymentMethod } from '@features/store/payment-methods/interfaces/commercial-payment-method.interface';
 import type { CommercialProductDetail } from '@features/store/orders/interfaces/commercial-product.interface';
 import type {
   CancelSaleDTO,
@@ -15,7 +15,7 @@ import type {
 } from '../interfaces/sale.interface';
 
 interface PaymentMethodsListData {
-  items: StorePaymentMethod[];
+  items: CommercialPaymentMethod[];
 }
 
 export const SalesService = {
@@ -49,9 +49,9 @@ export const SalesService = {
     }
     return data.data;
   },
-  getPaymentMethods: async (): Promise<StorePaymentMethod[]> => {
+  getPaymentMethods: async (): Promise<CommercialPaymentMethod[]> => {
     const { data } = await api.get<ApiListResponse<PaymentMethodsListData>>(
-      API_ENDPOINTS.STORE.PAYMENT_METHODS.LIST.URL
+      API_ENDPOINTS.STORE.OPERATIONS.PAYMENT_METHODS
     );
 
     if (data.status === 'error') {
@@ -63,7 +63,7 @@ export const SalesService = {
       throw error;
     }
 
-    return data.data.items.filter((pm) => pm.is_enabled);
+    return data.data.items;
   },
 
   searchByBarcode: async (barcode: string): Promise<CommercialProductDetail | null> => {

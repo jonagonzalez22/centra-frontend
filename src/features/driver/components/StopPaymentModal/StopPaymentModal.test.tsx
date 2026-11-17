@@ -9,16 +9,9 @@ vi.mock('../../services/driver.service', () => ({
 
 const paymentMethod = {
     id: 'cash',
-    store_payment_method_id: 'cash',
     name: 'Efectivo',
     code: 'cash',
-    icon: null,
-    is_active: true,
-    is_enabled: true,
-    custom_name: null,
     requires_reference: false,
-    account_details: null,
-    sort_order: 1,
 };
 
 async function waitForPaymentMethodsToLoad() {

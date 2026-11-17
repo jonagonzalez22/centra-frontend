@@ -26,7 +26,7 @@ import {
     normalizeMoneyInput as toMoney,
     parseMoneyInput,
 } from '@/utils/moneyInput';
-import { SuppliersService, type Supplier } from '@/features/store/suppliers/suppliers.service';
+import { SuppliersService, type SupplierOperationalOption } from '@/features/store/suppliers/suppliers.service';
 import {
     SupplierProductsService,
     type SupplierProductCandidate,
@@ -40,7 +40,7 @@ import {
 import { SupplierCodeEditor } from './SupplierCodeEditor';
 import './PurchaseFormPage.css';
 
-type SupplierOption = Pick<Supplier, 'id' | 'business_name' | 'tax_id' | 'is_active'>;
+type SupplierOption = SupplierOperationalOption;
 
 type DraftLine = {
     productId: string;
@@ -187,6 +187,7 @@ export const PurchaseFormPage = () => {
     const [bulkScope, setBulkScope] = useState<'supplier' | 'all'>('supplier');
     const [bulkResult, setBulkResult] = useState<CatalogResult>(emptyCatalogResult);
     const [bulkLoading, setBulkLoading] = useState(false);
+    const [bulkLoadError, setBulkLoadError] = useState(false);
     const [bulkSearch, setBulkSearch] = useState('');
     const [bulkPage, setBulkPage] = useState(1);
     const [bulkPerPage, setBulkPerPage] = useState(20);
@@ -217,8 +218,11 @@ export const PurchaseFormPage = () => {
             }
             setSuppliersLoading(true);
             try {
-                const result = await SuppliersService.getAll({ search: query, is_active: true });
-                setSupplierOptions(result.filter((supplier) => supplier.is_active));
+                const result = await SuppliersService.getOperationalOptions({
+                    search: query,
+                    is_active: true,
+                });
+                setSupplierOptions(result);
             } catch {
                 setSupplierOptions([]);
             } finally {
@@ -237,7 +241,7 @@ export const PurchaseFormPage = () => {
         async (currentSupplierId: string, query: string) => {
             setProductsLoading(true);
             try {
-                const result = await SupplierProductsService.getAll(currentSupplierId, {
+                const result = await SupplierProductsService.getPurchaseOptions(currentSupplierId, {
                     search: query || undefined,
                     page: 1,
                     per_page: 20,
@@ -272,7 +276,7 @@ export const PurchaseFormPage = () => {
         async (currentSupplierId: string, query: string) => {
             setProductsLoading(true);
             try {
-                const result = await SupplierProductsService.getCandidates(currentSupplierId, {
+                const result = await SupplierProductsService.getPurchaseCandidates(currentSupplierId, {
                     search: query || undefined,
                     include_associated: 1,
                     page: 1,
@@ -306,16 +310,17 @@ export const PurchaseFormPage = () => {
         async (page = 1, query = '', perPage = 20, scope = bulkScope) => {
             if (!supplierId) return;
             setBulkLoading(true);
+            setBulkLoadError(false);
             try {
                 if (scope === 'supplier') {
-                    const result = await SupplierProductsService.getAll(supplierId, {
+                    const result = await SupplierProductsService.getPurchaseOptions(supplierId, {
                         search: query || undefined,
                         page,
                         per_page: perPage,
                     });
                     setBulkResult({ ...result, items: result.items.map(catalogFromAssociation) });
                 } else {
-                    const result = await SupplierProductsService.getCandidates(supplierId, {
+                    const result = await SupplierProductsService.getPurchaseCandidates(supplierId, {
                         search: query || undefined,
                         include_associated: 1,
                         page,
@@ -324,6 +329,7 @@ export const PurchaseFormPage = () => {
                     setBulkResult({ ...result, items: result.items.map(catalogFromCandidate) });
                 }
             } catch {
+                setBulkLoadError(true);
                 setBulkResult({ ...emptyCatalogResult, current_page: page, per_page: perPage });
                 message.error(
                     scope === 'supplier'
@@ -345,6 +351,7 @@ export const PurchaseFormPage = () => {
     const resetBulk = () => {
         setBulkOpen(false);
         setBulkSelection({});
+        setBulkLoadError(false);
         setBulkSearch('');
         setBulkPage(1);
         setBulkPerPage(20);
@@ -386,7 +393,7 @@ export const PurchaseFormPage = () => {
                 setPurchaseType(purchase.purchase_type);
                 setPurchaseNumber(purchase.purchase_number);
                 setSupplierId(purchase.supplier.id);
-                setSupplierOptions([{ ...purchase.supplier, is_active: true }]);
+                setSupplierOptions([{ id: purchase.supplier.id, business_name: purchase.supplier.business_name }]);
                 setNotes(purchase.notes ?? '');
                 setItems(nextItems);
                 setInitialSignature(
@@ -448,14 +455,7 @@ export const PurchaseFormPage = () => {
     const addGlobalProduct = async (productId: string) => {
         const product = globalProductOptions.find((candidate) => candidate.id === productId);
         if (!product || items.some((item) => item.productId === product.id)) return;
-        if (!product.isAssociated && !can('suppliers.edit')) {
-            message.error('No tenés permiso para vincular productos a este proveedor.');
-            return;
-        }
         try {
-            if (!product.isAssociated && supplierId) {
-                await SupplierProductsService.bulkCreate(supplierId, [product.id]);
-            }
             setItems((current) =>
                 current.some((line) => line.productId === product.id)
                     ? current
@@ -464,7 +464,7 @@ export const PurchaseFormPage = () => {
             setProductSearch('');
             setGlobalProductOptions([]);
         } catch {
-            message.error('No se pudo vincular el producto al proveedor.');
+            message.error('No se pudo agregar el producto a la compra.');
         }
     };
 
@@ -472,20 +472,6 @@ export const PurchaseFormPage = () => {
         const selected = Object.values(bulkSelection).filter(
             (product) => !items.some((item) => item.productId === product.id)
         );
-        const missingAssociationIds = selected
-            .filter((product) => !product.isAssociated)
-            .map((product) => product.id);
-        if (missingAssociationIds.length && !can('suppliers.edit')) {
-            message.error('No tenés permiso para vincular productos a este proveedor.');
-            return;
-        }
-        try {
-            if (missingAssociationIds.length && supplierId)
-                await SupplierProductsService.bulkCreate(supplierId, missingAssociationIds);
-        } catch {
-            message.error('No se pudieron vincular los productos al proveedor.');
-            return;
-        }
         setItems((current) => {
             const currentIds = new Set(current.map((item) => item.productId));
             return [
@@ -744,17 +730,7 @@ export const PurchaseFormPage = () => {
                         }
                         options={supplierOptions.map((supplier) => ({
                             value: supplier.id,
-                            label: (
-                                <span>
-                                    {supplier.business_name}
-                                    {supplier.tax_id ? (
-                                        <span className="text-gray-500">
-                                            {' '}
-                                            · CUIT {supplier.tax_id}
-                                        </span>
-                                    ) : null}
-                                </span>
-                            ),
+                            label: supplier.business_name,
                         }))}
                     />
                 </div>
@@ -834,7 +810,7 @@ export const PurchaseFormPage = () => {
                                   }))
                                 : globalProductOptions.map((product) => ({
                                       value: product.id,
-                                      disabled: !product.isAssociated && !can('suppliers.edit'),
+                                      disabled: false,
                                       label: (
                                           <div>
                                               <div>
@@ -846,18 +822,12 @@ export const PurchaseFormPage = () => {
                                                               : 'default'
                                                       }
                                                   >
-                                                      {product.isAssociated
-                                                          ? 'Asociado'
-                                                          : 'No asociado'}
+                                                      {product.isAssociated ? 'Asociado' : 'Disponible'}
                                                   </Tag>
                                               </div>
                                               <div className="text-xs text-gray-500">
                                                   {product.sku} · {product.unit}
-                                                  {product.isAssociated
-                                                      ? ' · Agregar'
-                                                      : can('suppliers.edit')
-                                                        ? ' · Asociar y agregar'
-                                                        : ' · Sin permiso para vincular'}
+                                                  {' · Agregar a la compra'}
                                               </div>
                                           </div>
                                       ),
@@ -1141,18 +1111,19 @@ export const PurchaseFormPage = () => {
                 {bulkScope === 'all' &&
                     Object.values(bulkSelection).some((product) => !product.isAssociated) && (
                         <div className="mb-3 text-sm text-gray-500">
-                            Los productos no asociados se vincularán automáticamente a este
-                            proveedor.
+                            Podés agregar productos no asociados al proveedor. Esto no modificará su catálogo de productos.
                         </div>
                     )}
                 <div className="purchaseBulkProductsTableRegion">
                     {bulkResult.items.length === 0 && !bulkLoading ? (
                         <Empty
                             description={
-                                bulkScope === 'supplier'
-                                    ? 'No hay productos de este proveedor disponibles para agregar.'
-                                    : bulkSearch
-                                      ? 'No encontramos productos con esa búsqueda.'
+                                bulkLoadError
+                                    ? bulkScope === 'supplier'
+                                        ? 'No se pudieron cargar los productos del proveedor.'
+                                        : 'No se pudieron cargar los productos.'
+                                    : bulkScope === 'supplier'
+                                      ? 'No hay productos de este proveedor disponibles para agregar.'
                                       : 'No encontramos productos con esa búsqueda.'
                             }
                         />

@@ -126,6 +126,9 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     if (matches(/^\/tienda\/clientes(?:\/[^/]+)?$/)) {
         return hasStoreRole && hasFeatureAccess('customers') && hasPermission('customers.view');
     }
+    if (matches(/^\/tienda\/informes(?:\/resumen)?$/)) {
+        return hasStoreRole && hasFeatureAccess('reports') && hasPermission('reports.view');
+    }
     if (matches(/^\/tienda\/caja$/)) {
         return hasStoreRole && hasFeatureAccess('cash') && hasPermission('cash.view');
     }
@@ -134,6 +137,9 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     }
     if (matches(/^\/tienda\/ventas\/pedidos$/)) {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('orders.view');
+    }
+    if (matches(/^\/tienda\/ventas\/pagos-recibidos$/)) {
+        return hasStoreRole && hasFeatureAccess('pos') && hasPermission('payments.view');
     }
     if (matches(/^\/tienda\/configuraciones\/medios-de-pago$/)) {
         return (

@@ -15,6 +15,10 @@ interface FeaturesDrawerProps {
     plan: Plan | null;
 }
 
+// Categories is retained in existing plans for backwards compatibility, but
+// is no longer a commercial feature that can be selected independently.
+const DEPRECATED_COMMERCIAL_FEATURE_CODES = new Set(['categories']);
+
 export const FeaturesDrawer: React.FC<FeaturesDrawerProps> = ({
     open,
     onClose,
@@ -119,6 +123,10 @@ export const FeaturesDrawer: React.FC<FeaturesDrawerProps> = ({
         }
     };
 
+    const selectableFeatures = features.filter(
+        (feature) => !DEPRECATED_COMMERCIAL_FEATURE_CODES.has(feature.code)
+    );
+
     return (
         <Drawer
             open={open}
@@ -134,7 +142,7 @@ export const FeaturesDrawer: React.FC<FeaturesDrawerProps> = ({
                 </div>
             ) : (
                 <>
-                    {features.map((feature, index) => {
+                    {selectableFeatures.map((feature, index) => {
                         const isChecked = checkedIds.has(feature.id);
 
                         return (

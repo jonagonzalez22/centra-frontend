@@ -18,6 +18,8 @@ export const CustomerShowPage = () => {
     const [form] = Form.useForm();
 
     const canEdit = can('customers.edit');
+    const canViewAddresses = can('customer_addresses.view');
+    const canViewContacts = can('customer_contacts.view');
     const documentTypeOptions = documentTypes.map((dt) => ({
         label: dt.name,
         value: dt.id,
@@ -77,6 +79,8 @@ export const CustomerShowPage = () => {
             onSubmit={handleSubmit}
             onBack={() => navigate('/tienda/clientes')}
             canEdit={canEdit}
+            canViewAddresses={canViewAddresses}
+            canViewContacts={canViewContacts}
         />
     );
 };

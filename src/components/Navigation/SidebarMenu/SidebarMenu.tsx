@@ -171,6 +171,7 @@ const menuItems: MenuItem[] = [
                 label: 'Pagos recibidos',
                 key: '/tienda/ventas/pagos-recibidos',
                 context: 'store',
+                feature: 'pos',
                 permission: 'payments.view',
                 role: 'STORE_USER',
             },
@@ -182,6 +183,7 @@ const menuItems: MenuItem[] = [
         icon: <BarChartOutlined />,
         context: 'store',
         feature: 'reports',
+        permission: 'reports.view',
         role: 'STORE_USER',
         children: [
             {
@@ -189,6 +191,7 @@ const menuItems: MenuItem[] = [
                 key: '/tienda/informes/resumen',
                 context: 'store',
                 feature: 'reports',
+                permission: 'reports.view',
                 role: 'STORE_USER',
             },
         ],
@@ -212,7 +215,7 @@ const menuItems: MenuItem[] = [
                 label: 'Categorías',
                 key: '/tienda/categorias',
                 context: 'store',
-                feature: 'categories',
+                feature: 'inventory',
                 permission: 'categories.view',
                 role: 'STORE_USER',
             },

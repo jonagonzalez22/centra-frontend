@@ -11,6 +11,13 @@ import type {
 } from '../interfaces/category.interface';
 
 export const CategoriesService = {
+    getOperationalOptions: async (params: { include_inactive?: boolean } = {}): Promise<Category[]> => {
+        const { data } = await api.get<ApiListResponse<{ items: Category[] }>>(
+            API_ENDPOINTS.STORE.CATEGORIES.OPERATIONAL_OPTIONS,
+            { params: { include_inactive: params.include_inactive ? 1 : undefined } }
+        );
+        return data.data.items;
+    },
     getAll: async (filters: CategoriesFilters = {}): Promise<CategoriesListResponse> => {
         const { data } = await api.get<ApiListResponse<CategoriesListResponse>>(
             API_ENDPOINTS.STORE.CATEGORIES.URL,

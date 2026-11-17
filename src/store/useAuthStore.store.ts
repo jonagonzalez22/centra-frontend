@@ -3,6 +3,16 @@ import { authService } from '@/features/auth/services/auth.service';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CurrentCashSession } from '@/entities/CashSession';
+import { clearPrivateSessionState } from '@/security/clearPrivateSessionState';
+import {
+    activateSession,
+    clearActiveSession,
+    getSessionStoreId,
+    registerSessionInvalidator,
+    restorePersistedSession,
+    sessionAuthStorageKey,
+    synchronizeSessionFromStorage,
+} from '@/security/sessionContext';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -26,10 +36,15 @@ export const useAuthStore = create<AuthState>()(
                     user: state.user ? { ...state.user, cash_session: session } : null,
                 })),
             logIn: async (email, password) => {
+                // A new login always begins a new private-session boundary.
+                // CENTRA does not preserve working drafts between sessions.
+                clearPrivateSessionState();
+                clearActiveSession('login-transition');
+                set({ isAuthenticated: false, user: null, token: null, loading: true });
                 try {
-                    set({ loading: true });
                     const response = await authService.logIn(email, password);
                     const { token, user } = response.data;
+                    activateSession({ token, userId: user.id, storeId: getSessionStoreId(user) });
                     set({
                         isAuthenticated: true,
                         user,
@@ -37,7 +52,10 @@ export const useAuthStore = create<AuthState>()(
                         loading: false,
                     });
                 } catch (error) {
-                    set({ loading: false });
+                    // A failed login must leave no half-restored credentials.
+                    clearActiveSession('logout');
+                    set({ isAuthenticated: false, user: null, token: null, loading: false });
+                    useAuthStore.persist.clearStorage();
                     throw error;
                 }
             },
@@ -45,6 +63,8 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     await authService.logOut();
                 } finally {
+                    clearPrivateSessionState();
+                    clearActiveSession('logout');
                     set({ user: null, token: null, isAuthenticated: false });
                     useAuthStore.persist.clearStorage();
                 }
@@ -62,6 +82,39 @@ export const useAuthStore = create<AuthState>()(
                     isAuthenticated: state.isAuthenticated,
                 };
             },
+            onRehydrateStorage: () => (state) => {
+                if (state?.isAuthenticated && state.token && state.user) {
+                    restorePersistedSession({
+                        token: state.token,
+                        userId: state.user.id,
+                        storeId: getSessionStoreId(state.user),
+                    });
+                    return;
+                }
+
+                restorePersistedSession(null);
+            },
         }
     )
 );
+
+registerSessionInvalidator(({ clearPersistedAuth, redirectToLogin }) => {
+    clearPrivateSessionState();
+    useAuthStore.setState({ user: null, token: null, isAuthenticated: false, loading: false });
+
+    if (clearPersistedAuth) {
+        useAuthStore.persist.clearStorage();
+    }
+
+    if (redirectToLogin && typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.assign('/login');
+    }
+});
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+        if (event.key === sessionAuthStorageKey) {
+            synchronizeSessionFromStorage(event.newValue);
+        }
+    });
+}

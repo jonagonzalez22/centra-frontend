@@ -306,8 +306,18 @@ export const router = createBrowserRouter([
                     {
                         element: <FeatureRoute feature="reports" />,
                         children: [
-                            { path: 'informes', element: <Navigate to="resumen" replace /> },
-                            { path: 'informes/resumen', element: <ReportsSummaryPage /> },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="reports.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'informes', element: <Navigate to="resumen" replace /> },
+                                    { path: 'informes/resumen', element: <ReportsSummaryPage /> },
+                                ],
+                            },
                         ],
                     },
 
@@ -363,16 +373,21 @@ export const router = createBrowserRouter([
                     },
 
                     {
-                        element: (
-                            <PermissionRoute
-                                permission="payments.view"
-                                redirectTo="/tienda/dashboard"
-                            />
-                        ),
+                        element: <FeatureRoute feature="pos" redirectTo="/tienda/dashboard" />,
                         children: [
                             {
-                                path: 'ventas/pagos-recibidos',
-                                element: <ReceivedPaymentsPage />,
+                                element: (
+                                    <PermissionRoute
+                                        permission="payments.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    {
+                                        path: 'ventas/pagos-recibidos',
+                                        element: <ReceivedPaymentsPage />,
+                                    },
+                                ],
                             },
                         ],
                     },

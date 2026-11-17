@@ -21,30 +21,16 @@ beforeEach(() => {
   });
   vi.mocked(SalesService.getPaymentMethods).mockResolvedValue([
     {
-      id: 'cash-global',
-      store_payment_method_id: 'cash-store',
+      id: 'cash-store',
       name: 'Efectivo',
       code: 'cash',
-      icon: null,
-      is_active: true,
-      is_enabled: true,
-      custom_name: null,
       requires_reference: false,
-      account_details: null,
-      sort_order: 0,
     },
     {
-      id: 'transfer-global',
-      store_payment_method_id: 'transfer-store',
+      id: 'transfer-store',
       name: 'Transferencia',
       code: 'transfer',
-      icon: null,
-      is_active: true,
-      is_enabled: true,
-      custom_name: null,
       requires_reference: false,
-      account_details: null,
-      sort_order: 1,
     },
   ]);
   vi.mocked(SalesService.createOperation).mockResolvedValue({

@@ -21,6 +21,8 @@ interface CustomerShowPageViewProps {
     onSubmit: (values: UpdateCustomerDto) => Promise<void>;
     onBack: () => void;
     canEdit: boolean;
+    canViewAddresses: boolean;
+    canViewContacts: boolean;
 }
 
 export const CustomerShowPageView = ({
@@ -33,6 +35,8 @@ export const CustomerShowPageView = ({
     onSubmit,
     onBack,
     canEdit,
+    canViewAddresses,
+    canViewContacts,
 }: CustomerShowPageViewProps) => {
     const [activeTab, setActiveTab] = useState('general');
 
@@ -52,22 +56,22 @@ export const CustomerShowPageView = ({
                 />
             ),
         },
-        {
+        ...(canViewAddresses ? [{
             key: 'addresses',
             label: 'Domicilios',
             children:
                 activeTab === 'addresses' ? (
                     <AddressesTab customerId={customer.id} />
                 ) : null,
-        },
-        {
+        }] : []),
+        ...(canViewContacts ? [{
             key: 'contacts',
             label: 'Contactos',
             children:
                 activeTab === 'contacts' ? (
                     <CustomerContactsTab customerId={customer.id} />
                 ) : null,
-        },
+        }] : []),
     ];
 
     return (

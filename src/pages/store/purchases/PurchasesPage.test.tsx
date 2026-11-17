@@ -7,7 +7,10 @@ import { SuppliersService } from '@/features/store/suppliers/suppliers.service';
 
 let canCreate = true;
 vi.mock('@/features/store/purchases/purchases.service', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/features/store/purchases/purchases.service')>()), PurchasesService: { getAll: vi.fn(), getById: vi.fn(), order: vi.fn(), cancel: vi.fn() } }));
-vi.mock('@/features/store/suppliers/suppliers.service', () => ({ SuppliersService: { getAll: vi.fn() } }));
+vi.mock('@/features/store/suppliers/suppliers.service', () => {
+    const getAll = vi.fn();
+    return { SuppliersService: { getAll, getOperationalOptions: getAll } };
+});
 vi.mock('@/components/auth/CanDo', () => ({ CanDo: ({ permission, children }: { permission: string; children: React.ReactNode }) => permission === 'purchases.create' && !canCreate ? null : children }));
 
 const item = { id: 'purchase-1', purchase_number: 'OC-000001', purchase_type: 'order' as const, status: 'draft' as const, supplier: { id: 'supplier-1', business_name: 'Limpieza Clorito', tax_id: null }, total: '125.50', documents_count: 0, ordered_at: null, cancelled_at: null, created_at: '2026-10-20 10:00:00' };

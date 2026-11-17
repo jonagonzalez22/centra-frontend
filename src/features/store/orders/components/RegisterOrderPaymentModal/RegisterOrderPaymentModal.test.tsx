@@ -10,17 +10,10 @@ vi.mock('@/features/store/sales/services/sales.service', () => ({
 beforeEach(() => {
     vi.mocked(SalesService.getPaymentMethods).mockResolvedValue([
         {
-            id: 'global-cash',
-            store_payment_method_id: 'cash-1',
+            id: 'cash-1',
             name: 'Efectivo',
             code: 'cash',
-            icon: null,
-            is_active: true,
-            is_enabled: true,
-            custom_name: null,
             requires_reference: false,
-            account_details: null,
-            sort_order: 0,
         },
     ]);
 });

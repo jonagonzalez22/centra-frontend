@@ -49,6 +49,8 @@ describe('Auth Service', () => {
             expect(mockApi.post).toHaveBeenCalledWith('v1/login', {
                 email: 'test@example.com',
                 password: 'password123',
+            }, {
+                centraPublicAuth: true,
             });
             expect(result).toEqual(mockResponse);
         });

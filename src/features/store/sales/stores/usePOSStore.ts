@@ -179,5 +179,6 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
       selected_price_list_id: null,
       selected_price_list_name: null,
       selected_discount_percentage: 0,
+      available_price_lists: [],
     }),
 }));

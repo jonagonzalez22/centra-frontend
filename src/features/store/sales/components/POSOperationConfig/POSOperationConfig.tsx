@@ -6,6 +6,7 @@ import { PriceListsService } from '@/features/store/price-lists/services/priceLi
 import { usePOSStore } from '../../stores/usePOSStore';
 import { useCustomerSearch } from '../../hooks/useCustomerSearch';
 import { POSGlobalPriceListSelect } from './POSGlobalPriceListSelect';
+import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
 
 const MANUAL_OPTION_PREFIX = '__manual_customer_name__:';
 
@@ -27,7 +28,14 @@ export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPric
 
   useEffect(() => {
     if (!loadPriceLists) return;
-    PriceListsService.getActive().then(setAvailablePriceLists).catch(() => setAvailablePriceLists([]));
+    const sessionGeneration = getCurrentSessionGeneration();
+    PriceListsService.getActive()
+      .then((lists) => {
+        if (isCurrentSession(sessionGeneration)) setAvailablePriceLists(lists);
+      })
+      .catch(() => {
+        if (isCurrentSession(sessionGeneration)) setAvailablePriceLists([]);
+      });
   }, [loadPriceLists, setAvailablePriceLists]);
 
   const { query, setQuery, results, loading: customerLoading } = useCustomerSearch();

@@ -58,8 +58,8 @@ export const useProducts = (): UseProductsReturn => {
     const fetchCategories = useCallback(async () => {
         setCategoriesLoading(true);
         try {
-            const response = await CategoriesService.getAll({ per_page: 100, is_active: true });
-            setCategories(response.items);
+            const response = await CategoriesService.getOperationalOptions();
+            setCategories(response);
         } catch (err) {
             console.error('Error fetching categories:', err);
         } finally {
@@ -67,7 +67,7 @@ export const useProducts = (): UseProductsReturn => {
         }
     }, []);
     const fetchBrands = useCallback(async () => {
-        try { setBrands(await BrandsService.getAll({ per_page: 100, is_active: true })); } catch { setBrands([]); }
+        try { setBrands(await BrandsService.getOperationalOptions()); } catch { setBrands([]); }
     }, []);
 
     const fetchProducts = useCallback(async (currentFilters: ProductsFilters = {}) => {

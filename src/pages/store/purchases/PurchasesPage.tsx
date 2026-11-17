@@ -6,7 +6,7 @@ import ActionButton from '@/components/ActionButton/ActionButton';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
 import { formatCurrencyWithCents, formatDate } from '@/utils/formatters';
-import { SuppliersService, type Supplier } from '@/features/store/suppliers/suppliers.service';
+import { SuppliersService, type SupplierOperationalOption } from '@/features/store/suppliers/suppliers.service';
 import {
     PurchasesService,
     purchaseStatusLabel,
@@ -37,7 +37,7 @@ export const PurchasesPage = () => {
     }>({ items: [], total: 0, current_page: 1, per_page: 15 });
     const [filters, setFilters] = useState<PurchaseParams>({ page: 1, per_page: 15 });
     const [loading, setLoading] = useState(false);
-    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [suppliers, setSuppliers] = useState<SupplierOperationalOption[]>([]);
     const load = useCallback(async (params: PurchaseParams) => {
         setLoading(true);
         try {
@@ -52,7 +52,7 @@ export const PurchasesPage = () => {
         void load(filters);
     }, [filters, load]);
     useEffect(() => {
-        void SuppliersService.getAll()
+        void SuppliersService.getOperationalOptions()
             .then(setSuppliers)
             .catch(() => setSuppliers([]));
     }, []);

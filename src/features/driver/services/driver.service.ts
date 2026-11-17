@@ -12,7 +12,7 @@ import type {
     AddExtraSaleResponse,
     CollectionPreview,
 } from '../interfaces/driver.interface';
-import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { CommercialPaymentMethod } from '@features/store/payment-methods/interfaces/commercial-payment-method.interface';
 
 export interface CompleteStopPayload {
     status: 'completed' | 'failed';
@@ -178,13 +178,13 @@ export const DriverService = {
     },
 
     /**
-     * GET /api/v1/store/payment-methods
+     * GET /api/v1/driver/payment-methods
      * Returns enabled payment methods for the store.
      */
-    getPaymentMethods: async (): Promise<StorePaymentMethod[]> => {
+    getPaymentMethods: async (): Promise<CommercialPaymentMethod[]> => {
         const { data } = await api.get<{
             status: string;
-            data: { items: StorePaymentMethod[] };
+            data: { items: CommercialPaymentMethod[] };
             message?: string;
             errors?: unknown;
         }>(API_ENDPOINTS.DRIVER.STOP_PAYMENT_METHODS.URL);
@@ -198,7 +198,7 @@ export const DriverService = {
             throw error;
         }
 
-        return data.data.items.filter((pm) => pm.is_enabled);
+        return data.data.items;
     },
 
     /**

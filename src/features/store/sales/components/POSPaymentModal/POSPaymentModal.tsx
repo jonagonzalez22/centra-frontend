@@ -4,8 +4,9 @@ import { Plus, Trash2 } from 'lucide-react';
 import { SalesService } from '../../services/sales.service';
 import { usePOSStore } from '../../stores/usePOSStore';
 import { formatCurrency } from '@/utils/formatters';
-import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { CommercialPaymentMethod } from '@features/store/payment-methods/interfaces/commercial-payment-method.interface';
 import type { OperationResponse } from '../../interfaces/sale.interface';
+import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
 
 const CASH_CODE = 'cash';
 
@@ -56,7 +57,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
   const requested_delivery_date = usePOSStore((s) => s.requested_delivery_date);
   const resetPOS = usePOSStore((s) => s.resetPOS);
 
-  const [paymentMethods, setPaymentMethods] = useState<StorePaymentMethod[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<CommercialPaymentMethod[]>([]);
   const [rows, setRows] = useState<PaymentRow[]>([createRow()]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -100,9 +101,9 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
   const displayRemaining = Math.max(0, remaining);
 
   const findMethod = useCallback(
-    (pid: string | null): StorePaymentMethod | undefined =>
+    (pid: string | null): CommercialPaymentMethod | undefined =>
       pid
-        ? paymentMethods.find((m) => (m.store_payment_method_id ?? m.id) === pid)
+        ? paymentMethods.find((m) => m.id === pid)
         : undefined,
     [paymentMethods]
   );
@@ -151,6 +152,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
   const handleSubmit = async () => {
     if (!isValid) return;
 
+    const sessionGeneration = getCurrentSessionGeneration();
     setSubmitting(true);
     setError(null);
 
@@ -179,6 +181,8 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
         payments,
       });
 
+      if (!isCurrentSession(sessionGeneration)) return;
+
       if (type === 'order') {
         const finalRemaining = Math.max(0, total - sumPayments);
         if (finalRemaining > 0) {
@@ -195,6 +199,7 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
       resetPOS();
       onSuccess(operation);
     } catch (err) {
+      if (!isCurrentSession(sessionGeneration)) return;
       const apiError = err as { message?: string };
       setError(apiError.message || 'Error al crear la operación.');
     } finally {
@@ -244,15 +249,15 @@ export const POSPaymentModal: React.FC<POSPaymentModalProps> = ({ open, onClose,
                     style={{ width: '100%' }}
                     options={paymentMethods
                       .filter((pm) => {
-                        const pid = pm.store_payment_method_id ?? pm.id;
+                        const pid = pm.id;
                         const used = rows.find(
                           (r) => r.id !== row.id && r.store_payment_method_id === pid
                         );
                         return !used;
                       })
                       .map((pm) => ({
-                        label: pm.custom_name ?? pm.name,
-                        value: pm.store_payment_method_id ?? pm.id,
+                        label: pm.name,
+                        value: pm.id,
                       }))}
                   />
                   <div className="flex gap-2">

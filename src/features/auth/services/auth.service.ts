@@ -1,10 +1,12 @@
-import api from '@/api/api.config';
+import api, { type CentraRequestConfig } from '@/api/api.config';
 import { AuthResponse, LoginPayload, LogoutResponse } from '../interfaces/auth.interface';
 
 export const authService = {
     logIn: async (email: string, password: string): Promise<AuthResponse> => {
         const payload: LoginPayload = { email, password };
-        const { data } = await api.post<AuthResponse>('v1/login', payload);
+        const { data } = await api.post<AuthResponse>('v1/login', payload, {
+            centraPublicAuth: true,
+        } as CentraRequestConfig);
         return data;
     },
     logOut: async (): Promise<LogoutResponse> => {

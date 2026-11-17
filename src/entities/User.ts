@@ -34,7 +34,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    store_id: number | null;
+    // Login returns `store` and older persisted sessions may contain `store_id`.
+    store_id?: number | string | null;
     store: Store | null;
     roles: UserRole[];
     is_active: boolean;

@@ -449,12 +449,12 @@ Ingreso por calle lateral."
                         </div>
                     )}
                     <p className="text-sm text-gray-600 mb-3">
-                        Pegá aquí un enlace de Google Maps, WhatsApp o unas coordenadas.
+                        Pegá aquí un enlace de Google Maps, Apple Maps o unas coordenadas.
                     </p>
                     <Input
                         value={pastedValue}
                         onChange={(e) => setPastedValue(e.target.value)}
-                        placeholder="Pegue aquí link de Google Maps, WhatsApp o Coordenadas"
+                        placeholder="Pegue aquí link de Google Maps, Apple Maps o coordenadas"
                         disabled={pasteLoading}
                     />
                 </div>

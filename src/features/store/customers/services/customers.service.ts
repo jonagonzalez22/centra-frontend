@@ -11,6 +11,24 @@ import type {
 } from '../types/customer.types';
 
 export const CustomersService = {
+    searchForOperations: async (filters: CustomersFilters = {}): Promise<CustomersListResponse> => {
+        const { data } = await api.get<ApiListResponse<CustomersListResponse>>(
+            API_ENDPOINTS.STORE.OPERATIONS.CUSTOMERS.SEARCH,
+            { params: filters }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
     getAll: async (filters: CustomersFilters = {}): Promise<CustomersListResponse> => {
         const { data } = await api.get<ApiListResponse<CustomersListResponse>>(
             API_ENDPOINTS.STORE.CUSTOMERS.URL,

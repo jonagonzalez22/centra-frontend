@@ -3,6 +3,9 @@ import { useAuthStore } from './useAuthStore.store';
 import { authService } from '@/features/auth/services/auth.service';
 import { User } from '@/entities/User';
 import { AuthResponse } from '@/features/auth/interfaces/auth.interface';
+import { usePOSStore } from '@/features/store/sales/stores/usePOSStore';
+import { useOrdersStore } from '@/features/store/orders/stores/useOrdersStore';
+import { clearActiveSession, getSessionForRequest } from '@/security/sessionContext';
 
 vi.mock('@/features/auth/services/auth.service');
 
@@ -18,6 +21,9 @@ describe('useAuthStore', () => {
             token: null,
             loading: false,
         });
+        clearActiveSession('logout');
+        usePOSStore.getState().resetPOS();
+        useOrdersStore.getState().resetOrders();
         localStorage.clear();
     });
 
@@ -40,6 +46,39 @@ describe('useAuthStore', () => {
     });
 
     describe('logIn', () => {
+        test('keeps the authenticated identity when the first private request follows login navigation', async () => {
+            const loginUser: User = {
+                id: 1,
+                is_active: true,
+                email: 'store@example.com',
+                name: 'Store User',
+                // `formatUser` currently returns the store relation, not store_id.
+                store: { id: 'store-a', name: 'Store A', business_type: 'retail' },
+                roles: ['STORE_ADMIN'],
+                permissions: ['orders.view'],
+                features: [],
+            };
+            mockAuthService.logIn.mockResolvedValue({
+                status: 'success',
+                message: 'Login successful',
+                data: { user: loginUser, token: 'token-a', store: loginUser.store! },
+                errors: null,
+            });
+
+            await useAuthStore.getState().logIn('store@example.com', 'password');
+
+            // A module mounted after navigation asks Axios for this identity.
+            expect(getSessionForRequest()).toMatchObject({
+                blocked: false,
+                session: { token: 'token-a', userId: 1, storeId: 'store-a' },
+            });
+            expect(useAuthStore.getState()).toMatchObject({
+                isAuthenticated: true,
+                token: 'token-a',
+                user: { id: 1 },
+            });
+        });
+
         test('should set loading to true when logIn is called', async () => {
             const mockUser: User = {
                 id: 1,
@@ -258,6 +297,68 @@ describe('useAuthStore', () => {
     });
 
     describe('logout', () => {
+        test('clears private POS and orders state before another user can log in', async () => {
+            usePOSStore.setState({
+                items: [{ product_id: 'product-a' }] as never,
+                customer_display_name: 'Cliente de A',
+                payments: [{ amount: 100 }] as never,
+                type: 'order',
+            });
+            useOrdersStore.setState({
+                orders: [{ id: 'order-a' }] as never,
+                selectedOrder: { id: 'order-a' } as never,
+                drawerOpen: true,
+            });
+            mockAuthService.logOut.mockResolvedValue({
+                status: 'success',
+                message: 'Logged out',
+                data: null,
+                errors: null,
+            });
+
+            await useAuthStore.getState().logout();
+
+            expect(usePOSStore.getState()).toMatchObject({
+                items: [],
+                customer_display_name: null,
+                payments: [],
+                type: 'sale',
+            });
+            expect(useOrdersStore.getState()).toMatchObject({
+                orders: [],
+                selectedOrder: null,
+                drawerOpen: false,
+            });
+
+            const nextUser = {
+                id: 2,
+                is_active: true,
+                email: 'julia@example.com',
+                name: 'Julia',
+                store_id: 20,
+                store: null,
+                roles: ['STORE_USER'],
+                permissions: ['pos.view'],
+                features: [{ code: 'pos', limit: null }],
+            } as User;
+            mockAuthService.logIn.mockResolvedValue({
+                status: 'success',
+                message: 'Login successful',
+                data: {
+                    user: nextUser,
+                    token: 'token-b',
+                    store: { id: 'store-b', name: 'Tienda B', business_type: 'retail' },
+                },
+                errors: null,
+            });
+
+            await useAuthStore.getState().logIn('julia@example.com', 'password');
+
+            expect(useAuthStore.getState().user?.id).toBe(2);
+            expect(usePOSStore.getState().items).toEqual([]);
+            expect(useOrdersStore.getState().orders).toEqual([]);
+        });
+
         test('should clear authentication state after logout', async () => {
             // Setup authenticated state
             useAuthStore.setState({

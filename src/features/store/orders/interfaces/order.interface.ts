@@ -312,6 +312,7 @@ export interface OrdersState {
     resetFilters: () => void;
     openDrawer: (id: string) => Promise<void>;
     closeDrawer: () => void;
+    resetOrders: () => void;
     rescheduleOrder: (
         id: string,
         payload: { new_date: string; reason: string; observation?: string }

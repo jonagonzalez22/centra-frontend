@@ -17,7 +17,7 @@ import { buildStockConsumptionDescription, sourceOptionMatches } from '../../uti
 import type { ProductBrand } from '../../interfaces/product.interface';
 import type { Supplier } from '@/features/store/suppliers/suppliers.service';
 
-type ActiveSupplierOption = Pick<Supplier, 'id' | 'business_name' | 'is_active'>;
+type ActiveSupplierOption = Pick<Supplier, 'id' | 'business_name'>;
 
 interface ProductFormProps {
     formId?: string;
@@ -29,6 +29,7 @@ interface ProductFormProps {
     brandsLoading?: boolean;
     suppliers?: ActiveSupplierOption[];
     suppliersLoading?: boolean;
+    canManageSupplierAssociations?: boolean;
     measurementUnits: MeasurementUnit[];
     measurementUnitsLoading: boolean;
     sourceProducts?: ProductSourceCandidate[];
@@ -123,6 +124,7 @@ export const ProductForm = ({
     brandsLoading = false,
     suppliers = [],
     suppliersLoading = false,
+    canManageSupplierAssociations = false,
     measurementUnits,
     measurementUnitsLoading,
     sourceProducts = [],
@@ -380,7 +382,7 @@ export const ProductForm = ({
                 </div>
             </div>
 
-            {!isEditing && !usesExternalStock && (
+            {!isEditing && !usesExternalStock && canManageSupplierAssociations && (
                 <section className="productFormSuppliers" aria-labelledby="productFormSuppliersTitle">
                     <div className="productFormSuppliersHeader">
                         <div>

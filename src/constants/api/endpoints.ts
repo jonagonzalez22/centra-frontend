@@ -16,11 +16,16 @@ export const API_ENDPOINTS = {
     STORE: {
         CATEGORIES: {
             URL: '/v1/store/categories',
+            OPERATIONAL_OPTIONS: '/v1/store/products/category-options',
         },
         BRANDS: {
             URL: '/v1/store/brands',
+            OPERATIONAL_OPTIONS: '/v1/store/products/brand-options',
         },
-        SUPPLIERS: { URL: '/v1/store/suppliers' },
+        SUPPLIERS: {
+            URL: '/v1/store/suppliers',
+            OPERATIONAL_OPTIONS: '/v1/store/purchases/supplier-options',
+        },
         MEASUREMENT_UNITS: {
             URL: '/v1/store/measurement-units',
         },
@@ -92,9 +97,13 @@ export const API_ENDPOINTS = {
         OPERATIONS: {
             URL: '/v1/store/operations',
             RECEIPT: (id: string) => `/v1/store/operations/${id}/receipt`,
+            PAYMENT_METHODS: '/v1/store/operations/payment-methods',
             PRODUCTS: {
                 SEARCH: '/v1/store/operations/products/search',
                 DETAIL: (id: string) => '/v1/store/operations/products/' + id,
+            },
+            CUSTOMERS: {
+                SEARCH: '/v1/store/operations/customers/search',
             },
         },
         SALES: {

@@ -2,16 +2,16 @@ import { act, renderHook } from '@testing-library/react';
 import { vi } from 'vitest';
 import { useCustomerSearch } from './useCustomerSearch';
 
-const getAll = vi.hoisted(() => vi.fn());
+const searchForOperations = vi.hoisted(() => vi.fn());
 
 vi.mock('@features/store/customers/services/customers.service', () => ({
-    CustomersService: { getAll },
+    CustomersService: { searchForOperations },
 }));
 
 describe('useCustomerSearch', () => {
     beforeEach(() => {
         vi.useFakeTimers();
-        getAll.mockResolvedValue({
+        searchForOperations.mockResolvedValue({
             items: [],
             total: 0,
             per_page: 20,
@@ -22,7 +22,7 @@ describe('useCustomerSearch', () => {
 
     afterEach(() => {
         vi.useRealTimers();
-        getAll.mockReset();
+        searchForOperations.mockReset();
     });
 
     test('requests active customers with identity search after the existing debounce', async () => {
@@ -33,7 +33,7 @@ describe('useCustomerSearch', () => {
             await vi.advanceTimersByTimeAsync(300);
         });
 
-        expect(getAll).toHaveBeenCalledWith({
+        expect(searchForOperations).toHaveBeenCalledWith({
             search: 'Fernando',
             search_mode: 'identity',
             status: 'active',

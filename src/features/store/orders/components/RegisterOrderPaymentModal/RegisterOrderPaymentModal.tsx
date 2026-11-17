@@ -4,7 +4,7 @@ import Modal from '@/components/Modal/Modal';
 import { Button } from '@/components/Button';
 import { SalesService } from '@/features/store/sales/services/sales.service';
 import { formatCurrency } from '@/utils/formatters';
-import type { StorePaymentMethod } from '@/features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { CommercialPaymentMethod } from '@/features/store/payment-methods/interfaces/commercial-payment-method.interface';
 
 interface Props {
     open: boolean;
@@ -19,14 +19,14 @@ interface Props {
 
 export const RegisterOrderPaymentModal = ({ open, pendingAmount, onClose, onSubmit }: Props) => {
     const [form] = Form.useForm();
-    const [methods, setMethods] = useState<StorePaymentMethod[]>([]);
+    const [methods, setMethods] = useState<CommercialPaymentMethod[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const methodId = Form.useWatch('store_payment_method_id', form);
     const amount = Form.useWatch('amount', form);
     const isAmountValid = typeof amount === 'number' && amount > 0 && amount <= pendingAmount;
     const selectedMethod = methods.find(
-        (method) => (method.store_payment_method_id ?? method.id) === methodId
+        (method) => method.id === methodId
     );
 
     useEffect(() => {
@@ -124,8 +124,8 @@ export const RegisterOrderPaymentModal = ({ open, pendingAmount, onClose, onSubm
                 >
                     <Select
                         options={methods.map((method) => ({
-                            value: method.store_payment_method_id ?? method.id,
-                            label: method.custom_name ?? method.name,
+                            value: method.id,
+                            label: method.name,
                         }))}
                     />
                 </Form.Item>

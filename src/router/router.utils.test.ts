@@ -82,4 +82,74 @@ describe('router utils', () => {
             canAccessReturnPath(paymentMethodsOnly, '/tienda/configuraciones/listas-de-precios')
         ).toBe(false);
     });
+
+    test('requires reports.view and reports for the reports return path', () => {
+        const authorized = user({
+            roles: ['STORE_USER'],
+            permissions: ['reports.view'],
+            features: [{ code: 'reports', limit: null }],
+        });
+
+        expect(canAccessReturnPath(authorized, '/tienda/informes/resumen')).toBe(true);
+        expect(
+            canAccessReturnPath({ ...authorized, permissions: [] }, '/tienda/informes/resumen')
+        ).toBe(false);
+        expect(
+            canAccessReturnPath({ ...authorized, features: [] }, '/tienda/informes/resumen')
+        ).toBe(false);
+    });
+
+    test('requires categories.view and inventory for the categories return path', () => {
+        const authorized = user({
+            roles: ['STORE_USER'],
+            permissions: ['categories.view'],
+            features: [{ code: 'inventory', limit: null }],
+        });
+
+        expect(canAccessReturnPath(authorized, '/tienda/categorias')).toBe(true);
+        expect(
+            canAccessReturnPath({ ...authorized, permissions: [] }, '/tienda/categorias')
+        ).toBe(false);
+        expect(
+            canAccessReturnPath(
+                { ...authorized, features: [{ code: 'categories', limit: null }] },
+                '/tienda/categorias'
+            )
+        ).toBe(false);
+    });
+
+    test('requires inventory.view and inventory for the products return path', () => {
+        const authorized = user({
+            roles: ['STORE_USER'],
+            permissions: ['inventory.view'],
+            features: [{ code: 'inventory', limit: null }],
+        });
+
+        expect(canAccessReturnPath(authorized, '/tienda/productos')).toBe(true);
+        expect(
+            canAccessReturnPath({ ...authorized, permissions: [] }, '/tienda/productos')
+        ).toBe(false);
+        expect(
+            canAccessReturnPath({ ...authorized, features: [] }, '/tienda/productos')
+        ).toBe(false);
+    });
+
+    test('requires payments.view and POS for the received payments return path', () => {
+        const authorized = user({
+            roles: ['STORE_USER'],
+            permissions: ['payments.view'],
+            features: [{ code: 'pos', limit: null }],
+        });
+
+        expect(canAccessReturnPath(authorized, '/tienda/ventas/pagos-recibidos')).toBe(true);
+        expect(
+            canAccessReturnPath(
+                { ...authorized, permissions: ['payments.reverse'] },
+                '/tienda/ventas/pagos-recibidos'
+            )
+        ).toBe(false);
+        expect(
+            canAccessReturnPath({ ...authorized, features: [] }, '/tienda/ventas/pagos-recibidos')
+        ).toBe(false);
+    });
 });

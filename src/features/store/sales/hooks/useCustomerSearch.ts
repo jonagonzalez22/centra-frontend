@@ -18,7 +18,7 @@ export function useCustomerSearch() {
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const response = await CustomersService.getAll({
+        const response = await CustomersService.searchForOperations({
           search: query,
           search_mode: 'identity',
           status: 'active',

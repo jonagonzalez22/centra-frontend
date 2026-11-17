@@ -83,8 +83,8 @@ describe('SidebarMenu', () => {
             .toHaveClass('lucide-panel-left-close');
     });
 
-    test('muestra Informes solo cuando la feature reports está disponible', async () => {
-        useStoreUser({ features: ['reports'] });
+    test('muestra Informes solo con reports.view y la feature reports disponible', async () => {
+        useStoreUser({ features: ['reports'], permissions: ['reports.view'] });
         const user = userEvent.setup();
         const { rerender } = renderWithRouter(
             <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/informes/resumen" />
@@ -101,6 +101,16 @@ describe('SidebarMenu', () => {
                 <Location />
             </MemoryRouter>
         );
+        expect(screen.queryByText('Informes')).not.toBeInTheDocument();
+    });
+
+    test('does not show reports to a store user without reports.view', () => {
+        useStoreUser({ features: ['reports'], permissions: [] });
+
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/dashboard" />
+        );
+
         expect(screen.queryByText('Informes')).not.toBeInTheDocument();
     });
 
@@ -237,6 +247,28 @@ describe('SidebarMenu', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/tienda/ventas/pedidos');
     });
 
+    test('shows received payments only with POS and payments.view', () => {
+        useStoreUser({ permissions: ['payments.view'], features: ['pos'] });
+        const { rerender } = renderWithRouter(
+            <SidebarMenu
+                isMobile={false}
+                isOpen={false}
+                selectedKey="/tienda/ventas/pagos-recibidos"
+            />
+        );
+
+        expect(screen.getByText('Pagos recibidos')).toBeInTheDocument();
+
+        useStoreUser({ permissions: ['payments.view'], features: [] });
+        rerender(
+            <MemoryRouter>
+                <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/dashboard" />
+                <Location />
+            </MemoryRouter>
+        );
+        expect(screen.queryByText('Pagos recibidos')).not.toBeInTheDocument();
+    });
+
     test.each([
         ['Productos', '/tienda/productos'],
         ['Categorías', '/tienda/categorias'],
@@ -254,7 +286,7 @@ describe('SidebarMenu', () => {
     });
 
     test('keeps inventory child permission and feature checks', () => {
-        useStoreUser({ permissions: ['categories.view'], features: ['categories'] });
+        useStoreUser({ permissions: ['categories.view'], features: ['inventory'] });
         renderWithRouter(
             <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/categorias" />
         );

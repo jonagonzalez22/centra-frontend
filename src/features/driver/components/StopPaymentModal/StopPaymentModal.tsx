@@ -3,7 +3,7 @@ import { Modal, Select, Input, Button, message as antMessage, Alert } from 'antd
 import { Plus, Trash2 } from 'lucide-react';
 import { DriverService } from '../../services/driver.service';
 import { formatCurrencyWithCents } from '@/utils/formatters';
-import type { StorePaymentMethod } from '@features/store/payment-methods/interfaces/store-payment-method.interface';
+import type { CommercialPaymentMethod } from '@features/store/payment-methods/interfaces/commercial-payment-method.interface';
 import './StopPaymentModal.css';
 
 interface PaymentRow {
@@ -64,7 +64,7 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
     onClose,
     onConfirm,
 }) => {
-    const [paymentMethods, setPaymentMethods] = useState<StorePaymentMethod[]>([]);
+    const [paymentMethods, setPaymentMethods] = useState<CommercialPaymentMethod[]>([]);
     const [rows, setRows] = useState<PaymentRow[]>([createRow()]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -107,9 +107,9 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
     const isExcess = sumPaymentsCents > maximumCents;
 
     const findMethod = useCallback(
-        (pid: string | null): StorePaymentMethod | undefined =>
+        (pid: string | null): CommercialPaymentMethod | undefined =>
             pid
-                ? paymentMethods.find((m) => (m.store_payment_method_id ?? m.id) === pid)
+                ? paymentMethods.find((m) => m.id === pid)
                 : undefined,
         [paymentMethods]
     );
@@ -277,7 +277,7 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                                     style={{ width: '100%' }}
                                     options={paymentMethods
                                         .filter((pm) => {
-                                            const pid = pm.store_payment_method_id ?? pm.id;
+                                            const pid = pm.id;
                                             const used = rows.find(
                                                 (r) =>
                                                     r.id !== row.id &&
@@ -286,8 +286,8 @@ export const StopPaymentModal: React.FC<StopPaymentModalProps> = ({
                                             return !used;
                                         })
                                         .map((pm) => ({
-                                            label: pm.custom_name ?? pm.name,
-                                            value: pm.store_payment_method_id ?? pm.id,
+                                            label: pm.name,
+                                            value: pm.id,
                                         }))}
                                 />
                                 <div className="stopPaymentModalRowFields">
