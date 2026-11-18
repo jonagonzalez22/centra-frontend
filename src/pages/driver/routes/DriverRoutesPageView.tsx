@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { Alert, Spin, Card, Tag, Button, Tabs, Empty, Breadcrumb } from 'antd';
 import { Link } from 'react-router-dom';
-import {
-    CarOutlined,
-    ClockCircleOutlined,
-    ReloadOutlined,
-    RightOutlined,
-} from '@ant-design/icons';
+import { CarOutlined, ClockCircleOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons';
 import { formatDateShort } from '@/utils/formatters';
 import type { DeliveryRoute } from '@/features/driver/interfaces/driver.interface';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
@@ -50,22 +45,14 @@ interface DriverRoutesPageViewProps {
     onRoutePress: (route: DeliveryRoute) => void;
 }
 
-const ActiveRouteCard = ({
-    route,
-    onPress,
-}: {
-    route: DeliveryRoute;
-    onPress: () => void;
-}) => {
+const ActiveRouteCard = ({ route, onPress }: { route: DeliveryRoute; onPress: () => void }) => {
     const completedStops = route.stops.filter(
         (s) => s.status === 'completed' || s.status === 'failed'
     ).length;
     const totalStops = route.stops.length;
     const progressPct = totalStops > 0 ? Math.round((completedStops / totalStops) * 100) : 0;
 
-    const nextStop = route.stops.find(
-        (s) => s.status === 'pending' || s.status === 'arrived'
-    );
+    const nextStop = route.stops.find((s) => s.status === 'pending' || s.status === 'arrived');
 
     const etaDisplay = (() => {
         if (!nextStop) return null;
@@ -97,7 +84,8 @@ const ActiveRouteCard = ({
                         <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                             <ClockCircleOutlined />
                             {formatDateShort(route.operational_date)}
-                            {route.departure_time && ` · Partida ${formatTime(route.departure_time)}`}
+                            {route.departure_time &&
+                                ` · Partida ${formatTime(route.departure_time)}`}
                         </div>
                     </div>
                     <Tag color={STATUS_COLORS[route.status] ?? 'default'}>
@@ -203,7 +191,17 @@ export const DriverRoutesPageView = ({
                     ) : (
                         <Empty
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description="No tenés una ruta activa en este momento."
+                            description={
+                                <span>
+                                    <span className="block font-medium">
+                                        No tenés rutas activas.
+                                    </span>
+                                    <span className="block mt-1 text-sm text-gray-500">
+                                        Cuando tengas una ruta asignada y disponible para repartir,
+                                        vas a poder consultarla desde acá.
+                                    </span>
+                                </span>
+                            }
                             className="mt-8"
                         />
                     )}
@@ -231,11 +229,7 @@ export const DriverRoutesPageView = ({
                 <Breadcrumb
                     className="driverRoutesPageBreadcrumb"
                     items={breadcrumbs.map((item) => ({
-                        title: item.path ? (
-                            <Link to={item.path}>{item.label}</Link>
-                        ) : (
-                            item.label
-                        ),
+                        title: item.path ? <Link to={item.path}>{item.label}</Link> : item.label,
                     }))}
                 />
                 <h1 className="driverRoutesPageTitle">{title}</h1>

@@ -6,7 +6,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
-import { requiredStringRules } from '@/utils/validationRules';
+import { optionalDocumentPairRules, requiredStringRules } from '@/utils/validationRules';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import './CustomersCreatePage.css';
 
@@ -130,7 +130,7 @@ export const CustomersCreatePageView = ({
                                 label="Tipo de Documento"
                                 placeholder="Seleccionar"
                                 options={documentTypeOptions}
-                                rules={requiredStringRules('El tipo de documento')}
+                                rules={optionalDocumentPairRules('document_number')}
                                 disabled={loading || documentTypesLoading}
                                 loading={documentTypesLoading}
                             />
@@ -143,7 +143,7 @@ export const CustomersCreatePageView = ({
                                 name="document_number"
                                 label="Número de Documento"
                                 placeholder="Ingresá el número"
-                                rules={requiredStringRules('El número de documento')}
+                                rules={optionalDocumentPairRules('document_type_id')}
                                 disabled={loading}
                             />
                         </Col>
@@ -151,11 +151,7 @@ export const CustomersCreatePageView = ({
 
                     <Row gutter={16}>
                         <Col {...colResponsive}>
-                            <Form.Item
-                                name="status"
-                                label="Estado"
-                                valuePropName="checked"
-                            >
+                            <Form.Item name="status" label="Estado" valuePropName="checked">
                                 <Switch
                                     checkedChildren="Activo"
                                     unCheckedChildren="Inactivo"

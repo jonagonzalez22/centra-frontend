@@ -11,8 +11,8 @@ export interface Customer {
     first_name: string | null;
     last_name: string | null;
     company_name: string | null;
-    document_type: DocumentType;
-    document_number: string;
+    document_type: DocumentType | null;
+    document_number: string | null;
     status: 'active' | 'inactive';
     has_location: boolean;
     blocked_at: string | null;
@@ -28,8 +28,8 @@ export interface CreateCustomerDto {
     first_name: string | null;
     last_name: string | null;
     company_name: string | null;
-    document_type_id: string;
-    document_number: string;
+    document_type_id: string | null;
+    document_number: string | null;
     status: 'active' | 'inactive';
     notes: string | null;
 }
@@ -39,8 +39,8 @@ export interface UpdateCustomerDto {
     first_name?: string | null;
     last_name?: string | null;
     company_name?: string | null;
-    document_type_id?: string;
-    document_number?: string;
+    document_type_id?: string | null;
+    document_number?: string | null;
     status?: 'active' | 'inactive';
     notes?: string | null;
 }

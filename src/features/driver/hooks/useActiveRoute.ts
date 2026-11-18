@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { message } from 'antd';
 import { DriverService } from '../services/driver.service';
-import type {
-    DeliveryRoute,
-    StorePaymentMethod,
-} from '../interfaces/driver.interface';
+import type { DeliveryRoute, StorePaymentMethod } from '../interfaces/driver.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
 export interface UseActiveRouteReturn {
@@ -39,7 +35,6 @@ export const useActiveRoute = (): UseActiveRouteReturn => {
             const apiError = err as ApiError;
             const errorMessage = apiError.message || 'Error al cargar la ruta activa.';
             setError(errorMessage);
-            message.error(errorMessage);
         } finally {
             setLoading(false);
         }

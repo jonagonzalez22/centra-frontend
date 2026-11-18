@@ -1,6 +1,7 @@
 import api from '@/api/api.config';
 import { API_ENDPOINTS } from '@/constants/api/endpoints';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import { getCurrentSessionGeneration, getSessionForRequest } from '@/security/sessionContext';
 import type { DecimalString } from '@/types/decimal';
 import type {
     ActiveRouteResponse,
@@ -13,6 +14,11 @@ import type {
     CollectionPreview,
 } from '../interfaces/driver.interface';
 import type { CommercialPaymentMethod } from '@features/store/payment-methods/interfaces/commercial-payment-method.interface';
+
+let activeRouteRequest: {
+    sessionGeneration: number;
+    promise: Promise<ActiveRouteResponse['data'] | null>;
+} | null = null;
 
 export interface CompleteStopPayload {
     status: 'completed' | 'failed';
@@ -58,34 +64,52 @@ export const DriverService = {
      * Returns the dispatched route assigned to the authenticated driver.
      * Returns null if no active route exists (404).
      */
-    getActiveRoute: async (): Promise<ActiveRouteResponse['data'] | null> => {
-        try {
-            const { data } = await api.get<ActiveRouteResponse>(
-                API_ENDPOINTS.DRIVER.ACTIVE_ROUTE.URL
-            );
+    getActiveRoute: (): Promise<ActiveRouteResponse['data'] | null> => {
+        const { session } = getSessionForRequest();
+        const sessionGeneration = session?.generation ?? getCurrentSessionGeneration();
 
-            if (data.status === 'success') {
-                return data.data;
-            }
-
-            // status === 'error'
-            const error: ApiError = {
-                status: 0,
-                message: data.message ?? 'Error inesperado',
-                errors: data.errors ?? undefined,
-            };
-            throw error;
-        } catch (err) {
-            if (
-                err &&
-                typeof err === 'object' &&
-                'response' in err &&
-                (err as { response?: { status?: number } }).response?.status === 404
-            ) {
-                return null;
-            }
-            throw err;
+        // React StrictMode mounts effects twice in development. Sharing the in-flight
+        // request keeps that diagnostic behavior from issuing the same API call twice,
+        // without ever sharing a response across session changes.
+        if (activeRouteRequest?.sessionGeneration === sessionGeneration) {
+            return activeRouteRequest.promise;
         }
+
+        const request = (async () => {
+            try {
+                const { data } = await api.get<ActiveRouteResponse>(
+                    API_ENDPOINTS.DRIVER.ACTIVE_ROUTE.URL
+                );
+
+                if (data.status === 'success') {
+                    return data.data;
+                }
+
+                // status === 'error'
+                const error: ApiError = {
+                    status: 0,
+                    message: data.message ?? 'Error inesperado',
+                    errors: data.errors ?? undefined,
+                };
+                throw error;
+            } catch (err) {
+                // The API interceptor normalizes Axios errors into ApiError, so there
+                // is no `response` property left here. On this endpoint, 404 is the
+                // documented, expected absence of a dispatched route.
+                if ((err as Partial<ApiError>)?.status === 404) {
+                    return null;
+                }
+                throw err;
+            }
+        })().finally(() => {
+            if (activeRouteRequest?.promise === request) {
+                activeRouteRequest = null;
+            }
+        });
+
+        activeRouteRequest = { sessionGeneration, promise: request };
+
+        return request;
     },
 
     /**

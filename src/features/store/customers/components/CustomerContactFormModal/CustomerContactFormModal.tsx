@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { Form, Input, Checkbox, message } from 'antd';
 import { Button } from '@/components/Button';
 import Modal from '@/components/Modal/Modal';
-import { emailRules } from '@/utils/validationRules';
-import type { CustomerContact, CreateCustomerContactDto, UpdateCustomerContactDto } from '../../types/customerContact.types';
+import type {
+    CustomerContact,
+    CreateCustomerContactDto,
+    UpdateCustomerContactDto,
+} from '../../types/customerContact.types';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 
 interface CustomerContactFormModalProps {
@@ -48,10 +51,15 @@ export const CustomerContactFormModal: React.FC<CustomerContactFormModalProps> =
     const handleSubmit = async (values: Record<string, unknown>) => {
         setLoading(true);
         try {
+            const payload = {
+                ...values,
+                email: normalizeOptionalContactValue(values.email),
+                phone: normalizeOptionalContactValue(values.phone),
+            };
             if (isEditing && contact) {
-                await onUpdate(contact.id, values as unknown as UpdateCustomerContactDto);
+                await onUpdate(contact.id, payload as UpdateCustomerContactDto);
             } else {
-                await onCreate(values as unknown as CreateCustomerContactDto);
+                await onCreate(payload as CreateCustomerContactDto);
             }
             onSuccess();
         } catch (err) {
@@ -96,9 +104,13 @@ export const CustomerContactFormModal: React.FC<CustomerContactFormModalProps> =
                         loading={loading}
                         htmlType="button"
                         action={() => {
-                            const formEl = document.getElementById('customerContactForm') as HTMLFormElement | null;
+                            const formEl = document.getElementById(
+                                'customerContactForm'
+                            ) as HTMLFormElement | null;
                             if (formEl) {
-                                formEl.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                                formEl.dispatchEvent(
+                                    new Event('submit', { cancelable: true, bubbles: true })
+                                );
                             }
                         }}
                     />
@@ -129,14 +141,24 @@ export const CustomerContactFormModal: React.FC<CustomerContactFormModalProps> =
                 <Form.Item
                     name="email"
                     label="Email"
-                    rules={emailRules()}
+                    dependencies={['phone']}
+                    rules={contactMethodRules('phone', 'email')}
                 >
                     <Input placeholder="correo@ejemplo.com" />
                 </Form.Item>
 
-                <Form.Item name="phone" label="Teléfono">
+                <Form.Item
+                    name="phone"
+                    label="Teléfono"
+                    dependencies={['email']}
+                    rules={contactMethodRules('email', 'phone')}
+                >
                     <Input placeholder="+54 9 11 1234-5678" />
                 </Form.Item>
+
+                <p className="text-xs text-gray-500 -mt-3 mb-4">
+                    Completá al menos un medio de contacto: email o teléfono.
+                </p>
 
                 <Form.Item name="is_main" valuePropName="checked">
                     <Checkbox>Contacto Principal</Checkbox>
@@ -145,3 +167,30 @@ export const CustomerContactFormModal: React.FC<CustomerContactFormModalProps> =
         </Modal>
     );
 };
+
+const normalizeOptionalContactValue = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+
+    const normalized = value.trim();
+    return normalized || null;
+};
+
+const contactMethodRules = (otherField: 'email' | 'phone', field: 'email' | 'phone') => [
+    ...(field === 'email'
+        ? [{ type: 'email' as const, message: 'Formato de email inválido.' }]
+        : []),
+    ({ getFieldValue }: { getFieldValue: (name: string) => unknown }) => ({
+        validator: (_: unknown, value: unknown) => {
+            const hasValue = (candidate: unknown) =>
+                typeof candidate === 'string' && candidate.trim().length > 0;
+
+            if (hasValue(value) || hasValue(getFieldValue(otherField))) {
+                return Promise.resolve();
+            }
+
+            return Promise.reject(
+                new Error('Completá al menos un medio de contacto: email o teléfono.')
+            );
+        },
+    }),
+];

@@ -19,6 +19,11 @@ describe('DriverRoutesPageView', () => {
             </MemoryRouter>
         );
 
-        expect(screen.getByText('No tenés una ruta activa en este momento.')).toBeInTheDocument();
+        expect(screen.getByText('No tenés rutas activas.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Cuando tengas una ruta asignada y disponible para repartir, vas a poder consultarla desde acá.'
+            )
+        ).toBeInTheDocument();
     });
 });

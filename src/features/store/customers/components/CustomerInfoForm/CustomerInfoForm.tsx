@@ -3,7 +3,7 @@ import { Form, Row, Col, Switch, Input, Tag, Typography, Badge, message } from '
 import type { FormInstance } from 'antd';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
-import { requiredStringRules } from '@/utils/validationRules';
+import { optionalDocumentPairRules, requiredStringRules } from '@/utils/validationRules';
 import { Button } from '@/components/Button';
 import type { Customer, UpdateCustomerDto } from '../../types/customer.types';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
@@ -50,8 +50,8 @@ export const CustomerInfoForm = ({
                 first_name: customer.first_name ?? undefined,
                 last_name: customer.last_name ?? undefined,
                 company_name: customer.company_name ?? undefined,
-                document_type_id: customer.document_type.id,
-                document_number: customer.document_number,
+                document_type_id: customer.document_type?.id,
+                document_number: customer.document_number ?? undefined,
                 status: customer.status === 'active',
                 notes: customer.notes ?? undefined,
             });
@@ -63,14 +63,14 @@ export const CustomerInfoForm = ({
     };
 
     const handleFinish = async (values: Record<string, unknown>) => {
-        const normalizedDocNumber = (values.document_number as string).replace(/[.-]/g, '');
+        const rawDocumentNumber = (values.document_number as string | undefined)?.trim();
         const payload: UpdateCustomerDto = {
             display_name: values.display_name as string,
             first_name: (values.first_name as string) || null,
             last_name: (values.last_name as string) || null,
             company_name: (values.company_name as string) || null,
-            document_type_id: values.document_type_id as string,
-            document_number: normalizedDocNumber,
+            document_type_id: (values.document_type_id as string | undefined) || null,
+            document_number: rawDocumentNumber ? rawDocumentNumber.replace(/[.-]/g, '') : null,
             status: values.status ? 'active' : 'inactive',
             notes: (values.notes as string) || null,
         };
@@ -100,8 +100,8 @@ export const CustomerInfoForm = ({
                 first_name: customer.first_name ?? undefined,
                 last_name: customer.last_name ?? undefined,
                 company_name: customer.company_name ?? undefined,
-                document_type_id: customer.document_type.id,
-                document_number: customer.document_number,
+                document_type_id: customer.document_type?.id,
+                document_number: customer.document_number ?? undefined,
                 status: customer.status === 'active',
                 notes: customer.notes ?? undefined,
             });
@@ -130,7 +130,9 @@ export const CustomerInfoForm = ({
                             <div className="flex items-center gap-2">
                                 <Text className="text-centra-text">{customer.display_name}</Text>
                                 <Tag color={customer.has_location ? 'blue' : 'default'}>
-                                    {customer.has_location ? 'Geolocalizado' : 'Pendiente de Geolocalización'}
+                                    {customer.has_location
+                                        ? 'Geolocalizado'
+                                        : 'Pendiente de Geolocalización'}
                                 </Tag>
                             </div>
                         </Form.Item>
@@ -195,7 +197,9 @@ export const CustomerInfoForm = ({
                 <Col {...colResponsive}>
                     {isReadOnly ? (
                         <Form.Item label="Tipo de Documento">
-                            <Text className="text-centra-text">{customer.document_type.name}</Text>
+                            <Text className="text-centra-text">
+                                {customer.document_type?.name ?? '—'}
+                            </Text>
                         </Form.Item>
                     ) : (
                         <SelectField
@@ -203,7 +207,7 @@ export const CustomerInfoForm = ({
                             label="Tipo de Documento"
                             placeholder="Seleccionar"
                             options={documentTypeOptions}
-                            rules={requiredStringRules('El tipo de documento')}
+                            rules={optionalDocumentPairRules('document_number')}
                             disabled={isDisabled || documentTypesLoading}
                             loading={documentTypesLoading}
                         />
@@ -215,14 +219,16 @@ export const CustomerInfoForm = ({
                 <Col {...colResponsive}>
                     {isReadOnly ? (
                         <Form.Item label="Número de Documento">
-                            <Text className="text-centra-text">{customer.document_number}</Text>
+                            <Text className="text-centra-text">
+                                {customer.document_number ?? '—'}
+                            </Text>
                         </Form.Item>
                     ) : (
                         <InputField
                             name="document_number"
                             label="Número de Documento"
                             placeholder="Ingresá el número"
-                            rules={requiredStringRules('El número de documento')}
+                            rules={optionalDocumentPairRules('document_type_id')}
                             disabled={isDisabled}
                         />
                     )}
@@ -239,11 +245,7 @@ export const CustomerInfoForm = ({
                             />
                         </Form.Item>
                     ) : (
-                        <Form.Item
-                            name="status"
-                            label="Estado"
-                            valuePropName="checked"
-                        >
+                        <Form.Item name="status" label="Estado" valuePropName="checked">
                             <Switch
                                 checkedChildren="Activo"
                                 unCheckedChildren="Inactivo"
@@ -259,7 +261,10 @@ export const CustomerInfoForm = ({
                     {isReadOnly ? (
                         <Form.Item label="Notas">
                             {customer.notes ? (
-                                <Paragraph className="text-centra-text" style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                                <Paragraph
+                                    className="text-centra-text"
+                                    style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}
+                                >
                                     {customer.notes}
                                 </Paragraph>
                             ) : (

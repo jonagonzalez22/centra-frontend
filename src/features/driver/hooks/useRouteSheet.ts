@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { message } from 'antd';
 import { DriverService } from '../services/driver.service';
 import type { RouteStopsItem, StorePaymentMethod } from '../interfaces/driver.interface';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
@@ -30,7 +29,6 @@ export const useRouteSheet = (routeId: string): UseRouteSheetReturn => {
             const apiError = err as ApiError;
             const errorMessage = apiError.message || 'Error al cargar la hoja de ruta.';
             setError(errorMessage);
-            message.error(errorMessage);
         } finally {
             setLoading(false);
         }

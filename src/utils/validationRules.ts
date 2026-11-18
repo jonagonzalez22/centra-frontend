@@ -33,9 +33,7 @@ export const storePhoneRules = (): Rule[] => [
     { pattern: /^\+?[0-9\s-]{8,20}$/, message: 'Formato de teléfono inválido.' },
 ];
 
-export const roleRules = (): Rule[] => [
-    { required: true, message: 'El rol es obligatorio.' },
-];
+export const roleRules = (): Rule[] => [{ required: true, message: 'El rol es obligatorio.' }];
 
 export const requiredStringRules = (fieldName: string, min = 1, max?: number): Rule[] => {
     const rules: Rule[] = [{ required: true, message: `${fieldName} es obligatorio.` }];
@@ -43,6 +41,23 @@ export const requiredStringRules = (fieldName: string, min = 1, max?: number): R
     if (max) rules.push({ max, message: `Máximo ${max} caracteres.` });
     return rules;
 };
+
+export const optionalDocumentPairRules = (otherField: string): Rule[] => [
+    ({ getFieldValue }) => ({
+        validator: (_: unknown, value: unknown) => {
+            const hasValue = (candidate: unknown) =>
+                typeof candidate === 'string' ? candidate.trim().length > 0 : candidate != null;
+
+            if (hasValue(value) === hasValue(getFieldValue(otherField))) {
+                return Promise.resolve();
+            }
+
+            return Promise.reject(
+                new Error('Completá el tipo y número de documento, o dejá ambos vacíos.')
+            );
+        },
+    }),
+];
 
 export const planPriceRules = (): Rule[] => [
     { required: true, message: 'El precio es obligatorio.' },

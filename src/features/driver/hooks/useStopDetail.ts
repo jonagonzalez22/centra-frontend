@@ -29,7 +29,6 @@ export const useStopDetail = (stopId: string): UseStopDetailReturn => {
             const apiError = err as ApiError;
             const errorMessage = apiError.message || 'Error al cargar el detalle de la parada.';
             setError(errorMessage);
-            message.error(errorMessage);
         } finally {
             setLoading(false);
         }

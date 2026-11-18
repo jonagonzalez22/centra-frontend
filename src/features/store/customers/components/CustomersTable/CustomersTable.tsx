@@ -39,7 +39,9 @@ export const CustomersTable = ({
             title: 'Documento',
             key: 'document',
             render: (_: unknown, record: Customer) => {
-                return `${record.document_type.name}: ${record.document_number}`;
+                return record.document_type && record.document_number
+                    ? `${record.document_type.name}: ${record.document_number}`
+                    : '—';
             },
         },
         {
@@ -57,7 +59,9 @@ export const CustomersTable = ({
             key: 'location',
             render: (_: unknown, record: Customer) => (
                 <Tooltip
-                    title={record.has_location ? 'Ubicación confirmada' : 'Sin ubicación geográfica'}
+                    title={
+                        record.has_location ? 'Ubicación confirmada' : 'Sin ubicación geográfica'
+                    }
                 >
                     <EnvironmentOutlined
                         style={{

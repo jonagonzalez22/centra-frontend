@@ -23,14 +23,14 @@ export const CustomersCreatePage = () => {
     }));
 
     const handleSubmit = async (values: Record<string, unknown>) => {
-        const normalizedDocNumber = (values.document_number as string).replace(/[.-]/g, '');
+        const rawDocumentNumber = (values.document_number as string | undefined)?.trim();
         const payload: CreateCustomerDto = {
             display_name: values.display_name as string,
             first_name: (values.first_name as string) || null,
             last_name: (values.last_name as string) || null,
             company_name: (values.company_name as string) || null,
-            document_type_id: values.document_type_id as string,
-            document_number: normalizedDocNumber,
+            document_type_id: (values.document_type_id as string | undefined) || null,
+            document_number: rawDocumentNumber ? rawDocumentNumber.replace(/[.-]/g, '') : null,
             status: values.status ? 'active' : 'inactive',
             notes: (values.notes as string) || null,
         };
