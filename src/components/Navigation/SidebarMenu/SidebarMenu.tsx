@@ -20,6 +20,7 @@ import { BarChartOutlined } from '@ant-design/icons';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
+import { canAccessDriverDeliveries } from '@/router/router.utils';
 import type { FeatureCode, User, UserRole } from '@/entities/User';
 
 const { Sider } = Layout;
@@ -34,6 +35,7 @@ type MenuItem = {
     feature?: FeatureCode;
     permission?: string;
     role?: string;
+    driverDeliveries?: boolean;
     context: MenuContext;
     children?: MenuItem[];
 };
@@ -327,14 +329,12 @@ const menuItems: MenuItem[] = [
         key: '/tienda/conductor/parent',
         icon: <MapPin size={ICON_SIZE} />,
         context: 'store',
-        role: 'STORE_DRIVER',
+        driverDeliveries: true,
         children: [
             {
                 label: 'Mis Rutas',
                 key: '/tienda/conductor/rutas',
                 context: 'store',
-                permission: 'drivers.view',
-                role: 'STORE_DRIVER',
             },
         ],
     },
@@ -353,11 +353,13 @@ function filterMenuItems(
         if (item.context !== 'both' && item.context !== currentContext) return acc;
         if (item.permission && !user.permissions.includes(item.permission)) return acc;
         if (item.feature && !hasFeature(user, item.feature)) return acc;
+        if (item.driverDeliveries && !canAccessDriverDeliveries(user)) return acc;
         // STORE_ADMIN no necesita match de role (define permisos), salvo para STORE_DRIVER
         if (item.role === 'STORE_DRIVER' && !user.roles.includes('STORE_DRIVER')) return acc;
         if (item.role && !isStoreAdmin && !user.roles.includes(item.role as UserRole)) return acc;
 
         const filtered: MenuItem = { ...item, title: item.label };
+        delete filtered.driverDeliveries;
 
         if (item.children && item.children.length > 0) {
             filtered.children = filterMenuItems(item.children, user, currentContext);

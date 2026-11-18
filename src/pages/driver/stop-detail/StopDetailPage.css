@@ -95,6 +95,46 @@
     white-space: pre-wrap;
 }
 
+/* ── Delivery address reference ────────────────────── */
+.stopDetailDeliveryReference {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.stopDetailDeliveryReferenceIcon {
+    font-size: 16px;
+    color: #6b7280;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.stopDetailDeliveryReferenceContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.stopDetailDeliveryReferenceLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.stopDetailDeliveryReferenceText {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
 /* ── Content ────────────────────────────────────────── */
 .stopDetailPageContent {
     @apply relative;

@@ -68,9 +68,17 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, user }: PermissionD
     const [checkedCodes, setCheckedCodes] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
+    const isDriver = user?.roles.includes('STORE_DRIVER') ?? false;
 
     const fetchData = useCallback(async () => {
         if (!user) return;
+
+        if (user.roles.includes('STORE_DRIVER')) {
+            setCatalog({});
+            setCheckedCodes(new Set());
+            return;
+        }
+
         setFetching(true);
 
         await Promise.all([
@@ -242,7 +250,13 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, user }: PermissionD
             ) : (
                 <>
                     <div className="permissionDrawerContent">
-                        {groupedPermissions.length === 0 ? (
+                        {isDriver ? (
+                            <div className="permissionDrawerEmpty">
+                                Los repartidores no reciben permisos individuales. Su acceso al reparto
+                                depende del rol Repartidor y de que la funcionalidad de entregas esté
+                                habilitada para la tienda.
+                            </div>
+                        ) : groupedPermissions.length === 0 ? (
                             <div className="permissionDrawerEmpty">No hay permisos disponibles</div>
                         ) : (
                             <div className="permissionDrawerGroups">
@@ -254,17 +268,19 @@ export const PermissionDrawer = ({ open, onClose, onSuccess, user }: PermissionD
                     <div className="permissionDrawerFooter">
                         <Button
                             variant="default"
-                            label="Cancelar"
+                            label={isDriver ? 'Cerrar' : 'Cancelar'}
                             action={handleClose}
                             disabled={loading}
                         />
-                        <Button
-                            variant="primary"
-                            label="Guardar cambios"
-                            loading={loading}
-                            action={handleSave}
-                            disabled={loading}
-                        />
+                        {!isDriver && (
+                            <Button
+                                variant="primary"
+                                label="Guardar cambios"
+                                loading={loading}
+                                action={handleSave}
+                                disabled={loading}
+                            />
+                        )}
                     </div>
                 </>
             )}

@@ -9,7 +9,7 @@ export interface OrderCustomer {
 }
 
 export interface OrderDeliveryAddress {
-    locality: string;
+    locality: string | null;
     street?: string;
     full_address?: string;
     id?: string;

@@ -7,10 +7,11 @@ import {
     PhoneOutlined,
     RightOutlined,
     MessageOutlined,
+    InfoCircleOutlined,
 } from '@ant-design/icons';
 import type { RouteStopsItem, RouteStopStatus } from '@/features/driver/interfaces/driver.interface';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
-import { OrderBalanceSummary } from '@/components/driver';
+import { formatCurrency } from '@/utils/formatters';
 import './RouteSheetPage.css';
 
 const SEQUENCE_CLASS: Record<RouteStopStatus, string> = {
@@ -59,18 +60,28 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
         ? [street, localityName].filter(Boolean).join(', ')
         : null;
 
-    const whatsappUrl = stop.customer?.phone
-        ? `https://wa.me/${stop.customer.phone.replace(/\D/g, '')}`
-        : null;
-
-    const phoneUrl = stop.customer?.phone ? `tel:${stop.customer.phone}` : null;
+    const contactPhone = stop.customer?.phone ?? '';
+    const normalizedPhone = contactPhone.replace(/\D/g, '');
+    const hasValidPhone = normalizedPhone.length >= 7;
+    const whatsappUrl = hasValidPhone ? `https://wa.me/${normalizedPhone}` : null;
+    const phoneUrl = hasValidPhone ? `tel:${contactPhone}` : null;
+    const actionCount = Number(Boolean(mapsUrl)) + Number(Boolean(whatsappUrl)) + Number(Boolean(phoneUrl));
 
     return (
         <Card
             hoverable
             onClick={onPress}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onPress();
+                }
+            }}
             className="routeSheetStopCard mb-3"
             styles={{ body: { padding: 0 } }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver detalle de la parada ${stop.sequence} de ${stop.customer?.name ?? 'cliente'}`}
         >
             {/* Main content row */}
             <div className="flex gap-3 p-4">
@@ -98,6 +109,15 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                         </div>
                     )}
 
+                    {stop.delivery_reference && (
+                        <div className="routeSheetStopReference">
+                            <InfoCircleOutlined aria-hidden="true" />
+                            <div className="routeSheetStopReferenceText">
+                                {stop.delivery_reference}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Logistics notes */}
                     {stop.address?.notes && (
                         <div className="routeSheetStopNotes">
@@ -105,16 +125,34 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                         </div>
                     )}
 
-                    {/* Schedule — priority #3 */}
-                    {windowDisplay && (
-                        <div className="routeSheetStopMeta">
-                            <ClockCircleOutlined className="routeSheetStopIcon" />
-                            <span>{windowDisplay}</span>
+                    {(windowDisplay || stop.order) && (
+                        <div className="routeSheetStopSecondary">
+                            {windowDisplay && (
+                                <div className="routeSheetStopMeta">
+                                    <ClockCircleOutlined className="routeSheetStopIcon" />
+                                    <span>{windowDisplay}</span>
+                                </div>
+                            )}
+                            {stop.order && (
+                                <div
+                                    className={`routeSheetStopBalance ${
+                                        stop.order.pending_amount > 0
+                                            ? 'routeSheetStopBalance--pending'
+                                            : 'routeSheetStopBalance--paid'
+                                    }`}
+                                >
+                                    {stop.order.pending_amount > 0 ? (
+                                        <>
+                                            <span>Saldo:</span>{' '}
+                                            <strong>{formatCurrency(stop.order.pending_amount)}</strong>
+                                        </>
+                                    ) : (
+                                        <span>Pedido pagado</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
-
-                    {/* Payment badge */}
-                    <OrderBalanceSummary order={stop.order ?? null} variant="compact" />
                 </div>
 
                 {/* Chevron */}
@@ -123,15 +161,17 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                 </div>
             </div>
 
-            {/* Contact buttons — horizontal 3-column grid */}
-            <div className="routeSheetStopCardFooter">
+            <div
+                className={`routeSheetStopCardFooter routeSheetStopCardFooter--${actionCount}-actions`}
+            >
                 {mapsUrl && (
                     <a
                         href={mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="routeSheetContactBtn"
+                        className="routeSheetFooterAction"
                         onClick={(e) => e.stopPropagation()}
+                        aria-label="Maps"
                     >
                         <EnvironmentOutlined />
                         <span>Maps</span>
@@ -142,8 +182,9 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                         href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="routeSheetContactBtn"
+                        className="routeSheetFooterAction"
                         onClick={(e) => e.stopPropagation()}
+                        aria-label="Contactar por WhatsApp"
                     >
                         <MessageOutlined />
                         <span>WhatsApp</span>
@@ -152,8 +193,9 @@ const StopCard = ({ stop, onPress }: { stop: RouteStopsItem; onPress: () => void
                 {phoneUrl && (
                     <a
                         href={phoneUrl}
-                        className="routeSheetContactBtn"
+                        className="routeSheetFooterAction"
                         onClick={(e) => e.stopPropagation()}
+                        aria-label="Llamar al cliente"
                     >
                         <PhoneOutlined />
                         <span>Llamar</span>

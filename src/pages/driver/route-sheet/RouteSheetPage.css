@@ -68,6 +68,11 @@
     overflow: hidden;
 }
 
+.routeSheetStopCard:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
 .routeSheetStopCustomer {
     font-size: 15px;
     font-weight: 700;
@@ -89,6 +94,31 @@
     word-break: break-word;
 }
 
+.routeSheetStopReference {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 5px 0;
+    min-width: 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.routeSheetStopReference .anticon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 12px;
+}
+
+.routeSheetStopReferenceText {
+    color: #6b7280;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
 .routeSheetStopMeta {
     display: flex;
     align-items: center;
@@ -96,6 +126,37 @@
     font-size: 13px;
     color: #888;
     line-height: 1.4;
+}
+
+.routeSheetStopSecondary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 8px;
+}
+
+.routeSheetStopBalance {
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.routeSheetStopBalance--pending {
+    background: #fff7e6;
+    border-radius: 999px;
+    color: #8a5a00;
+    padding: 2px 7px;
+}
+
+.routeSheetStopBalance--paid {
+    color: #6b7280;
+}
+
+.routeSheetStopBalance strong {
+    color: inherit;
+    font-weight: 600;
 }
 
 .routeSheetStopNotes {
@@ -122,11 +183,20 @@
 
 .routeSheetStopCardFooter {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
     border-top: 1px solid #f0f0f0;
 }
 
-.routeSheetContactBtn {
+.routeSheetStopCardFooter--1-actions {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.routeSheetStopCardFooter--2-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.routeSheetFooterAction {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -137,56 +207,62 @@
     color: #093764;
     text-decoration: none;
     transition: background 0.15s;
-    min-height: 48px;
+    min-height: 44px;
+    min-width: 0;
     cursor: pointer;
 }
 
-.routeSheetContactBtn:not(:last-child) {
-    border-right: 1px solid #f0f0f0;
+.routeSheetFooterAction:not(:first-child) {
+    border-left: 1px solid #f0f0f0;
 }
 
-.routeSheetContactBtn:hover {
+.routeSheetFooterAction:hover {
     background: #f5f7ff;
 }
 
-.routeSheetContactBtn:active {
+.routeSheetFooterAction:active {
     background: #e8eef9;
 }
 
+.routeSheetFooterAction:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: -3px;
+}
+
 .routeSheetStopSequence {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
 .sequencePending {
     background: #f0f0f0;
     color: #595959;
-    border: 2px solid #d9d9d9;
+    border: 1px solid #d9d9d9;
 }
 
 .sequenceArrived {
     background: #e6f7ff;
     color: #1890ff;
-    border: 2px solid #91d5ff;
+    border: 1px solid #91d5ff;
 }
 
 .sequenceCompleted {
     background: #f6ffed;
     color: #52c41a;
-    border: 2px solid #b7eb8f;
+    border: 1px solid #b7eb8f;
 }
 
 .sequenceFailed {
     background: #fff2f0;
     color: #ff4d4f;
-    border: 2px solid #ffccc7;
+    border: 1px solid #ffccc7;
 }
 
 .routeSheetActionBtn {

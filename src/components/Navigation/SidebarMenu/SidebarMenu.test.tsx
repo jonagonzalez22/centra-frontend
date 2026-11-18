@@ -306,6 +306,40 @@ describe('SidebarMenu', () => {
         expect(screen.queryByText('Inventario')).not.toBeInTheDocument();
     });
 
+    test('shows Mis Rutas to a driver with deliveries and no administrative permissions', () => {
+        mockUser = {
+            ...mockUser,
+            store_id: 1,
+            roles: ['STORE_DRIVER'],
+            permissions: [],
+            features: [{ code: 'deliveries', limit: null }],
+        };
+
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/conductor/rutas" />
+        );
+
+        expect(screen.getByText('Conductor')).toBeInTheDocument();
+        expect(screen.getByText('Mis Rutas')).toBeInTheDocument();
+        expect(screen.queryByText('Logística')).not.toBeInTheDocument();
+    });
+
+    test('does not show driver navigation when deliveries is disabled', () => {
+        mockUser = {
+            ...mockUser,
+            store_id: 1,
+            roles: ['STORE_DRIVER'],
+            permissions: [],
+            features: [],
+        };
+
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/dashboard" />
+        );
+
+        expect(screen.queryByText('Conductor')).not.toBeInTheDocument();
+    });
+
     test('shows only Price Lists under Configuraciones with its own feature and permission', () => {
         useStoreUser({ permissions: ['price_lists.view'], features: ['pos'] });
         renderWithRouter(

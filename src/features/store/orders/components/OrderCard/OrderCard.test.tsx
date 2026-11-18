@@ -55,6 +55,24 @@ test('shows the requested delivery date without a time-slot placeholder', () => 
     expect(screen.getByText('1 ítem pendiente de entrega')).toBeInTheDocument();
 });
 
+test('shows a delivery-address absence without falling back to the main address', () => {
+    render(<OrderCard order={{ ...order, delivery_address: null }} onClick={vi.fn()} />);
+
+    expect(screen.getByText('Sin domicilio de entrega')).toBeInTheDocument();
+    expect(screen.queryByText('Sin localidad')).not.toBeInTheDocument();
+});
+
+test('distinguishes a delivery address without locality', () => {
+    render(
+        <OrderCard
+            order={{ ...order, delivery_address: { locality: null, full_address: 'San Martín 123' } }}
+            onClick={vi.fn()}
+        />
+    );
+
+    expect(screen.getByText('Domicilio de entrega sin localidad')).toBeInTheDocument();
+});
+
 test('offers edit navigation only with orders.edit permission', async () => {
     canEdit = true;
     const user = userEvent.setup();

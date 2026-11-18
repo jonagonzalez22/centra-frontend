@@ -68,6 +68,15 @@ export function hasAccessToPath(roles: UserRole[], path: string): boolean {
 }
 
 /**
+ * The driver app is an operational capability, not an administrative
+ * permission. Its access is granted by the STORE_DRIVER role and the
+ * deliveries feature enabled for the driver's store.
+ */
+export function canAccessDriverDeliveries(user: User): boolean {
+    return user.roles.includes('STORE_DRIVER') && hasFeature(user, 'deliveries');
+}
+
+/**
  * Checks whether a post-login deep link is structurally covered by the same
  * role, permission and feature boundaries used by the router.
  */
@@ -107,7 +116,7 @@ export function canAccessReturnPath(user: User, path: string): boolean {
         return hasStoreRole;
     }
     if (matches(/^\/tienda\/conductor\/(rutas|ruta\/[^/]+|parada\/[^/]+\/[^/]+)$/)) {
-        return roles.includes('STORE_DRIVER') && hasPermission('drivers.view');
+        return canAccessDriverDeliveries(user);
     }
     if (matches(/^\/tienda\/logistica\/rutas(?:\/[^/]+(?:\/rendicion)?)?$/)) {
         return (

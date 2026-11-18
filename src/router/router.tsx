@@ -10,6 +10,7 @@ import { UsersPage } from '@/pages/admin/users/UsersPage';
 import { DashboardPage } from '@/pages/admin/dashboard/DashboardPage';
 import { PermissionRoute } from './PermissionRoute';
 import { FeatureRoute } from './FeatureRoute';
+import { DriverAccessRoute } from './DriverAccessRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 import { PaymentMethodsPage } from '@/pages/admin/payment-methods/PaymentMethodsPage';
@@ -452,26 +453,19 @@ export const router = createBrowserRouter([
 
                     // ── Conductor (Driver App) ─────────────
                     {
-                        element: <ProtectedRoute allowedRoles={['STORE_DRIVER']} />,
+                        element: <DriverAccessRoute />,
                         children: [
                             {
-                                element: (
-                                    <PermissionRoute
-                                        permission="drivers.view"
-                                        redirectTo="/tienda/dashboard"
-                                    />
-                                ),
-                                children: [
-                                    { path: 'conductor/rutas', element: <DriverRoutesPage /> },
-                                    {
-                                        path: 'conductor/ruta/:routeId',
-                                        element: <RouteSheetPage />,
-                                    },
-                                    {
-                                        path: 'conductor/parada/:routeId/:stopId',
-                                        element: <StopDetailPage />,
-                                    },
-                                ],
+                                path: 'conductor/rutas',
+                                element: <DriverRoutesPage />,
+                            },
+                            {
+                                path: 'conductor/ruta/:routeId',
+                                element: <RouteSheetPage />,
+                            },
+                            {
+                                path: 'conductor/parada/:routeId/:stopId',
+                                element: <StopDetailPage />,
                             },
                         ],
                     },

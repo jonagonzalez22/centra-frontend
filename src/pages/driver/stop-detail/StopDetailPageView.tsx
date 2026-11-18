@@ -240,6 +240,20 @@ export const StopDetailPageView = ({
                     </div>
                 )}
 
+                {stop.delivery_reference && (
+                    <div className="stopDetailDeliveryReference">
+                        <FileTextOutlined className="stopDetailDeliveryReferenceIcon" />
+                        <div className="stopDetailDeliveryReferenceContent">
+                            <div className="stopDetailDeliveryReferenceLabel">
+                                Referencia para la entrega
+                            </div>
+                            <div className="stopDetailDeliveryReferenceText">
+                                {stop.delivery_reference}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Products header */}
                 <div className="stopDetailProductsHeader">
                     <div className="stopDetailProductsLabel">

@@ -34,6 +34,7 @@ const stop: StopDetail = {
     sequence: 1,
     status: 'pending',
     address: 'Calle 1',
+    delivery_reference: null,
     contact_name: 'Cliente',
     contact_phone: null,
     timezone: 'America/Argentina/Mendoza',
@@ -115,6 +116,35 @@ test('partial delivery payload contains the final released quantity', async () =
         },
         preview
     );
+});
+
+test('shows the complete delivery address reference without rendering logistics notes', () => {
+    activePreview = null;
+
+    render(
+        <StopDetailPageView
+            stop={{
+                ...stop,
+                delivery_reference:
+                    'Casa de color marrón con blanco. Tocar timbre lateral al portón.',
+            }}
+            loading={false}
+            error={null}
+            onRefresh={vi.fn()}
+            rejectionReasons={[]}
+            completing={false}
+            onDeliver={vi.fn()}
+            onFailedDelivery={vi.fn()}
+            onExtraSaleClick={vi.fn()}
+            hasAvailableSurplus={false}
+        />
+    );
+
+    expect(screen.getByText('Referencia para la entrega')).toBeInTheDocument();
+    expect(
+        screen.getByText('Casa de color marrón con blanco. Tocar timbre lateral al portón.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Observaciones')).not.toBeInTheDocument();
 });
 
 test('keeps delivery controls editable while the stop is pending', () => {

@@ -105,4 +105,18 @@ describe('PermissionDrawer', () => {
         expect(screen.queryByText('sales_history.view')).not.toBeInTheDocument();
         expect(screen.queryByText('sales_history.print')).not.toBeInTheDocument();
     });
+
+    test('does not offer permissions for a STORE_DRIVER', async () => {
+        const driver = { ...user, roles: ['STORE_DRIVER' as const] };
+
+        render(<PermissionDrawer open onClose={vi.fn()} onSuccess={vi.fn()} user={driver} />);
+
+        expect(
+            await screen.findByText(/Los repartidores no reciben permisos individuales/i)
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Guardar cambios' })).not.toBeInTheDocument();
+        expect(mockStoreUsersService.getPermissionCatalog).not.toHaveBeenCalled();
+        expect(mockStoreUsersService.getUserPermissions).not.toHaveBeenCalled();
+    });
 });

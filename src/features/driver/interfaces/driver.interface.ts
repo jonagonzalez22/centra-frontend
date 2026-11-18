@@ -147,6 +147,7 @@ export interface RouteStopsItem {
     id: string;
     sequence: number;
     status: RouteStopStatus;
+    delivery_reference: string | null;
     customer: RouteStopsCustomer;
     address: RouteStopsAddress | null;
     notification_window_start: string | null;
@@ -193,6 +194,7 @@ export interface StopDetail {
     sequence: number;
     status: RouteStopStatus;
     address: string;
+    delivery_reference: string | null;
     contact_name: string | null;
     contact_phone: string | null;
     timezone: string | null;

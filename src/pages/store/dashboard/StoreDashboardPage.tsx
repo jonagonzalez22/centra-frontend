@@ -1,11 +1,17 @@
 import { Empty, Result } from 'antd';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore.store';
+import { canAccessDriverDeliveries } from '@/router/router.utils';
 
 const StoreDashboardPage: React.FC = () => {
     const user = useAuthStore((s) => s.user);
 
     const isStoreAdmin = user?.roles.includes('STORE_ADMIN') ?? false;
     const hasAny = (user?.permissions?.length ?? 0) > 0;
+
+    if (user && canAccessDriverDeliveries(user)) {
+        return <Navigate to="/tienda/conductor/rutas" replace />;
+    }
 
     // STORE_ADMIN siempre ve el dashboard; define permisos, no los recibe
     if (!isStoreAdmin && !hasAny) {

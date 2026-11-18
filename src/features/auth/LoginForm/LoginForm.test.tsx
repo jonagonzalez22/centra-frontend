@@ -56,6 +56,9 @@ describe('LoginForm', () => {
         mockNavigate.mockClear();
         mockLogIn.mockReset();
         mockLogIn.mockResolvedValue(undefined);
+        mockAuthenticatedUser.roles = ['STORE_ADMIN'];
+        mockAuthenticatedUser.permissions = ['drivers.view'];
+        mockAuthenticatedUser.features = [{ code: 'deliveries', limit: null }];
     });
 
     test('renders login form correctly', () => {
@@ -145,5 +148,22 @@ describe('LoginForm', () => {
         await user.click(screen.getByRole('button', { name: /ingresar/i }));
 
         expect(mockNavigate).toHaveBeenCalledWith('/tienda', { replace: true, state: null });
+    });
+
+    test('returns a driver with deliveries to the requested driver route without drivers.view', async () => {
+        mockAuthenticatedUser.roles = ['STORE_DRIVER'];
+        mockAuthenticatedUser.permissions = [];
+        mockLocationState.value = { from: { pathname: '/tienda/conductor/rutas' } };
+        const user = userEvent.setup();
+        renderLoginForm();
+
+        await user.type(screen.getByPlaceholderText(/email/i), 'driver@example.com');
+        await user.type(screen.getByPlaceholderText(/contraseña/i), '12345678');
+        await user.click(screen.getByRole('button', { name: /ingresar/i }));
+
+        expect(mockNavigate).toHaveBeenCalledWith('/tienda/conductor/rutas', {
+            replace: true,
+            state: null,
+        });
     });
 });

@@ -14,7 +14,7 @@ const user = (overrides: Partial<User> = {}): User => ({
     store: null,
     is_active: true,
     roles: ['STORE_DRIVER'],
-    permissions: ['drivers.view'],
+    permissions: [],
     features: [{ code: 'deliveries', limit: null }],
     ...overrides,
 });
@@ -45,6 +45,9 @@ describe('router utils', () => {
                 user({ roles: ['STORE_ADMIN'], permissions: ['drivers.view'] }),
                 '/tienda/conductor/parada/route/stop'
             )
+        ).toBe(false);
+        expect(
+            canAccessReturnPath(user({ features: [] }), '/tienda/conductor/parada/route/stop')
         ).toBe(false);
     });
 

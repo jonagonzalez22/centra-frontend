@@ -37,6 +37,7 @@ interface AddressFormDrawerProps {
     onClose: () => void;
     onSuccess: () => void;
     address?: CustomerAddress;
+    addresses: CustomerAddress[];
     onCreate: (dto: CreateCustomerAddressDto) => Promise<void>;
     onUpdate: (id: string, dto: UpdateCustomerAddressDto) => Promise<void>;
 }
@@ -46,6 +47,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
     onClose,
     onSuccess,
     address,
+    addresses,
     onCreate,
     onUpdate,
 }) => {
@@ -65,6 +67,13 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
 
     const isEditing = !!address;
     const title = isEditing ? 'Editar Domicilio' : 'Agregar Domicilio';
+    const hasAnotherDeliveryAddress = addresses.some(
+        (item) => item.type === 'delivery' && item.id !== address?.id
+    );
+    const addressTypeOptions = ADDRESS_TYPE_OPTIONS.map((option) => ({
+        ...option,
+        disabled: option.value === 'delivery' && hasAnotherDeliveryAddress,
+    }));
 
     const fetchProvinces = async () => {
         try {
@@ -347,7 +356,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                         >
                             <Select
                                 placeholder="Seleccioná el tipo de domicilio"
-                                options={ADDRESS_TYPE_OPTIONS}
+                                options={addressTypeOptions}
                             />
                         </Form.Item>
 

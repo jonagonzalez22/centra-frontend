@@ -175,6 +175,7 @@ export const AddressesTab: React.FC<AddressesTabProps> = ({ customerId }) => {
                 onClose={handleClose}
                 onSuccess={handleSuccess}
                 address={selectedAddress}
+                addresses={addresses}
                 onCreate={createAddress}
                 onUpdate={updateAddress}
             />

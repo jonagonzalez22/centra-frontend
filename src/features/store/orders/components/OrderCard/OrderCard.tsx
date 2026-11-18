@@ -160,8 +160,12 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                 <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-6 text-sm text-gray-600">
                     <span>{order.customer.name}</span>
                     <span>
-                        {order.delivery_address?.locality || (
-                            <span className="text-gray-400">Sin localidad</span>
+                        {order.delivery_address === null ? (
+                            <span className="text-gray-400">Sin domicilio de entrega</span>
+                        ) : order.delivery_address.locality ? (
+                            order.delivery_address.locality
+                        ) : (
+                            <span className="text-gray-400">Domicilio de entrega sin localidad</span>
                         )}
                     </span>
                 </div>
