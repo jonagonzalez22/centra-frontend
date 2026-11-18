@@ -1,0 +1,23 @@
+.vehicleFilters {
+    @apply mb-6 flex flex-wrap items-end gap-3;
+}
+
+.vehicleFiltersForm {
+    @apply grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(280px,1.8fr)_minmax(160px,0.8fr)_minmax(160px,0.8fr)];
+}
+
+.vehicleFiltersForm .ant-form-item {
+    @apply mb-0;
+}
+
+.vehicleFiltersActions {
+    @apply flex items-center;
+}
+
+@media (max-width: 768px) {
+    .vehicleFilters,
+    .vehicleFiltersActions,
+    .vehicleFiltersActions .ant-btn {
+        @apply w-full;
+    }
+}

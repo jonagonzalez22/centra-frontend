@@ -1,0 +1,57 @@
+.vehiclesMobileList {
+    @apply hidden;
+}
+
+@media (max-width: 768px) {
+    .vehiclesTableDesktop {
+        display: none;
+    }
+
+    .vehiclesMobileList {
+        @apply block space-y-3;
+    }
+
+    .vehiclesCard {
+        @apply w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+    }
+
+    .vehiclesCardHeader {
+        @apply flex items-start justify-between gap-3;
+    }
+
+    .vehiclesCardName {
+        @apply m-0 break-words text-base font-semibold text-centra-primary;
+    }
+
+    .vehiclesCardPlate {
+        @apply mb-0 mt-1 break-all text-sm text-gray-600;
+    }
+
+    .vehiclesCardDetails {
+        @apply my-4 grid grid-cols-2 gap-3 text-sm;
+    }
+
+    .vehiclesCardDetails dt {
+        @apply text-gray-500;
+    }
+
+    .vehiclesCardDetails dd {
+        @apply m-0 mt-1 break-words font-medium text-gray-800;
+    }
+
+    .vehiclesCardActions {
+        @apply flex flex-wrap gap-2 border-t border-gray-100 pt-3;
+    }
+
+    .vehiclesCardAction {
+        min-height: 40px;
+    }
+
+    .vehiclesMobileEmpty {
+        @apply py-12;
+    }
+
+    .vehiclesMobilePagination {
+        @apply flex justify-center pt-3;
+    }
+}

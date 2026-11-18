@@ -280,6 +280,13 @@ const menuItems: MenuItem[] = [
                 permission: 'logistics.routes.view',
                 role: 'STORE_USER',
             },
+            {
+                label: 'Vehículos',
+                key: '/tienda/logistica/vehiculos',
+                context: 'store',
+                permission: 'vehicles.view',
+                role: 'STORE_USER',
+            },
         ],
     },
     {

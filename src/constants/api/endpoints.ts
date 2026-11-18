@@ -164,6 +164,12 @@ export const API_ENDPOINTS = {
             },
             VEHICLES: {
                 URL: '/v1/store/vehicles',
+                DETAIL: (id: string) => `/v1/store/vehicles/${id}`,
+                TOGGLE_ACTIVE: (id: string) => `/v1/store/vehicles/${id}/toggle-active`,
+                CATALOGS: {
+                    TYPES: '/v1/store/vehicles/catalogs/types',
+                    REASONS: '/v1/store/vehicles/catalogs/reasons',
+                },
             },
             DRIVERS: {
                 URL: '/v1/store/drivers',

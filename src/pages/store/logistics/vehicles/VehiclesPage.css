@@ -1,0 +1,42 @@
+.vehiclesPage {
+    @apply w-full p-6;
+}
+
+.vehiclesPageBreadcrumb {
+    @apply mb-2;
+}
+
+.vehiclesPageHeader {
+    @apply mb-6 flex flex-wrap items-start justify-between gap-4;
+}
+
+.vehiclesPageHeaderText {
+    @apply flex flex-col gap-1;
+}
+
+.vehiclesPageTitle {
+    @apply m-0 text-2xl font-bold text-centra-primary;
+}
+
+.vehiclesPageDescription {
+    @apply m-0 text-sm text-centra-text/60;
+}
+
+.vehiclesPageAlert {
+    @apply mb-4 py-2 text-sm;
+}
+
+@media (max-width: 768px) {
+    .vehiclesPage {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .vehiclesPageHeader {
+        @apply mb-4;
+    }
+
+    .vehiclesPageTitle {
+        @apply text-xl;
+    }
+}

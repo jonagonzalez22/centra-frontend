@@ -46,6 +46,7 @@ import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
 import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
 import { ReceivedPaymentsPage } from '@/pages/store/received-payments/ReceivedPaymentsPage';
 import { ReportsSummaryPage } from '@/pages/store/reports/ReportsSummaryPage';
+import { VehiclesPage } from '@/pages/store/logistics/vehicles/VehiclesPage';
 
 export const router = createBrowserRouter([
     // ── Raíz ─────────────────────────────────────────
@@ -396,6 +397,17 @@ export const router = createBrowserRouter([
                     {
                         element: <FeatureRoute feature="deliveries" />,
                         children: [
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="vehicles.view"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    { path: 'logistica/vehiculos', element: <VehiclesPage /> },
+                                ],
+                            },
                             {
                                 element: (
                                     <PermissionRoute

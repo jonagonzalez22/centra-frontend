@@ -7,7 +7,8 @@ import type { RouteVehicle } from '../interfaces/route.interface';
 export const VehiclesService = {
     getAll: async (): Promise<RouteVehicle[]> => {
         const { data } = await api.get<ApiListResponse<{ items: RouteVehicle[] }>>(
-            API_ENDPOINTS.STORE.LOGISTICS.VEHICLES.URL
+            API_ENDPOINTS.STORE.LOGISTICS.VEHICLES.URL,
+            { params: { is_active: true, per_page: 1000 } }
         );
 
         if (data.status === 'error') {
