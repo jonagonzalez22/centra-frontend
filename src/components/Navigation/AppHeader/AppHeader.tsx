@@ -5,6 +5,7 @@ import React from 'react';
 import { UserAvatar } from '../UserAvatar';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { useNavigate } from 'react-router-dom';
+import { getRoleLabel } from '@/utils/roleLabels';
 import './AppHeader.css';
 
 const { Header } = Layout;
@@ -45,7 +46,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleM
                         className="appHeaderMobileMenuButton"
                     />
                 )}
-                <h1 className="appHeaderTitle">{title}</h1>
+                <h1 className="appHeaderTitle" title={title}>
+                    {title}
+                </h1>
             </div>
 
             <Dropdown menu={{ items, onClick: handleMenuClick }} placement="bottomRight" arrow>
@@ -53,7 +56,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ title, isMobile, onToggleM
                     {!isMobile && (
                         <div className="appHeaderUserDetails">
                             <span className="appHeaderUserName">{user?.name || '-'}</span>
-                            <span className="appHeaderUserRole">{user?.roles[0] || '-'} </span>
+                            <span className="appHeaderUserRole">
+                                {getRoleLabel(user?.roles[0])}{' '}
+                            </span>
                         </div>
                     )}
 

@@ -120,7 +120,7 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['STORE_ADMIN', 'STORE_USER', 'STORE_DRIVER']} />,
         children: [
             {
-                element: <AppLayout title="Mi Tienda" />,
+                element: <AppLayout title="Mi Tienda" showStoreName />,
                 children: [
                     { index: true, element: <Navigate to="dashboard" replace /> },
                     { path: 'dashboard', element: <StoreDashboardPage /> },

@@ -6,6 +6,7 @@ import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
 import { useStoreUsersContext } from '../../hooks/useStoreUsersContext';
 import { useAuthStore } from '@/store/useAuthStore.store';
+import { getRoleLabel } from '@/utils/roleLabels';
 import type { User } from '@/entities/User';
 import './StoreUsersTable.css';
 
@@ -42,7 +43,7 @@ export const StoreUsersTable = ({ onEdit, onDelete, onToggleActive, onManagePerm
                 <div className="storeUsersTableRoles">
                     {record.roles.map((role) => (
                         <Tag key={role} color="blue">
-                            {role}
+                            {getRoleLabel(role)}
                         </Tag>
                     ))}
                 </div>

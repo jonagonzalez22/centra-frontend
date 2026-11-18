@@ -3,7 +3,7 @@
 }
 
 .appHeaderTitleGroup {
-    @apply flex items-center gap-4;
+    @apply flex min-w-0 items-center gap-4;
 }
 
 .appHeaderMobileMenuButton {
@@ -11,7 +11,7 @@
 }
 
 .appHeaderTitle {
-    @apply m-0 text-lg font-semibold text-white;
+    @apply m-0 max-w-[12rem] truncate text-lg font-semibold text-white md:max-w-[24rem];
 }
 
 .appHeaderUserMenuTrigger {

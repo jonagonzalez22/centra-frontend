@@ -6,7 +6,10 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 const mockLogout = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/store/useAuthStore.store', () => ({
-    useAuthStore: vi.fn(() => ({ user: { name: 'Ana Ruiz', roles: ['Admin'] }, logout: mockLogout })),
+    useAuthStore: vi.fn(() => ({
+        user: { name: 'Ana Ruiz', roles: ['STORE_ADMIN'] },
+        logout: mockLogout,
+    })),
 }));
 
 describe('AppHeader', () => {
@@ -31,7 +34,7 @@ describe('AppHeader', () => {
         renderHeader();
 
         expect(screen.getByText(/Ana Ruiz/i)).toBeInTheDocument();
-        expect(screen.getByText(/Admin/i)).toBeInTheDocument();
+        expect(screen.getByText('Administrador')).toBeInTheDocument();
     });
 
     test('does not show user name when mobile', () => {

@@ -5,17 +5,20 @@ import { Grid, Layout } from 'antd';
 import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuthStore } from '@/store/useAuthStore.store';
 import './AppLayout.css';
 
 const { Content } = Layout;
 
 export interface AppLayoutProps {
     title: string;
+    showStoreName?: boolean;
     children?: ReactNode;
 }
 
-export const AppLayout = ({ title, children }: AppLayoutProps) => {
+export const AppLayout = ({ title, showStoreName = false, children }: AppLayoutProps) => {
     const location = useLocation();
+    const storeName = useAuthStore((state) => state.user?.store?.name);
     const screens = Grid.useBreakpoint();
     // The desktop sidebar needs the `lg` width, not merely the `md` minimum.
     // Below Ant Design's lg breakpoint (992px), use the existing Drawer/menu
@@ -33,7 +36,7 @@ export const AppLayout = ({ title, children }: AppLayoutProps) => {
             />
             <Layout className="appMainLayout">
                 <AppHeader
-                    title={title}
+                    title={showStoreName ? storeName || title : title}
                     isMobile={isCompactNavigation}
                     onToggleMenu={() => setIsMenuOpen(true)}
                 />

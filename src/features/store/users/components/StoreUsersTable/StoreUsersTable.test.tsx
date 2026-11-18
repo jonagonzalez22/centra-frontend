@@ -59,7 +59,7 @@ describe('StoreUsersTable', () => {
 
         expect(screen.getByText('Juan Pérez')).toBeInTheDocument();
         expect(screen.getByText('juan@centra.com')).toBeInTheDocument();
-        expect(screen.getByText('STORE_USER')).toBeInTheDocument();
+        expect(screen.getByText('Empleado')).toBeInTheDocument();
         expect(screen.getByText('Activo')).toBeInTheDocument();
     });
 

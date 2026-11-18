@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, test, expect, vi } from 'vitest';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
+import { useAuthStore } from '@/store/useAuthStore.store';
+import type { User } from '@/entities/User';
 
 const breakpoints = vi.hoisted(() => ({ screens: { xs: true, sm: true, md: true, lg: true } }));
 
@@ -21,6 +23,7 @@ describe('AppLayout', () => {
     beforeEach(() => {
         breakpoints.screens = { xs: true, sm: true, md: true, lg: true };
         window.localStorage.clear();
+        useAuthStore.setState({ user: null });
     });
 
     const renderWithRouter = (content: React.ReactNode, initialPath = '/admin') => {
@@ -156,5 +159,57 @@ describe('AppLayout', () => {
 
         expect(screen.getByText('Mi Tienda')).toBeInTheDocument();
         expect(screen.getByText('Store Content')).toBeInTheDocument();
+    });
+
+    test('uses the authenticated store name and falls back when it is unavailable', () => {
+        const storeUser: User = {
+            id: 1,
+            name: 'Ana Ruiz',
+            email: 'ana@centra.com',
+            store_id: '1',
+            store: { id: '1', name: 'Almacén Central', business_type: 'general' },
+            roles: ['STORE_ADMIN'],
+            is_active: true,
+            permissions: [],
+            features: [],
+        };
+        act(() => {
+            useAuthStore.setState({ user: storeUser });
+        });
+
+        const view = render(
+            <MemoryRouter>
+                <AppLayout title="Mi Tienda" showStoreName>
+                    <div>Contenido</div>
+                </AppLayout>
+            </MemoryRouter>
+        );
+
+        const heading = screen.getByRole('heading', { name: 'Almacén Central' });
+        expect(heading).toHaveAttribute('title', 'Almacén Central');
+
+        act(() => {
+            useAuthStore.setState({ user: null });
+        });
+        expect(screen.getByRole('heading', { name: 'Mi Tienda' })).toBeInTheDocument();
+        expect(screen.queryByRole('heading', { name: 'Almacén Central' })).not.toBeInTheDocument();
+
+        act(() => {
+            useAuthStore.setState({
+                user: {
+                    ...storeUser,
+                    store: {
+                        ...storeUser.store!,
+                        name: 'Comercio con un nombre comercial muy extenso',
+                    },
+                },
+            });
+        });
+        expect(screen.getByRole('heading', { name: 'Comercio con un nombre comercial muy extenso' }))
+            .toHaveClass('appHeaderTitle');
+        expect(view.container.querySelector('.appHeaderTitle')).toHaveAttribute(
+            'title',
+            'Comercio con un nombre comercial muy extenso'
+        );
     });
 });

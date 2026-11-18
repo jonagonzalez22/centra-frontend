@@ -7,6 +7,7 @@ import { useStoreUserForm } from '../../hooks/useStoreUserForm';
 import { StoreUsersService } from '../../services/storeUsers.service';
 import type { User } from '@/entities/User';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
+import { getRoleLabel } from '@/utils/roleLabels';
 import './StoreUserModal.css';
 
 interface StoreUserModalProps {
@@ -44,7 +45,9 @@ export const StoreUserModal: React.FC<StoreUserModalProps> = ({
 
             StoreUsersService.getFilterOptions()
                 .then((options) => {
-                    setRoleOptions(options.roles.map((r) => ({ label: r.name, value: r.name })));
+                    setRoleOptions(
+                        options.roles.map((r) => ({ label: getRoleLabel(r.name), value: r.name }))
+                    );
                 })
                 .catch((err) => {
                     const apiError = err as ApiError;
