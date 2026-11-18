@@ -26,7 +26,10 @@ import {
     normalizeMoneyInput as toMoney,
     parseMoneyInput,
 } from '@/utils/moneyInput';
-import { SuppliersService, type SupplierOperationalOption } from '@/features/store/suppliers/suppliers.service';
+import {
+    SuppliersService,
+    type SupplierOperationalOption,
+} from '@/features/store/suppliers/suppliers.service';
 import {
     SupplierProductsService,
     type SupplierProductCandidate,
@@ -276,12 +279,15 @@ export const PurchaseFormPage = () => {
         async (currentSupplierId: string, query: string) => {
             setProductsLoading(true);
             try {
-                const result = await SupplierProductsService.getPurchaseCandidates(currentSupplierId, {
-                    search: query || undefined,
-                    include_associated: 1,
-                    page: 1,
-                    per_page: 20,
-                });
+                const result = await SupplierProductsService.getPurchaseCandidates(
+                    currentSupplierId,
+                    {
+                        search: query || undefined,
+                        include_associated: 1,
+                        page: 1,
+                        per_page: 20,
+                    }
+                );
                 setGlobalProductOptions(
                     result.items
                         .map(catalogFromCandidate)
@@ -393,7 +399,9 @@ export const PurchaseFormPage = () => {
                 setPurchaseType(purchase.purchase_type);
                 setPurchaseNumber(purchase.purchase_number);
                 setSupplierId(purchase.supplier.id);
-                setSupplierOptions([{ id: purchase.supplier.id, business_name: purchase.supplier.business_name }]);
+                setSupplierOptions([
+                    { id: purchase.supplier.id, business_name: purchase.supplier.business_name },
+                ]);
                 setNotes(purchase.notes ?? '');
                 setItems(nextItems);
                 setInitialSignature(
@@ -822,7 +830,9 @@ export const PurchaseFormPage = () => {
                                                               : 'default'
                                                       }
                                                   >
-                                                      {product.isAssociated ? 'Asociado' : 'Disponible'}
+                                                      {product.isAssociated
+                                                          ? 'Asociado'
+                                                          : 'Disponible'}
                                                   </Tag>
                                               </div>
                                               <div className="text-xs text-gray-500">
@@ -1048,15 +1058,32 @@ export const PurchaseFormPage = () => {
                         </div>
                     </div>
                 }
-                footer={[
-                    <Button key="cancel" variant="default" label="Cancelar" action={resetBulk} />,
-                    <Button
-                        key="add"
-                        label={`Agregar ${Object.keys(bulkSelection).length} ${Object.keys(bulkSelection).length === 1 ? 'producto' : 'productos'}`}
-                        action={addBulkProducts}
-                        disabled={Object.keys(bulkSelection).length === 0}
-                    />,
-                ]}
+                footer={
+                    <div className="purchaseBulkProductsFooter">
+                        <Pagination
+                            className="purchaseBulkProductsPagination"
+                            current={bulkResult.current_page || bulkPage}
+                            pageSize={bulkResult.per_page || bulkPerPage}
+                            total={bulkResult.total}
+                            showSizeChanger
+                            pageSizeOptions={['20', '50', '100']}
+                            showTotal={(count, range) => `${range[0]} - ${range[1]} de ${count}`}
+                            onChange={(nextPage, nextPerPage) => {
+                                setBulkPage(nextPage);
+                                setBulkPerPage(nextPerPage);
+                                void loadBulkProducts(nextPage, bulkSearch, nextPerPage, bulkScope);
+                            }}
+                        />
+                        <div className="purchaseBulkProductsFooterActions">
+                            <Button variant="default" label="Cancelar" action={resetBulk} />
+                            <Button
+                                label={`Agregar ${Object.keys(bulkSelection).length} ${Object.keys(bulkSelection).length === 1 ? 'producto' : 'productos'}`}
+                                action={addBulkProducts}
+                                disabled={Object.keys(bulkSelection).length === 0}
+                            />
+                        </div>
+                    </div>
+                }
             >
                 <div className="purchaseBulkProductsControls">
                     <label className="block min-w-0 flex-1 text-sm font-medium">
@@ -1102,18 +1129,21 @@ export const PurchaseFormPage = () => {
                         />
                     </div>
                 </div>
-                <div className="mb-3 text-sm text-gray-500" aria-live="polite">
-                    {Object.keys(bulkSelection).length}{' '}
-                    {Object.keys(bulkSelection).length === 1
-                        ? 'producto seleccionado'
-                        : 'productos seleccionados'}
+                <div className="purchaseBulkProductsSelectionInfo">
+                    <div className="text-sm text-gray-500" aria-live="polite">
+                        {Object.keys(bulkSelection).length}{' '}
+                        {Object.keys(bulkSelection).length === 1
+                            ? 'producto seleccionado'
+                            : 'productos seleccionados'}
+                    </div>
+                    {bulkScope === 'all' &&
+                        Object.values(bulkSelection).some((product) => !product.isAssociated) && (
+                            <div className="text-sm text-gray-500">
+                                Podés agregar productos no asociados al proveedor. Esto no
+                                modificará su catálogo de productos.
+                            </div>
+                        )}
                 </div>
-                {bulkScope === 'all' &&
-                    Object.values(bulkSelection).some((product) => !product.isAssociated) && (
-                        <div className="mb-3 text-sm text-gray-500">
-                            Podés agregar productos no asociados al proveedor. Esto no modificará su catálogo de productos.
-                        </div>
-                    )}
                 <div className="purchaseBulkProductsTableRegion">
                     {bulkResult.items.length === 0 && !bulkLoading ? (
                         <Empty
@@ -1206,20 +1236,6 @@ export const PurchaseFormPage = () => {
                         />
                     )}
                 </div>
-                <Pagination
-                    className="purchaseBulkProductsPagination"
-                    current={bulkResult.current_page || bulkPage}
-                    pageSize={bulkResult.per_page || bulkPerPage}
-                    total={bulkResult.total}
-                    showSizeChanger
-                    pageSizeOptions={['20', '50', '100']}
-                    showTotal={(count, range) => `${range[0]} - ${range[1]} de ${count}`}
-                    onChange={(nextPage, nextPerPage) => {
-                        setBulkPage(nextPage);
-                        setBulkPerPage(nextPerPage);
-                        void loadBulkProducts(nextPage, bulkSearch, nextPerPage, bulkScope);
-                    }}
-                />
             </Modal>
 
             <Modal

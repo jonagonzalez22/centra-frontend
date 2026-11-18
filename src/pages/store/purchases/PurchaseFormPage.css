@@ -21,15 +21,42 @@
 }
 
 .purchaseBulkProductsModal .ant-modal-content {
-    @apply flex max-h-[calc(100vh-48px)] flex-col overflow-hidden;
+    display: flex;
+    max-height: calc(100dvh - 48px);
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .purchaseBulkProductsModal .ant-modal-body {
-    @apply flex min-h-0 flex-1 flex-col;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.purchaseBulkProductsModal .ant-modal-header,
+.purchaseBulkProductsModal .ant-modal-footer {
+    flex: 0 0 auto;
 }
 
 .purchaseBulkProductsTableRegion {
-    @apply min-h-0 flex-1 overflow-auto;
+    min-height: 0;
+    max-height: min(56dvh, 590px);
+    overflow: auto;
+}
+
+.purchaseBulkProductsSelectionInfo {
+    @apply mb-3 flex min-h-12 flex-col gap-1;
+}
+
+.purchaseBulkProductsTableRegion .ant-table-thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.purchaseBulkProductsTableRegion .ant-table-thead > tr > th {
+    background: var(--ant-color-bg-container);
 }
 
 .purchaseBulkProductsTableRegion .ant-table-wrapper {
@@ -41,7 +68,15 @@
 }
 
 .purchaseBulkProductsPagination {
-    @apply mt-4;
+    @apply min-w-0;
+}
+
+.purchaseBulkProductsFooter {
+    @apply flex items-center justify-between gap-4;
+}
+
+.purchaseBulkProductsFooterActions {
+    @apply flex shrink-0 gap-2;
 }
 
 @media (max-width: 767px) {
@@ -60,19 +95,18 @@
     }
 
     .purchaseBulkProductsModal .ant-modal-footer {
-        @apply flex flex-wrap gap-2;
+        @apply p-4;
     }
 
-    .purchaseBulkProductsModal .ant-modal-footer .ant-btn {
+    .purchaseBulkProductsFooter {
+        @apply flex-col items-stretch gap-3;
+    }
+
+    .purchaseBulkProductsFooterActions .ant-btn {
         @apply flex-1;
     }
 
     .purchaseBulkProductsPagination {
         @apply flex-wrap gap-y-2;
-    }
-
-    .purchaseBulkProductsTableRegion {
-        @apply flex-none;
-        max-height: min(42vh, 360px);
     }
 }
