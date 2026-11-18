@@ -9,6 +9,7 @@ import {
     Popconfirm,
     Button as AntButton,
     TimePicker,
+    Input,
     Tooltip,
     Modal as AntModal,
     Table as AntTable,
@@ -92,6 +93,7 @@ interface RouteDetailPageViewProps {
     onAddExceptionalStop: (orderId: string, reason: string) => Promise<void>;
     onRemoveStop: (stopId: string) => Promise<void>;
     onUpdateDepartureTime: (departureTime: string) => Promise<void>;
+    onUpdateRouteName?: (routeName: string) => Promise<void>;
     onPlanRoute: () => Promise<void>;
     onReorderStops: (stopIds: string[]) => Promise<void>;
     onRecalculate: () => Promise<void>;
@@ -113,6 +115,7 @@ export const RouteDetailPageView = ({
     onAddExceptionalStop,
     onRemoveStop,
     onUpdateDepartureTime,
+    onUpdateRouteName,
     onPlanRoute,
     onReorderStops,
     onRecalculate,
@@ -615,6 +618,20 @@ export const RouteDetailPageView = ({
                     </div>
                 </div>
                 <Descriptions size="small" column={{ xs: 1, sm: 2, md: 3 }}>
+                    <Descriptions.Item label="Nombre de ruta">
+                        {isDraft ? (
+                            <Input
+                                defaultValue={route.route_name ?? ''}
+                                placeholder="Godoy Cruz - Las Heras"
+                                maxLength={100}
+                                onBlur={(event) => {
+                                    if (event.target.value.trim() !== (route.route_name ?? '')) {
+                                        void onUpdateRouteName?.(event.target.value);
+                                    }
+                                }}
+                            />
+                        ) : <Text strong>{route.route_name || '—'}</Text>}
+                    </Descriptions.Item>
                     <Descriptions.Item label="Fecha">
                         <Text strong>{formatDateShort(route.operational_date)}</Text>
                     </Descriptions.Item>

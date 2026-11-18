@@ -20,6 +20,7 @@ export const RouteDetailPage = () => {
         addExceptionalStop,
         removeStop,
         updateDepartureTime,
+        updateRouteName,
         planRoute,
         reorderStops,
         recalculate,
@@ -50,6 +51,7 @@ export const RouteDetailPage = () => {
                 onAddExceptionalStop={addExceptionalStop}
                 onRemoveStop={removeStop}
                 onUpdateDepartureTime={updateDepartureTime}
+                onUpdateRouteName={updateRouteName}
                 onPlanRoute={planRoute}
                 onReorderStops={reorderStops}
                 onRecalculate={recalculate}

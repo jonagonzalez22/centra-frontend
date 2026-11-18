@@ -17,6 +17,7 @@ export interface UseRouteDetailReturn {
     addExceptionalStop: (orderId: string, reason: string) => Promise<void>;
     removeStop: (stopId: string) => Promise<void>;
     updateDepartureTime: (departureTime: string) => Promise<void>;
+    updateRouteName: (routeName: string) => Promise<void>;
     planRoute: () => Promise<void>;
     reorderStops: (stopIds: string[]) => Promise<void>;
     recalculate: () => Promise<void>;
@@ -107,6 +108,21 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
             } catch (err) {
                 const apiError = err as ApiError;
                 message.error(apiError.message || 'Error al actualizar la hora de salida.');
+            }
+        },
+        [routeId]
+    );
+
+    const updateRouteName = useCallback(
+        async (routeName: string) => {
+            try {
+                await RoutesService.update(routeId, { route_name: routeName.trim() || null });
+                const routeData = await RoutesService.getById(routeId);
+                setRoute(routeData);
+                message.success('Nombre de ruta actualizado.');
+            } catch (err) {
+                const apiError = err as ApiError;
+                message.error(apiError.message || 'Error al actualizar el nombre de ruta.');
             }
         },
         [routeId]
@@ -259,6 +275,7 @@ export const useRouteDetail = (routeId: string): UseRouteDetailReturn => {
         addExceptionalStop,
         removeStop,
         updateDepartureTime,
+        updateRouteName,
         planRoute,
         reorderStops,
         recalculate,

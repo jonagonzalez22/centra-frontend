@@ -34,6 +34,18 @@
     @apply block;
 }
 
+.routesPageTable .ant-table-thead > tr > th.ant-table-column-sort {
+    background: #fafafa;
+}
+
+.routesPageTable .ant-table-tbody > tr > td.ant-table-column-sort {
+    background: #fff;
+}
+
+.routesPageTable .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort {
+    background: #fafafa;
+}
+
 .routesPageMobileList {
     @apply hidden;
 }
@@ -74,6 +86,10 @@
 
     .routesPageCardMetadata {
         @apply mb-0 mt-3 text-sm text-gray-600;
+    }
+
+    .routesPageCardName {
+        @apply mb-0 mt-1 break-words text-sm text-gray-600;
     }
 
     .routesPageCardActions {

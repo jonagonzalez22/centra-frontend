@@ -33,12 +33,14 @@ export const RouteFormModal = ({ open, onClose, onSuccess }: RouteFormModalProps
         operational_date: dayjs.Dayjs;
         vehicle_id: string;
         driver_id: string;
+        route_name?: string;
         observations?: string;
     }) => {
         const dto: CreateRouteDto = {
             operational_date: values.operational_date.format('YYYY-MM-DD'),
             vehicle_id: values.vehicle_id,
             driver_id: values.driver_id,
+            route_name: values.route_name?.trim() || undefined,
             observations: values.observations || undefined,
         };
         try {
@@ -151,6 +153,14 @@ export const RouteFormModal = ({ open, onClose, onSuccess }: RouteFormModalProps
                     loading={driversLoading}
                     disabled={loading}
                 />
+
+                <Form.Item
+                    name="route_name"
+                    label="Nombre de ruta"
+                    rules={[{ max: 100, message: 'El nombre de ruta no puede superar los 100 caracteres.' }]}
+                >
+                    <Input placeholder="Godoy Cruz - Las Heras" disabled={loading} maxLength={100} />
+                </Form.Item>
 
                 <Form.Item name="observations" label="Observaciones">
                     <Input.TextArea

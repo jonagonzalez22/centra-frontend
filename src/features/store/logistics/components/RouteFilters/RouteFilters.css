@@ -1,0 +1,28 @@
+.routeFilters { @apply mb-6 flex flex-wrap items-end gap-3; }
+.routeFiltersPrimary { @apply grid min-w-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2; }
+.routeFiltersPrimary .ant-form-item { @apply mb-0; }
+.routeFiltersActions { @apply flex items-center gap-2; }
+.routeFiltersChips { @apply flex w-full flex-wrap gap-2; }
+.routeFiltersChip { @apply !m-0 !max-w-full !truncate !rounded-full; }
+.routeFiltersChip .ant-tag-close-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-inline-start: 4px;
+    border-radius: 50%;
+    background: var(--route-filter-chip-close-bg);
+    color: var(--route-filter-chip-close-color);
+}
+.routeFiltersChip .ant-tag-close-icon:hover,
+.routeFiltersChip .ant-tag-close-icon:focus-visible {
+    background: var(--route-filter-chip-close-hover);
+    color: var(--route-filter-chip-close-color);
+}
+.routeFiltersChip .ant-tag-close-icon:focus-visible {
+    outline: 2px solid var(--route-filter-chip-close-focus);
+    outline-offset: 1px;
+}
+@media (min-width: 1200px) { .routeFiltersPrimary { grid-template-columns: minmax(160px, 1fr) minmax(190px, 1.2fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr); } }
+@media (max-width: 768px) { .routeFilters { @apply items-stretch; } .routeFiltersPrimary { @apply w-full; } .routeFiltersActions { @apply w-full; } .routeFiltersActions .ant-btn { @apply flex-1; } }

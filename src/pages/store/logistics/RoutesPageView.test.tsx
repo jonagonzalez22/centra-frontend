@@ -14,6 +14,7 @@ const awaitingRoute = {
     id: '01a1d0d8-0000-0000-0000-000000000000',
     operational_date: '2026-11-24',
     status: 'awaiting_reconciliation',
+    route_name: 'Godoy Cruz - Las Heras',
     stops: [{}],
 } as DeliveryRoute;
 
@@ -28,7 +29,13 @@ const routeWithCancelledHistory = {
     ...awaitingRoute,
     id: '03c3f0f0-0000-0000-0000-000000000000',
     operational_stops_count: 2,
-    stops: [{ status: 'completed' }, { status: 'completed' }, { status: 'cancelled' }, { status: 'cancelled' }, { status: 'cancelled' }],
+    stops: [
+        { status: 'completed' },
+        { status: 'completed' },
+        { status: 'cancelled' },
+        { status: 'cancelled' },
+        { status: 'cancelled' },
+    ],
 } as DeliveryRoute;
 
 const renderView = (items: DeliveryRoute[] = [awaitingRoute, completedRoute]) => {
@@ -46,8 +53,12 @@ const renderView = (items: DeliveryRoute[] = [awaitingRoute, completedRoute]) =>
                 items={items}
                 loading={false}
                 pagination={{ current: 1, total: items.length, pageSize: 15, totalPages: 1 }}
+                filters={{}}
+                drivers={[]}
+                driversLoading={false}
                 setPage={vi.fn()}
                 setPerPage={vi.fn()}
+                setFilters={vi.fn()}
                 onCreate={vi.fn()}
                 onView={onView}
                 navigate={navigate}
@@ -70,7 +81,12 @@ describe('RoutesPageView', () => {
         const mobile = screen.getByTestId('routes-mobile-list');
 
         expect(within(desktop).getByRole('table')).toBeInTheDocument();
-        expect(within(desktop).getByRole('columnheader', { name: 'Número de Ruta' })).toBeInTheDocument();
+        expect(
+            within(desktop).getByRole('columnheader', { name: 'Número de Ruta' })
+        ).toBeInTheDocument();
+        expect(within(desktop).getByRole('columnheader', { name: 'Nombre de ruta' })).toBeInTheDocument();
+        expect(within(desktop).getByRole('columnheader', { name: 'Fecha desde' })).toBeInTheDocument();
+        expect(within(mobile).getAllByText('Godoy Cruz - Las Heras')).toHaveLength(2);
         expect(within(mobile).getByText('#01A1D0D8')).toBeInTheDocument();
         expect(within(mobile).getByText('24/11/2026 · 1 parada')).toBeInTheDocument();
         expect(within(mobile).getByText('24/11/2026 · 2 paradas')).toBeInTheDocument();
@@ -90,7 +106,9 @@ describe('RoutesPageView', () => {
         expect(detail.querySelector('.anticon-eye')).toBeInTheDocument();
         expect(reconcile.querySelector('.anticon-dollar')).toBeInTheDocument();
         expect(reconcile).toHaveClass('routesPageCardActionPrimary');
-        expect(within(cards[1]).queryByRole('button', { name: 'Conciliar' })).not.toBeInTheDocument();
+        expect(
+            within(cards[1]).queryByRole('button', { name: 'Conciliar' })
+        ).not.toBeInTheDocument();
 
         detail.click();
         expect(onView).toHaveBeenCalledWith(awaitingRoute);
@@ -106,7 +124,9 @@ describe('RoutesPageView', () => {
         renderView([awaitingRoute]);
 
         const mobile = screen.getByTestId('routes-mobile-list');
-        expect(within(mobile).queryByRole('button', { name: 'Ver detalle' })).not.toBeInTheDocument();
+        expect(
+            within(mobile).queryByRole('button', { name: 'Ver detalle' })
+        ).not.toBeInTheDocument();
         expect(within(mobile).getByRole('button', { name: 'Conciliar' })).toBeInTheDocument();
     });
 
@@ -123,5 +143,10 @@ describe('RoutesPageView', () => {
 
         const mobile = screen.getByTestId('routes-mobile-list');
         expect(within(mobile).getByText('24/11/2026 · 2 paradas')).toBeInTheDocument();
+    });
+
+    it('renders an em dash when a route has no name', () => {
+        renderView([{ ...awaitingRoute, route_name: null }]);
+        expect(screen.getByTestId('routes-mobile-list')).toHaveTextContent('—');
     });
 });

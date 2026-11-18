@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoutes } from '@/features/store/logistics/hooks/useRoutes';
+import { useDrivers } from '@/features/store/logistics/hooks/useDrivers';
 import { RoutesPageView } from './RoutesPageView';
 import { RouteFormModal } from '@/features/store/logistics/components/RouteFormModal/RouteFormModal';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -9,14 +10,12 @@ import type { DeliveryRoute } from '@/features/store/logistics/interfaces/route.
 const routeMetadata = {
     title: 'Rutas de Logística',
     description: 'Gestiona las rutas de entrega de tu tienda',
-    breadcrumbs: [
-        { label: 'Tienda', path: '/tienda/dashboard' },
-        { label: 'Logística' },
-    ],
+    breadcrumbs: [{ label: 'Tienda', path: '/tienda/dashboard' }, { label: 'Logística' }],
 };
 
 export const RoutesPage = () => {
     const routesState = useRoutes();
+    const { drivers, driversLoading } = useDrivers();
     const { can } = usePermissions();
     const canManageRoutes = can('logistics.routes.manage');
     const navigate = useNavigate();
@@ -43,17 +42,17 @@ export const RoutesPage = () => {
                 items={routesState.items}
                 loading={routesState.loading}
                 pagination={routesState.pagination}
+                filters={routesState.filters}
+                drivers={drivers}
+                driversLoading={driversLoading}
                 setPage={routesState.setPage}
                 setPerPage={routesState.setPerPage}
+                setFilters={routesState.setFilters}
                 onCreate={handleCreate}
                 onView={handleView}
                 navigate={navigate}
             />
-            <RouteFormModal
-                open={modalOpen}
-                onClose={handleCloseModal}
-                onSuccess={handleSuccess}
-            />
+            <RouteFormModal open={modalOpen} onClose={handleCloseModal} onSuccess={handleSuccess} />
         </>
     );
 };

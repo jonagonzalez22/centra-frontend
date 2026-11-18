@@ -11,6 +11,9 @@ type TableColumn = {
     width?: number;
     responsive?: ('xxxl' | 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs')[];
     render?: (text?: unknown, record?: Record<string, unknown>) => React.ReactNode;
+    sorter?: boolean;
+    sortDirections?: ('ascend' | 'descend' | null)[];
+    sortOrder?: 'ascend' | 'descend' | null;
 };
 
 interface TableProps {

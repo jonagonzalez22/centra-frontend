@@ -73,6 +73,7 @@ export interface RouteStop {
 export interface DeliveryRoute {
     id: string;
     store_id: string;
+    route_name: string | null;
     timezone?: string;
     operational_date: string;
     status: RouteStatus;
@@ -109,16 +110,20 @@ export interface CreateRouteDto {
     operational_date: string;
     vehicle_id: string;
     driver_id: string;
+    route_name?: string;
     observations?: string;
 }
 
 export interface RoutesFilters {
     page?: number;
     per_page?: number;
+    route_number?: string;
+    route_name?: string;
     status?: RouteStatus;
-    date_from?: string;
-    date_to?: string;
-    sort_by?: string;
+    driver_id?: string;
+    from?: string;
+    to?: string;
+    sort_by?: 'operational_date';
     sort_dir?: 'asc' | 'desc';
 }
 
@@ -130,6 +135,7 @@ export interface EligibleOrdersFilters {
 export interface UpdateRouteDto {
     vehicle_id?: string;
     driver_id?: string;
+    route_name?: string | null;
     operational_date?: string;
     departure_time?: string;
     observations?: string;

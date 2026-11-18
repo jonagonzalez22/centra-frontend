@@ -1,12 +1,18 @@
 import { Alert, Breadcrumb, Empty, Pagination, Skeleton, Tag, Tooltip } from 'antd';
+import type { GetProp, TableProps as AntTableProps } from 'antd';
 import { Link } from 'react-router-dom';
 import { PlusOutlined, EyeOutlined, DollarOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { CanDo } from '@/components/auth/CanDo';
 import ActionButton from '@/components/ActionButton/ActionButton';
 import Table from '@/components/Table/Table';
+import { RouteFilters } from '@/features/store/logistics/components/RouteFilters';
 import type { PageBreadcrumbItem } from '@/router/router.utils';
-import type { DeliveryRoute } from '@/features/store/logistics/interfaces/route.interface';
+import type {
+    DeliveryRoute,
+    RouteDriver,
+    RoutesFilters,
+} from '@/features/store/logistics/interfaces/route.interface';
 import { formatDateShort } from '@/utils/formatters';
 import './RoutesPage.css';
 
@@ -44,8 +50,12 @@ interface RoutesPageViewProps {
         pageSize: number;
         totalPages: number;
     };
+    filters: RoutesFilters;
+    drivers: RouteDriver[];
+    driversLoading: boolean;
     setPage: (page: number) => void;
     setPerPage: (perPage: number) => void;
+    setFilters: (filters: RoutesFilters) => void;
     onCreate: () => void;
     onView: (route: DeliveryRoute) => void;
     navigate: (path: string) => void;
@@ -106,11 +116,20 @@ const RouteActions = ({
         <>
             {canReconcile && (
                 <Tooltip title="Rendir Ruta">
-                    <Button variant="link" size="small" icon={<DollarOutlined />} action={reconcile} />
+                    <Button
+                        variant="link"
+                        size="small"
+                        icon={<DollarOutlined />}
+                        action={reconcile}
+                    />
                 </Tooltip>
             )}
             <CanDo permission="logistics.routes.view">
-                <ActionButton icon={<EyeOutlined />} label="Ver detalle" action={() => onView(route)} />
+                <ActionButton
+                    icon={<EyeOutlined />}
+                    label="Ver detalle"
+                    action={() => onView(route)}
+                />
             </CanDo>
         </>
     );
@@ -125,8 +144,12 @@ export const RoutesPageView = ({
     items,
     loading,
     pagination,
+    filters,
+    drivers,
+    driversLoading,
     setPage,
     setPerPage,
+    setFilters,
     onCreate,
     onView,
     navigate,
@@ -145,16 +168,25 @@ export const RoutesPageView = ({
             },
         },
         {
-            title: 'Fecha',
+            title: 'Nombre de ruta',
+            dataIndex: 'route_name',
+            key: 'route_name',
+            render: (value: unknown) => (value as string | null) || '—',
+        },
+        {
+            title: 'Fecha desde',
             dataIndex: 'operational_date',
             key: 'operational_date',
+            sorter: true,
+            sortDirections: ['ascend', 'descend', 'ascend'] as ('ascend' | 'descend')[],
+            sortOrder: (filters.sort_dir === 'asc' ? 'ascend' : 'descend') as 'ascend' | 'descend',
             render: (_: unknown, record?: Record<string, unknown>) =>
                 formatDateShort((record?.operational_date as string) || ''),
         },
         {
             title: 'Conductor',
             key: 'driver',
-            responsive: ['md'] as ('md')[],
+            responsive: ['md'] as 'md'[],
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
                 return route.driver?.name || '—';
@@ -163,7 +195,7 @@ export const RoutesPageView = ({
         {
             title: 'Vehículo',
             key: 'vehicle',
-            responsive: ['md'] as ('md')[],
+            responsive: ['md'] as 'md'[],
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
                 return route.vehicle?.name || '—';
@@ -192,7 +224,14 @@ export const RoutesPageView = ({
             width: 120,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const route = record as unknown as DeliveryRoute;
-                return <RouteActions route={route} onView={onView} navigate={navigate} variant="table" />;
+                return (
+                    <RouteActions
+                        route={route}
+                        onView={onView}
+                        navigate={navigate}
+                        variant="table"
+                    />
+                );
             },
         },
     ];
@@ -204,6 +243,17 @@ export const RoutesPageView = ({
         } else {
             setPage(page);
         }
+    };
+    const handleTableChange: GetProp<AntTableProps, 'onChange'> = (_, __, sorter, extra) => {
+        if (extra.action !== 'sort') return;
+        const activeSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+        if (activeSorter.field !== 'operational_date') return;
+        setFilters({
+            ...filters,
+            page: 1,
+            sort_by: 'operational_date',
+            sort_dir: activeSorter.order === 'ascend' ? 'asc' : 'desc',
+        });
     };
 
     return (
@@ -242,6 +292,14 @@ export const RoutesPageView = ({
                 <Alert className="routesPageAlert" type="error" description={error} showIcon />
             )}
 
+            <RouteFilters
+                filters={filters}
+                drivers={drivers}
+                driversLoading={driversLoading}
+                onChange={setFilters}
+                onReset={() => setFilters({})}
+            />
+
             <div className="routesPageTable">
                 <Table
                     columns={columns}
@@ -254,6 +312,7 @@ export const RoutesPageView = ({
                         pageSize: pagination.pageSize,
                         onChange: changePage,
                     }}
+                    onChange={handleTableChange}
                     scroll={{ x: 'max-content' }}
                     size="small"
                 />
@@ -274,9 +333,12 @@ export const RoutesPageView = ({
                         return (
                             <article className="routesPageCard" key={route.id}>
                                 <header className="routesPageCardHeader">
-                                    <h2 className="routesPageCardNumber">{routeNumber(route.id)}</h2>
+                                    <h2 className="routesPageCardNumber">
+                                        {routeNumber(route.id)}
+                                    </h2>
                                     <RouteStatusTag status={route.status} />
                                 </header>
+                                <p className="routesPageCardName">{route.route_name || '—'}</p>
                                 <p className="routesPageCardMetadata">
                                     {formatDateShort(route.operational_date)} · {stops}{' '}
                                     {stops === 1 ? 'parada' : 'paradas'}
