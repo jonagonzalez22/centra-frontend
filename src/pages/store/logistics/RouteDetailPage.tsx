@@ -11,10 +11,16 @@ export const RouteDetailPage = () => {
         route,
         dailyOrders,
         exceptionalOrders,
+        dailyOrdersPagination,
+        exceptionalOrdersPagination,
+        eligibleFilters,
+        eligibleLocalities,
         loading,
         dailyOrdersLoading,
         exceptionalOrdersLoading,
         error,
+        setEligibleFilters,
+        setEligiblePage,
         refresh,
         addStop,
         addExceptionalStop,
@@ -43,10 +49,16 @@ export const RouteDetailPage = () => {
                 route={route}
                 dailyOrders={dailyOrders}
                 exceptionalOrders={exceptionalOrders}
+                dailyOrdersPagination={dailyOrdersPagination}
+                exceptionalOrdersPagination={exceptionalOrdersPagination}
+                eligibleFilters={eligibleFilters}
+                eligibleLocalities={eligibleLocalities}
                 loading={loading}
                 dailyOrdersLoading={dailyOrdersLoading}
                 exceptionalOrdersLoading={exceptionalOrdersLoading}
                 error={error}
+                onEligibleFiltersChange={setEligibleFilters}
+                onEligiblePageChange={setEligiblePage}
                 onAddStop={addStop}
                 onAddExceptionalStop={addExceptionalStop}
                 onRemoveStop={removeStop}

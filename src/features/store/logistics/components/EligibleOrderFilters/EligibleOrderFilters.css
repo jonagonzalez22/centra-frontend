@@ -1,0 +1,19 @@
+.eligibleOrderFilters {
+    @apply mb-4 flex flex-wrap items-end gap-3;
+}
+.eligibleOrderFiltersForm {
+    @apply grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-[minmax(220px,1.5fr)_minmax(180px,0.8fr)];
+}
+.eligibleOrderFiltersForm .ant-form-item {
+    @apply mb-0;
+}
+.eligibleOrderFiltersActions {
+    @apply flex items-center;
+}
+@media (max-width: 768px) {
+    .eligibleOrderFilters,
+    .eligibleOrderFiltersActions,
+    .eligibleOrderFiltersActions .ant-btn {
+        @apply w-full;
+    }
+}

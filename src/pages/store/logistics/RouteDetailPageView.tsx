@@ -20,8 +20,23 @@ import {
     message,
     Checkbox,
     Empty,
+    Pagination,
 } from 'antd';
-import { DeleteOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, HolderOutlined, ReloadOutlined, EllipsisOutlined, UndoOutlined, CheckCircleOutlined, FileTextOutlined, TruckOutlined, WhatsAppOutlined, DollarOutlined } from '@ant-design/icons';
+import {
+    DeleteOutlined,
+    ExclamationCircleOutlined,
+    EnvironmentOutlined,
+    EyeOutlined,
+    HolderOutlined,
+    ReloadOutlined,
+    EllipsisOutlined,
+    UndoOutlined,
+    CheckCircleOutlined,
+    FileTextOutlined,
+    TruckOutlined,
+    WhatsAppOutlined,
+    DollarOutlined,
+} from '@ant-design/icons';
 
 const { Text } = Typography;
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -49,9 +64,13 @@ import { ExceptionalAssignModal } from './components/ExceptionalAssignModal';
 import { RouteMapModal } from './RouteMapModal';
 import { RouteLoadDrawer } from '@/features/store/logistics/components/RouteLoadDrawer';
 import { RouteAdjustmentDrawer } from '@/features/store/logistics/components/RouteAdjustmentDrawer';
+import { EligibleOrderFilters } from '@/features/store/logistics/components/EligibleOrderFilters';
 import type {
     DeliveryRoute,
     EligibleOrder,
+    EligibleOrderLocality,
+    EligibleOrdersFilters,
+    EligibleOrdersListResponse,
     RouteStop,
 } from '@/features/store/logistics/interfaces/route.interface';
 import { formatDateShort } from '@/utils/formatters';
@@ -85,10 +104,18 @@ interface RouteDetailPageViewProps {
     route: DeliveryRoute | null;
     dailyOrders: EligibleOrder[];
     exceptionalOrders: EligibleOrder[];
+    dailyOrdersPagination?: EligibleOrdersListResponse;
+    exceptionalOrdersPagination?: EligibleOrdersListResponse;
+    eligibleFilters?: Pick<EligibleOrdersFilters, 'search' | 'locality_id'>;
+    eligibleLocalities?: EligibleOrderLocality[];
     loading: boolean;
     dailyOrdersLoading: boolean;
     exceptionalOrdersLoading: boolean;
     error: string | null;
+    onEligibleFiltersChange?: (
+        filters: Pick<EligibleOrdersFilters, 'search' | 'locality_id'>
+    ) => void;
+    onEligiblePageChange?: (tab: 'daily' | 'exceptional', page: number) => void;
     onAddStop: (orderId: string) => Promise<void>;
     onAddExceptionalStop: (orderId: string, reason: string) => Promise<void>;
     onRemoveStop: (stopId: string) => Promise<void>;
@@ -107,10 +134,28 @@ export const RouteDetailPageView = ({
     route,
     dailyOrders,
     exceptionalOrders,
+    dailyOrdersPagination = {
+        items: dailyOrders,
+        total: dailyOrders.length,
+        per_page: 15,
+        current_page: 1,
+        last_page: 1,
+    },
+    exceptionalOrdersPagination = {
+        items: exceptionalOrders,
+        total: exceptionalOrders.length,
+        per_page: 15,
+        current_page: 1,
+        last_page: 1,
+    },
+    eligibleFilters = {},
+    eligibleLocalities = [],
     loading,
     dailyOrdersLoading,
     exceptionalOrdersLoading,
     error,
+    onEligibleFiltersChange = () => undefined,
+    onEligiblePageChange = () => undefined,
     onAddStop,
     onAddExceptionalStop,
     onRemoveStop,
@@ -182,16 +227,16 @@ export const RouteDetailPageView = ({
     const hasActiveStops = activeStops.length > 0;
     const hasDepartureTime = !!route.departure_time;
     const canPlan = isDraft && hasActiveStops && hasDepartureTime;
-    const planDisabledReason = !hasDepartureTime && !hasActiveStops
-        ? 'Seleccioná una hora de salida y agregá al menos una parada para planificar la ruta.'
-        : !hasDepartureTime
-            ? 'Seleccioná una hora de salida para planificar la ruta.'
-            : !hasActiveStops
+    const planDisabledReason =
+        !hasDepartureTime && !hasActiveStops
+            ? 'Seleccioná una hora de salida y agregá al menos una parada para planificar la ruta.'
+            : !hasDepartureTime
+              ? 'Seleccioná una hora de salida para planificar la ruta.'
+              : !hasActiveStops
                 ? 'Agregá al menos una parada para planificar la ruta.'
                 : '';
     const hasPolyline = !!route.encoded_polyline;
-    const allowReorder =
-        (isDraft || route.status === 'planned') && activeStops.length > 1;
+    const allowReorder = (isDraft || route.status === 'planned') && activeStops.length > 1;
 
     const stopsColumns = [
         {
@@ -202,7 +247,14 @@ export const RouteDetailPageView = ({
                 const stop = record as unknown as RouteStop;
                 if (!allowReorder) return stop.sequence;
                 return (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, userSelect: 'none' }}>
+                    <span
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            userSelect: 'none',
+                        }}
+                    >
                         <HolderOutlined style={{ fontSize: 14, color: '#999' }} />
                         {stop.sequence}
                     </span>
@@ -256,7 +308,8 @@ export const RouteDetailPageView = ({
                                       }
                                   >
                                       <span>
-                                          {stop.notification_window_start} – {stop.notification_window_end}
+                                          {stop.notification_window_start} –{' '}
+                                          {stop.notification_window_end}
                                       </span>
                                   </Tooltip>
                               );
@@ -321,7 +374,10 @@ export const RouteDetailPageView = ({
                             type="text"
                             icon={
                                 <WhatsAppOutlined
-                                    style={{ color: isNotified ? '#b7eb8f' : '#25D366', fontSize: 18 }}
+                                    style={{
+                                        color: isNotified ? '#b7eb8f' : '#25D366',
+                                        fontSize: 18,
+                                    }}
                                 />
                             }
                             onClick={() => handleWhatsApp(stop)}
@@ -478,14 +534,18 @@ export const RouteDetailPageView = ({
 
     const dailyRowSelection: TableRowSelection<Record<string, unknown>> = {
         selectedRowKeys: selectedDailyIds,
-        onChange: (keys) => setSelectedDailyIds(keys as string[]),
+        onChange: (keys) => {
+            const visibleIds = new Set(dailyOrders.map((order) => order.id));
+            setSelectedDailyIds((current) => [
+                ...current.filter((id) => !visibleIds.has(id)),
+                ...(keys as string[]),
+            ]);
+        },
     };
 
     const toggleDailyOrder = (orderId: string, selected: boolean) => {
         setSelectedDailyIds((current) =>
-            selected
-                ? [...new Set([...current, orderId])]
-                : current.filter((id) => id !== orderId)
+            selected ? [...new Set([...current, orderId])] : current.filter((id) => id !== orderId)
         );
     };
 
@@ -496,8 +556,7 @@ export const RouteDetailPageView = ({
     const allDailySelected =
         visibleDailyOrderIds.length > 0 &&
         selectedVisibleDailyIds.length === visibleDailyOrderIds.length;
-    const dailySelectionIndeterminate =
-        selectedVisibleDailyIds.length > 0 && !allDailySelected;
+    const dailySelectionIndeterminate = selectedVisibleDailyIds.length > 0 && !allDailySelected;
     const toggleAllDailyOrders = (selected: boolean) => {
         setSelectedDailyIds((current) =>
             selected
@@ -509,11 +568,17 @@ export const RouteDetailPageView = ({
     const handleAddDailyStops = async () => {
         if (selectedDailyIds.length === 0) return;
         setAddingDaily(true);
+        const assignedIds: string[] = [];
         try {
             for (const orderId of selectedDailyIds) {
-                await onAddStop(orderId);
+                try {
+                    await onAddStop(orderId);
+                    assignedIds.push(orderId);
+                } catch {
+                    // Continue assigning the remaining valid selections.
+                }
             }
-            setSelectedDailyIds([]);
+            setSelectedDailyIds((current) => current.filter((id) => !assignedIds.includes(id)));
         } finally {
             setAddingDaily(false);
         }
@@ -577,7 +642,9 @@ export const RouteDetailPageView = ({
                                 variant="primary"
                                 icon={<DollarOutlined />}
                                 label="Rendir Ruta"
-                                action={() => navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)}
+                                action={() =>
+                                    navigate(`/tienda/logistica/rutas/${route.id}/rendicion`)
+                                }
                             />
                         )}
                         {route.status === 'planned' && (
@@ -603,7 +670,9 @@ export const RouteDetailPageView = ({
                                                     cancelText: 'Cancelar',
                                                     okButtonProps: { danger: true },
                                                     onOk: async () => {
-                                                        await onRevertRoute('Reversión manual desde el panel.');
+                                                        await onRevertRoute(
+                                                            'Reversión manual desde el panel.'
+                                                        );
                                                     },
                                                 });
                                             }
@@ -630,7 +699,9 @@ export const RouteDetailPageView = ({
                                     }
                                 }}
                             />
-                        ) : <Text strong>{route.route_name || '—'}</Text>}
+                        ) : (
+                            <Text strong>{route.route_name || '—'}</Text>
+                        )}
                     </Descriptions.Item>
                     <Descriptions.Item label="Fecha">
                         <Text strong>{formatDateShort(route.operational_date)}</Text>
@@ -654,8 +725,10 @@ export const RouteDetailPageView = ({
                                 needConfirm={false}
                                 showNow={false}
                             />
+                        ) : route.departure_time ? (
+                            <Text strong>{route.departure_time}</Text>
                         ) : (
-                            route.departure_time ? <Text strong>{route.departure_time}</Text> : '—'
+                            '—'
                         )}
                     </Descriptions.Item>
                     <Descriptions.Item label="Conductor">
@@ -669,12 +742,18 @@ export const RouteDetailPageView = ({
                             {statusLabels[route.status] || route.status}
                         </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Paradas"><Text strong>{activeStops.length}</Text></Descriptions.Item>
+                    <Descriptions.Item label="Paradas">
+                        <Text strong>{activeStops.length}</Text>
+                    </Descriptions.Item>
                 </Descriptions>
 
                 {/* ── Acciones: planned ── */}
                 {route.status === 'planned' && (
-                    <Row className="routeDetailPlannedActions" gutter={[8, 8]} style={{ marginTop: 12 }}>
+                    <Row
+                        className="routeDetailPlannedActions"
+                        gutter={[8, 8]}
+                        style={{ marginTop: 12 }}
+                    >
                         {hasPolyline && (
                             <Col xs={12} md={7}>
                                 <Button
@@ -724,7 +803,12 @@ export const RouteDetailPageView = ({
 
                 {/* ── Acciones: loaded ── */}
                 {route.status === 'loaded' && (
-                    <Row className="routeDetailLoadedActions" gutter={[8, 8]} align="middle" style={{ marginTop: 12 }}>
+                    <Row
+                        className="routeDetailLoadedActions"
+                        gutter={[8, 8]}
+                        align="middle"
+                        style={{ marginTop: 12 }}
+                    >
                         {hasPolyline && (
                             <Col xs={12} md={6}>
                                 <Button
@@ -772,7 +856,9 @@ export const RouteDetailPageView = ({
                                     onConfirm={() => onDispatchRoute()}
                                     okText="Despachar"
                                     cancelText="Cancelar"
-                                    okButtonProps={{ style: { background: '#52c41a', borderColor: '#52c41a' } }}
+                                    okButtonProps={{
+                                        style: { background: '#52c41a', borderColor: '#52c41a' },
+                                    }}
                                 >
                                     <Button
                                         variant="primary"
@@ -847,7 +933,7 @@ export const RouteDetailPageView = ({
                                         try {
                                             await onPlanRoute();
                                         } catch {
-                                            // Error ya mostrado por el hook, 
+                                            // Error ya mostrado por el hook,
                                             // re-throw para que AntModal mantenga el modal abierto
                                             setPlanning(false);
                                             throw new Error();
@@ -858,9 +944,7 @@ export const RouteDetailPageView = ({
                             }}
                         />
                     ) : (
-                        <Tooltip
-                            title={planDisabledReason}
-                        >
+                        <Tooltip title={planDisabledReason}>
                             <span>
                                 <Button variant="primary" label="Planificar Ruta" disabled />
                             </span>
@@ -897,7 +981,7 @@ export const RouteDetailPageView = ({
                                 onRow={(record) =>
                                     ({
                                         id: (record as Record<string, unknown>).id as string,
-                                    } as Record<string, unknown>)
+                                    }) as Record<string, unknown>
                                 }
                             />
                         </SortableContext>
@@ -905,10 +989,7 @@ export const RouteDetailPageView = ({
                 </div>
                 <div className="routeDetailStopsMobile" data-testid="route-stops-mobile">
                     {activeStops.length === 0 ? (
-                        <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description="No hay datos"
-                        >
+                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No hay datos">
                             <span className="routeDetailEmptyHint">
                                 Aún no se han asignado paradas a esta ruta.
                             </span>
@@ -1013,12 +1094,10 @@ export const RouteDetailPageView = ({
                         }}
                     >
                         <div>
-                            <strong style={{ color: '#d48806' }}>
-                                ⚠️ Orden modificado
-                            </strong>
+                            <strong style={{ color: '#d48806' }}>⚠️ Orden modificado</strong>
                             <p style={{ margin: '4px 0 0', color: '#666' }}>
-                                El orden de las paradas ha cambiado. Es necesario recalcular
-                                los tiempos de llegada.
+                                El orden de las paradas ha cambiado. Es necesario recalcular los
+                                tiempos de llegada.
                             </p>
                         </div>
                         <CanDo permission="logistics.routes.manage">
@@ -1042,12 +1121,16 @@ export const RouteDetailPageView = ({
 
             {isDraft && (
                 <div className="routeDetailSection">
+                    <EligibleOrderFilters
+                        filters={eligibleFilters}
+                        localities={eligibleLocalities}
+                        onChange={onEligibleFiltersChange}
+                    />
                     <Tabs
                         defaultActiveKey="daily"
                         activeKey={activeOrderTab}
                         onChange={(key) => {
                             setActiveOrderTab(key);
-                            if (key !== 'daily') setSelectedDailyIds([]);
                         }}
                         items={[
                             {
@@ -1062,7 +1145,9 @@ export const RouteDetailPageView = ({
                                                 : '—'}
                                         </p>
                                         <div className="routeDetailSectionHeader">
-                                            <div />
+                                            <span className="routeDetailSelectionCount">
+                                                {selectedDailyIds.length} pedidos seleccionados
+                                            </span>
                                             <Button
                                                 variant="primary"
                                                 label="Asignar a Ruta"
@@ -1075,52 +1160,115 @@ export const RouteDetailPageView = ({
                                             <Table
                                                 columns={dailyColumns}
                                                 dataSource={
-                                                    dailyOrders as unknown as Record<string, unknown>[]
+                                                    dailyOrders as unknown as Record<
+                                                        string,
+                                                        unknown
+                                                    >[]
                                                 }
                                                 rowSelection={dailyRowSelection}
                                                 loading={dailyOrdersLoading}
-                                                pagination={false}
+                                                pagination={{
+                                                    current: dailyOrdersPagination.current_page,
+                                                    pageSize: dailyOrdersPagination.per_page,
+                                                    total: dailyOrdersPagination.total,
+                                                    showSizeChanger: false,
+                                                    onChange: (page) =>
+                                                        onEligiblePageChange('daily', page),
+                                                }}
                                                 scroll={{ x: 'max-content' }}
                                                 size="small"
                                             />
                                         </div>
-                                        <div className="routeDetailOrdersMobile" data-testid="daily-orders-mobile">
+                                        <div
+                                            className="routeDetailOrdersMobile"
+                                            data-testid="daily-orders-mobile"
+                                        >
                                             {dailyOrdersLoading ? (
                                                 <Spin />
                                             ) : dailyOrders.length === 0 ? (
-                                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No hay datos" />
+                                                <Empty
+                                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                    description={
+                                                        eligibleFilters.search ||
+                                                        eligibleFilters.locality_id
+                                                            ? 'No se encontraron pedidos con los filtros seleccionados.'
+                                                            : 'No hay datos'
+                                                    }
+                                                />
                                             ) : (
                                                 <>
                                                     <div className="routeDetailMobileSelectAll">
                                                         <Checkbox
                                                             checked={allDailySelected}
-                                                            indeterminate={dailySelectionIndeterminate}
+                                                            indeterminate={
+                                                                dailySelectionIndeterminate
+                                                            }
                                                             onChange={(event) =>
-                                                                toggleAllDailyOrders(event.target.checked)
+                                                                toggleAllDailyOrders(
+                                                                    event.target.checked
+                                                                )
                                                             }
                                                         >
                                                             Seleccionar todos
                                                         </Checkbox>
                                                         <span>
-                                                            {selectedVisibleDailyIds.length} seleccionados
+                                                            Seleccionar pedidos visibles (
+                                                            {visibleDailyOrderIds.length})
                                                         </span>
                                                     </div>
                                                     {dailyOrders.map((order) => (
-                                                        <article className="routeDetailMobileOrderCard" key={order.id}>
+                                                        <article
+                                                            className="routeDetailMobileOrderCard"
+                                                            key={order.id}
+                                                        >
                                                             <Checkbox
-                                                                checked={selectedDailyIds.includes(order.id)}
+                                                                checked={selectedDailyIds.includes(
+                                                                    order.id
+                                                                )}
                                                                 onChange={(event) =>
-                                                                    toggleDailyOrder(order.id, event.target.checked)
+                                                                    toggleDailyOrder(
+                                                                        order.id,
+                                                                        event.target.checked
+                                                                    )
                                                                 }
                                                                 aria-label={`Seleccionar ${order.id}`}
                                                             />
                                                             <span className="routeDetailMobileOrderContent">
-                                                                <strong>{order.operation_number}</strong>
-                                                                <span>{order.address?.locality ?? '—'}</span>
-                                                                <span>{formatDateShort(order.requested_delivery_date)}</span>
+                                                                <strong>
+                                                                    {order.operation_number}
+                                                                </strong>
+                                                                <span>
+                                                                    {order.address?.locality ?? '—'}
+                                                                </span>
+                                                                <span>
+                                                                    {formatDateShort(
+                                                                        order.requested_delivery_date
+                                                                    )}
+                                                                </span>
                                                             </span>
                                                         </article>
                                                     ))}
+                                                    {dailyOrdersPagination.total >
+                                                        dailyOrdersPagination.per_page && (
+                                                        <div className="routeDetailOrdersPagination">
+                                                            <Pagination
+                                                                current={
+                                                                    dailyOrdersPagination.current_page
+                                                                }
+                                                                total={dailyOrdersPagination.total}
+                                                                pageSize={
+                                                                    dailyOrdersPagination.per_page
+                                                                }
+                                                                showSizeChanger={false}
+                                                                onChange={(page) =>
+                                                                    onEligiblePageChange(
+                                                                        'daily',
+                                                                        page
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
                                         </div>
@@ -1146,16 +1294,35 @@ export const RouteDetailPageView = ({
                                                     >[]
                                                 }
                                                 loading={exceptionalOrdersLoading}
-                                                pagination={false}
+                                                pagination={{
+                                                    current:
+                                                        exceptionalOrdersPagination.current_page,
+                                                    pageSize: exceptionalOrdersPagination.per_page,
+                                                    total: exceptionalOrdersPagination.total,
+                                                    showSizeChanger: false,
+                                                    onChange: (page) =>
+                                                        onEligiblePageChange('exceptional', page),
+                                                }}
                                                 scroll={{ x: 'max-content' }}
                                                 size="small"
                                             />
                                         </div>
-                                        <div className="routeDetailOrdersMobile" data-testid="exceptional-orders-mobile">
+                                        <div
+                                            className="routeDetailOrdersMobile"
+                                            data-testid="exceptional-orders-mobile"
+                                        >
                                             {exceptionalOrdersLoading ? (
                                                 <Spin />
                                             ) : exceptionalOrders.length === 0 ? (
-                                                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No hay datos" />
+                                                <Empty
+                                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                    description={
+                                                        eligibleFilters.search ||
+                                                        eligibleFilters.locality_id
+                                                            ? 'No se encontraron pedidos con los filtros seleccionados.'
+                                                            : 'No hay datos'
+                                                    }
+                                                />
                                             ) : (
                                                 exceptionalOrders.map((order) => (
                                                     <article
@@ -1163,11 +1330,17 @@ export const RouteDetailPageView = ({
                                                         key={order.id}
                                                     >
                                                         <div className="routeDetailMobileOrderContent">
-                                                            <strong>{order.operation_number}</strong>
-                                                            <span>{order.address?.locality ?? '—'}</span>
+                                                            <strong>
+                                                                {order.operation_number}
+                                                            </strong>
+                                                            <span>
+                                                                {order.address?.locality ?? '—'}
+                                                            </span>
                                                             <span>
                                                                 {order.requested_delivery_date
-                                                                    ? formatDateShort(order.requested_delivery_date)
+                                                                    ? formatDateShort(
+                                                                          order.requested_delivery_date
+                                                                      )
                                                                     : 'Sin fecha pactada'}
                                                             </span>
                                                         </div>
@@ -1182,6 +1355,30 @@ export const RouteDetailPageView = ({
                                                     </article>
                                                 ))
                                             )}
+                                            {!exceptionalOrdersLoading &&
+                                                exceptionalOrdersPagination.total >
+                                                    exceptionalOrdersPagination.per_page && (
+                                                    <div className="routeDetailOrdersPagination">
+                                                        <Pagination
+                                                            current={
+                                                                exceptionalOrdersPagination.current_page
+                                                            }
+                                                            total={
+                                                                exceptionalOrdersPagination.total
+                                                            }
+                                                            pageSize={
+                                                                exceptionalOrdersPagination.per_page
+                                                            }
+                                                            showSizeChanger={false}
+                                                            onChange={(page) =>
+                                                                onEligiblePageChange(
+                                                                    'exceptional',
+                                                                    page
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+                                                )}
                                         </div>
                                     </div>
                                 ),

@@ -130,7 +130,10 @@ export const API_ENDPOINTS = {
                 URL: '/v1/store/routes',
                 DETAIL: (id: string) => `/v1/store/routes/${id}`,
                 STOPS: (routeId: string) => `/v1/store/routes/${routeId}/stops`,
-                ELIGIBLE_ORDERS: { URL: '/v1/store/routes/eligible-orders' },
+                ELIGIBLE_ORDERS: {
+                    URL: '/v1/store/routes/eligible-orders',
+                    LOCALITIES: '/v1/store/routes/eligible-orders/localities',
+                },
                 PLAN: (routeId: string) => `/v1/store/routes/${routeId}/plan`,
                 REORDER: (routeId: string) => `/v1/store/routes/${routeId}/stops/reorder`,
                 RECALCULATE: (routeId: string) => `/v1/store/routes/${routeId}/recalculate`,

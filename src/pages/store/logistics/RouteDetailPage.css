@@ -64,6 +64,17 @@
     font-size: 0.875rem;
 }
 
+.routeDetailSelectionCount {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.routeDetailOrdersPagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
 /* TimePicker alignment inside Descriptions */
 .routeDetailHeader .ant-picker {
     vertical-align: middle;
@@ -80,7 +91,9 @@
 
 /* Drag and drop row transition */
 .routeDetailPage .ant-table-tbody > tr {
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
 }
 
 /* Truncate button text on narrow screens */

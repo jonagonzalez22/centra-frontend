@@ -129,7 +129,25 @@ export interface RoutesFilters {
 
 export interface EligibleOrdersFilters {
     requested_delivery_date?: string;
+    exclude_delivery_date?: string;
     exclude_route_id?: string;
+    search?: string;
+    locality_id?: string;
+    page?: number;
+    per_page?: number;
+}
+
+export interface EligibleOrdersListResponse {
+    items: EligibleOrder[];
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+}
+
+export interface EligibleOrderLocality {
+    id: string;
+    name: string;
 }
 
 export interface UpdateRouteDto {

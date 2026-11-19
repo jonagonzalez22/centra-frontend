@@ -8,10 +8,17 @@ import type {
     CreateRouteDto,
     UpdateRouteDto,
     DeliveryRoute,
-    EligibleOrder,
+    EligibleOrderLocality,
     EligibleOrdersFilters,
+    EligibleOrdersListResponse,
 } from '../interfaces/route.interface';
-import type { LoadSheetData, ConfirmLoadPayload, ConfirmLoadResponse, BulkLoadPayload, AdjustItemsPayload } from '../interfaces/loadSheet.interface';
+import type {
+    LoadSheetData,
+    ConfirmLoadPayload,
+    ConfirmLoadResponse,
+    BulkLoadPayload,
+    AdjustItemsPayload,
+} from '../interfaces/loadSheet.interface';
 
 export const RoutesService = {
     getAll: async (filters: RoutesFilters = {}): Promise<RoutesListResponse> => {
@@ -49,8 +56,10 @@ export const RoutesService = {
         return data.data;
     },
 
-    getEligibleOrders: async (filters?: EligibleOrdersFilters): Promise<EligibleOrder[]> => {
-        const { data } = await api.get<ApiListResponse<{ items: EligibleOrder[] }>>(
+    getEligibleOrders: async (
+        filters?: EligibleOrdersFilters
+    ): Promise<EligibleOrdersListResponse> => {
+        const { data } = await api.get<ApiListResponse<EligibleOrdersListResponse>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.ELIGIBLE_ORDERS.URL,
             { params: filters }
         );
@@ -64,7 +73,27 @@ export const RoutesService = {
             throw error;
         }
 
-        return data.data.items;
+        return data.data;
+    },
+
+    getEligibleOrderLocalities: async (
+        excludeRouteId: string
+    ): Promise<EligibleOrderLocality[]> => {
+        const { data } = await api.get<ApiListResponse<EligibleOrderLocality[]>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.ELIGIBLE_ORDERS.LOCALITIES,
+            { params: { exclude_route_id: excludeRouteId } }
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
     },
 
     create: async (dto: CreateRouteDto): Promise<DeliveryRoute> => {
@@ -214,19 +243,30 @@ export const RoutesService = {
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.LOAD_SHEET(routeId)
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
     },
 
-    confirmLoad: async (routeId: string, payload: ConfirmLoadPayload): Promise<ConfirmLoadResponse> => {
+    confirmLoad: async (
+        routeId: string,
+        payload: ConfirmLoadPayload
+    ): Promise<ConfirmLoadResponse> => {
         const { data } = await api.post<ApiListResponse<ConfirmLoadResponse>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.CONFIRM_LOAD(routeId),
             payload
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
@@ -238,7 +278,11 @@ export const RoutesService = {
             payload
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
@@ -250,7 +294,11 @@ export const RoutesService = {
             payload
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
@@ -262,7 +310,11 @@ export const RoutesService = {
             { reason }
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
@@ -273,7 +325,11 @@ export const RoutesService = {
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.DISPATCH(routeId)
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
         return data.data;
@@ -284,7 +340,11 @@ export const RoutesService = {
             API_ENDPOINTS.STORE.LOGISTICS.STOPS.NOTIFY(stopId)
         );
         if (data.status === 'error') {
-            const error: ApiError = { status: 0, message: data.message, errors: data.errors ?? undefined };
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
             throw error;
         }
     },
