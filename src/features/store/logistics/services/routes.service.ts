@@ -8,6 +8,7 @@ import type {
     CreateRouteDto,
     UpdateRouteDto,
     DeliveryRoute,
+    RouteMapGeometry,
     EligibleOrderLocality,
     EligibleOrdersFilters,
     EligibleOrdersListResponse,
@@ -42,6 +43,24 @@ export const RoutesService = {
     getById: async (id: string): Promise<DeliveryRoute> => {
         const { data } = await api.get<ApiListResponse<DeliveryRoute>>(
             API_ENDPOINTS.STORE.LOGISTICS.ROUTES.DETAIL(id)
+        );
+
+        if (data.status === 'error') {
+            const error: ApiError = {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            };
+            throw error;
+        }
+
+        return data.data;
+    },
+
+    getMapGeometry: async (id: string, signal?: AbortSignal): Promise<RouteMapGeometry> => {
+        const { data } = await api.get<ApiListResponse<RouteMapGeometry>>(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.MAP_GEOMETRY(id),
+            { signal }
         );
 
         if (data.status === 'error') {

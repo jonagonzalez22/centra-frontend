@@ -5,6 +5,26 @@ import { RoutesService } from './routes.service';
 vi.mock('@/api/api.config');
 
 describe('RoutesService', () => {
+    test('requests route geometry from the ephemeral map endpoint without client-side caching', async () => {
+        vi.mocked(api.get).mockResolvedValue({
+            data: {
+                status: 'success',
+                message: 'ok',
+                data: { encoded_polyline: 'temporary_geometry' },
+                errors: null,
+            },
+        });
+        const controller = new AbortController();
+
+        await expect(RoutesService.getMapGeometry('route-1', controller.signal)).resolves.toEqual({
+            encoded_polyline: 'temporary_geometry',
+        });
+        expect(api.get).toHaveBeenCalledWith(
+            API_ENDPOINTS.STORE.LOGISTICS.ROUTES.MAP_GEOMETRY('route-1'),
+            { signal: controller.signal }
+        );
+    });
+
     test('sends independent route filter parameters to the paginated endpoint', async () => {
         const filters = {
             route_number: 'A1B2C3D4',

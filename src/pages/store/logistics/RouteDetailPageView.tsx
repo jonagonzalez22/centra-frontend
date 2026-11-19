@@ -235,7 +235,7 @@ export const RouteDetailPageView = ({
               : !hasActiveStops
                 ? 'Agregá al menos una parada para planificar la ruta.'
                 : '';
-    const hasPolyline = !!route.encoded_polyline;
+    const canViewRoute = activeStops.length > 0 && route.status !== 'draft';
     const allowReorder = (isDraft || route.status === 'planned') && activeStops.length > 1;
 
     const stopsColumns = [
@@ -754,7 +754,7 @@ export const RouteDetailPageView = ({
                         gutter={[8, 8]}
                         style={{ marginTop: 12 }}
                     >
-                        {hasPolyline && (
+                        {canViewRoute && (
                             <Col xs={12} md={7}>
                                 <Button
                                     variant="default"
@@ -766,7 +766,7 @@ export const RouteDetailPageView = ({
                             </Col>
                         )}
                         <CanDo permission="logistics.routes.plan">
-                            <Col xs={hasPolyline ? 12 : 24} md={hasPolyline ? 7 : 8}>
+                            <Col xs={canViewRoute ? 12 : 24} md={canViewRoute ? 7 : 8}>
                                 <Button
                                     variant="default"
                                     label="Reoptimizar"
@@ -788,7 +788,7 @@ export const RouteDetailPageView = ({
                             </Col>
                         </CanDo>
                         <CanDo permission="logistics.routes.manage">
-                            <Col xs={24} md={hasPolyline ? 10 : 16}>
+                            <Col xs={24} md={canViewRoute ? 10 : 16}>
                                 <Button
                                     variant="primary"
                                     label="Gestionar Carga"
@@ -809,7 +809,7 @@ export const RouteDetailPageView = ({
                         align="middle"
                         style={{ marginTop: 12 }}
                     >
-                        {hasPolyline && (
+                        {canViewRoute && (
                             <Col xs={12} md={6}>
                                 <Button
                                     variant="default"
@@ -822,7 +822,7 @@ export const RouteDetailPageView = ({
                                 />
                             </Col>
                         )}
-                        <Col xs={hasPolyline ? 12 : 24} md={6}>
+                        <Col xs={canViewRoute ? 12 : 24} md={6}>
                             <CanDo permission="logistics.routes.view">
                                 <Button
                                     variant="default"
@@ -880,7 +880,7 @@ export const RouteDetailPageView = ({
                 )}
 
                 {/* ── Acciones: dispatched ── */}
-                {route.status === 'dispatched' && hasPolyline && (
+                {route.status === 'dispatched' && canViewRoute && (
                     <Row gutter={[8, 8]} style={{ marginTop: 12 }}>
                         <Col xs={24} md={6}>
                             <Button

@@ -129,6 +129,7 @@ export const API_ENDPOINTS = {
             ROUTES: {
                 URL: '/v1/store/routes',
                 DETAIL: (id: string) => `/v1/store/routes/${id}`,
+                MAP_GEOMETRY: (id: string) => `/v1/store/routes/${id}/map-geometry`,
                 STOPS: (routeId: string) => `/v1/store/routes/${routeId}/stops`,
                 ELIGIBLE_ORDERS: {
                     URL: '/v1/store/routes/eligible-orders',

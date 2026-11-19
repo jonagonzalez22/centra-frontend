@@ -81,7 +81,6 @@ export interface DeliveryRoute {
     created_by: string;
     planned_at: string | null;
     departure_time: string;
-    encoded_polyline: string | null;
     unload_time_minutes_snapshot: number | null;
     loaded_at: string | null;
     loaded_by: string | null;
@@ -96,6 +95,10 @@ export interface DeliveryRoute {
     operational_stops_count?: number;
     created_at: string;
     updated_at: string;
+}
+
+export interface RouteMapGeometry {
+    encoded_polyline: string;
 }
 
 export interface RoutesListResponse {

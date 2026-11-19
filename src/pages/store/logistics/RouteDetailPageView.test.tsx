@@ -240,7 +240,6 @@ test('keeps planned stop ETA, duration, and actions visible in the mobile card',
     const plannedRoute = {
         ...route,
         status: 'planned',
-        encoded_polyline: 'encoded-route',
         stops: [
             {
                 id: 'planned-stop-1',
@@ -276,7 +275,6 @@ test('keeps loaded route actions visible with the existing conditions', () => {
     const loadedRoute = {
         ...route,
         status: 'loaded',
-        encoded_polyline: 'encoded-route',
     } as DeliveryRoute;
     renderView([], [], loadedRoute);
 
