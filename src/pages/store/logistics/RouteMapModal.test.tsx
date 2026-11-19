@@ -108,9 +108,16 @@ describe('RouteMapModal', () => {
     });
 
     it('muestra un único marcador de tienda con ícono y descripción de salida y regreso', async () => {
-        const marker = vi.fn(function Marker(_options: Record<string, unknown>) {});
-        const infoWindow = vi.fn(function InfoWindow(_options: Record<string, unknown>) {
-            return { open: (_openOptions: Record<string, unknown>) => {} };
+        const marker = vi.fn(function Marker(options: Record<string, unknown>) {
+            void options;
+        });
+        const infoWindow = vi.fn(function InfoWindow(options: Record<string, unknown>) {
+            void options;
+            return {
+                open: (openOptions: Record<string, unknown>) => {
+                    void openOptions;
+                },
+            };
         });
         const size = vi.fn(function Size() {});
         const point = vi.fn(function Point() {});
