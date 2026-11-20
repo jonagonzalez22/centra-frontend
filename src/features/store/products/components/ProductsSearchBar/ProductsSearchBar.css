@@ -9,7 +9,7 @@
 }
 .productsSearchBarPrimaryFilters {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     column-gap: 1rem;
     row-gap: 0.25rem;
 }
@@ -31,6 +31,12 @@
 .productsSearchBarChips {
     margin-top: 0.5rem;
 }
+
+.productsSearchBarChip {
+    display: inline-flex !important;
+    @apply !m-0 !max-w-full !truncate !rounded-full;
+}
+
 .productsSearchBarChip .ant-tag-close-icon {
     display: inline-flex;
     align-items: center;
@@ -39,16 +45,18 @@
     height: 16px;
     margin-inline-start: 4px;
     border-radius: 50%;
-    background: var(--products-chip-close-bg);
-    color: var(--products-chip-close-color);
+    background: var(--products-filter-chip-close-bg);
+    color: var(--products-filter-chip-close-color);
 }
+
 .productsSearchBarChip .ant-tag-close-icon:hover,
 .productsSearchBarChip .ant-tag-close-icon:focus-visible {
-    background: var(--products-chip-close-hover);
-    color: var(--products-chip-close-color);
+    background: var(--products-filter-chip-close-hover);
+    color: var(--products-filter-chip-close-color);
 }
+
 .productsSearchBarChip .ant-tag-close-icon:focus-visible {
-    outline: 2px solid var(--products-chip-close-focus);
+    outline: 2px solid var(--products-filter-chip-close-focus);
     outline-offset: 1px;
 }
 @media (min-width: 1200px) {
@@ -57,10 +65,7 @@
         column-gap: 0.5rem;
     }
     .productsSearchBarPrimaryFilters {
-        grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(180px, 1fr) minmax(
-                150px,
-                0.8fr
-            );
+        grid-template-columns: minmax(240px, 1.5fr) minmax(180px, 1fr) minmax(150px, 0.8fr);
     }
     .productsSearchBarActions {
         grid-column: 2;

@@ -4,7 +4,11 @@ export interface ProductCategory {
     id: string;
     name: string;
 }
-export interface ProductBrand { id: string; name: string; is_active: boolean; }
+export interface ProductBrand {
+    id: string;
+    name: string;
+    is_active: boolean;
+}
 
 export interface MeasurementUnit {
     id: string;
@@ -47,7 +51,10 @@ export interface ProductSourceCandidate {
     name: string;
     sku: string;
     stock_source_product_id: string | null;
-    stock_measurement_unit: Pick<MeasurementUnit, 'id' | 'code' | 'name' | 'symbol' | 'category'> | null;
+    stock_measurement_unit: Pick<
+        MeasurementUnit,
+        'id' | 'code' | 'name' | 'symbol' | 'category'
+    > | null;
 }
 
 export interface CreateProductDto {
@@ -106,21 +113,25 @@ export interface ProductsFilters {
     per_page?: number;
     category_id?: string;
     brand_id?: string;
+    /** Unified partial search by product name or code. */
+    q?: string;
+    /** @deprecated Kept for backwards compatible callers. */
     name?: string;
     sku?: string;
     is_active?: boolean;
     is_sellable?: boolean;
     stock_type?: 'own' | 'shared';
+    stock_status?: 'low' | 'out';
     sort_by?: string;
     sort_dir?: 'asc' | 'desc';
 }
 
 export interface ProductsSearchValues {
-    name?: string;
-    sku?: string;
+    q?: string;
     category_id?: string;
     brand_id?: string;
     is_active?: boolean;
     is_sellable?: boolean;
     stock_type?: 'own' | 'shared';
+    stock_status?: 'low' | 'out';
 }

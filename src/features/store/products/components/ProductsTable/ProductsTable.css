@@ -1,7 +1,34 @@
 .productsTableNameLink {
-    @apply text-blue-600 cursor-pointer hover:underline;
+    @apply cursor-pointer border-0 bg-transparent p-0 text-left font-medium text-centra-primary hover:underline;
 }
 
 .productsTableActions {
     @apply flex items-center gap-1;
+}
+
+.productsTableProduct,
+.productsTableInventory,
+.productsTableStatus {
+    @apply flex min-w-0 flex-col items-start gap-1;
+}
+
+.productsTableSecondary {
+    @apply text-xs text-centra-text/60;
+}
+
+.productsTablePrice,
+.productsTableQuantity {
+    @apply font-medium tabular-nums text-centra-text;
+}
+
+.productsTableSharedStock {
+    @apply text-sm font-medium text-centra-primary;
+}
+
+.productsTableTag {
+    @apply inline-flex w-auto self-start items-center whitespace-nowrap px-2 py-0.5 leading-5;
+}
+
+.productsTableTagNeutral {
+    @apply border-centra-text/15 bg-centra-text/5 text-centra-text/70;
 }

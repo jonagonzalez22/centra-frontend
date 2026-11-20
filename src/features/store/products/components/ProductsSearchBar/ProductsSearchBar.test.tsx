@@ -72,12 +72,12 @@ afterEach(() => vi.useRealTimers());
 
 test('renders primary filters and opens advanced filters only on demand', () => {
     renderSearchBar();
-    ['Nombre', 'Código', 'Categoría', 'Estado'].forEach((label) =>
+    ['Buscar', 'Categoría', 'Estado'].forEach((label) =>
         expect(screen.getByLabelText(label)).toBeInTheDocument()
     );
     expect(screen.queryByLabelText('Marca')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Más filtros' }));
-    ['Marca', 'Tipo de stock', 'Disponible para venta'].forEach((label) =>
+    ['Marca', 'Tipo de stock', 'Disponibilidad para venta', 'Situación de stock'].forEach((label) =>
         expect(screen.getByLabelText(label)).toBeInTheDocument()
     );
 });
@@ -90,12 +90,19 @@ test('does not apply advanced changes when the drawer closes', () => {
     expect(setFilters).not.toHaveBeenCalled();
 });
 
-test('applies advanced filters and preserves primary filters', () => {
-    renderSearchBar({ name: 'Agua' });
+test('applies advanced filters and preserves the unified search', () => {
+    renderSearchBar({ q: 'Agua' });
     fireEvent.click(screen.getByRole('button', { name: 'Más filtros' }));
     fireEvent.change(screen.getByLabelText('Tipo de stock'), { target: { value: 'shared' } });
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }));
-    expect(setFilters).toHaveBeenLastCalledWith({ name: 'Agua', stock_type: 'shared' });
+    expect(setFilters).toHaveBeenLastCalledWith({ q: 'Agua', stock_type: 'shared' });
+});
+
+test('clears only advanced filters from the drawer', () => {
+    renderSearchBar({ q: 'Agua', stock_type: 'shared', stock_status: 'out' });
+    fireEvent.click(screen.getByRole('button', { name: /Más filtros/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }));
+    expect(setFilters).toHaveBeenLastCalledWith({ q: 'Agua' });
 });
 
 test('shows advanced count, friendly chips, and removes only the selected chip', () => {
@@ -122,11 +129,11 @@ test('shows advanced count, friendly chips, and removes only the selected chip',
     });
 });
 
-test('debounces primary filters and clears all filters', () => {
+test('debounces the unified search and clears all filters', () => {
     renderSearchBar({ stock_type: 'own' });
-    fireEvent.change(screen.getByLabelText('Código'), { target: { value: 'PRODUCTO-1' } });
+    fireEvent.change(screen.getByLabelText('Buscar'), { target: { value: 'PRODUCTO-1' } });
     act(() => vi.advanceTimersByTime(500));
-    expect(setFilters).toHaveBeenLastCalledWith({ sku: 'PRODUCTO-1', stock_type: 'own' });
+    expect(setFilters).toHaveBeenLastCalledWith({ q: 'PRODUCTO-1', stock_type: 'own' });
     fireEvent.click(screen.getByRole('button', { name: 'Limpiar' }));
     expect(setFilters).toHaveBeenLastCalledWith({});
 });

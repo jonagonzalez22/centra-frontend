@@ -25,13 +25,20 @@ vi.mock('@/components/Table/Table', () => ({
     }) => (
         <div>
             <div data-testid="headers">
-                {columns.map((column) => <span key={column.key}>{column.title}</span>)}
+                {columns.map((column) => (
+                    <span key={column.key}>{column.title}</span>
+                ))}
             </div>
             {dataSource.map((record) => (
                 <div key={String(record.id)} data-testid={`row-${String(record.id)}`}>
                     {columns.map((column) => (
                         <div key={column.key} data-testid={`cell-${column.key}`}>
-                            {column.render ? column.render(column.dataIndex ? record[column.dataIndex] : undefined, record) : null}
+                            {column.render
+                                ? column.render(
+                                      column.dataIndex ? record[column.dataIndex] : undefined,
+                                      record
+                                  )
+                                : null}
                         </div>
                     ))}
                 </div>
@@ -53,7 +60,13 @@ const product = (overrides: Partial<Product> = {}): Product => ({
     available_stock: '1.0000',
     stock_min: '2.0000',
     stock_measurement_unit_id: 'unit-1',
-    stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
+    stock_measurement_unit: {
+        id: 'unit-1',
+        code: 'unit',
+        name: 'Unidad',
+        symbol: 'u',
+        category: 'unit',
+    },
     stock_source_product: null,
     stock_consumption_quantity: null,
     sale_quantity_step: '1.0000',
@@ -86,52 +99,60 @@ const renderTable = (items: Product[]) => {
     return render(
         <ProductsContext.Provider value={context}>
             <ProductsTable onEdit={vi.fn()} onDelete={vi.fn()} onView={vi.fn()} />
-        </ProductsContext.Provider>,
+        </ProductsContext.Provider>
     );
 };
 
-describe('ProductsTable shared stock display', () => {
-    it('labels the commercial identifier as Código', () => {
+describe('ProductsTable inventory presentation', () => {
+    it('uses the simplified five-column layout', () => {
         renderTable([product()]);
 
-        expect(within(screen.getByTestId('headers')).getByText('Código')).toBeInTheDocument();
-        expect(screen.queryByText('SKU')).not.toBeInTheDocument();
+        ['Producto', 'Precio', 'Inventario', 'Estado', 'Acciones'].forEach((header) =>
+            expect(within(screen.getByTestId('headers')).getByText(header)).toBeInTheDocument()
+        );
+        expect(screen.queryByText('Categoría')).not.toBeInTheDocument();
     });
 
     it('shows physical stock and Stock bajo for a low-stock product with its own stock', () => {
         renderTable([product({ stock_reserved: '0.5000' })]);
 
         const row = within(screen.getByTestId('row-product-1'));
-        expect(row.getByTestId('cell-stock')).toHaveTextContent('1 u');
-        expect(row.getByTestId('cell-stock_reserved')).toHaveTextContent('0,5 u');
-        expect(row.getByTestId('cell-stock_type')).toHaveTextContent('Propio');
-        expect(row.getByTestId('cell-is_sellable')).toHaveTextContent('Disponible');
+        expect(row.getByTestId('cell-inventory')).toHaveTextContent('1 u');
+        expect(row.getByTestId('cell-inventory')).toHaveTextContent('Total: 1 u');
+        expect(row.getByTestId('cell-inventory')).toHaveTextContent('Reservado: 0,5 u');
         expect(screen.getByText('Stock bajo')).toBeInTheDocument();
     });
 
     it('hides physical stock but keeps derived commercial availability for a shared-stock product', () => {
-        renderTable([product({
-            name: 'Bidón asociado',
-            stock: '0.0000',
-            stock_reserved: '5.0000',
-            available_stock: '0.0000',
-            stock_min: '0.0000',
-            commercial_available_quantity: '2.0000',
-            is_sellable: false,
-            stock_source_product: {
-                id: 'source-1',
-                name: 'Producto fuente',
-                sku: 'FUENTE-1',
-                stock_measurement_unit: { id: 'unit-1', code: 'unit', name: 'Unidad', symbol: 'u', category: 'unit' },
-            },
-        })]);
+        renderTable([
+            product({
+                name: 'Bidón asociado',
+                stock: '0.0000',
+                stock_reserved: '5.0000',
+                available_stock: '0.0000',
+                stock_min: '0.0000',
+                commercial_available_quantity: '2.0000',
+                is_sellable: false,
+                stock_source_product: {
+                    id: 'source-1',
+                    name: 'Producto fuente',
+                    sku: 'FUENTE-1',
+                    stock_measurement_unit: {
+                        id: 'unit-1',
+                        code: 'unit',
+                        name: 'Unidad',
+                        symbol: 'u',
+                        category: 'unit',
+                    },
+                },
+            }),
+        ]);
 
         expect(screen.queryByText('Stock bajo')).not.toBeInTheDocument();
         const row = within(screen.getByTestId('row-product-1'));
-        expect(row.getByTestId('cell-stock')).toHaveTextContent('—');
-        expect(row.getByTestId('cell-stock_reserved')).toHaveTextContent('—');
-        expect(row.getByTestId('cell-available_stock')).toHaveTextContent('2 u');
-        expect(row.getByTestId('cell-stock_type')).toHaveTextContent('Compartido');
-        expect(row.getByTestId('cell-is_sellable')).toHaveTextContent('No disponible');
+        expect(row.getByTestId('cell-inventory')).toHaveTextContent('Stock compartido');
+        expect(row.getByTestId('cell-inventory')).toHaveTextContent('Producto fuente');
+        expect(row.queryByText('2 u')).not.toBeInTheDocument();
+        expect(row.getByTestId('cell-status')).toHaveTextContent('Venta deshabilitada');
     });
 });

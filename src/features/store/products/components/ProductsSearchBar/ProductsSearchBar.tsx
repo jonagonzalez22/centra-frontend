@@ -14,14 +14,15 @@ import './ProductsSearchBar.css';
 type StatusValue = 'all' | 'true' | 'false';
 type StockTypeValue = 'all' | 'own' | 'shared';
 type SellableValue = 'all' | 'true' | 'false';
+type StockStatusValue = 'all' | 'low' | 'out';
 interface Values {
-    name?: string;
-    sku?: string;
+    q?: string;
     category_id?: string;
     brand_id?: string;
     is_active?: StatusValue;
     stock_type?: StockTypeValue;
     is_sellable?: SellableValue;
+    stock_status?: StockStatusValue;
 }
 
 const statusOptions = [
@@ -36,25 +37,28 @@ const stockTypeOptions = [
 ];
 const sellableOptions = [
     { label: 'Todos', value: 'all' },
-    { label: 'Sí', value: 'true' },
-    { label: 'No', value: 'false' },
+    { label: 'Habilitados', value: 'true' },
+    { label: 'Deshabilitados', value: 'false' },
 ];
-const primaryKeys = ['name', 'sku', 'category_id', 'is_active'] as const;
-const advancedKeys = ['brand_id', 'stock_type', 'is_sellable'] as const;
+const stockStatusOptions = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Stock bajo', value: 'low' },
+    { label: 'Sin stock', value: 'out' },
+];
+const advancedKeys = ['brand_id', 'stock_type', 'is_sellable', 'stock_status'] as const;
 
 const asValues = (filters: ProductsFilters): Values => ({
-    name: filters.name,
-    sku: filters.sku,
+    q: filters.q,
     category_id: filters.category_id,
     brand_id: filters.brand_id,
     is_active: filters.is_active === undefined ? 'all' : (String(filters.is_active) as StatusValue),
     stock_type: filters.stock_type ?? 'all',
     is_sellable:
         filters.is_sellable === undefined ? 'all' : (String(filters.is_sellable) as SellableValue),
+    stock_status: filters.stock_status ?? 'all',
 });
 const toFilters = (values: Partial<Values>): ProductsSearchValues => ({
-    ...(values.name && { name: values.name }),
-    ...(values.sku && { sku: values.sku }),
+    ...(values.q?.trim() && { q: values.q.trim() }),
     ...(values.category_id && { category_id: values.category_id }),
     ...(values.brand_id && { brand_id: values.brand_id }),
     ...(values.is_active &&
@@ -62,86 +66,51 @@ const toFilters = (values: Partial<Values>): ProductsSearchValues => ({
     ...(values.stock_type && values.stock_type !== 'all' && { stock_type: values.stock_type }),
     ...(values.is_sellable &&
         values.is_sellable !== 'all' && { is_sellable: values.is_sellable === 'true' }),
+    ...(values.stock_status &&
+        values.stock_status !== 'all' && { stock_status: values.stock_status }),
 });
 
-const Fields = ({
-    primary = true,
-    advanced = true,
-    categoryOptions,
+const AdvancedFields = ({
     brandOptions,
     disabled,
 }: {
-    primary?: boolean;
-    advanced?: boolean;
-    categoryOptions: { label: string; value: string }[];
     brandOptions: { label: string; value: string }[];
     disabled: boolean;
 }) => (
     <>
-        {primary && (
-            <>
-                <InputField
-                    name="name"
-                    label="Nombre"
-                    placeholder="Buscar por nombre"
-                    allowClear
-                    disabled={disabled}
-                />
-                <InputField
-                    name="sku"
-                    label="Código"
-                    placeholder="Buscar por código"
-                    allowClear
-                    disabled={disabled}
-                />
-                <SelectField
-                    name="category_id"
-                    label="Categoría"
-                    placeholder="Todas"
-                    options={categoryOptions}
-                    allowClear
-                    disabled={disabled}
-                    loading={disabled}
-                />
-                <SelectField
-                    name="is_active"
-                    label="Estado"
-                    placeholder="Todos"
-                    options={statusOptions}
-                    allowClear
-                    disabled={disabled}
-                />
-            </>
-        )}
-        {advanced && (
-            <>
-                <SelectField
-                    name="brand_id"
-                    label="Marca"
-                    placeholder="Todas"
-                    options={brandOptions}
-                    allowClear
-                    showSearch
-                    disabled={disabled}
-                />
-                <SelectField
-                    name="stock_type"
-                    label="Tipo de stock"
-                    placeholder="Todos"
-                    options={stockTypeOptions}
-                    allowClear
-                    disabled={disabled}
-                />
-                <SelectField
-                    name="is_sellable"
-                    label="Disponible para venta"
-                    placeholder="Todos"
-                    options={sellableOptions}
-                    allowClear
-                    disabled={disabled}
-                />
-            </>
-        )}
+        <SelectField
+            name="brand_id"
+            label="Marca"
+            placeholder="Todas"
+            options={brandOptions}
+            allowClear
+            showSearch
+            disabled={disabled}
+        />
+        <SelectField
+            name="stock_type"
+            label="Tipo de stock"
+            placeholder="Todos"
+            options={stockTypeOptions}
+            allowClear
+            disabled={disabled}
+        />
+        <SelectField
+            name="is_sellable"
+            label="Disponibilidad para venta"
+            placeholder="Todos"
+            options={sellableOptions}
+            allowClear
+            disabled={disabled}
+        />
+        <SelectField
+            name="stock_status"
+            label="Situación de stock"
+            placeholder="Todos"
+            options={stockStatusOptions}
+            allowClear
+            disabled={disabled}
+        />
     </>
 );
 
@@ -170,10 +139,6 @@ export const ProductsSearchBar = () => {
     useEffect(() => {
         primaryForm.setFieldsValue(asValues(filters));
     }, [filters, primaryForm]);
-    useEffect(() => {
-        if (advancedOpen) advancedForm.setFieldsValue(asValues(filters));
-    }, [advancedForm, advancedOpen, filters]);
-
     const applyPrimary = useCallback(
         (values: Values) => {
             const advanced = advancedKeys.reduce<ProductsFilters>(
@@ -185,18 +150,30 @@ export const ProductsSearchBar = () => {
         },
         [filters, setFilters]
     );
-    const debouncedApplyPrimary = useMemo(() => debounce(applyPrimary, 500), [applyPrimary]);
+    const debouncedApplyPrimary = useMemo(() => debounce(applyPrimary, 400), [applyPrimary]);
     useEffect(() => () => debouncedApplyPrimary.cancel(), [debouncedApplyPrimary]);
 
+    const openAdvanced = () => {
+        advancedForm.setFieldsValue(asValues(filters));
+        setAdvancedOpen(true);
+    };
     const applyAdvanced = () => {
         debouncedApplyPrimary.cancel();
-        const primary = primaryKeys.reduce<ProductsFilters>(
-            (result, key) =>
-                filters[key] === undefined ? result : { ...result, [key]: filters[key] },
-            {}
-        );
-        setFilters({ ...primary, ...toFilters(advancedForm.getFieldsValue()) });
+        setFilters({
+            ...toFilters(primaryForm.getFieldsValue()),
+            ...toFilters(advancedForm.getFieldsValue()),
+        });
         setAdvancedOpen(false);
+    };
+    const clearAdvanced = () => {
+        debouncedApplyPrimary.cancel();
+        advancedForm.setFieldsValue({
+            brand_id: undefined,
+            stock_type: 'all',
+            is_sellable: 'all',
+            stock_status: 'all',
+        });
+        setFilters(toFilters(primaryForm.getFieldsValue()));
     };
     const clearAll = () => {
         debouncedApplyPrimary.cancel();
@@ -214,8 +191,7 @@ export const ProductsSearchBar = () => {
     const category = categories.find((item) => item.id === filters.category_id);
     const brand = brands.find((item) => item.id === filters.brand_id);
     const chips: { key: keyof ProductsFilters; label: string; value: string }[] = [];
-    if (filters.name) chips.push({ key: 'name', label: 'Nombre', value: filters.name });
-    if (filters.sku) chips.push({ key: 'sku', label: 'Código', value: filters.sku });
+    if (filters.q) chips.push({ key: 'q', label: 'Búsqueda', value: filters.q });
     if (filters.category_id)
         chips.push({
             key: 'category_id',
@@ -239,8 +215,14 @@ export const ProductsSearchBar = () => {
     if (filters.is_sellable !== undefined)
         chips.push({
             key: 'is_sellable',
-            label: 'Disponible para venta',
-            value: filters.is_sellable ? 'Sí' : 'No',
+            label: 'Venta',
+            value: filters.is_sellable ? 'Habilitada' : 'Deshabilitada',
+        });
+    if (filters.stock_status)
+        chips.push({
+            key: 'stock_status',
+            label: 'Stock',
+            value: filters.stock_status === 'low' ? 'Bajo' : 'Sin stock',
         });
 
     return (
@@ -252,11 +234,29 @@ export const ProductsSearchBar = () => {
         >
             <div className="productsSearchBarToolbar">
                 <div className="productsSearchBarPrimaryFilters">
-                    <Fields
-                        categoryOptions={categoryOptions}
-                        brandOptions={brandOptions}
+                    <InputField
+                        name="q"
+                        label="Buscar"
+                        placeholder="Buscar por nombre o código"
+                        allowClear
                         disabled={categoriesLoading}
-                        advanced={false}
+                    />
+                    <SelectField
+                        name="category_id"
+                        label="Categoría"
+                        placeholder="Todas"
+                        options={categoryOptions}
+                        allowClear
+                        disabled={categoriesLoading}
+                        loading={categoriesLoading}
+                    />
+                    <SelectField
+                        name="is_active"
+                        label="Estado"
+                        placeholder="Todos"
+                        options={statusOptions}
+                        allowClear
+                        disabled={categoriesLoading}
                     />
                 </div>
                 <div className="productsSearchBarActions">
@@ -266,25 +266,15 @@ export const ProductsSearchBar = () => {
                     <div className="productsSearchBarActionsControls">
                         <Button
                             variant="default"
-                            label={`Más filtros${advancedCount > 0 ? ` ${advancedCount}` : ''}`}
+                            label={`Más filtros${advancedCount ? ` (${advancedCount})` : ''}`}
                             icon={<Filter size={16} />}
                             aria-expanded={advancedOpen}
-                            action={() => setAdvancedOpen(true)}
+                            action={openAdvanced}
                             disabled={categoriesLoading}
-                        >
-                            <span>Más filtros</span>
-                            {advancedCount > 0 && (
-                                <span className="ml-2 rounded-full bg-centra-primary px-2 py-0.5 text-xs text-white">
-                                    {advancedCount}
-                                </span>
-                            )}
-                        </Button>
-                        <Button
-                            variant="default"
-                            label="Limpiar"
-                            action={clearAll}
-                            disabled={activeCount === 0 || categoriesLoading}
                         />
+                        {activeCount > 0 && (
+                            <Button variant="default" label="Limpiar" action={clearAll} />
+                        )}
                     </div>
                 </div>
             </div>
@@ -293,24 +283,16 @@ export const ProductsSearchBar = () => {
                 onClose={() => setAdvancedOpen(false)}
                 title="Más filtros"
                 width={450}
+                destroyOnClose={false}
                 footer={
                     <div className="flex justify-between gap-3">
-                        <Button
-                            variant="default"
-                            label="Limpiar"
-                            action={() => advancedForm.resetFields()}
-                        />
+                        <Button variant="default" label="Limpiar filtros" action={clearAdvanced} />
                         <Button variant="primary" label="Aplicar filtros" action={applyAdvanced} />
                     </div>
                 }
             >
                 <Form form={advancedForm} layout="vertical">
-                    <Fields
-                        categoryOptions={categoryOptions}
-                        brandOptions={brandOptions}
-                        disabled={categoriesLoading}
-                        primary={false}
-                    />
+                    <AdvancedFields brandOptions={brandOptions} disabled={categoriesLoading} />
                 </Form>
             </Drawer>
             {chips.length > 0 && (
@@ -326,16 +308,20 @@ export const ProductsSearchBar = () => {
                                     background: token.colorPrimary,
                                     borderColor: token.colorPrimary,
                                     color: token.colorTextLightSolid,
-                                    '--products-chip-close-bg': token.colorTextLightSolid,
-                                    '--products-chip-close-color': token.colorPrimary,
-                                    '--products-chip-close-hover': token.colorPrimaryBg,
-                                    '--products-chip-close-focus': token.colorTextLightSolid,
+                                    '--products-filter-chip-close-bg': token.colorTextLightSolid,
+                                    '--products-filter-chip-close-color': token.colorPrimary,
+                                    '--products-filter-chip-close-hover': token.colorPrimaryBg,
+                                    '--products-filter-chip-close-focus': token.colorTextLightSolid,
                                 } as CSSProperties
                             }
                         >
-                            <span>{chip.label}</span>
-                            <span className="mx-1">·</span>
-                            <span className="truncate">{chip.value}</span>
+                            <span style={{ color: token.colorTextLightSolid }}>{chip.label}</span>
+                            <span className="mx-1" style={{ color: token.colorTextLightSolid }}>
+                                ·
+                            </span>
+                            <span className="truncate" style={{ color: token.colorTextLightSolid }}>
+                                {chip.value}
+                            </span>
                         </Tag>
                     ))}
                 </div>

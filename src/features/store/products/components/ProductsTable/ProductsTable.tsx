@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Empty, Popconfirm, Tag, Tooltip, Button as AntButton } from 'antd';
+import { Empty, Popconfirm, Tag, Button as AntButton } from 'antd';
 import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import Table from '@/components/Table/Table';
 import { CanDo } from '@/components/auth/CanDo';
@@ -15,163 +15,138 @@ interface ProductsTableProps {
     onDelete: (id: string) => void;
     onView: (product: Product) => void;
 }
-
 type ResponsiveList = ('md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'sm' | 'xs')[];
 
 export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) => {
     const { items, loading, pagination, setPage, setPerPage } = useProductsContext();
-
-    const handlePageChange = useCallback((page: number, pageSize: number) => {
-        if (pageSize !== pagination.pageSize) {
-            setPerPage(pageSize);
-        } else {
-            setPage(page);
-        }
-    }, [pagination.pageSize, setPage, setPerPage]);
-
-    const isLowStock = (product: Product) => {
-        return !product.stock_source_product
-            && compareDecimalStrings(product.available_stock, product.stock_min) <= 0;
-    };
+    const handlePageChange = useCallback(
+        (page: number, pageSize: number) => {
+            if (pageSize !== pagination.pageSize) setPerPage(pageSize);
+            else setPage(page);
+        },
+        [pagination.pageSize, setPage, setPerPage]
+    );
+    const isOwnStock = (product: Product) => !product.stock_source_product;
+    const isOutOfStock = (product: Product) =>
+        isOwnStock(product) && compareDecimalStrings(product.available_stock, '0') <= 0;
+    const isLowStock = (product: Product) =>
+        isOwnStock(product) &&
+        !isOutOfStock(product) &&
+        compareDecimalStrings(product.available_stock, product.stock_min) <= 0;
 
     const columns = [
         {
-            title: 'Nombre',
-            dataIndex: 'name',
-            key: 'name',
+            title: 'Producto',
+            key: 'product',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return (
-                    <a onClick={() => onView(product)} className="productsTableNameLink">
-                        {product.name}
-                    </a>
-                );
-            },
-        },
-        {
-            title: 'Código',
-            dataIndex: 'sku',
-            key: 'sku',
-            responsive: ['md'] as ResponsiveList,
-        },
-        {
-            title: <Tooltip title="Stock físico"><span>Stock</span></Tooltip>,
-            key: 'stock',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                return product.stock_source_product
-                    ? '—'
-                    : formatQuantityWithUnit(product.stock, product.stock_measurement_unit?.symbol);
-            },
-        },
-        {
-            title: 'Categoría',
-            key: 'category',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                return product.category?.name ?? '—';
-            },
-        },
-        {
-            title: 'Marca',
-            key: 'brand',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => (record as unknown as Product).brand?.name ?? '—',
-        },
-        {
-            title: 'Tipo de stock',
-            key: 'stock_type',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                const isShared = Boolean(product.stock_source_product);
-                return (
-                    <Tag color={isShared ? 'blue' : 'default'}>
-                        {isShared ? 'Compartido' : 'Propio'}
-                    </Tag>
+                    <div className="productsTableProduct">
+                        <button
+                            type="button"
+                            onClick={() => onView(product)}
+                            className="productsTableNameLink"
+                        >
+                            {product.name}
+                        </button>
+                        <span className="productsTableSecondary">{product.sku}</span>
+                    </div>
                 );
             },
         },
         {
             title: 'Precio',
             key: 'price',
-            responsive: ['md'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-                return formatCurrency(price);
-            },
-        },
-        {
-            title: <Tooltip title="Stock disponible"><span>Disponible</span></Tooltip>,
-            key: 'available_stock',
+            responsive: ['sm'] as ResponsiveList,
+            align: 'right' as const,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return (
-                    <Tag color={isLowStock(product) ? 'red' : 'green'}>
-                        {formatQuantityWithUnit(product.commercial_available_quantity, product.stock_measurement_unit?.symbol)}
-                    </Tag>
+                    <span className="productsTablePrice">
+                        {formatCurrency(
+                            typeof product.price === 'string'
+                                ? parseFloat(product.price)
+                                : product.price
+                        )}
+                    </span>
                 );
             },
         },
         {
-            title: <Tooltip title="Stock reservado"><span>Reservado</span></Tooltip>,
-            key: 'stock_reserved',
-            responsive: ['lg'] as ResponsiveList,
+            title: 'Inventario',
+            key: 'inventory',
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
-                return product.stock_source_product
-                    ? '—'
-                    : formatQuantityWithUnit(product.stock_reserved, product.stock_measurement_unit?.symbol);
-            },
-        },
-        {
-            title: <Tooltip title="Stock mínimo"><span>Mínimo</span></Tooltip>,
-            dataIndex: 'stock_min',
-            key: 'stock_min',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                if (product.stock_source_product) {
-                    return '—';
-                }
-                if (isLowStock(product)) {
-                    return <Tag color="red">Stock bajo</Tag>;
-                }
-                return formatQuantityWithUnit(product.stock_min, product.stock_measurement_unit?.symbol);
+                if (!isOwnStock(product))
+                    return (
+                        <div className="productsTableInventory">
+                            <span className="productsTableSharedStock">Stock compartido</span>
+                            <span className="productsTableSecondary">
+                                {product.stock_source_product?.name ?? 'Producto fuente'}
+                            </span>
+                        </div>
+                    );
+                return (
+                    <div className="productsTableInventory">
+                        <span className="productsTableQuantity">
+                            {formatQuantityWithUnit(
+                                product.commercial_available_quantity,
+                                product.stock_measurement_unit?.symbol
+                            )}
+                        </span>
+                        <span className="productsTableSecondary">
+                            Total:{' '}
+                            {formatQuantityWithUnit(
+                                product.stock,
+                                product.stock_measurement_unit?.symbol
+                            )}{' '}
+                            · Reservado:{' '}
+                            {formatQuantityWithUnit(
+                                product.stock_reserved,
+                                product.stock_measurement_unit?.symbol
+                            )}
+                        </span>
+                        {isOutOfStock(product) && (
+                            <Tag color="error" className="productsTableTag !m-0">
+                                Sin stock
+                            </Tag>
+                        )}
+                        {isLowStock(product) && (
+                            <Tag color="warning" className="productsTableTag !m-0">
+                                Stock bajo
+                            </Tag>
+                        )}
+                    </div>
+                );
             },
         },
         {
             title: 'Estado',
-            key: 'is_active',
+            key: 'status',
+            responsive: ['sm'] as ResponsiveList,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return (
-                    <Tag color={product.is_active ? 'green' : 'red'}>
-                        {product.is_active ? 'Activo' : 'Inactivo'}
-                    </Tag>
-                );
-            },
-        },
-        {
-            title: 'Venta',
-            key: 'is_sellable',
-            responsive: ['lg'] as ResponsiveList,
-            render: (_: unknown, record?: Record<string, unknown>) => {
-                const product = record as unknown as Product;
-                return (
-                    <Tag color={product.is_sellable ? 'green' : 'default'}>
-                        {product.is_sellable ? 'Disponible' : 'No disponible'}
-                    </Tag>
+                    <div className="productsTableStatus">
+                        <Tag
+                            color={product.is_active ? 'success' : 'error'}
+                            className="productsTableTag !m-0"
+                        >
+                            {product.is_active ? 'Activo' : 'Inactivo'}
+                        </Tag>
+                        {!product.is_sellable && (
+                            <Tag className="productsTableTag productsTableTagNeutral !m-0">
+                                Venta deshabilitada
+                            </Tag>
+                        )}
+                    </div>
                 );
             },
         },
         {
             title: 'Acciones',
             key: 'actions',
-            width: 150,
+            width: 130,
             render: (_: unknown, record?: Record<string, unknown>) => {
                 const product = record as unknown as Product;
                 return (
@@ -212,7 +187,6 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
             },
         },
     ];
-
     return (
         <Table
             columns={columns as unknown as Parameters<typeof Table>[0]['columns']}
@@ -226,9 +200,7 @@ export const ProductsTable = ({ onEdit, onDelete, onView }: ProductsTableProps) 
                 pageSizeOptions: ['10', '15', '25', '50'],
                 showTotal: (total, range) => `${range[0]} - ${range[1]} de ${total}`,
             }}
-            onChange={(paginationConfig) => {
-                handlePageChange(paginationConfig.current ?? 1, paginationConfig.pageSize ?? 15);
-            }}
+            onChange={(config) => handlePageChange(config.current ?? 1, config.pageSize ?? 15)}
             emptyText={<Empty description="No hay productos para mostrar" />}
             scroll={{ x: 'max-content' }}
             size="small"
