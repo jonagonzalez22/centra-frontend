@@ -28,6 +28,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
     const { can } = usePermissions();
     const navigate = useNavigate();
     const canEdit = can('orders.edit');
+    const canCancel = can('orders.cancel');
 
     const rescheduleOrder = useOrdersStore((s) => s.rescheduleOrder);
     const cancelOrder = useOrdersStore((s) => s.cancelOrder);
@@ -112,7 +113,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
             });
         }
 
-        if (canEdit) {
+        if (canCancel) {
             items.push({
                 key: 'cancel',
                 label: isAssignedToRoute(order.route_ids) ? (
@@ -137,7 +138,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         }
 
         return items;
-    }, [canEdit, navigate, order.id, order.status, order.route_ids, onClick]);
+    }, [canEdit, canCancel, navigate, order.id, order.status, order.route_ids, onClick]);
 
     return (
         <>

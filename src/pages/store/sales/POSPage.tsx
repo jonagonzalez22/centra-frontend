@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Result, Button, Spin, message as antMessage } from 'antd';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { POSPageView } from './POSPageView';
@@ -11,8 +11,13 @@ import { formatCurrency } from '@/utils/formatters';
 import { CashService } from '@/features/store/cash/services/cash.service';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
+import { canCreateOrderCheckout, canUsePosCheckout } from '@/utils/operationalAccess';
 
-export const POSPage: React.FC = () => {
+interface POSPageProps {
+    operationMode?: 'auto' | 'pos' | 'orders';
+}
+
+export const POSPage: React.FC<POSPageProps> = ({ operationMode = 'auto' }) => {
     const { user, setCashSession } = useAuthStore();
     const { can } = usePermissions();
     const cashSession = user?.cash_session ?? null;
@@ -21,6 +26,31 @@ export const POSPage: React.FC = () => {
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [completedSale, setCompletedSale] = useState<Pick<OperationResponse, 'id' | 'operation_number'> | null>(null);
     const [registerDepositNow, setRegisterDepositNow] = useState(false);
+    const type = usePOSStore((state) => state.type);
+    const resetPOS = usePOSStore((state) => state.resetPOS);
+    const setType = usePOSStore((state) => state.setType);
+    const canUsePos = canUsePosCheckout(user);
+    const canCreateOrders = canCreateOrderCheckout(user);
+    const canCollectOrders = can('orders.collect');
+    const resolvedOperationMode = operationMode === 'auto' ? (canUsePos ? 'pos' : 'orders') : operationMode;
+    const lockedType = operationMode === 'orders'
+        ? 'order'
+        : operationMode === 'pos'
+            ? 'sale'
+            : canUsePos && canCreateOrders
+                ? null
+                : canUsePos
+                    ? 'sale'
+                    : 'order';
+    const initialType = lockedType ?? 'sale';
+    const initializedRouteRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (initializedRouteRef.current === operationMode) return;
+        initializedRouteRef.current = operationMode;
+        resetPOS();
+        setType(initialType);
+    }, [initialType, operationMode, resetPOS, setType]);
 
     useEffect(() => {
         let active = true;
@@ -45,8 +75,12 @@ export const POSPage: React.FC = () => {
     }, [setCashSession]);
 
     const handleCheckout = useCallback(() => {
+        if (!cashSession || cashSession.status !== 'open') {
+            antMessage.warning('Debes abrir una caja antes de registrar cobros.');
+            return;
+        }
         setPaymentModalOpen(true);
-    }, []);
+    }, [cashSession]);
 
     const handleDirectOrder = useCallback(async () => {
         const state = usePOSStore.getState();
@@ -93,7 +127,7 @@ export const POSPage: React.FC = () => {
         setPaymentModalOpen(false);
     }, []);
 
-    if (checkingCash) {
+    if (lockedType && type !== lockedType) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <Spin size="large" />
@@ -101,11 +135,19 @@ export const POSPage: React.FC = () => {
         );
     }
 
-    if (cashError) {
+    if (resolvedOperationMode === 'pos' && checkingCash) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Spin size="large" />
+            </div>
+        );
+    }
+
+    if (resolvedOperationMode === 'pos' && cashError) {
         return <Result status="error" title="No se pudo validar la caja" subTitle={cashError} />;
     }
 
-    if (!cashSession || cashSession.status !== 'open') {
+    if (resolvedOperationMode === 'pos' && (!cashSession || cashSession.status !== 'open')) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <Result
@@ -127,7 +169,10 @@ export const POSPage: React.FC = () => {
             <POSPageView
                 onCheckout={handleCheckout}
                 onRegisterOrder={handleDirectOrder}
-                canCreateOperations={can('pos.create')}
+                canCreateOperations={type === 'order' ? canCreateOrders : canUsePos && can('pos.create')}
+                allowOrders={resolvedOperationMode === 'pos' && canCreateOrders}
+                lockOrderType={resolvedOperationMode === 'orders'}
+                canCollectOrders={canCollectOrders}
                 registerDepositNow={registerDepositNow}
                 setRegisterDepositNow={setRegisterDepositNow}
             />

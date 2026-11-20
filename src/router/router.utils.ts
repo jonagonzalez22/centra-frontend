@@ -145,7 +145,13 @@ export function canAccessReturnPath(user: User, path: string): boolean {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('pos.view');
     }
     if (matches(/^\/tienda\/ventas\/pedidos$/)) {
-        return hasStoreRole && hasFeatureAccess('pos') && hasPermission('orders.view');
+        return hasStoreRole && hasFeatureAccess('orders') && hasPermission('orders.view');
+    }
+    if (matches(/^\/tienda\/ventas\/pedidos\/nuevo$/)) {
+        return hasStoreRole && hasFeatureAccess('orders') && hasPermission('orders.create');
+    }
+    if (matches(/^\/tienda\/ventas\/pedidos\/[^/]+\/editar$/)) {
+        return hasStoreRole && hasFeatureAccess('orders') && hasPermission('orders.view') && hasPermission('orders.edit');
     }
     if (matches(/^\/tienda\/ventas\/pagos-recibidos$/)) {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('payments.view');

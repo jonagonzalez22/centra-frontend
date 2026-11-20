@@ -20,6 +20,7 @@ import { BarChartOutlined } from '@ant-design/icons';
 import './SidebarMenu.css';
 import { useAuthStore } from '@/store/useAuthStore.store';
 import { hasFeature } from '@/utils/features';
+import { canAccessOperationalCheckout } from '@/utils/operationalAccess';
 import { canAccessDriverDeliveries } from '@/router/router.utils';
 import type { FeatureCode, User, UserRole } from '@/entities/User';
 
@@ -36,6 +37,7 @@ type MenuItem = {
     permission?: string;
     role?: string;
     driverDeliveries?: boolean;
+    operationalCheckout?: boolean;
     context: MenuContext;
     children?: MenuItem[];
 };
@@ -149,15 +151,14 @@ const menuItems: MenuItem[] = [
                 label: 'Caja',
                 key: '/tienda/ventas/pos',
                 context: 'store',
-                feature: 'pos',
-                permission: 'pos.view',
+                operationalCheckout: true,
                 role: 'STORE_USER',
             },
             {
                 label: 'Pedidos',
                 key: '/tienda/ventas/pedidos',
                 context: 'store',
-                feature: 'pos',
+                feature: 'orders',
                 permission: 'orders.view',
                 role: 'STORE_USER',
             },
@@ -361,12 +362,14 @@ function filterMenuItems(
         if (item.permission && !user.permissions.includes(item.permission)) return acc;
         if (item.feature && !hasFeature(user, item.feature)) return acc;
         if (item.driverDeliveries && !canAccessDriverDeliveries(user)) return acc;
+        if (item.operationalCheckout && !canAccessOperationalCheckout(user)) return acc;
         // STORE_ADMIN no necesita match de role (define permisos), salvo para STORE_DRIVER
         if (item.role === 'STORE_DRIVER' && !user.roles.includes('STORE_DRIVER')) return acc;
         if (item.role && !isStoreAdmin && !user.roles.includes(item.role as UserRole)) return acc;
 
         const filtered: MenuItem = { ...item, title: item.label };
         delete filtered.driverDeliveries;
+        delete filtered.operationalCheckout;
 
         if (item.children && item.children.length > 0) {
             filtered.children = filterMenuItems(item.children, user, currentContext);

@@ -41,11 +41,24 @@ interface SelectProps {
     onSelect?: (value: string) => void;
 }
 
+interface SegmentedProps {
+  options?: Array<{ value: string; label: string }>;
+  onChange?: (value: string) => void;
+}
+
 vi.mock('antd', async () => {
     const dayjs = (await import('dayjs')).default;
 
     return {
-        Segmented: () => <div />,
+        Segmented: ({ options = [], onChange }: SegmentedProps) => (
+            <div>
+                {options.map((option) => (
+                    <button key={option.value} onClick={() => onChange?.(option.value)}>
+                        {option.label}
+                    </button>
+                ))}
+            </div>
+        ),
         Select: ({
             allowClear,
       options = [],
@@ -196,6 +209,24 @@ test('keeps orders restricted to registered customers and preserves the delivery
     expect(screen.getByRole('button', { name: 'Fecha de entrega' })).toHaveTextContent(
         '18/09/2026'
     );
+});
+
+test('switches between sale and order without resetting the configured operation', () => {
+    usePOSStore.getState().setCustomer(customer);
+    usePOSStore.getState().setRequestedDeliveryDate('2026-09-18');
+
+    render(<POSOperationConfig allowOrders />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pedido programado' }));
+    expect(usePOSStore.getState().type).toBe('order');
+    expect(screen.getByRole('textbox', { name: 'Buscar cliente...' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fecha de entrega' })).toHaveTextContent('18/09/2026');
+    expect(usePOSStore.getState().customer).toEqual(customer);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Venta por mostrador' }));
+    expect(usePOSStore.getState().type).toBe('sale');
+    expect(screen.getByRole('textbox', { name: 'Buscar o ingresar nombre...' })).toBeInTheDocument();
+    expect(usePOSStore.getState().customer).toEqual(customer);
 });
 
 test('limits the searchable and one-time name text to 100 characters', () => {

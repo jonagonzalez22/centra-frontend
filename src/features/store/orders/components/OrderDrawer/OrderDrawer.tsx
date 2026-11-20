@@ -41,6 +41,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
     const { can } = usePermissions();
     const navigate = useNavigate();
     const canEdit = can('orders.edit');
+    const canCancel = can('orders.cancel');
     const canCollect = can('orders.collect');
     const cashSession = useAuthStore((state) => state.user?.cash_session ?? null);
     const setCashSession = useAuthStore((state) => state.setCashSession);
@@ -112,7 +113,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
 
     const canReschedule =
         order && isReschedulable(order.status) && !isAssignedToRoute(order.route_ids);
-    const canCancel = order && isCancellable(order.status) && !isAssignedToRoute(order.route_ids);
+    const canCancelOrder = order && isCancellable(order.status) && !isAssignedToRoute(order.route_ids);
 
     const openPayment = () => {
         if (!cashSession || cashSession.status !== 'open') {
@@ -169,23 +170,23 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
             });
         }
 
-        if (canEdit) {
+        if (canCancel) {
             items.push({
                 key: 'cancel',
                 label: assignedToRoute ? (
                     <Tooltip title="Pedido asignado a una ruta">
                         <span className="text-gray-400">Cancelar pedido</span>
                     </Tooltip>
-                ) : canCancel ? (
+                ) : canCancelOrder ? (
                     <span className="text-red-600">Cancelar pedido</span>
                 ) : (
                     <Tooltip title="Solo pedidos abiertos">
                         <span className="text-gray-400">Cancelar pedido</span>
                     </Tooltip>
                 ),
-                disabled: !canCancel,
+                disabled: !canCancelOrder,
                 onClick: () => {
-                    if (canCancel) {
+                    if (canCancelOrder) {
                         setCancelOpen(true);
                     }
                 },
@@ -193,7 +194,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
         }
 
         return items;
-    }, [canEdit, canReschedule, canCancel, navigate, onClose, order]);
+    }, [canEdit, canCancel, canReschedule, canCancelOrder, navigate, onClose, order]);
 
     const footer = (
         <div className="flex justify-between">
@@ -370,7 +371,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                       },
                                   ]}
                               />
-                              {canEdit && order.status === 'partially_delivered' && (
+                              {canCancel && order.status === 'partially_delivered' && (
                                   <div className="mt-4 flex flex-col items-end gap-2">
                                       {hasActivePendingAssignment && (
                                           <p className="text-sm text-amber-700 text-right">

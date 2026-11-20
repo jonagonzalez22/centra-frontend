@@ -65,7 +65,7 @@ describe('SidebarMenu', () => {
                 'categories.view',
             ],
             features: (
-                options?.features ?? ['cash', 'pos', 'inventory', 'categories']
+                options?.features ?? ['cash', 'pos', 'orders', 'inventory', 'categories']
             ).map((code) => ({ code, limit: null })),
         };
     };
@@ -245,6 +245,34 @@ describe('SidebarMenu', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/tienda/ventas/pos');
         await user.click(screen.getByText('Pedidos'));
         expect(screen.getByTestId('location')).toHaveTextContent('/tienda/ventas/pedidos');
+    });
+
+    test('does not show Pedidos to a POS-only employee', () => {
+        useStoreUser({
+            permissions: ['pos.view'],
+            features: ['pos'],
+        });
+
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/ventas/pos" />
+        );
+
+        expect(screen.getByText('Caja')).toBeInTheDocument();
+        expect(screen.queryByText('Pedidos')).not.toBeInTheDocument();
+    });
+
+    test('does not show Caja to an orders viewer without order creation', () => {
+        useStoreUser({
+            permissions: ['orders.view'],
+            features: ['orders'],
+        });
+
+        renderWithRouter(
+            <SidebarMenu isMobile={false} isOpen={false} selectedKey="/tienda/ventas/pedidos" />
+        );
+
+        expect(screen.getByText('Pedidos')).toBeInTheDocument();
+        expect(screen.queryByText('Caja')).not.toBeInTheDocument();
     });
 
     test('shows received payments only with POS and payments.view', () => {

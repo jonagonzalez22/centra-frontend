@@ -19,6 +19,10 @@ vi.mock('./OrdersPageView', () => ({
         onFilterChange: (filters: Record<string, unknown>) => void;
     }) => (
         <div>
+            <h1>Pedidos</h1>
+            <button>Desktop listado</button>
+            <button>Mobile listado</button>
+            <button aria-label="Acción de pedido">Acción</button>
             <span>Estado: {filters.status ?? 'Todos'}</span>
             <span>Cobranza: {filters.has_pending_balance ? 'Con saldo pendiente' : 'Todos'}</span>
             <span>Página: {filters.page}</span>
@@ -112,4 +116,14 @@ test('remount also removes an explicitly selected status', async () => {
     expect(OrdersService.getAll).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: undefined, page: 1 })
     );
+});
+
+test('keeps the orders header and responsive list without a new-order action', async () => {
+    render(<OrdersPage />);
+
+    expect(await screen.findByRole('heading', { name: 'Pedidos' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Desktop listado' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mobile listado' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Acción de pedido' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nuevo pedido' })).not.toBeInTheDocument();
 });

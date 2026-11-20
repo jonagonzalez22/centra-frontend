@@ -9,11 +9,38 @@ vi.mock('@/features/store/cash/services/cash.service', () => ({
   CashService: { getCurrent: vi.fn() },
 }));
 
-vi.mock('./POSPageView', () => ({
-  POSPageView: ({ onCheckout, canCreateOperations }: { onCheckout: () => void; canCreateOperations: boolean }) => (
-    <button disabled={!canCreateOperations} onClick={onCheckout}>Abrir cobro</button>
-  ),
-}));
+vi.mock('./POSPageView', async () => {
+  const { usePOSStore } = await import('@/features/store/sales/stores/usePOSStore');
+
+  return {
+  POSPageView: ({
+    onCheckout,
+    canCreateOperations,
+    allowOrders,
+    lockOrderType,
+  }: {
+    onCheckout: () => void;
+    canCreateOperations: boolean;
+    allowOrders: boolean;
+    lockOrderType: boolean;
+  }) => {
+    const type = usePOSStore((state) => state.type);
+
+    return <div>
+      <button disabled={!canCreateOperations} onClick={onCheckout}>Abrir cobro</button>
+      <output data-testid="allow-orders">{String(allowOrders)}</output>
+      <output data-testid="lock-order-type">{String(lockOrderType)}</output>
+      <output data-testid="current-operation-type">{type}</output>
+      {allowOrders && (
+        <>
+          <button onClick={() => usePOSStore.getState().setType('sale')}>Venta por mostrador</button>
+          <button onClick={() => usePOSStore.getState().setType('order')}>Pedido programado</button>
+        </>
+      )}
+    </div>
+  },
+  };
+});
 
 vi.mock('@/features/store/sales/components/POSPaymentModal', () => ({
   POSPaymentModal: ({ open, onSuccess }: { open: boolean; onSuccess: (operation: { id: string; operation_number: string; type: 'sale' }) => void }) =>
@@ -43,8 +70,8 @@ beforeEach(() => {
       store: { id: 'store-1', name: 'Tienda', business_type: 'ferreteria' },
       roles: ['STORE_USER'],
       is_active: true,
-      permissions: ['pos.create'],
-      features: [],
+      permissions: ['pos.view', 'pos.create'],
+      features: [{ code: 'pos', limit: null }],
       cash_session: { id: 'cash-1', status: 'open', business_date: '2026-09-19' },
     },
   });
@@ -73,14 +100,80 @@ test('opens the post-sale modal with the operation reference and allows closing 
 
   await user.click(screen.getByRole('button', { name: 'Cerrar éxito' }));
   await waitFor(() => expect(screen.queryByText('Venta lista: V-000123')).not.toBeInTheDocument());
+  expect(screen.getByTestId('allow-orders')).toHaveTextContent('false');
+  expect(screen.getByTestId('lock-order-type')).toHaveTextContent('false');
 });
 
 test('does not enable checkout when pos.create is absent', async () => {
   useAuthStore.setState((state) => ({
-    user: state.user ? { ...state.user, permissions: [] } : null,
+    user: state.user ? { ...state.user, permissions: ['pos.view'] } : null,
   }));
 
   render(<POSPage />);
 
   expect(await screen.findByRole('button', { name: 'Abrir cobro' })).toBeDisabled();
+  expect(screen.getByTestId('allow-orders')).toHaveTextContent('false');
+  expect(screen.getByTestId('lock-order-type')).toHaveTextContent('false');
+});
+
+test('locks Caja to a scheduled order for an orders-only employee', async () => {
+  useAuthStore.setState((state) => ({
+    user: state.user
+      ? {
+          ...state.user,
+          permissions: ['orders.create'],
+          features: [{ code: 'orders', limit: null }],
+        }
+      : null,
+  }));
+
+  render(<POSPage />);
+
+  expect(await screen.findByTestId('lock-order-type')).toHaveTextContent('true');
+  expect(screen.getByTestId('allow-orders')).toHaveTextContent('false');
+  expect(screen.getByRole('button', { name: 'Abrir cobro' })).toBeEnabled();
+});
+
+test('only exposes the operation selector when both modes are authorized', async () => {
+  useAuthStore.setState((state) => ({
+    user: state.user
+      ? {
+          ...state.user,
+          permissions: ['pos.view', 'pos.create', 'orders.create'],
+          features: [
+            { code: 'pos', limit: null },
+            { code: 'orders', limit: null },
+          ],
+        }
+      : null,
+  }));
+
+  render(<POSPage />);
+
+  expect(await screen.findByTestId('allow-orders')).toHaveTextContent('true');
+  expect(screen.getByTestId('lock-order-type')).toHaveTextContent('false');
+});
+
+test('keeps rendering while an authorized user switches between sale and order', async () => {
+  useAuthStore.setState((state) => ({
+    user: state.user
+      ? {
+          ...state.user,
+          permissions: ['pos.view', 'pos.create', 'orders.create'],
+          features: [
+            { code: 'pos', limit: null },
+            { code: 'orders', limit: null },
+          ],
+        }
+      : null,
+  }));
+  const user = userEvent.setup();
+
+  render(<POSPage />);
+
+  expect(await screen.findByTestId('current-operation-type')).toHaveTextContent('sale');
+  await user.click(screen.getByRole('button', { name: 'Pedido programado' }));
+  expect(screen.getByTestId('current-operation-type')).toHaveTextContent('order');
+  await user.click(screen.getByRole('button', { name: 'Venta por mostrador' }));
+  expect(screen.getByTestId('current-operation-type')).toHaveTextContent('sale');
 });

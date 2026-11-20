@@ -11,6 +11,7 @@ import { DashboardPage } from '@/pages/admin/dashboard/DashboardPage';
 import { PermissionRoute } from './PermissionRoute';
 import { FeatureRoute } from './FeatureRoute';
 import { DriverAccessRoute } from './DriverAccessRoute';
+import { OperationalCheckoutRoute } from './OperationalCheckoutRoute';
 import { NotFoundPage } from '@/pages/not-found';
 import { BusinessTypePage } from '@/pages/admin/settings/BusinessType/BusinessTypePage';
 import { PaymentMethodsPage } from '@/pages/admin/payment-methods/PaymentMethodsPage';
@@ -324,6 +325,13 @@ export const router = createBrowserRouter([
                     },
 
                     {
+                        element: <OperationalCheckoutRoute />,
+                        children: [
+                            { path: 'ventas/pos', element: <POSPage operationMode="auto" /> },
+                        ],
+                    },
+
+                    {
                         element: <FeatureRoute feature="pos" />,
                         children: [
                             {
@@ -337,15 +345,12 @@ export const router = createBrowserRouter([
                                     { path: 'ventas/historial', element: <SalesHistoryPage /> },
                                 ],
                             },
-                            {
-                                element: <PermissionRoute permission="pos.view" />,
-                                children: [
-                                    {
-                                        path: 'ventas/pos',
-                                        element: <POSPage />,
-                                    },
-                                ],
-                            },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="orders" />,
+                        children: [
                             {
                                 element: (
                                     <PermissionRoute
@@ -368,6 +373,20 @@ export const router = createBrowserRouter([
                                                 element: <OrderEditPage />,
                                             },
                                         ],
+                                    },
+                                ],
+                            },
+                            {
+                                element: (
+                                    <PermissionRoute
+                                        permission="orders.create"
+                                        redirectTo="/tienda/dashboard"
+                                    />
+                                ),
+                                children: [
+                                    {
+                                        path: 'ventas/pedidos/nuevo',
+                                        element: <POSPage operationMode="orders" />,
                                     },
                                 ],
                             },

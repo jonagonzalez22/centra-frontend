@@ -13,6 +13,9 @@ interface POSPageViewProps {
   onCheckout: () => void;
   onRegisterOrder: () => void;
   canCreateOperations: boolean;
+  allowOrders?: boolean;
+  lockOrderType?: boolean;
+  canCollectOrders?: boolean;
   registerDepositNow: boolean;
   setRegisterDepositNow: (value: boolean) => void;
 }
@@ -21,6 +24,9 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
   onCheckout,
   onRegisterOrder,
   canCreateOperations,
+  allowOrders = true,
+  lockOrderType = false,
+  canCollectOrders = true,
   registerDepositNow,
   setRegisterDepositNow,
 }) => {
@@ -95,14 +101,14 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
 
       <div className="hidden space-y-4 md:block lg:col-span-1 lg:self-start" data-testid="pos-desktop-panel">
         <Card title="Configuración">
-          <POSOperationConfig />
+          <POSOperationConfig allowOrders={allowOrders} lockOrderType={lockOrderType} />
         </Card>
 
         {items.length > 0 && <Card title="Totales">
           <POSTotals />
         </Card>}
 
-        {type === 'order' && (
+        {type === 'order' && canCollectOrders && (
           <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
             <span className="text-sm text-gray-700">Registrar seña ahora</span>
             <Switch
@@ -132,8 +138,8 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
         rootClassName="md:hidden"
         styles={{ body: { paddingBottom: 'calc(24px + env(safe-area-inset-bottom))' } }}
       >
-        <POSOperationConfig loadPriceLists={false} />
-        {type === 'order' && (
+        <POSOperationConfig loadPriceLists={false} allowOrders={allowOrders} lockOrderType={lockOrderType} />
+        {type === 'order' && canCollectOrders && (
           <div className="mt-4 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
             <span className="text-sm text-gray-700">Registrar seña ahora</span>
             <Switch

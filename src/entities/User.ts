@@ -6,6 +6,7 @@ export type UserRole =
     | 'STORE_DRIVER';
 export type FeatureCode =
     | 'pos'
+    | 'orders'
     | 'inventory'
     | 'reports'
     | 'deliveries'

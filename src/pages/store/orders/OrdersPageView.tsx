@@ -73,9 +73,11 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
 
     return (
         <div>
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold m-0">Pedidos</h1>
-                <p className="text-gray-500 mt-1">Gestión de pedidos</p>
+            <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold m-0">Pedidos</h1>
+                    <p className="text-gray-500 mt-1">Gestión de pedidos</p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

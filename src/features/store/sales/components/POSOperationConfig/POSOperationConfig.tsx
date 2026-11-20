@@ -12,9 +12,11 @@ const MANUAL_OPTION_PREFIX = '__manual_customer_name__:';
 
 interface POSOperationConfigProps {
   loadPriceLists?: boolean;
+  allowOrders?: boolean;
+  lockOrderType?: boolean;
 }
 
-export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPriceLists = true }) => {
+export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPriceLists = true, allowOrders = true, lockOrderType = false }) => {
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
   const type = usePOSStore((s) => s.type);
   const customer = usePOSStore((s) => s.customer);
@@ -25,6 +27,10 @@ export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPric
   const setCustomerDisplayName = usePOSStore((s) => s.setCustomerDisplayName);
   const setRequestedDeliveryDate = usePOSStore((s) => s.setRequestedDeliveryDate);
   const setAvailablePriceLists = usePOSStore((s) => s.setAvailablePriceLists);
+
+  useEffect(() => {
+    if (!allowOrders && !lockOrderType && type === 'order') setType('sale');
+  }, [allowOrders, lockOrderType, setType, type]);
 
   useEffect(() => {
     if (!loadPriceLists) return;
@@ -63,16 +69,18 @@ export const POSOperationConfig: React.FC<POSOperationConfigProps> = ({ loadPric
 
   return (
     <div className="space-y-3">
-      <Segmented
-        value={type}
-        onChange={(val) => setType(val as 'sale' | 'order')}
-        options={[
-          { value: 'sale', label: 'Venta por mostrador' },
-          { value: 'order', label: 'Pedido programado' },
-        ]}
-        block
-        size="large"
-      />
+      {allowOrders && (
+        <Segmented
+          value={type}
+          onChange={(val) => setType(val as 'sale' | 'order')}
+          options={[
+            { value: 'sale', label: 'Venta por mostrador' },
+            { value: 'order', label: 'Pedido programado' },
+          ]}
+          block
+          size="large"
+        />
+      )}
 
       <div>
         <label className="block text-xs text-gray-500 mb-1">Lista de precios</label>
