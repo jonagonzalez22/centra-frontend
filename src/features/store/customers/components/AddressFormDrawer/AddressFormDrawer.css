@@ -1,0 +1,189 @@
+.location-confirmation-modal .ant-modal {
+    max-width: calc(100vw - 32px);
+}
+
+.location-confirmation-modal .ant-modal-header {
+    margin-bottom: 0;
+    padding: 20px 52px 12px 24px;
+}
+
+.location-confirmation-modal .ant-modal-title {
+    color: #1f2937;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.location-confirmation-modal .ant-modal-close {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    color: #6b7280;
+    display: inline-flex;
+    height: 32px;
+    justify-content: center;
+    right: 14px;
+    top: 14px;
+    width: 32px;
+}
+
+.location-confirmation-modal .ant-modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.location-confirmation-modal .ant-modal-body {
+    padding: 4px 24px 8px;
+}
+
+.location-confirmation-modal .ant-modal-footer {
+    margin-top: 0;
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 24px 20px;
+}
+
+.location-confirmation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.location-confirmation-message {
+    color: #374151;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.location-confirmation-note {
+    align-items: flex-start;
+    color: #6b7280;
+    display: flex;
+    font-size: 14px;
+    gap: 8px;
+    line-height: 1.5;
+}
+
+.location-confirmation-note > span[aria-hidden='true'] {
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.location-confirmation-actions {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: auto auto auto;
+    justify-content: end;
+}
+
+.location-confirmation-actions .ant-btn {
+    height: 36px;
+    white-space: nowrap;
+}
+
+.delivery-location-status {
+    align-items: flex-start;
+    border-radius: 6px;
+    display: flex;
+    font-size: 13px;
+    gap: 8px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+}
+
+.delivery-location-status > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.delivery-location-status strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.delivery-location-status small {
+    color: #78716c;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.delivery-location-status--pending {
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.delivery-location-status--pending > span {
+    color: #b45309;
+    margin-top: 2px;
+}
+
+.delivery-location-status--informative {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.delivery-location-status--informative > span {
+    color: #2563eb;
+    margin-top: 2px;
+}
+
+.delivery-location-status--confirmed {
+    background: #f0fdf4;
+    color: #166534;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.delivery-location-status--confirmed > span {
+    font-size: 13px;
+}
+
+.delivery-location-empty-state {
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 0 0 12px;
+}
+
+.delivery-location-confirmation-action {
+    margin-top: 12px;
+}
+
+.delivery-location-confirmation-action .ant-btn {
+    min-height: 40px;
+}
+
+@media (max-width: 575px) {
+    .delivery-location-confirmation-action .ant-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .location-confirmation-modal .ant-modal-header {
+        padding-left: 20px;
+    }
+
+    .location-confirmation-modal .ant-modal-body {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .location-confirmation-modal .ant-modal-footer {
+        padding: 16px 20px 20px;
+    }
+
+    .location-confirmation-actions {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    .location-confirmation-actions .ant-btn {
+        width: 100%;
+    }
+}

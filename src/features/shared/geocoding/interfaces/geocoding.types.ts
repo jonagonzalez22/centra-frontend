@@ -3,4 +3,6 @@ export interface GeocodingResult {
     longitude: number;
     formatted_address: string;
     provider: string;
+    quality: 'precise' | 'review';
+    requires_confirmation: boolean;
 }

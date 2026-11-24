@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Form, Input, Select, Checkbox, Modal, Spin, message } from 'antd';
-import { EnvironmentOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, InfoCircleOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { Button } from '@/components/Button';
 import { Drawer } from '@/components/Drawer';
 import { GeocodingService } from '@/features/shared/geocoding/services/geocoding.service';
@@ -15,6 +15,7 @@ import type {
 } from '../../types/customerAddress.types';
 import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type { ApiListResponse } from '@/interfaces/ApiListResponse.interface';
+import './AddressFormDrawer.css';
 
 interface ProvinceOption {
     id: string;
@@ -58,12 +59,22 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
     const [localitiesLoading, setLocalitiesLoading] = useState(false);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
+    const [locationStatus, setLocationStatus] = useState<'none' | 'pending' | 'confirmed' | 'legacy'>('none');
+    const [locationSource, setLocationSource] = useState<'geocoding' | 'manual' | 'coordinates' | 'shared_link' | null>(null);
+    const [locationLabel, setLocationLabel] = useState<string | null>(null);
     const [selectedProvinceId, setSelectedProvinceId] = useState<string | null>(null);
     const [geocodingLoading, setGeocodingLoading] = useState(false);
     const [pasteModalOpen, setPasteModalOpen] = useState(false);
     const [pastedValue, setPastedValue] = useState('');
     const [pasteLoading, setPasteLoading] = useState(false);
+    const [locationConfirmationOpen, setLocationConfirmationOpen] = useState(false);
+    const [pendingSubmitValues, setPendingSubmitValues] = useState<Record<string, unknown> | null>(null);
+    const [locationHighlighted, setLocationHighlighted] = useState(false);
+    const [locationJustConfirmed, setLocationJustConfirmed] = useState(false);
     const mapRef = useRef<AddressMapRef>(null);
+    const locationSectionRef = useRef<HTMLDivElement>(null);
+    const submittingRef = useRef(false);
+    const reviewLocationRequestedRef = useRef(false);
 
     const isEditing = !!address;
     const title = isEditing ? 'Editar Domicilio' : 'Agregar Domicilio';
@@ -120,6 +131,10 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
             });
             setLatitude(address.latitude);
             setLongitude(address.longitude);
+            setLocationStatus(address.location_status ?? (address.latitude === null ? 'none' : 'legacy'));
+            setLocationSource(address.location_source ?? null);
+            setLocationHighlighted(false);
+            setLocationJustConfirmed(false);
             setLocalityOptions([]);
 
             if (address.locality?.province?.id) {
@@ -130,6 +145,11 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
             form.resetFields();
             setLatitude(null);
             setLongitude(null);
+            setLocationStatus('none');
+            setLocationSource(null);
+            setLocationLabel(null);
+            setLocationHighlighted(false);
+            setLocationJustConfirmed(false);
             setSelectedProvinceId(null);
             setLocalityOptions([]);
         }
@@ -147,9 +167,23 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
     const handleCoordinatesChange = (lat: number, lng: number) => {
         setLatitude(lat);
         setLongitude(lng);
+        setLocationStatus('pending');
+        setLocationSource('manual');
+        setLocationJustConfirmed(false);
+    };
+
+    const invalidateLocation = () => {
+        if (latitude === null && longitude === null) return;
+        setLatitude(null);
+        setLongitude(null);
+        setLocationStatus('none');
+        setLocationSource(null);
+        setLocationLabel(null);
+        setLocationJustConfirmed(false);
     };
 
     const formValues = Form.useWatch([], form);
+    const isDeliveryAddress = formValues?.type === 'delivery';
     const canSearchLocation = !!(
         formValues?.street &&
         formValues?.number &&
@@ -178,6 +212,14 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                 message.warning(
                     'No pudimos encontrar la dirección. Verifique los datos ingresados o utilice la opción "Pegar ubicación".'
                 );
+            } else {
+                setLatitude(found.latitude);
+                setLongitude(found.longitude);
+                setLocationStatus('pending');
+                setLocationSource('geocoding');
+                setLocationLabel(found.formatted_address);
+                setLocationJustConfirmed(false);
+                message.info(found.quality === 'precise' ? 'Revisá el punto y confirmá la ubicación.' : 'Google encontró una ubicación aproximada. Ajustá o confirmá el punto.');
             }
         } finally {
             setGeocodingLoading(false);
@@ -190,8 +232,13 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
         setPasteLoading(true);
         try {
             const result = await GeocodingService.searchAddress(pastedValue.trim());
-            handleCoordinatesChange(result.latitude, result.longitude);
-            message.success('Ubicación aplicada correctamente.');
+            setLatitude(result.latitude);
+            setLongitude(result.longitude);
+            setLocationStatus('pending');
+            setLocationSource(result.provider === 'coordinates' ? 'coordinates' : result.provider.endsWith('_link') ? 'shared_link' : 'geocoding');
+            setLocationLabel(result.formatted_address);
+            setLocationJustConfirmed(false);
+            message.success('Ubicación aplicada. Revisala en el mapa y confirmala antes de guardar.');
             setPasteModalOpen(false);
             setPastedValue('');
         } catch (err) {
@@ -202,7 +249,10 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
         }
     };
 
-    const handleSubmit = async (values: Record<string, unknown>) => {
+    const persistAddress = async (values: Record<string, unknown>, confirmLocation: boolean): Promise<boolean> => {
+        if (submittingRef.current) return false;
+
+        submittingRef.current = true;
         setLoading(true);
         try {
             const payload = {
@@ -210,12 +260,14 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                 number: values.number as string,
                 floor: values.floor as string | null,
                 apartment: values.apartment as string | null,
-                postal_code: values.postal_code as string,
+                postal_code: (values.postal_code as string | undefined)?.trim() || null,
                 locality_id: values.locality_id as string,
                 observations: values.observations as string | null,
                 type: values.type as AddressType,
                 latitude,
                 longitude,
+                confirm_location: confirmLocation,
+                location_source: locationSource,
                 is_main: values.is_main as boolean,
             };
 
@@ -225,6 +277,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                 await onCreate(payload);
             }
             onSuccess();
+            return true;
         } catch (err) {
             const apiError = err as ApiError;
             if (apiError.errors) {
@@ -234,9 +287,68 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                 }));
                 form.setFields(fieldErrors as Parameters<typeof form.setFields>[0]);
             }
+            return false;
         } finally {
+            submittingRef.current = false;
             setLoading(false);
         }
+    };
+
+    const handleSubmit = (values: Record<string, unknown>) => {
+        if (values.type === 'delivery' && locationStatus !== 'confirmed') {
+            setPendingSubmitValues(values);
+            setLocationConfirmationOpen(true);
+            return;
+        }
+
+        void persistAddress(values, locationStatus === 'confirmed');
+    };
+
+    const scrollToLocationSection = () => {
+        window.requestAnimationFrame(() => {
+            const section = locationSectionRef.current;
+            const drawerBody = section?.closest('.ant-drawer-body');
+            if (!section || !(drawerBody instanceof HTMLElement)) return;
+
+            drawerBody.scrollTo({
+                top: Math.max(0, section.offsetTop - drawerBody.offsetTop - 12),
+                behavior: 'smooth',
+            });
+
+            window.setTimeout(() => setLocationHighlighted(false), 1800);
+        });
+    };
+
+    const reviewLocation = () => {
+        reviewLocationRequestedRef.current = true;
+        setLocationHighlighted(true);
+        setLocationConfirmationOpen(false);
+    };
+
+    const handleLocationConfirmationOpenChange = (visible: boolean) => {
+        if (visible || !reviewLocationRequestedRef.current) return;
+
+        reviewLocationRequestedRef.current = false;
+        scrollToLocationSection();
+    };
+
+    const confirmLocation = () => {
+        setLocationStatus('confirmed');
+        setLocationJustConfirmed(true);
+        setLocationHighlighted(false);
+    };
+
+    const saveWithoutLocationConfirmation = () => {
+        if (!pendingSubmitValues || loading) return;
+
+        const values = pendingSubmitValues;
+        setLocationConfirmationOpen(false);
+        setPendingSubmitValues(null);
+        void persistAddress(values, false).then((saved) => {
+            if (saved) {
+                message.info('Domicilio guardado. La ubicación deberá confirmarse antes de utilizarla para repartos.');
+            }
+        });
     };
 
     const handleClose = () => {
@@ -283,7 +395,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                             rules={[{ required: true, message: 'La calle es obligatoria.' }]}
                             className="col-span-1"
                         >
-                            <Input placeholder="Av. Corrientes" />
+                            <Input placeholder="Av. Corrientes" onChange={invalidateLocation} />
                         </Form.Item>
 
                         <Form.Item
@@ -292,7 +404,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                             rules={[{ required: true, message: 'La altura es obligatoria.' }]}
                             className="col-span-1"
                         >
-                            <Input placeholder="1000" />
+                            <Input placeholder="1000" onChange={invalidateLocation} />
                         </Form.Item>
 
                         <Form.Item name="floor" label="Piso" className="col-span-1">
@@ -305,7 +417,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
 
                         <Form.Item
                             name="postal_code"
-                            label="Código Postal"
+                            label="Código Postal (opcional)"
                             className="col-span-2"
                         >
                             <Input placeholder="C1001" />
@@ -320,7 +432,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                             <Select
                                 placeholder="Seleccioná una provincia"
                                 options={provinceOptions}
-                                onChange={handleProvinceChange}
+                                onChange={(value) => { invalidateLocation(); handleProvinceChange(value); }}
                                 allowClear
                                 showSearch
                                 optionFilterProp="label"
@@ -345,6 +457,7 @@ export const AddressFormDrawer: React.FC<AddressFormDrawerProps> = ({
                                 allowClear
                                 showSearch
                                 optionFilterProp="label"
+                                onChange={invalidateLocation}
                             />
                         </Form.Item>
 
@@ -383,9 +496,14 @@ Ingreso por calle lateral."
                         </Form.Item>
                     </div>
 
-                    <div className="mt-4">
+                    <div
+                        ref={locationSectionRef}
+                        className={`mt-4 rounded-md ${locationHighlighted ? 'ring-2 ring-blue-300 ring-offset-2 p-2' : ''}`}
+                    >
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">Ubicación de entrega</span>
+                            <span className="text-sm font-medium text-gray-700">
+                                {isDeliveryAddress ? 'Ubicación de entrega' : 'Ubicación del domicilio'}
+                            </span>
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="default"
@@ -408,6 +526,33 @@ Ingreso por calle lateral."
                         <p className="text-xs text-gray-500 mb-3">
                             Busque automáticamente la ubicación utilizando la dirección ingresada o pegue una ubicación enviada por el cliente.
                         </p>
+                        {locationStatus === 'confirmed' ? (
+                            <div className="delivery-location-status delivery-location-status--confirmed">
+                                <strong>{isDeliveryAddress ? 'Ubicación lista para entregas' : 'Ubicación confirmada'}</strong>
+                                {locationJustConfirmed && (
+                                    <span>
+                                        {isDeliveryAddress
+                                            ? 'El punto de entrega está verificado. Guardá el domicilio para conservar los cambios.'
+                                            : 'El punto del domicilio está verificado. Guardá el domicilio para conservar los cambios.'}
+                                    </span>
+                                )}
+                            </div>
+                        ) : latitude !== null && longitude !== null ? (
+                            <div className={`delivery-location-status ${isDeliveryAddress ? 'delivery-location-status--pending' : 'delivery-location-status--informative'}`}>
+                                <InfoCircleOutlined aria-hidden />
+                                <div>
+                                    <strong>Ubicación pendiente de confirmación</strong>
+                                    <span>
+                                        {isDeliveryAddress
+                                            ? 'Verificá que el marcador indique el punto correcto de entrega. Podés moverlo para ajustarlo.'
+                                            : 'Verificá que el marcador coincida con la dirección del domicilio. Podés moverlo para ajustarlo.'}
+                                    </span>
+                                    {locationLabel && <small>Resultado encontrado: {locationLabel}</small>}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="delivery-location-empty-state">Seleccioná un punto en el mapa, buscá una dirección o pegá una ubicación para poder confirmarla.</p>
+                        )}
                         <AddressMap
                             ref={mapRef}
                             latitude={latitude}
@@ -415,9 +560,66 @@ Ingreso por calle lateral."
                             onCoordinatesChange={handleCoordinatesChange}
                             isSearching={geocodingLoading}
                         />
+                        {latitude !== null && longitude !== null && locationStatus !== 'confirmed' && (
+                            <div className="delivery-location-confirmation-action">
+                                <Button
+                                    variant="primary"
+                                    size="large"
+                                    label={isDeliveryAddress ? 'Confirmar este punto de entrega' : 'Confirmar ubicación'}
+                                    action={confirmLocation}
+                                />
+                            </div>
+                        )}
                     </div>
                 </Form>
             </Drawer>
+
+            <Modal
+                title="¿Querés confirmar la ubicación?"
+                open={locationConfirmationOpen}
+                onCancel={() => setLocationConfirmationOpen(false)}
+                afterOpenChange={handleLocationConfirmationOpenChange}
+                maskClosable={!loading}
+                keyboard={!loading}
+                rootClassName="location-confirmation-modal"
+                footer={
+                    <div className="location-confirmation-actions">
+                        <Button
+                            variant="text"
+                            label="Cancelar"
+                            disabled={loading}
+                            action={() => {
+                                setLocationConfirmationOpen(false);
+                                setPendingSubmitValues(null);
+                            }}
+                        />
+                        <Button
+                            variant="default"
+                            label="Guardar sin confirmar"
+                            loading={loading}
+                            disabled={!pendingSubmitValues}
+                            action={saveWithoutLocationConfirmation}
+                        />
+                        <Button
+                            variant="primary"
+                            label="Ir al mapa y confirmar"
+                            disabled={loading}
+                            action={reviewLocation}
+                        />
+                    </div>
+                }
+                width={620}
+            >
+                <div className="location-confirmation-content">
+                    <p className="location-confirmation-message">
+                        Verificá que el marcador indique la ubicación correcta del domicilio.
+                    </p>
+                    <div className="location-confirmation-note">
+                        <InfoCircleOutlined aria-hidden />
+                        <span>Podés guardar sin confirmar, pero este domicilio no estará disponible para repartos hasta verificar su ubicación.</span>
+                    </div>
+                </div>
+            </Modal>
 
             <Modal
                 title="Pegar ubicación"

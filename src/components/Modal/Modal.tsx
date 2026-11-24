@@ -10,6 +10,7 @@ export interface ModalProps {
     footer?: React.ReactNode | null;
     loading?: boolean;
     destroyOnClose?: boolean;
+    afterOpenChange?: (open: boolean) => void;
     className?: string;
     styles?: AntModalProps['styles'];
 }
@@ -23,6 +24,7 @@ const Modal: React.FC<ModalProps> = ({
     footer,
     loading = false,
     destroyOnClose = true,
+    afterOpenChange,
     className,
     styles,
 }) => {
@@ -34,6 +36,7 @@ const Modal: React.FC<ModalProps> = ({
             width={width}
             footer={footer}
             destroyOnClose={destroyOnClose}
+            afterOpenChange={afterOpenChange}
             closable={!loading}
             maskClosable={!loading}
             keyboard={!loading}

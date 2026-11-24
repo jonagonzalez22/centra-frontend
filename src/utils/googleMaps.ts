@@ -12,7 +12,7 @@ export type GoogleMapsApi = {
         open: (options: Record<string, unknown>) => void;
     };
     geometry: { encoding: { decodePath: (encoded: string) => unknown[] } };
-    event: { addListener: (instance: unknown, event: string, handler: () => void) => void };
+    event: { addListener: (instance: unknown, event: string, handler: (event?: unknown) => void) => void };
 };
 
 declare global {
