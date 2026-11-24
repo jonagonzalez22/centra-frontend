@@ -15,7 +15,6 @@ const colors = {
 
 export interface PriceListDocumentOptions {
     groupByCategory: boolean;
-    logoDataUrl?: string | null;
 }
 
 const money = (value: string) => formatCurrencyWithCents(Number(value));
@@ -216,35 +215,19 @@ export const buildPriceListDocument = (
         }),
         content: [
             {
-                columns: [
-                    {
-                        width: '*',
-                        stack: [
-                            { text: data.store.name ?? 'Comercio', bold: true, fontSize: 15 },
-                            ...(contact
-                                ? [
-                                      {
-                                          text: contact,
-                                          fontSize: 8.5,
-                                          color: colors.secondary,
-                                          margin: [0, 3, 0, 0],
-                                      },
-                                  ]
-                                : []),
-                        ],
-                    },
-                    ...(options.logoDataUrl
+                stack: [
+                    { text: data.store.name ?? 'Comercio', bold: true, fontSize: 15 },
+                    ...(contact
                         ? [
                               {
-                                  image: options.logoDataUrl,
-                                  width: 72,
-                                  fit: [72, 42],
-                                  alignment: 'right',
+                                  text: contact,
+                                  fontSize: 8.5,
+                                  color: colors.secondary,
+                                  margin: [0, 3, 0, 0],
                               },
                           ]
                         : []),
                 ],
-                columnGap: 12,
             },
             {
                 text: `Lista de precios — ${documentName}`,
