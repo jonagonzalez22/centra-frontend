@@ -5,16 +5,37 @@ import type { ApiError } from '@/interfaces/ApiErrors.interface';
 import type {
     PriceList,
     PriceListPayload,
+    PriceListExportData,
+    PriceListExportRequest,
     PriceListsFilters,
     PriceListsResponse,
 } from '../types/priceList.types';
 
 export const PriceListsService = {
+    exportData: async (payload: PriceListExportRequest): Promise<PriceListExportData> => {
+        const { data } = await api.post<ApiListResponse<PriceListExportData>>(
+            API_ENDPOINTS.STORE.PRICE_LISTS.EXPORT_DATA,
+            payload
+        );
+        if (data.status === 'error') {
+            throw {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            } as ApiError;
+        }
+        return data.data;
+    },
     getActive: async (): Promise<PriceList[]> => {
         const { data } = await api.get<ApiListResponse<PriceListsResponse>>(
             API_ENDPOINTS.STORE.PRICE_LISTS.ACTIVE
         );
-        if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        if (data.status === 'error')
+            throw {
+                status: 0,
+                message: data.message,
+                errors: data.errors ?? undefined,
+            } as ApiError;
         return data.data.items;
     },
     getAll: async (filters: PriceListsFilters = {}): Promise<PriceListsResponse> => {

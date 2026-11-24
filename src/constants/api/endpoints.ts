@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
         PRICE_LISTS: {
             URL: '/v1/store/price-lists',
             ACTIVE: '/v1/store/price-lists/active',
+            EXPORT_DATA: '/v1/store/price-lists/export-data',
         },
         CUSTOMERS: {
             URL: '/v1/store/customers',

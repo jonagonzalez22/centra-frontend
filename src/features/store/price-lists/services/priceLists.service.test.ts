@@ -35,10 +35,36 @@ describe('PriceListsService', () => {
     });
 
     test('loads active PriceLists from the operational selector endpoint', async () => {
-        const active = [{ id: 'list-1', name: 'Mayorista', discount_percentage: '10.00', is_active: true }];
+        const active = [
+            { id: 'list-1', name: 'Mayorista', discount_percentage: '10.00', is_active: true },
+        ];
         mockApi.get.mockResolvedValue({ data: { status: 'success', data: { items: active } } });
 
         await expect(PriceListsService.getActive()).resolves.toEqual(active);
         expect(mockApi.get).toHaveBeenCalledWith('/v1/store/price-lists/active');
+    });
+
+    test('sends export data requests without recalculating commercial amounts', async () => {
+        const payload = {
+            pricing_mode: 'price_list' as const,
+            price_list_id: 'list-1',
+            selection_mode: 'selected' as const,
+            product_ids: ['product-1'],
+            filters: { include_out_of_stock: true },
+        };
+        const result = {
+            products: [
+                {
+                    id: 'product-1',
+                    list_price: '10.05',
+                    discount_amount: '1.01',
+                    final_price: '9.04',
+                },
+            ],
+        };
+        mockApi.post.mockResolvedValue({ data: { status: 'success', data: result } });
+
+        await expect(PriceListsService.exportData(payload)).resolves.toEqual(result);
+        expect(mockApi.post).toHaveBeenCalledWith('/v1/store/price-lists/export-data', payload);
     });
 });

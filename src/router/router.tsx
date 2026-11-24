@@ -38,6 +38,7 @@ import { OrdersPage } from '@/pages/store/orders';
 import { OrderEditPage } from '@/pages/store/orders/OrderEditPage';
 import { StorePaymentMethodsPage } from '@/pages/store/payment-methods/StorePaymentMethodsPage';
 import { PriceListsPage } from '@/pages/store/price-lists/PriceListsPage';
+import { GeneratePriceListPage } from '@/pages/store/price-lists/GeneratePriceListPage';
 import { StoreDashboardPage } from '@/pages/store/dashboard';
 import { RoutesPage } from '@/pages/store/logistics/RoutesPage';
 import { RouteDetailPage } from '@/pages/store/logistics/RouteDetailPage';
@@ -317,7 +318,10 @@ export const router = createBrowserRouter([
                                     />
                                 ),
                                 children: [
-                                    { path: 'informes', element: <Navigate to="resumen" replace /> },
+                                    {
+                                        path: 'informes',
+                                        element: <Navigate to="resumen" replace />,
+                                    },
                                     { path: 'informes/resumen', element: <ReportsSummaryPage /> },
                                 ],
                             },
@@ -476,6 +480,20 @@ export const router = createBrowserRouter([
                                     {
                                         path: 'configuraciones/listas-de-precios',
                                         element: <PriceListsPage />,
+                                    },
+                                    {
+                                        element: (
+                                            <PermissionRoute
+                                                permission="price_lists.export"
+                                                redirectTo="/tienda/configuraciones/listas-de-precios"
+                                            />
+                                        ),
+                                        children: [
+                                            {
+                                                path: 'configuraciones/listas-de-precios/generar',
+                                                element: <GeneratePriceListPage />,
+                                            },
+                                        ],
                                     },
                                 ],
                             },

@@ -151,7 +151,12 @@ export function canAccessReturnPath(user: User, path: string): boolean {
         return hasStoreRole && hasFeatureAccess('orders') && hasPermission('orders.create');
     }
     if (matches(/^\/tienda\/ventas\/pedidos\/[^/]+\/editar$/)) {
-        return hasStoreRole && hasFeatureAccess('orders') && hasPermission('orders.view') && hasPermission('orders.edit');
+        return (
+            hasStoreRole &&
+            hasFeatureAccess('orders') &&
+            hasPermission('orders.view') &&
+            hasPermission('orders.edit')
+        );
     }
     if (matches(/^\/tienda\/ventas\/pagos-recibidos$/)) {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('payments.view');
@@ -165,6 +170,14 @@ export function canAccessReturnPath(user: User, path: string): boolean {
     }
     if (matches(/^\/tienda\/configuraciones\/listas-de-precios$/)) {
         return hasStoreRole && hasFeatureAccess('pos') && hasPermission('price_lists.view');
+    }
+    if (matches(/^\/tienda\/configuraciones\/listas-de-precios\/generar$/)) {
+        return (
+            hasStoreRole &&
+            hasFeatureAccess('pos') &&
+            hasPermission('price_lists.view') &&
+            hasPermission('price_lists.export')
+        );
     }
 
     return false;

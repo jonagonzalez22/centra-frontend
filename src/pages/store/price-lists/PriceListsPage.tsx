@@ -211,11 +211,7 @@ export const PriceListsPage = () => {
             }
         >
             {isFilteredEmpty ? (
-                <Button
-                    variant="default"
-                    label="Limpiar filtros"
-                    action={clearFilters}
-                />
+                <Button variant="default" label="Limpiar filtros" action={clearFilters} />
             ) : null}
         </Empty>
     );
@@ -240,9 +236,20 @@ export const PriceListsPage = () => {
                             Configurá descuentos predefinidos para usar en Caja y Pedidos.
                         </p>
                     </div>
-                    <CanDo permission="price_lists.create">
-                        <Button icon={<PlusOutlined />} label="Nueva lista" action={openCreate} />
-                    </CanDo>
+                    <div className="flex flex-wrap gap-2">
+                        <CanDo permission="price_lists.export">
+                            <Link to="/tienda/configuraciones/listas-de-precios/generar">
+                                <Button label="Generar lista de precios" />
+                            </Link>
+                        </CanDo>
+                        <CanDo permission="price_lists.create">
+                            <Button
+                                icon={<PlusOutlined />}
+                                label="Nueva lista"
+                                action={openCreate}
+                            />
+                        </CanDo>
+                    </div>
                 </div>
             </div>
             <Form
