@@ -1,6 +1,6 @@
 import { Empty, Spin, Tooltip } from 'antd';
 import { Button } from '@/components/Button';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate } from '@/utils/formatters';
 import type { OrderPayment } from '../../interfaces/order.interface';
 import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
 
@@ -36,12 +36,12 @@ const OrderDrawerPayments: React.FC<OrderDrawerPaymentsProps> = ({
             <div className="space-y-1 text-sm">
                 <div className="flex justify-between font-semibold">
                     <span>Total pagado</span>
-                    <span>{formatCurrency(paidAmount)}</span>
+                    <span>{formatCurrencyWithCents(paidAmount)}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                     <span>Saldo pendiente</span>
                     <span className={pendingAmount > 0 ? 'text-amber-600' : ''}>
-                        {formatCurrency(pendingAmount)}
+                        {formatCurrencyWithCents(pendingAmount)}
                     </span>
                 </div>
             </div>
@@ -55,7 +55,7 @@ const OrderDrawerPayments: React.FC<OrderDrawerPaymentsProps> = ({
                                 {payment.store_payment_method.name}
                             </span>
                             <span className="text-sm font-semibold">
-                                {formatCurrency(payment.amount)}
+                                {formatCurrencyWithCents(payment.amount)}
                             </span>
                         </div>
                         <div className="mt-1 text-xs text-gray-500 space-y-0.5">

@@ -60,6 +60,8 @@ export interface OperationResponse {
   type: 'sale' | 'order';
   status: string;
   total: number;
+  paid_amount?: number;
+  pending_amount?: number;
   customer_display_name: string | null;
   created_at: string;
 }

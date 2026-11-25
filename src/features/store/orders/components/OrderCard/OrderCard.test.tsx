@@ -55,6 +55,13 @@ test('shows the requested delivery date without a time-slot placeholder', () => 
     expect(screen.getByText('1 ítem pendiente de entrega')).toBeInTheDocument();
 });
 
+test('shows total and pending balance with cents', () => {
+    render(<OrderCard order={{ ...order, total: 869.25, pending_amount: 869.25 }} onClick={vi.fn()} />);
+
+    expect(screen.getByText(/Total:.*869,25/)).toBeInTheDocument();
+    expect(screen.getByText(/Saldo pendiente:.*869,25/)).toBeInTheDocument();
+});
+
 test('shows a delivery-address absence without falling back to the main address', () => {
     render(<OrderCard order={{ ...order, delivery_address: null }} onClick={vi.fn()} />);
 

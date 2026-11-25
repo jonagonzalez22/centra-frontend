@@ -802,11 +802,11 @@ test('refreshes persisted economic data after a successful payment', async () =>
     await waitFor(() => expect(getById).toHaveBeenCalledTimes(2));
     expect(setCashSession).toHaveBeenCalled();
     const summary = economicSummary();
-    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 1.000');
-    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 1.000');
-    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 1.000');
+    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 1.000,00');
+    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 1.000,00');
+    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 1.000,00');
     expect(summary.getByText('Saldo pendiente').parentElement).toHaveTextContent(
-        'Saldo pendiente$ 0'
+        'Saldo pendiente$ 0,00'
     );
     expect(screen.queryByRole('button', { name: 'Registrar pago' })).not.toBeInTheDocument();
 });
@@ -1210,10 +1210,11 @@ test('shows the line price with its snapshot unit without changing the authorita
         items: [
             {
                 ...order.items[0],
-                product_name: 'Unidad',
-                price: 600,
-                subtotal: 510,
-                discount_amount: 90,
+                product_name: 'Esponja Lisa Mortimer',
+                price: 950,
+                subtotal: 950,
+                discount_amount: 80.75,
+                discount_percentage: 8.5,
                 stock_measurement_unit: { code: 'unit', symbol: 'u' },
             },
             {
@@ -1250,10 +1251,21 @@ test('shows the line price with its snapshot unit without changing the authorita
     render(<OrderEditPage />);
     await screen.findByText('Editar pedido P-000123');
 
-    expect(screen.getByText('$ 600/u')).toBeInTheDocument();
-    expect(screen.getByText('$ 2.000/L')).toBeInTheDocument();
-    expect(screen.getByText('$ 3.000/kg')).toBeInTheDocument();
-    expect(screen.getByText('$ 1.500/m')).toBeInTheDocument();
+    expect(screen.getByText('$ 950,00/u')).toBeInTheDocument();
+    expect(screen.getByText('$ 2.000,00/L')).toBeInTheDocument();
+    expect(screen.getByText('$ 3.000,00/kg')).toBeInTheDocument();
+    expect(screen.getByText('$ 1.500,00/m')).toBeInTheDocument();
+    const spongeQuantity = screen.getByRole('spinbutton', {
+        name: /Cantidad de Esponja Lisa Mortimer/,
+    });
+    const spongeLine = spongeQuantity.closest('.relative.rounded-lg');
+    if (!(spongeLine instanceof HTMLElement)) {
+        throw new Error('No se encontró la línea de Esponja Lisa Mortimer.');
+    }
+    expect(within(spongeLine).getByText('Subtotal')).toBeInTheDocument();
+    expect(spongeLine).toHaveTextContent('950,00');
+    expect(spongeLine).toHaveTextContent('80,75');
+    expect(spongeLine).toHaveTextContent('869,25');
     const detergentQuantity = screen.getByRole('spinbutton', {
         name: /Cantidad de Detergente suelto/,
     });
@@ -1262,7 +1274,7 @@ test('shows the line price with its snapshot unit without changing the authorita
         throw new Error('No se encontró la línea de Detergente suelto.');
     }
     expect(within(detergentLine).getByText('Subtotal')).toBeInTheDocument();
-    expect(within(detergentLine).getByText('$ 1.000')).toBeInTheDocument();
+    expect(within(detergentLine).getByText('$ 1.000,00')).toBeInTheDocument();
     expect(detergentQuantity.closest('.ant-input-number')).toHaveClass('w-24');
     expect(screen.getByText(/Descuento: -/)).toHaveClass('text-emerald-700');
 });
@@ -1281,12 +1293,12 @@ test('shows the authoritative economic summary and no global save button', async
     await screen.findByText('Editar pedido P-000123');
 
     const summary = economicSummary();
-    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 45.350');
-    expect(summary.getByText('Descuentos').parentElement).toHaveTextContent('Descuentos-$ 1.300');
-    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 44.050');
-    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 0');
+    expect(summary.getByText('Subtotal').parentElement).toHaveTextContent('Subtotal$ 45.350,00');
+    expect(summary.getByText('Descuentos').parentElement).toHaveTextContent('Descuentos-$ 1.300,00');
+    expect(summary.getByText('Total').parentElement).toHaveTextContent('Total$ 44.050,00');
+    expect(summary.getByText('Pagado').parentElement).toHaveTextContent('Pagado$ 0,00');
     expect(summary.getByText('Saldo pendiente').parentElement).toHaveTextContent(
-        'Saldo pendiente$ 44.050'
+        'Saldo pendiente$ 44.050,00'
     );
     expect(screen.queryByRole('button', { name: 'Guardar cambios' })).not.toBeInTheDocument();
 });

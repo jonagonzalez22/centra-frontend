@@ -134,6 +134,17 @@ describe('usePOSStore POS line price lists', () => {
         });
     });
 
+    test('keeps cents in the commercial preview for an 8.5 percent discount', () => {
+        const store = usePOSStore.getState();
+        store.addItem({ ...product, id: 'sponge-1', price: 950 });
+        store.changeItemPriceList('sponge-1:common', 'retail-id', 'Minorista', 8.5);
+
+        expect(usePOSStore.getState().items.find((item) => item.product_id === 'sponge-1')).toMatchObject({
+            subtotal: 950,
+            discount_amount: 80.75,
+        });
+    });
+
     test('merges into an existing Product + PriceList line and recalculates quantity and discount', () => {
         const store = usePOSStore.getState();
         store.setSelectedPriceListId(wholesale.id, wholesale.name, 10);

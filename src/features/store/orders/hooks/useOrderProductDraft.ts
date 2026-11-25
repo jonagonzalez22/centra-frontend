@@ -20,6 +20,7 @@ export interface OrderProductDraftItem {
     stock_measurement_unit_symbol: string | null;
     price: number;
     subtotal: number;
+    tax_amount: number;
     discount_amount: number;
     price_list_id: string | null;
     price_list_name: string | null;
@@ -63,6 +64,7 @@ export const useOrderProductDraft = (
             stock_measurement_unit_symbol: line.stock_measurement_unit?.symbol ?? productState?.stock_measurement_unit?.symbol ?? null,
             price: line.price,
             subtotal: line.subtotal,
+            tax_amount: line.tax_amount,
             discount_amount: line.discount_amount,
             price_list_id: line.price_list_id ?? null,
             price_list_name: line.price_list_name ?? null,

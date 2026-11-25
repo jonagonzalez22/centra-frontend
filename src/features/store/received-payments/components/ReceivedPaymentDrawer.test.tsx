@@ -48,6 +48,12 @@ test('shows reversed and route audit details without technical ids', () => {
     expect(screen.queryByText('route-1')).not.toBeInTheDocument();
 });
 
+test('shows the persisted payment amount with cents', () => {
+    render(<ReceivedPaymentDrawer payment={{ ...payment, amount: 869.25 }} open onClose={vi.fn()} />);
+
+    expect(screen.getByText('Importe').closest('tr')).toHaveTextContent('869,25');
+});
+
 afterEach(() => {
     canReverse = false;
     cleanup();

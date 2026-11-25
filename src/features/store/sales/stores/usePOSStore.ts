@@ -8,9 +8,7 @@ import {
 } from '@/utils/quantity';
 import type { POSItem, POSPayment, AddItemPayload, POSStore } from '../interfaces/sale.interface';
 import type { PriceList } from '@/features/store/price-lists/types/priceList.types';
-
-const getDiscountAmount = (subtotal: number, discountPercentage: number) =>
-  Math.min(subtotal, Math.max(0, Math.round(subtotal * discountPercentage / 100)));
+import { calculateLineDiscount, calculateLineSubtotal } from '../utils/posTotals';
 
 const initialItems: POSItem[] = [];
 const initialPayments: POSPayment[] = [];
@@ -49,8 +47,8 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
             ? {
                 ...item,
                 quantity: newQuantity,
-                subtotal: Number(newQuantity) * item.price,
-                discount_amount: getDiscountAmount(Number(newQuantity) * item.price, item.discount_percentage),
+                subtotal: calculateLineSubtotal(newQuantity, item.price),
+                discount_amount: calculateLineDiscount(calculateLineSubtotal(newQuantity, item.price), item.discount_percentage),
               }
             : item
         ),
@@ -73,8 +71,8 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
             price_list_id: priceListId,
             price_list_name: get().selected_price_list_name,
             discount_percentage: get().selected_discount_percentage,
-            discount_amount: getDiscountAmount(Number(step) * payload.price, get().selected_discount_percentage),
-            subtotal: Number(step) * payload.price,
+            discount_amount: calculateLineDiscount(calculateLineSubtotal(step, payload.price), get().selected_discount_percentage),
+            subtotal: calculateLineSubtotal(step, payload.price),
             sale_quantity_step: step,
             commercial_available_quantity: commercialMaximum,
             stock_measurement_unit_symbol: payload.stock_measurement_unit_symbol ?? null,
@@ -98,8 +96,8 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
           ? {
               ...item,
               quantity: normalizedQuantity,
-              subtotal: Number(normalizedQuantity) * item.price,
-              discount_amount: getDiscountAmount(Number(normalizedQuantity) * item.price, item.discount_percentage),
+              subtotal: calculateLineSubtotal(normalizedQuantity, item.price),
+              discount_amount: calculateLineDiscount(calculateLineSubtotal(normalizedQuantity, item.price), item.discount_percentage),
             }
           : item
       ),
@@ -119,7 +117,7 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
     const collision = get().items.find((item) => item.line_key === nextKey && item.line_key !== line_key);
     if (collision) {
       const quantity = addDecimalStrings(collision.quantity, source.quantity);
-      const subtotal = Number(quantity) * collision.price;
+      const subtotal = calculateLineSubtotal(quantity, collision.price);
       set({ items: get().items.filter((item) => item.line_key !== line_key).map((item) => item.line_key === nextKey ? {
         ...item,
         quantity,
@@ -127,11 +125,11 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
         price_list_name,
         discount_percentage,
         subtotal,
-        discount_amount: getDiscountAmount(subtotal, discount_percentage),
+        discount_amount: calculateLineDiscount(subtotal, discount_percentage),
       } : item) });
       return;
     }
-    const subtotal = Number(source.quantity) * source.price;
+    const subtotal = calculateLineSubtotal(source.quantity, source.price);
     set({ items: get().items.map((item) => item.line_key === line_key ? {
       ...item,
       line_key: nextKey,
@@ -139,7 +137,7 @@ export const usePOSStore = create<POSStore>()((set, get) => ({
       price_list_name,
       discount_percentage,
       subtotal,
-      discount_amount: getDiscountAmount(subtotal, discount_percentage),
+      discount_amount: calculateLineDiscount(subtotal, discount_percentage),
     } : item) });
   },
 

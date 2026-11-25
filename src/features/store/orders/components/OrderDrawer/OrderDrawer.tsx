@@ -19,7 +19,7 @@ import OrderDrawerPayments from './OrderDrawerPayments';
 import OrderDrawerHistory from './OrderDrawerHistory';
 import type { OrderDetail } from '../../interfaces/order.interface';
 import type { TabsItem } from '@/components/Tabs/Tabs';
-import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate, formatDateShort } from '@/utils/formatters';
 import { compareDecimalStrings, formatQuantityWithUnit } from '@/utils/quantity';
 
 interface OrderDrawerProps {
@@ -289,19 +289,19 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                         <h4 className="font-semibold text-sm mb-2">Totales</h4>
                         <Descriptions column={1} size="small" bordered>
                             <Descriptions.Item label="Subtotal">
-                                {formatCurrency(order.subtotal)}
+                                {formatCurrencyWithCents(order.subtotal)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Descuento">
-                                {formatCurrency(order.discount)}
+                                {formatCurrencyWithCents(order.discount)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Impuesto">
-                                {formatCurrency(order.tax)}
+                                {formatCurrencyWithCents(order.tax)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Total">
-                                <span className="font-semibold">{formatCurrency(order.total)}</span>
+                                <span className="font-semibold">{formatCurrencyWithCents(order.total)}</span>
                             </Descriptions.Item>
                             <Descriptions.Item label="Pagado">
-                                {formatCurrency(order.paid_amount)}
+                                {formatCurrencyWithCents(order.paid_amount)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Pendiente">
                                 <span
@@ -311,7 +311,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                                             : ''
                                     }
                                 >
-                                    {formatCurrency(order.pending_amount)}
+                                    {formatCurrencyWithCents(order.pending_amount)}
                                 </span>
                             </Descriptions.Item>
                         </Descriptions>
@@ -447,7 +447,7 @@ const OrderDrawer: React.FC<OrderDrawerProps> = ({ open, order, loading, onClose
                 open={open}
                 onClose={onClose}
                 title={order ? order.operation_number : 'Pedido'}
-                width={520}
+                width="min(900px, calc(100vw - 32px))"
                 loading={loading}
                 footer={footer}
                 extra={order ? <OrderStatusBadge status={order.status} /> : null}

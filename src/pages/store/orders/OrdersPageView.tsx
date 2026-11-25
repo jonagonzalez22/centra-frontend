@@ -5,7 +5,7 @@ import { MetricCard } from '@/components/MetricCard';
 import { OrderFilters } from '@/features/store/orders/components/OrderFilters';
 import { OrderCard } from '@/features/store/orders/components/OrderCard';
 import { OrderDrawer } from '@/features/store/orders/components/OrderDrawer';
-import { formatCurrency, formatDateLong } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDateLong } from '@/utils/formatters';
 import type {
     OrderFilters as OrderFiltersType,
     OrderListItem,
@@ -95,7 +95,7 @@ const OrdersPageView: React.FC<OrdersPageViewProps> = ({
                 />
                 <MetricCard
                     title="Monto pendiente en esta página"
-                    value={loading ? formatCurrency(0) : formatCurrency(totalPending)}
+                    value={loading ? formatCurrencyWithCents(0) : formatCurrencyWithCents(totalPending)}
                     icon={DollarSign}
                     loading={loading}
                 />

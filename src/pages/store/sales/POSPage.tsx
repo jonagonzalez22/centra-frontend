@@ -7,7 +7,7 @@ import { SaleSuccessModal } from '@features/store/sales/components/SaleSuccessMo
 import { SalesService } from '@features/store/sales/services/sales.service';
 import type { OperationResponse } from '@features/store/sales/interfaces/sale.interface';
 import { usePOSStore } from '@features/store/sales/stores/usePOSStore';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrencyWithCents } from '@/utils/formatters';
 import { CashService } from '@/features/store/cash/services/cash.service';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getCurrentSessionGeneration, isCurrentSession } from '@/security/sessionContext';
@@ -88,7 +88,7 @@ export const POSPage: React.FC<POSPageProps> = ({ operationMode = 'auto' }) => {
         const sessionGeneration = getCurrentSessionGeneration();
 
         try {
-            await SalesService.createOperation({
+            const operation = await SalesService.createOperation({
                 type,
                 customer_id: customer?.id ?? null,
                 ...(type === 'sale' && customer_display_name?.trim()
@@ -106,8 +106,8 @@ export const POSPage: React.FC<POSPageProps> = ({ operationMode = 'auto' }) => {
 
             if (!isCurrentSession(sessionGeneration)) return;
 
-            const total = items.reduce((sum, item) => sum + item.subtotal, 0);
-            antMessage.success(`Pedido registrado. Saldo pendiente: ${formatCurrency(total)}`);
+            const pendingAmount = operation.pending_amount ?? operation.total;
+            antMessage.success(`Pedido registrado. Saldo pendiente: ${formatCurrencyWithCents(pendingAmount)}`);
             resetPOS();
         } catch (err) {
             if (!isCurrentSession(sessionGeneration)) return;

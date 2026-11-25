@@ -61,7 +61,7 @@ test('keeps an amount above the pending balance and disables submission', async 
 
     expect(amountInput).toHaveValue('30000.00');
     expect(
-        await screen.findByText('El importe no puede superar el saldo pendiente de $ 2.200.')
+        await screen.findByText('El importe no puede superar el saldo pendiente de $ 2.200,00.')
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
 });
@@ -80,6 +80,30 @@ test.each([2200, 1000])('accepts a valid amount of %s', async (amount) => {
     await user.type(screen.getByRole('spinbutton'), String(amount));
 
     expect(screen.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
+});
+
+test('shows a pending balance with cents without changing the submitted partial payment', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    render(
+        <RegisterOrderPaymentModal
+            open
+            pendingAmount={869.25}
+            onClose={vi.fn()}
+            onSubmit={onSubmit}
+        />
+    );
+
+    expect(screen.getByText('Saldo pendiente:', { exact: false })).toHaveTextContent('869,25');
+    await user.click(screen.getByRole('combobox'));
+    await user.click(await screen.findByText('Efectivo'));
+    await user.type(screen.getByRole('spinbutton'), '80.75');
+    await user.click(screen.getByRole('button', { name: 'Registrar pago' }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({
+        store_payment_method_id: 'cash-1',
+        amount: 80.75,
+    }));
 });
 
 test('keeps the modal open and shows the backend error when payment registration fails', async () => {

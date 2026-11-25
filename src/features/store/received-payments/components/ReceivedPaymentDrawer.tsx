@@ -3,7 +3,7 @@ import { Button } from '@/components/Button';
 import Drawer from '@/components/Drawer/Drawer';
 import Tag from '@/components/Tag/Tag';
 import { usePermissions } from '@/hooks/usePermissions';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate } from '@/utils/formatters';
 import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
 import { paymentReversalDrawerMessage } from '../constants/payment-reversal-reasons';
 import type { ReceivedPayment } from '../interfaces/received-payment.interface';
@@ -51,7 +51,7 @@ export const ReceivedPaymentDrawer = ({
                     <h3 className="text-base font-semibold mt-0">Pago</h3>
                     <Descriptions column={1} size="small">
                         <Descriptions.Item label="Importe">
-                            <strong>{formatCurrency(payment.amount)}</strong>
+                            <strong>{formatCurrencyWithCents(payment.amount)}</strong>
                         </Descriptions.Item>
                         <Descriptions.Item label="Estado">
                             <Tag color={payment.status === 'active' ? 'green' : 'volcano'}>

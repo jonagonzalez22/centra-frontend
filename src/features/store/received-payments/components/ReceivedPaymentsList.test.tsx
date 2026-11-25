@@ -31,15 +31,16 @@ const payment = (overrides: Partial<ReceivedPayment> = {}): ReceivedPayment => (
     ...overrides,
 });
 
-const renderList = (item = payment()) => {
+const renderList = (itemOrPayments: ReceivedPayment | ReceivedPayment[] = payment()) => {
     const onOpen = vi.fn();
     const onReverse = vi.fn();
+    const payments = Array.isArray(itemOrPayments) ? itemOrPayments : [itemOrPayments];
     render(
         <ReceivedPaymentsList
-            payments={[item]}
+            payments={payments}
             loading={false}
             page={1}
-            total={1}
+            total={payments.length}
             perPage={20}
             hasFilters={false}
             onPageChange={vi.fn()}
@@ -124,4 +125,26 @@ test('keeps mobile cards free of inline action buttons', () => {
     expect(
         within(cards as HTMLElement).queryByRole('button', { name: 'Ver detalle' })
     ).not.toBeInTheDocument();
+});
+
+test.each([869.25, 950, 0])('shows payment amount %s with two decimal places in desktop and mobile views', (amount) => {
+    renderList(payment({ amount }));
+
+    const decimalAmount = amount.toFixed(2).replace('.', ',');
+    expect(document.querySelector('.received-payments-table')).toHaveTextContent(decimalAmount);
+    expect(document.querySelector('.md\\:hidden')).toHaveTextContent(decimalAmount);
+});
+
+test('keeps each mixed or partial payment amount independent of its operation total', () => {
+    renderList([
+        payment({ id: 'transfer-payment', amount: 8000, payment_method: { id: 'transfer', name: 'Transferencia', code: 'transfer' } }),
+        payment({ id: 'cash-payment', amount: 869.25, payment_method: { id: 'cash', name: 'Efectivo', code: 'cash' } }),
+    ]);
+
+    const desktop = document.querySelector('.received-payments-table');
+    const mobile = document.querySelector('.md\\:hidden');
+    expect(desktop).toHaveTextContent('8.000,00');
+    expect(desktop).toHaveTextContent('869,25');
+    expect(mobile).toHaveTextContent('8.000,00');
+    expect(mobile).toHaveTextContent('869,25');
 });

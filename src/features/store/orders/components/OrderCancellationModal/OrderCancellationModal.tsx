@@ -4,7 +4,7 @@ import { Button } from '@/components/Button';
 import InputField from '@/components/InputField/InputField';
 import SelectField from '@/components/SelectField/SelectField';
 import Modal from '@/components/Modal/Modal';
-import { formatCurrency, formatDateShort } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDateShort } from '@/utils/formatters';
 import type { OrderDetail, OrderListItem } from '../../interfaces/order.interface';
 
 interface CancelFormValues {
@@ -108,12 +108,12 @@ const OrderCancellationModal: React.FC<OrderCancellationModalProps> = ({
                     )}
                     <div>
                         <span className="text-gray-500">Total: </span>
-                        <span className="font-semibold">{formatCurrency(order.total)}</span>
+                        <span className="font-semibold">{formatCurrencyWithCents(order.total)}</span>
                     </div>
                     <div>
                         <span className="text-gray-500">Pendiente: </span>
                         <span className={order.pending_amount > 0 ? 'font-semibold text-amber-600' : ''}>
-                            {formatCurrency(order.pending_amount)}
+                            {formatCurrencyWithCents(order.pending_amount)}
                         </span>
                     </div>
                 </div>

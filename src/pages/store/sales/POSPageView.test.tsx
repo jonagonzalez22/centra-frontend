@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { usePOSStore } from '@/features/store/sales/stores/usePOSStore';
+import type { Customer } from '@features/store/customers/types/customer.types';
 import { POSPageView } from './POSPageView';
 
 vi.mock('antd', () => ({
@@ -12,7 +13,9 @@ vi.mock('antd', () => ({
       {children}
     </div>
   ) : null,
-  Switch: () => <input type="checkbox" />,
+  Switch: ({ checked, disabled, onChange }: { checked: boolean; disabled?: boolean; onChange: (checked: boolean) => void }) => (
+    <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
+  ),
 }));
 
 vi.mock('@/components/Card/Card', () => ({
@@ -72,7 +75,7 @@ test('keeps mobile controls separate from the desktop panel, opens the drawer, a
   expect(screen.getByTestId('pos-mobile-checkout')).toHaveClass('fixed', 'md:hidden');
   expect(screen.getByTestId('pos-mobile-checkout')).toHaveStyle({ paddingBottom: 'env(safe-area-inset-bottom)' });
   expect(container.firstElementChild).toHaveClass('pb-[calc(5.5rem+env(safe-area-inset-bottom))]');
-  expect(screen.getByText('$25.000')).toBeInTheDocument();
+  expect(screen.getAllByText(/25\.000,00/)).toHaveLength(2);
 
   fireEvent.click(screen.getByRole('button', { name: 'Configuraciones' }));
   expect(screen.getByRole('dialog', { name: 'Configuración' })).toBeInTheDocument();
@@ -80,10 +83,10 @@ test('keeps mobile controls separate from the desktop panel, opens the drawer, a
   expect(screen.queryByRole('dialog', { name: 'Configuración' })).not.toBeInTheDocument();
 
   act(() => usePOSStore.getState().updateQuantity('paper-1:common', '2.0000'));
-  expect(screen.getByText('$50.000')).toBeInTheDocument();
+  expect(screen.getAllByText(/50\.000,00/)).toHaveLength(2);
 
   act(() => usePOSStore.getState().changeItemPriceList('paper-1:common', 'wholesale', 'Mayorista', 10));
-  expect(screen.getByText('$45.000')).toBeInTheDocument();
+  expect(screen.getAllByText(/45\.000,00/)).toHaveLength(2);
 
   fireEvent.click(screen.getByRole('button', { name: 'Cobrar' }));
   expect(onCheckout).toHaveBeenCalledTimes(1);
@@ -134,4 +137,43 @@ test('disables operation registration without pos.create while preserving catalo
   expect(checkoutButton).toBeDisabled();
   fireEvent.click(checkoutButton);
   expect(onCheckout).not.toHaveBeenCalled();
+});
+
+test('disables and clears the deposit option for a zero-total order, then enables it without restoring it', () => {
+  const onRegisterOrder = vi.fn();
+  const setRegisterDepositNow = vi.fn();
+  const store = usePOSStore.getState();
+  store.setType('order');
+  store.setCustomer({ id: 'customer-1', display_name: 'Cliente' } as Customer);
+  store.setRequestedDeliveryDate('2026-12-01');
+  store.changeItemPriceList('paper-1:common', 'clearance', 'Liquidación', 100);
+
+  const { rerender } = render(
+    <POSPageView
+      onCheckout={vi.fn()}
+      onRegisterOrder={onRegisterOrder}
+      canCreateOperations
+      registerDepositNow
+      setRegisterDepositNow={setRegisterDepositNow}
+    />
+  );
+
+  expect(screen.getByRole('checkbox')).toBeDisabled();
+  expect(setRegisterDepositNow).toHaveBeenCalledWith(false);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Registrar pedido' })[0]);
+  expect(onRegisterOrder).toHaveBeenCalledTimes(1);
+
+  act(() => store.changeItemPriceList('paper-1:clearance', 'wholesale', 'Mayorista', 10));
+  rerender(
+    <POSPageView
+      onCheckout={vi.fn()}
+      onRegisterOrder={onRegisterOrder}
+      canCreateOperations
+      registerDepositNow={false}
+      setRegisterDepositNow={setRegisterDepositNow}
+    />
+  );
+
+  expect(screen.getByRole('checkbox')).toBeEnabled();
+  expect(screen.getByRole('checkbox')).not.toBeChecked();
 });

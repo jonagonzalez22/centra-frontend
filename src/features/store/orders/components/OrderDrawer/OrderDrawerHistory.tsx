@@ -1,7 +1,7 @@
 import { Collapse, Descriptions, Empty, Spin, Timeline } from 'antd';
 import Table from '@/components/Table/Table';
 import Tag from '@/components/Tag/Tag';
-import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate, formatDateShort } from '@/utils/formatters';
 import { formatQuantityForDisplay, formatQuantityWithUnit } from '@/utils/quantity';
 import type {
     OrderHistoryDetails,
@@ -200,7 +200,7 @@ const EventDetails = ({ event }: { event: OrderHistoryEntry }) => {
         return (
             <div className="mt-1 text-xs text-gray-600">
                 <div>
-                    {formatCurrency(payment.amount)} · {payment.payment_method_name}
+                    {formatCurrencyWithCents(payment.amount)} · {payment.payment_method_name}
                     {payment.reference && ` · Ref. ${payment.reference}`}
                 </div>
                 {event.type === 'payment_reversed' && event.details.reason_code && (

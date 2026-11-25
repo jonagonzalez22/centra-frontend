@@ -28,7 +28,7 @@ import type {
     OrderEditability,
 } from '@/features/store/orders/interfaces/order.interface';
 import { CommercialProductsService } from '@/features/store/orders/services/commercial-products.service';
-import { formatCurrency, formatDate, formatDateShort } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate, formatDateShort } from '@/utils/formatters';
 import {
     addDecimalStrings,
     compareDecimalStrings,
@@ -40,6 +40,7 @@ import {
 import type { DecimalString } from '@/types/decimal';
 import type { PriceList } from '@/features/store/price-lists/types/priceList.types';
 import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
+import { getOrderItemTotal } from '@/features/store/orders/utils/orderMoney';
 import { OrderDeliveryDateModal } from './OrderDeliveryDateModal';
 
 interface Props {
@@ -467,10 +468,7 @@ export const OrderEditPageView = ({
                                               },
                                           ]
                                         : activePriceListOptions;
-                                const netSubtotal = Math.max(
-                                    0,
-                                    item.subtotal - item.discount_amount
-                                );
+                                const itemTotal = getOrderItemTotal(item);
 
                                 return (
                                     <div
@@ -536,7 +534,7 @@ export const OrderEditPageView = ({
                                                     <span className="block text-xs text-gray-500 xl:hidden">Precio unitario</span>
                                                     <span className="hidden xl:inline">Precio: </span>
                                                     <span className="mt-1 block font-medium text-gray-800 xl:mt-0 xl:inline">
-                                                        {formatCurrency(item.price)}
+                                                        {formatCurrencyWithCents(item.price)}
                                                         {item.stock_measurement_unit_symbol
                                                             ? `/${item.stock_measurement_unit_symbol}`
                                                             : ''}
@@ -545,16 +543,23 @@ export const OrderEditPageView = ({
                                                 {item.discount_amount > 0 && (
                                                     <span className="order-3 w-full text-emerald-700 xl:order-none xl:w-auto">
                                                         Descuento: -
-                                                        {formatCurrency(item.discount_amount)}
+                                                        {formatCurrencyWithCents(item.discount_amount)}
                                                     </span>
                                                 )}
                                                 <span className="text-right xl:text-left">
                                                     <span className="block text-xs text-gray-500 xl:hidden">Subtotal</span>
                                                     <span className="hidden xl:inline">Subtotal: </span>
                                                     <span className="mt-1 block text-base font-semibold text-gray-900 xl:mt-0 xl:inline xl:text-sm">
-                                                        {formatCurrency(netSubtotal)}
+                                                        {formatCurrencyWithCents(item.subtotal)}
                                                     </span>
                                                 </span>
+                                                {item.discount_amount > 0 && (
+                                                    <span className="text-right font-semibold text-gray-900 xl:text-left">
+                                                        <span className="block text-xs text-gray-500 xl:hidden">Total</span>
+                                                        <span className="hidden xl:inline">Total: </span>
+                                                        {formatCurrencyWithCents(itemTotal)}
+                                                    </span>
+                                                )}
                                             </div>
                                             {canRemove && (
                                                 <Popconfirm
@@ -680,26 +685,26 @@ export const OrderEditPageView = ({
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between gap-4 text-gray-600">
                                 <span>Subtotal</span>
-                                <span className="shrink-0">{formatCurrency(order.subtotal)}</span>
+                                <span className="shrink-0">{formatCurrencyWithCents(order.subtotal)}</span>
                             </div>
                             {order.discount > 0 && (
                                 <div className="flex justify-between gap-4 text-emerald-700">
                                     <span>Descuentos</span>
-                                    <span className="shrink-0">-{formatCurrency(order.discount)}</span>
+                                    <span className="shrink-0">-{formatCurrencyWithCents(order.discount)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 text-base font-semibold">
                                 <span>Total</span>
-                                <span className="shrink-0">{formatCurrency(order.total)}</span>
+                                <span className="shrink-0">{formatCurrencyWithCents(order.total)}</span>
                             </div>
                             <div className="flex justify-between gap-4 text-gray-600">
                                 <span>Pagado</span>
-                                <span className="shrink-0">{formatCurrency(order.paid_amount)}</span>
+                                <span className="shrink-0">{formatCurrencyWithCents(order.paid_amount)}</span>
                             </div>
                             <div className="flex justify-between gap-4 border-t border-gray-200 pt-2 font-semibold">
                                 <span>Saldo pendiente</span>
                                 <span className={`shrink-0 ${pendingAmount > 0 ? 'text-amber-600' : ''}`}>
-                                    {formatCurrency(pendingAmount)}
+                                    {formatCurrencyWithCents(pendingAmount)}
                                 </span>
                             </div>
                         </div>

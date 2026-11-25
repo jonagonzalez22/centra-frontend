@@ -1,6 +1,6 @@
 import { Button as AntButton, Drawer, Switch } from 'antd';
 import { Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Card from '@/components/Card/Card';
 import { POSProductSearch } from '@features/store/sales/components/POSProductSearch';
 import { POSCart } from '@features/store/sales/components/POSCart';
@@ -8,6 +8,8 @@ import { POSGlobalPriceListSelect, POSOperationConfig } from '@features/store/sa
 import { POSTotals } from '@features/store/sales/components/POSTotals';
 import Button from '@/components/Button/Button';
 import { usePOSStore } from '@features/store/sales/stores/usePOSStore';
+import { calculatePOSTotals } from '@features/store/sales/utils/posTotals';
+import { formatCurrencyWithCents } from '@/utils/formatters';
 
 interface POSPageViewProps {
   onCheckout: () => void;
@@ -36,7 +38,12 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
   const customer = usePOSStore((s) => s.customer);
   const requested_delivery_date = usePOSStore((s) => s.requested_delivery_date);
 
-  const total = items.reduce((sum, item) => sum + Math.max(0, Math.round(item.subtotal * (1 - item.discount_percentage / 100))), 0);
+  const { total } = calculatePOSTotals(items);
+  const canRegisterDeposit = total > 0;
+
+  useEffect(() => {
+    if (!canRegisterDeposit && registerDepositNow) setRegisterDepositNow(false);
+  }, [canRegisterDeposit, registerDepositNow, setRegisterDepositNow]);
 
   const canCheckout = () => {
     if (items.length === 0) return false;
@@ -48,7 +55,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
   };
 
   const handleAction = () => {
-    if (type === 'order' && !registerDepositNow) {
+    if (type === 'order' && (!canRegisterDeposit || !registerDepositNow)) {
       onRegisterOrder();
     } else {
       onCheckout();
@@ -113,7 +120,8 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
             <span className="text-sm text-gray-700">Registrar seña ahora</span>
             <Switch
               checked={registerDepositNow}
-              onChange={setRegisterDepositNow}
+              onChange={(checked) => canRegisterDeposit && setRegisterDepositNow(checked)}
+              disabled={!canRegisterDeposit}
               size="small"
             />
           </div>
@@ -121,7 +129,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
 
         {items.length > 0 && <Button
           variant="primary"
-          label={type === 'order' ? 'Registrar pedido' : `Cobrar $${total.toLocaleString('es-AR')}`}
+          label={type === 'order' ? 'Registrar pedido' : `Cobrar ${formatCurrencyWithCents(total)}`}
           action={handleAction}
           disabled={!canCreateOperations || !canCheckout()}
           block
@@ -144,7 +152,8 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
             <span className="text-sm text-gray-700">Registrar seña ahora</span>
             <Switch
               checked={registerDepositNow}
-              onChange={setRegisterDepositNow}
+              onChange={(checked) => canRegisterDeposit && setRegisterDepositNow(checked)}
+              disabled={!canRegisterDeposit}
               size="small"
             />
           </div>
@@ -159,7 +168,7 @@ export const POSPageView: React.FC<POSPageViewProps> = ({
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <div className="text-xs text-gray-500">Total</div>
-            <div className="truncate text-lg font-bold text-centra-primary">${total.toLocaleString('es-AR')}</div>
+            <div className="truncate text-lg font-bold text-centra-primary">{formatCurrencyWithCents(total)}</div>
           </div>
           <Button
             variant="primary"

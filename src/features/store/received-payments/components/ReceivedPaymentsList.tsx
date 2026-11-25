@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { Button } from '@/components/Button';
 import Tag from '@/components/Tag/Tag';
 import { usePermissions } from '@/hooks/usePermissions';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDate } from '@/utils/formatters';
 import { getPaymentOriginLabel } from '@/utils/paymentOrigin';
 import { paymentReversalBlockMessage } from '../constants/payment-reversal-reasons';
 import type { ReceivedPayment } from '../interfaces/received-payment.interface';
@@ -74,7 +74,7 @@ export const ReceivedPaymentsList = ({
             dataIndex: 'amount',
             key: 'amount',
             align: 'right',
-            render: (amount) => <strong className="tabular-nums">{formatCurrency(amount)}</strong>,
+            render: (amount) => <strong className="tabular-nums">{formatCurrencyWithCents(amount)}</strong>,
         },
         {
             title: 'Estado',
@@ -216,7 +216,7 @@ export const ReceivedPaymentsList = ({
                                 <div className="text-right">
                                     <div className="text-sm text-gray-500">Importe</div>
                                     <strong className="text-lg">
-                                        {formatCurrency(payment.amount)}
+                                        {formatCurrencyWithCents(payment.amount)}
                                     </strong>
                                 </div>
                             </div>

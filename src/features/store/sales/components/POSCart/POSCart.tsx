@@ -7,6 +7,7 @@ import { usePOSStore } from '../../stores/usePOSStore';
 import type { POSItem } from '../../interfaces/sale.interface';
 import { addDecimalStrings, compareDecimalStrings, formatQuantityWithUnit, isMultipleOfDecimalStrings, isPositiveDecimal } from '@/utils/quantity';
 import { formatDiscountPercentage } from '@/features/store/price-lists/types/priceList.types';
+import { formatCurrencyWithCents } from '@/utils/formatters';
 import './POSCart.css';
 
 export const POSCart: React.FC = () => {
@@ -133,7 +134,7 @@ export const POSCart: React.FC = () => {
           <div className="font-medium text-sm">{record.name}</div>
           <div className="text-xs text-gray-400">{record.sku}</div>
           {record.discount_amount > 0 && (
-            <div className="text-xs text-emerald-700">Descuento: -${record.discount_amount.toLocaleString('es-AR')}</div>
+            <div className="text-xs text-emerald-700">Descuento: -{formatCurrencyWithCents(record.discount_amount)}</div>
           )}
         </div>
       ),
@@ -162,19 +163,19 @@ export const POSCart: React.FC = () => {
       align: 'right',
       render: (_, record) => (
         <span className="text-sm">
-          ${Number(record.price).toLocaleString('es-AR')}
+          {formatCurrencyWithCents(Number(record.price))}
         </span>
       ),
     },
     {
-      title: 'Subtotal',
+      title: 'Total',
       dataIndex: 'subtotal',
       key: 'subtotal',
       width: 100,
       align: 'right',
       render: (_, record) => (
         <span className="text-sm font-medium">
-          ${Math.max(0, record.subtotal - record.discount_amount).toLocaleString('es-AR')}
+          {formatCurrencyWithCents(Math.max(0, record.subtotal - record.discount_amount))}
         </span>
       ),
     },
@@ -197,7 +198,7 @@ export const POSCart: React.FC = () => {
   const mobileCards = (
     <div className="pos-cart-mobile space-y-3 md:hidden" data-testid="pos-cart-mobile">
       {items.map((item) => {
-        const finalSubtotal = Math.max(0, item.subtotal - item.discount_amount);
+        const finalTotal = Math.max(0, item.subtotal - item.discount_amount);
 
         return (
           <article className="min-w-0 rounded-lg border border-gray-200 bg-white p-4" key={item.line_key}>
@@ -234,13 +235,13 @@ export const POSCart: React.FC = () => {
               <div className="text-xs text-gray-500">
                 <div>Precio unitario</div>
                 <div className="mt-1 text-sm font-medium text-gray-800">
-                  ${Number(item.price).toLocaleString('es-AR')}/{item.stock_measurement_unit_symbol}
+                  {formatCurrencyWithCents(Number(item.price))}/{item.stock_measurement_unit_symbol}
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-xs text-gray-500">Subtotal</div>
                 <div className="mt-1 text-base font-semibold text-gray-900">
-                  ${finalSubtotal.toLocaleString('es-AR')}
+                  {formatCurrencyWithCents(item.subtotal)}
                 </div>
               </div>
             </div>
@@ -248,7 +249,13 @@ export const POSCart: React.FC = () => {
             {item.discount_amount > 0 && (
               <div className="mt-2 flex items-center justify-between text-sm text-emerald-700">
                 <span>Descuento</span>
-                <span className="font-medium">-${item.discount_amount.toLocaleString('es-AR')}</span>
+                <span className="font-medium">-{formatCurrencyWithCents(item.discount_amount)}</span>
+              </div>
+            )}
+            {item.discount_amount > 0 && (
+              <div className="mt-2 flex items-center justify-between text-sm font-semibold text-gray-900">
+                <span>Total</span>
+                <span>{formatCurrencyWithCents(finalTotal)}</span>
               </div>
             )}
           </article>

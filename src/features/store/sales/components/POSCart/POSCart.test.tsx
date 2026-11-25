@@ -125,9 +125,22 @@ test('merges a changed line into the matching line and updates operation totals 
     expect(usePOSStore.getState().items[0]).toMatchObject({
         line_key: 'paper-1:wholesale-id', quantity: '3.0000', subtotal: 75000, discount_amount: 7500,
     });
-    expect(screen.getByText('$75.000')).toBeInTheDocument();
-    expect(screen.getAllByText('-$7.500')).toHaveLength(2);
-    expect(screen.getAllByText('$67.500')).toHaveLength(3);
+    expect(screen.getAllByText(/75\.000,00/)).toHaveLength(2);
+    expect(screen.getAllByText(/^-\$\s*7\.500,00/)).toHaveLength(2);
+    expect(screen.getAllByText(/67\.500,00/)).toHaveLength(3);
+});
+
+test('shows the undiscounted subtotal, exact discount, and final total with cents', () => {
+    const store = usePOSStore.getState();
+    store.resetPOS();
+    store.addItem({ ...product, id: 'sponge-1', price: 950 });
+    store.changeItemPriceList('sponge-1:common', 'retail-id', 'Minorista', 8.5);
+
+    render(<><POSCart /><POSTotals /></>);
+
+    expect(screen.getAllByText(/950,00/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/80,75/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/869,25/).length).toBeGreaterThanOrEqual(2);
 });
 
 test.each([
@@ -171,8 +184,8 @@ test('keeps all POS actions and commercial information available in the mobile p
         { target: { value: 'wholesale-id' } }
     );
     expect(within(screen.getByTestId('pos-cart-mobile')).getByText('Descuento')).toBeInTheDocument();
-    expect(within(screen.getByTestId('pos-cart-mobile')).getByText('-$5.000')).toBeInTheDocument();
-    expect(within(screen.getByTestId('pos-cart-mobile')).getByText('$45.000')).toBeInTheDocument();
+    expect(within(screen.getByTestId('pos-cart-mobile')).getByText(/^-\$\s*5\.000,00/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('pos-cart-mobile')).getByText(/^\$\s*45\.000,00/)).toBeInTheDocument();
 
     fireEvent.click(within(screen.getByTestId('pos-cart-mobile')).getByRole('button', { name: 'Eliminar Papel higiénico' }));
     expect(screen.getByText('No hay productos en el carrito')).toBeInTheDocument();

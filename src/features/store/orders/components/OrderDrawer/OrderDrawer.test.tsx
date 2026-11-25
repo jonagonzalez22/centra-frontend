@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrderDrawer from './OrderDrawer';
 import type { OrderDetail } from '../../interfaces/order.interface';
@@ -99,9 +99,80 @@ test.each([
 
     await user.click(screen.getByRole('tab', { name: 'Ítems y pagos' }));
 
-    const productRow = screen.getByText('Silicona Transparente 280ml').closest('tr');
+    const productRow = within(screen.getByTestId('order-items-table'))
+        .getByText('Silicona Transparente 280ml')
+        .closest('tr');
     expect(productRow).toHaveTextContent(displayedQuantity);
     expect(productRow).not.toHaveTextContent(quantity);
+});
+
+test('shows persisted line subtotal, discount, total, and pending balance with cents', async () => {
+    const user = userEvent.setup();
+    render(
+        <OrderDrawer
+            open
+            order={{
+                ...order,
+                subtotal: 950,
+                discount: 80.75,
+                total: 869.25,
+                pending_amount: 869.25,
+                items: [{
+                    id: 'item-1', product_id: 'product-1', product_name: 'Esponja Lisa Mortimer',
+                    quantity: '1.0000', price: 950, subtotal: 950, tax_amount: 0,
+                    discount_amount: 80.75, price_list_name: 'Revendedor', discount_percentage: 8.5,
+                    stock_measurement_unit: { code: 'unit', symbol: 'u' }, sale_quantity_step: '1.0000',
+                }],
+            }}
+            loading={false}
+            onClose={vi.fn()}
+        />
+    );
+
+    expect(screen.getByText('Subtotal').closest('tr')).toHaveTextContent('950,00');
+    expect(screen.getByText('Descuento').closest('tr')).toHaveTextContent('80,75');
+    expect(screen.getByText('Total').closest('tr')).toHaveTextContent('869,25');
+    expect(screen.getByText('Pendiente').closest('tr')).toHaveTextContent('869,25');
+
+    await user.click(screen.getByRole('tab', { name: 'Ítems y pagos' }));
+    const productRow = within(screen.getByTestId('order-items-table'))
+        .getByText('Esponja Lisa Mortimer')
+        .closest('tr');
+    expect(productRow).toHaveTextContent('950,00');
+    expect(productRow).toHaveTextContent('80,75');
+    expect(productRow).toHaveTextContent('869,25');
+});
+
+test('keeps every item amount in the mobile card presentation', async () => {
+    const user = userEvent.setup();
+    render(
+        <OrderDrawer
+            open
+            order={{
+                ...order,
+                items: [{
+                    id: 'item-1', product_id: 'product-1', product_name: 'Producto con un nombre comercial extenso',
+                    quantity: '1.5000', price: 950, subtotal: 1425, tax_amount: 0,
+                    discount_amount: 121.13, price_list_name: 'Revendedor', discount_percentage: 8.5,
+                    stock_measurement_unit: { code: 'unit', symbol: 'u' }, sale_quantity_step: '0.5000',
+                }],
+            }}
+            loading={false}
+            onClose={vi.fn()}
+        />
+    );
+
+    await user.click(screen.getByRole('tab', { name: 'Ítems y pagos' }));
+
+    const mobileItems = screen.getByTestId('order-items-mobile');
+    expect(mobileItems).toHaveClass('md:hidden');
+    expect(mobileItems).toHaveTextContent('Producto con un nombre comercial extenso');
+    expect(mobileItems).toHaveTextContent('1,5 u');
+    expect(mobileItems).toHaveTextContent('950,00');
+    expect(mobileItems).toHaveTextContent('1.425,00');
+    expect(mobileItems).toHaveTextContent('121,13');
+    expect(mobileItems).toHaveTextContent('1.303,87');
+    expect(screen.getByTestId('order-items-table')).toHaveClass('md:block');
 });
 
 test('keeps the requested delivery date but does not show a delivery time slot', () => {

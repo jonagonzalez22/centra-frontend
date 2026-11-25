@@ -3,7 +3,7 @@ import { Form, Input, InputNumber, Select, Alert } from 'antd';
 import Modal from '@/components/Modal/Modal';
 import { Button } from '@/components/Button';
 import { SalesService } from '@/features/store/sales/services/sales.service';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrencyWithCents } from '@/utils/formatters';
 import type { CommercialPaymentMethod } from '@/features/store/payment-methods/interfaces/commercial-payment-method.interface';
 
 interface Props {
@@ -93,7 +93,7 @@ export const RegisterOrderPaymentModal = ({ open, pendingAmount, onClose, onSubm
             }
         >
             <div className="mb-4 text-sm">
-                Saldo pendiente: <strong>{formatCurrency(pendingAmount)}</strong>
+                Saldo pendiente: <strong>{formatCurrencyWithCents(pendingAmount)}</strong>
             </div>
             {error && <Alert className="mb-3" type="error" message={error} showIcon />}
             <Form form={form} layout="vertical" onFinish={submit}>
@@ -106,7 +106,7 @@ export const RegisterOrderPaymentModal = ({ open, pendingAmount, onClose, onSubm
                         {
                             type: 'number',
                             max: pendingAmount,
-                            message: `El importe no puede superar el saldo pendiente de ${formatCurrency(pendingAmount)}.`,
+                            message: `El importe no puede superar el saldo pendiente de ${formatCurrencyWithCents(pendingAmount)}.`,
                         },
                     ]}
                 >

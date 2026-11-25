@@ -5,15 +5,15 @@ test('shows individual payment traceability and total paid', () => {
     render(
         <OrderDrawerPayments
             loading={false}
-            paidAmount={10000}
-            pendingAmount={5600}
+            paidAmount={80.75}
+            pendingAmount={869.25}
             canCollect
             hasPendingRouteCollection={false}
             onRegisterPayment={vi.fn()}
             payments={[
                 {
                     id: 'payment-1',
-                    amount: 10000,
+                    amount: 80.75,
                     reference: 'ABC123',
                     payment_details: null,
                     created_at: '2026-09-10 10:00:00',
@@ -28,8 +28,8 @@ test('shows individual payment traceability and total paid', () => {
 
     expect(screen.getByText('Total pagado')).toBeInTheDocument();
     expect(screen.getByText('Saldo pendiente')).toBeInTheDocument();
-    expect(screen.getAllByText('$ 10.000')).toHaveLength(2);
-    expect(screen.getByText('$ 5.600')).toBeInTheDocument();
+    expect(screen.getAllByText('$ 80,75')).toHaveLength(2);
+    expect(screen.getByText('$ 869,25')).toBeInTheDocument();
     expect(screen.getByText('Efectivo')).toBeInTheDocument();
     expect(screen.getByText('Referencia: ABC123')).toBeInTheDocument();
     expect(screen.getByText('Pago de pedido')).toBeInTheDocument();

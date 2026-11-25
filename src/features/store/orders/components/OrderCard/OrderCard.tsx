@@ -9,7 +9,7 @@ import { RescheduleModal } from '../RescheduleModal';
 import { OrderCancellationModal } from '../OrderCancellationModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import type { OrderListItem } from '../../interfaces/order.interface';
-import { formatCurrency, formatDateShort } from '@/utils/formatters';
+import { formatCurrencyWithCents, formatDateShort } from '@/utils/formatters';
 
 interface OrderCardProps {
     order: OrderListItem;
@@ -184,14 +184,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                         {order.items_count} {order.items_count === 1 ? 'ítem' : 'ítems'}
                     </span>
                     <span className="text-sm font-semibold">
-                        Total: {formatCurrency(order.total)}
+                        Total: {formatCurrencyWithCents(order.total)}
                     </span>
                     <span
                         className={`text-sm font-semibold ${
                             order.pending_amount > 0 ? 'text-amber-600' : ''
                         }`}
                     >
-                        Saldo pendiente: {formatCurrency(order.pending_amount)}
+                        Saldo pendiente: {formatCurrencyWithCents(order.pending_amount)}
                     </span>
                     {order.has_pending_delivery && (
                         <span className="text-sm font-semibold text-blue-600">
