@@ -13,6 +13,15 @@ import type {
 } from '../interfaces/order.interface';
 
 export const OrdersService = {
+    getShareMessage: async (id: string): Promise<string> => {
+        const { data } = await api.get<ApiListResponse<{ message: string }>>(
+            API_ENDPOINTS.STORE.ORDERS.SHARE_MESSAGE(id)
+        );
+        if (data.status === 'error') {
+            throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;
+        }
+        return data.data.message;
+    },
     addItem: async (id: string, payload: { product_id: string; quantity: DecimalString; price_list_id: string | null }): Promise<OrderDetail> => {
         const { data } = await api.post<ApiListResponse<OrderDetail>>(API_ENDPOINTS.STORE.ORDERS.ITEMS(id), payload);
         if (data.status === 'error') throw { status: 0, message: data.message, errors: data.errors ?? undefined } as ApiError;

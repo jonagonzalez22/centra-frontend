@@ -133,6 +133,7 @@ export const API_ENDPOINTS = {
         },
         ORDERS: {
             URL: '/v1/store/orders',
+            SHARE_MESSAGE: (id: string) => `/v1/store/orders/${id}/share-message`,
             EDITABILITY: (id: string) => `/v1/store/orders/${id}/editability`,
             PAYMENTS: (id: string) => `/v1/store/orders/${id}/payments`,
             ITEMS: (id: string) => `/v1/store/orders/${id}/items`,

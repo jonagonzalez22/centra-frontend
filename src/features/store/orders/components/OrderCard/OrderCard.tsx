@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown, Tooltip } from 'antd';
+import { Dropdown, Tooltip, message } from 'antd';
+import { CopyOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Button } from '@/components/Button';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -10,6 +11,7 @@ import { OrderCancellationModal } from '../OrderCancellationModal';
 import { useOrdersStore } from '../../stores/useOrdersStore';
 import type { OrderListItem } from '../../interfaces/order.interface';
 import { formatCurrencyWithCents, formatDateShort } from '@/utils/formatters';
+import { OrdersService } from '../../services/orders.service';
 
 interface OrderCardProps {
     order: OrderListItem;
@@ -36,6 +38,23 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
     const [cancelOpen, setCancelOpen] = useState(false);
     const [rescheduling, setRescheduling] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const [copying, setCopying] = useState(false);
+
+    const copyDetail = async (event: React.MouseEvent) => {
+        event.stopPropagation();
+        if (copying) return;
+        setCopying(true);
+        try {
+            const detail = await OrdersService.getShareMessage(order.id);
+            await navigator.clipboard.writeText(detail);
+            message.success('Detalle copiado');
+        } catch (error) {
+            const apiMessage = (error as { message?: string }).message;
+            message.error(apiMessage || 'No se pudo copiar el detalle del pedido.');
+        } finally {
+            setCopying(false);
+        }
+    };
 
     const handleReschedule = async (values: {
         new_date: string;
@@ -150,6 +169,18 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-base">{order.operation_number}</span>
                         <OrderStatusBadge status={order.status} />
+                        {order.status !== 'cancelled' && (
+                            <Tooltip title="Copiar detalle del pedido">
+                                <Button
+                                    variant="text"
+                                    icon={<CopyOutlined aria-hidden />}
+                                    action={copyDetail}
+                                    loading={copying}
+                                    disabled={copying}
+                                    aria-label="Copiar detalle del pedido"
+                                />
+                            </Tooltip>
+                        )}
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
                         <Dropdown menu={{ items: actionMenuItems }} trigger={['click']}>

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import OrderCard from './OrderCard';
+import { OrdersService } from '../../services/orders.service';
 import { formatDateShort } from '@/utils/formatters';
 import type { OrderListItem } from '../../interfaces/order.interface';
 
@@ -24,6 +25,9 @@ vi.mock('../OrderStatusBadge', () => ({
 }));
 vi.mock('../RescheduleModal', () => ({ RescheduleModal: () => null }));
 vi.mock('../OrderCancellationModal', () => ({ OrderCancellationModal: () => null }));
+vi.mock('../../services/orders.service', () => ({
+    OrdersService: { getShareMessage: vi.fn() },
+}));
 
 const order: OrderListItem = {
     id: 'order-1',
@@ -90,4 +94,39 @@ test('offers edit navigation only with orders.edit permission', async () => {
 
     expect(navigate).toHaveBeenCalledWith('/tienda/ventas/pedidos/order-1/editar');
     canEdit = false;
+});
+
+test('copies the official message without opening the card', async () => {
+    const onClick = vi.fn();
+    vi.mocked(OrdersService.getShareMessage).mockResolvedValue('detalle oficial');
+    const user = userEvent.setup();
+
+    render(<OrderCard order={order} onClick={onClick} />);
+    const copyButton = screen.getByRole('button', { name: 'Copiar detalle del pedido' });
+    await user.hover(copyButton);
+    expect(await screen.findByText('Copiar detalle del pedido')).toBeInTheDocument();
+    expect(copyButton).not.toHaveTextContent('Copiar');
+    await user.click(copyButton);
+
+    expect(OrdersService.getShareMessage).toHaveBeenCalledWith(order.id);
+    expect(await screen.findByText('Detalle copiado')).toBeInTheDocument();
+    expect(onClick).not.toHaveBeenCalled();
+});
+
+test('does not offer copy for a cancelled order', () => {
+    render(<OrderCard order={{ ...order, status: 'cancelled' }} onClick={vi.fn()} />);
+
+    expect(screen.queryByRole('button', { name: 'Copiar detalle del pedido' })).not.toBeInTheDocument();
+});
+
+test('keeps the card closed and reports an API error when copy fails', async () => {
+    const onClick = vi.fn();
+    vi.mocked(OrdersService.getShareMessage).mockRejectedValue({ message: 'No se pudo generar.' });
+    const user = userEvent.setup();
+
+    render(<OrderCard order={order} onClick={onClick} />);
+    await user.click(screen.getByRole('button', { name: 'Copiar detalle del pedido' }));
+
+    expect(await screen.findByText('No se pudo generar.')).toBeInTheDocument();
+    expect(onClick).not.toHaveBeenCalled();
 });
