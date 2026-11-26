@@ -17,6 +17,7 @@ export type FeatureCode =
     | 'categories'
     | 'customers'
     | 'cash'
+    | 'financial_incidents'
     | 'store_settings'
     | 'purchases';
 

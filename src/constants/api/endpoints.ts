@@ -95,6 +95,24 @@ export const API_ENDPOINTS = {
             SUMMARY: { URL: '/v1/store/reports/summary' },
             ANALYTICS: { URL: '/v1/store/reports/analytics' },
         },
+        FINANCIAL_INCIDENTS: {
+            URL: '/v1/store/financial-incidents',
+            COUNTERS: '/v1/store/financial-incidents/counters',
+            ASSIGNEES: '/v1/store/financial-incidents/assignees',
+            DETAIL: (type: string, id: string) => `/v1/store/financial-incidents/${type}/${id}`,
+            HISTORY: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/history`,
+            START_REVIEW: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/start-review`,
+            ASSIGN: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/assign`,
+            COMMENTS: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/comments`,
+            RESOLVE: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/resolve`,
+            DISMISS: (type: string, id: string) =>
+                `/v1/store/financial-incidents/${type}/${id}/dismiss`,
+        },
         OPERATIONS: {
             URL: '/v1/store/operations',
             RECEIPT: (id: string) => `/v1/store/operations/${id}/receipt`,

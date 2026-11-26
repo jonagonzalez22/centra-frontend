@@ -185,8 +185,6 @@ const menuItems: MenuItem[] = [
         key: '/tienda/informes/parent',
         icon: <BarChartOutlined />,
         context: 'store',
-        feature: 'reports',
-        permission: 'reports.view',
         role: 'STORE_USER',
         children: [
             {
@@ -195,6 +193,14 @@ const menuItems: MenuItem[] = [
                 context: 'store',
                 feature: 'reports',
                 permission: 'reports.view',
+                role: 'STORE_USER',
+            },
+            {
+                label: 'Incidencias financieras',
+                key: '/tienda/informes/incidencias-financieras',
+                context: 'store',
+                feature: 'financial_incidents',
+                permission: 'financial_incidents.view',
                 role: 'STORE_USER',
             },
         ],
@@ -464,19 +470,34 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
     const menuContent = (
         <div className="sidebarMenuContent flex h-full min-h-0 flex-1 flex-col bg-centra-primary">
-            <div className={`sidebarMenuBrand${!isMobile && isDesktopCollapsed ? ' sidebarMenuBrandCollapsed' : ''}`}>
+            <div
+                className={`sidebarMenuBrand${!isMobile && isDesktopCollapsed ? ' sidebarMenuBrandCollapsed' : ''}`}
+            >
                 {(isMobile || !isDesktopCollapsed) && <span>CENTRA</span>}
                 {!isMobile && (
-                    <Tooltip title={isDesktopCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'} placement="right">
+                    <Tooltip
+                        title={
+                            isDesktopCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'
+                        }
+                        placement="right"
+                    >
                         <button
                             type="button"
                             className="sidebarMenuToggle"
-                            aria-label={isDesktopCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
+                            aria-label={
+                                isDesktopCollapsed
+                                    ? 'Expandir menú lateral'
+                                    : 'Contraer menú lateral'
+                            }
                             aria-expanded={!isDesktopCollapsed}
                             aria-controls="sidebar-primary-navigation"
                             onClick={toggleDesktopCollapsed}
                         >
-                            {isDesktopCollapsed ? <PanelLeftOpen size={ICON_SIZE} /> : <PanelLeftClose size={ICON_SIZE} />}
+                            {isDesktopCollapsed ? (
+                                <PanelLeftOpen size={ICON_SIZE} />
+                            ) : (
+                                <PanelLeftClose size={ICON_SIZE} />
+                            )}
                         </button>
                     </Tooltip>
                 )}

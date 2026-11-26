@@ -48,6 +48,7 @@ import { RouteSheetPage } from '@/pages/driver/route-sheet/RouteSheetPage';
 import { StopDetailPage } from '@/pages/driver/stop-detail/StopDetailPage';
 import { ReceivedPaymentsPage } from '@/pages/store/received-payments/ReceivedPaymentsPage';
 import { ReportsSummaryPage } from '@/pages/store/reports/ReportsSummaryPage';
+import { FinancialIncidentsPage } from '@/pages/store/reports/FinancialIncidentsPage';
 import { VehiclesPage } from '@/pages/store/logistics/vehicles/VehiclesPage';
 
 export const router = createBrowserRouter([
@@ -323,6 +324,21 @@ export const router = createBrowserRouter([
                                         element: <Navigate to="resumen" replace />,
                                     },
                                     { path: 'informes/resumen', element: <ReportsSummaryPage /> },
+                                ],
+                            },
+                        ],
+                    },
+
+                    {
+                        element: <FeatureRoute feature="financial_incidents" />,
+                        children: [
+                            {
+                                element: <PermissionRoute permission="financial_incidents.view" />,
+                                children: [
+                                    {
+                                        path: 'informes/incidencias-financieras',
+                                        element: <FinancialIncidentsPage />,
+                                    },
                                 ],
                             },
                         ],
