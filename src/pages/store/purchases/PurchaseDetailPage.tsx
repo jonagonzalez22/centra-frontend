@@ -14,6 +14,7 @@ import {
 import { CopyOutlined, DownloadOutlined, WhatsAppOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/Button';
+import Modal from '@/components/Modal/Modal';
 import { CanDo } from '@/components/auth/CanDo';
 import { formatCurrencyWithCents, formatDate } from '@/utils/formatters';
 import { compareDecimalStrings, formatQuantityForDisplay } from '@/utils/quantity';
@@ -31,6 +32,7 @@ import {
     buildPurchaseWhatsAppMessage,
     buildPurchaseWhatsAppUrl,
 } from '@/features/store/purchases/purchaseWhatsApp';
+import { copyTextToClipboard } from '@/utils/clipboard';
 
 const statusColor: Record<PurchaseStatus, string> = {
     draft: 'default',
@@ -59,6 +61,7 @@ export const PurchaseDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [downloadingPdf, setDownloadingPdf] = useState(false);
+    const [manualCopyMessage, setManualCopyMessage] = useState<string | null>(null);
     const closingRef = useRef(false);
     const screens = Grid.useBreakpoint();
     const load = useCallback(async () => {
@@ -198,7 +201,11 @@ export const PurchaseDetailPage = () => {
     };
     const copyWhatsAppMessage = async () => {
         try {
-            await navigator.clipboard.writeText(whatsAppMessage);
+            if (!(await copyTextToClipboard(whatsAppMessage))) {
+                setManualCopyMessage(whatsAppMessage);
+                message.error('No pudimos copiar el mensaje automáticamente.');
+                return;
+            }
             message.success('Mensaje copiado');
         } catch {
             message.error('No se pudo copiar el mensaje.');
@@ -552,6 +559,23 @@ export const PurchaseDetailPage = () => {
                     />
                 )}
             </section>
+            <Modal
+                open={manualCopyMessage !== null}
+                onClose={() => setManualCopyMessage(null)}
+                title="Copiá el mensaje manualmente"
+                footer={<Button variant="default" label="Cerrar" action={() => setManualCopyMessage(null)} />}
+            >
+                <p className="mt-0 text-sm text-gray-600">
+                    No pudimos copiar el mensaje automáticamente. Seleccioná el texto y copialo.
+                </p>
+                <textarea
+                    aria-label="Mensaje de compra para copiar manualmente"
+                    readOnly
+                    value={manualCopyMessage ?? ''}
+                    onFocus={(event) => event.currentTarget.select()}
+                    className="min-h-56 w-full resize-y rounded border border-gray-300 p-3 font-mono text-sm"
+                />
+            </Modal>
         </div>
     );
 };

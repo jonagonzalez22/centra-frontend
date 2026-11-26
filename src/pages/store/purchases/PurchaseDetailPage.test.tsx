@@ -204,7 +204,7 @@ describe('PurchaseDetailPage', () => {
         );
         expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/Total estimado: \$\s10,00/));
     });
-    it('shows discreet feedback when copying the message fails', async () => {
+    it('offers the generated message for manual copy when automatic copy fails', async () => {
         const feedback = vi.spyOn(message, 'error').mockImplementation(() => undefined as never);
         Object.defineProperty(navigator, 'clipboard', {
             value: { writeText: vi.fn().mockRejectedValue(new Error('Clipboard denied')) },
@@ -212,7 +212,13 @@ describe('PurchaseDetailPage', () => {
         });
         renderDetail();
         fireEvent.click(await findActionButton('Copiar mensaje'));
-        await waitFor(() => expect(feedback).toHaveBeenCalledWith('No se pudo copiar el mensaje.'));
+        await waitFor(() =>
+            expect(feedback).toHaveBeenCalledWith('No pudimos copiar el mensaje automáticamente.')
+        );
+        expect(
+            (screen.getByLabelText('Mensaje de compra para copiar manualmente') as HTMLTextAreaElement)
+                .value
+        ).toContain('borrador de la OC-000001');
         expect(screen.getByRole('heading', { name: 'OC-000001' })).toBeInTheDocument();
     });
     it('opens wa.me with the encoded message when the current supplier has a phone', async () => {

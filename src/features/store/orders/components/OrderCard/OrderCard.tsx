@@ -4,6 +4,7 @@ import { Dropdown, Tooltip, message } from 'antd';
 import { CopyOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Button } from '@/components/Button';
+import Modal from '@/components/Modal/Modal';
 import { usePermissions } from '@/hooks/usePermissions';
 import { OrderStatusBadge } from '../OrderStatusBadge';
 import { RescheduleModal } from '../RescheduleModal';
@@ -12,6 +13,7 @@ import { useOrdersStore } from '../../stores/useOrdersStore';
 import type { OrderListItem } from '../../interfaces/order.interface';
 import { formatCurrencyWithCents, formatDateShort } from '@/utils/formatters';
 import { OrdersService } from '../../services/orders.service';
+import { copyTextToClipboard } from '@/utils/clipboard';
 
 interface OrderCardProps {
     order: OrderListItem;
@@ -39,6 +41,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
     const [rescheduling, setRescheduling] = useState(false);
     const [cancelling, setCancelling] = useState(false);
     const [copying, setCopying] = useState(false);
+    const [manualCopyMessage, setManualCopyMessage] = useState<string | null>(null);
 
     const copyDetail = async (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -46,11 +49,15 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
         setCopying(true);
         try {
             const detail = await OrdersService.getShareMessage(order.id);
-            await navigator.clipboard.writeText(detail);
-            message.success('Detalle copiado');
+            if (await copyTextToClipboard(detail)) {
+                message.success('Detalle copiado');
+            } else {
+                setManualCopyMessage(detail);
+                message.error('No pudimos copiar el mensaje automáticamente.');
+            }
         } catch (error) {
             const apiMessage = (error as { message?: string }).message;
-            message.error(apiMessage || 'No se pudo copiar el detalle del pedido.');
+            message.error(apiMessage || 'No se pudo obtener el detalle del pedido.');
         } finally {
             setCopying(false);
         }
@@ -248,6 +255,24 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onClick }) => {
                 onConfirm={handleCancel}
                 onClose={() => setCancelOpen(false)}
             />
+
+            <Modal
+                open={manualCopyMessage !== null}
+                onClose={() => setManualCopyMessage(null)}
+                title="Copiá el mensaje manualmente"
+                footer={<Button variant="default" label="Cerrar" action={() => setManualCopyMessage(null)} />}
+            >
+                <p className="mt-0 text-sm text-gray-600">
+                    No pudimos copiar el mensaje automáticamente. Seleccioná el texto y copialo.
+                </p>
+                <textarea
+                    aria-label="Detalle del pedido para copiar manualmente"
+                    readOnly
+                    value={manualCopyMessage ?? ''}
+                    onFocus={(event) => event.currentTarget.select()}
+                    className="min-h-56 w-full resize-y rounded border border-gray-300 p-3 font-mono text-sm"
+                />
+            </Modal>
         </>
     );
 };

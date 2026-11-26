@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import OrderCard from './OrderCard';
 import { OrdersService } from '../../services/orders.service';
+import { copyTextToClipboard } from '@/utils/clipboard';
 import { formatDateShort } from '@/utils/formatters';
 import type { OrderListItem } from '../../interfaces/order.interface';
 
@@ -28,6 +29,7 @@ vi.mock('../OrderCancellationModal', () => ({ OrderCancellationModal: () => null
 vi.mock('../../services/orders.service', () => ({
     OrdersService: { getShareMessage: vi.fn() },
 }));
+vi.mock('@/utils/clipboard', () => ({ copyTextToClipboard: vi.fn() }));
 
 const order: OrderListItem = {
     id: 'order-1',
@@ -99,6 +101,7 @@ test('offers edit navigation only with orders.edit permission', async () => {
 test('copies the official message without opening the card', async () => {
     const onClick = vi.fn();
     vi.mocked(OrdersService.getShareMessage).mockResolvedValue('detalle oficial');
+    vi.mocked(copyTextToClipboard).mockResolvedValue(true);
     const user = userEvent.setup();
 
     render(<OrderCard order={order} onClick={onClick} />);
@@ -109,6 +112,7 @@ test('copies the official message without opening the card', async () => {
     await user.click(copyButton);
 
     expect(OrdersService.getShareMessage).toHaveBeenCalledWith(order.id);
+    expect(copyTextToClipboard).toHaveBeenCalledWith('detalle oficial');
     expect(await screen.findByText('Detalle copiado')).toBeInTheDocument();
     expect(onClick).not.toHaveBeenCalled();
 });
@@ -129,4 +133,18 @@ test('keeps the card closed and reports an API error when copy fails', async () 
 
     expect(await screen.findByText('No se pudo generar.')).toBeInTheDocument();
     expect(onClick).not.toHaveBeenCalled();
+});
+
+test('offers the exact message for manual copy when all automatic mechanisms fail', async () => {
+    vi.mocked(OrdersService.getShareMessage).mockResolvedValue('*Pedido*\n¡Gracias!');
+    vi.mocked(copyTextToClipboard).mockResolvedValue(false);
+    const user = userEvent.setup();
+
+    render(<OrderCard order={order} onClick={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Copiar detalle del pedido' }));
+
+    expect(await screen.findByText('No pudimos copiar el mensaje automáticamente.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Detalle del pedido para copiar manualmente')).toHaveValue(
+        '*Pedido*\n¡Gracias!'
+    );
 });
